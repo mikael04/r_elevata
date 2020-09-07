@@ -487,6 +487,8 @@ p5 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = idade_c
 p5
 #######################################################################################################
 
+p6 <- ggplot(ng_rj_hist_lj_emp_num)
+
 ##Remover tudo utilizado
 if (teste == 0) {
   #rm(list=ls())
