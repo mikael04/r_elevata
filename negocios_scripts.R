@@ -15,8 +15,7 @@ library(plotly)
 library(highcharter)
 library(htmlwidgets)
 #Lib pra usar paletas de cores
-library(RColorBrewer)
-library(viridis)
+#library(RColorBrewer)
 #Lib usada pros treemaps
 #library(treemap)
 #Lib usada para porcentagem
@@ -35,12 +34,12 @@ con <- DBI::dbConnect(odbc::odbc(),
 
 ##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
 negocio <- tbl(con, "negocio") %>%
-  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro) %>%
+  select(negocio_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_vendedor_id) %>%
   collect()
 
 ##coleta todos os vendedores
 vendedor_todos <- tbl(con, "vendedor") %>%
-  select(vendedor_id, vendedor_nome, vendedor_empresa_id,vendedor_ativo) %>%
+  select(vendedor_id, vendedor_nome, vendedor_id, vendedor_empresa_id,vendedor_ativo) %>%
   collect()
 
 
@@ -64,7 +63,7 @@ corte_1 <- negocio_lj_vendedor %>%
 ##agrupamento de negocios por vendedor
 ##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
 ng_lj_vn_2020 <- corte_1 %>%
-  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, vendedor_nome) %>%
+  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, vendedor_nome, negocio_vendedor_id) %>%
   group_by(negocio_negocio_situacao_id, negocio_vendedor_id) %>%
   mutate(num_negocios = n()) %>%
   distinct (negocio_vendedor_id, .keep_all = TRUE) %>%
@@ -473,34 +472,31 @@ ng_rj_hist_lj_emp_num <- ng_rj_hist_lj_emp_num %>%
 
 ng_rj_hist_lj_emp_num$idade_cat = factor(ng_rj_hist_lj_emp_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
 
-###Gráfico de pizza (substituído por waffle)
-#
-#p5 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = idade_cat))+
-#  geom_bar(width = 1, stat="identity") +
-#  ggtitle("Negócios de toda empresa em aberto") +
-#  coord_polar("y", start=0)+
-#  scale_fill_manual(values = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"),)+
-#  theme_void() +
-#  #theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text = element_blank(),
-#  #      panel.border = element_blank(), panel.grid = element_blank(),
-#  #      axis.ticks = element_blank(),
-#  #      plot.title=element_text(size=14, face="bold"))+
-#  geom_text(aes(x = 1, y = cumsum(porcentagem) - porcentagem/2, label = porcent), size=5)
-#  
-#
-#p5
+##Gráfico de pizza (substituído por waffle)
 
-vetor_auxiliar <- `ng_rj_hist_lj_emp_num$num_negocios_idades`= ng_rj_hist_lj_emp_num$num_negocios_idades
+p5 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = idade_cat))+
+  geom_bar(width = 1, stat="identity") +
+  ggtitle("Negócios de toda empresa em aberto") +
+  coord_polar("y", start=0)+
+  scale_fill_manual(values = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"),)+
+  theme_void() +
+  geom_text(aes(x = 1, y = cumsum(porcentagem) - porcentagem/2, label = porcent), size=5)
+  
 
-ng_rj_hist_lj_emp_num <- ng_rj_hist_lj_emp_num %>%
-  mutate(categorias = (`ng_rj_hist_lj_emp_num$num_negocios_idades` + ng_rj_hist_lj_emp_num$num_negocios_idades))
-
-p5 <- plot_ly()
-p5 <- waffle(ng_rj_hist_lj_emp_num$num_negocios_idades/30,
-             size=0.5,
-             title = "Negócios de toda a empresa em aberto",
-             xlab=" 1 quadrado = 30 negócios")
 p5
+
+## Gráfico de waffle, ainda flata arrumar nome dos agrupamentos
+#vetor_auxiliar <- `ng_rj_hist_lj_emp_num$num_negocios_idades`= ng_rj_hist_lj_emp_num$num_negocios_idades
+#
+#ng_rj_hist_lj_emp_num <- ng_rj_hist_lj_emp_num %>%
+#  mutate(categorias = (`ng_rj_hist_lj_emp_num$num_negocios_idades` + ng_rj_hist_lj_emp_num$num_negocios_idades))
+#
+#p5 <- plot_ly()
+#p5 <- waffle(ng_rj_hist_lj_emp_num$num_negocios_idades/30,
+#             size=0.5,
+#             title = "Negócios de toda a empresa em aberto",
+#             xlab=" 1 quadrado = 30 negócios")
+#p5
 #######################################################################################################
 
 
@@ -513,6 +509,9 @@ ff = c(4,5,6,7)
 ##antes de 2020
 #remover os que estão com status fechado E status < 2020
 ng_rj_hist_lj_ven_funil <- ng_rj_hist_lj_ven[!(ng_rj_hist_lj_ven$negocio_negocio_situacao_id %in% ff & ng_rj_hist_lj_ven$historico_negocio_situacao_data <= as.Date("2020-01-01")),]
+
+ng_rj_hist_lj_ven_funil <- ng_rj_hist_lj_ven_funil %>%
+  filter(negocio_negocio_situacao_id != 0)
   
 status = c("1 - em negociacao", "2 - montagem de cadastro", "3 - aguardando aprovacao", "4 - financiamento aprovado", "5 - faturado", "6 - financiamento nao aprovado", "7 - desistencia do cliente", "8 - perdemos para concorrencia", "0 - intencao ou prospeccao")
 
@@ -546,18 +545,17 @@ ng_rj_hist_lj_ven_funil_cnt <- ng_rj_hist_lj_ven_funil %>%
 p6 <- plot_ly()
 p6 <- p6 %>%
   add_trace(
-    type="funnel",
-    y = ng_rj_hist_lj_ven_funil_cnt$negocio_negocio_situacao_id,
-    x = ng_rj_hist_lj_ven_funil_cnt$contagem,
-    textposition = "inside",
-    textinfo = "value",
-    opacity = 0.85,
-    marker = list(color = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"))
+    type="funnelarea",
+    values = ng_rj_hist_lj_ven_funil_cnt$contagem,
+    text = c("Intenção ou prospecção", "Em negociação", "Montagem de cadastro", "Aguardando aprovação", "Financiamento aprovado", "Faturado", "Financiamento não aprovado", "Desistência do cliente", "Perdemos para a concorrência")
+    ,
+    marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"))
+    #marker = list(color = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"))
     )
-p6 <- p6 %>%
-  layout(yaxis = list(categoryarray = c("Intenção ou prospecção", "Em negociação", "Montagem de cadastro", "Aguardando aprovação", "Financiamento aprovado", "Faturado", "Financiamento não aprovado", "Desistência do cliente", "Perdemos para a concorrência")))
-
+#p6 <- p6 %>%
+#  layout(yaxis = list(categoryarray = c("Intenção ou prospecção", "Em negociação", "Montagem de cadastro", "Aguardando aprovação", "Financiamento aprovado", "Faturado", "Financiamento não aprovado", "Desistência do cliente", "Perdemos para a concorrência")))
 p6
+########################################################################################
 
 ##Remover tudo utilizado
 if (teste == 0) {
