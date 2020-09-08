@@ -450,7 +450,7 @@ ggplotly(p4) %>%
   layout(legend = list(orientation = "h", x = 0, y = -0.25))
 ############################################################################
 
-###Gráfico de idades geral da empresa (pizza) por categoria de idade
+###Gráfico de idades geral da empresa antes pizza, alterado pra waffle por categoria de idade
 ############################################################################
 
 ng_rj_hist_lj_emp_num <- ng_rj_hist_lj_ven_idd %>%
@@ -473,21 +473,33 @@ ng_rj_hist_lj_emp_num <- ng_rj_hist_lj_emp_num %>%
 
 ng_rj_hist_lj_emp_num$idade_cat = factor(ng_rj_hist_lj_emp_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
 
-###Gráfico de pizza
+###Gráfico de pizza (substituído por waffle)
+#
+#p5 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = idade_cat))+
+#  geom_bar(width = 1, stat="identity") +
+#  ggtitle("Negócios de toda empresa em aberto") +
+#  coord_polar("y", start=0)+
+#  scale_fill_manual(values = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"),)+
+#  theme_void() +
+#  #theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text = element_blank(),
+#  #      panel.border = element_blank(), panel.grid = element_blank(),
+#  #      axis.ticks = element_blank(),
+#  #      plot.title=element_text(size=14, face="bold"))+
+#  geom_text(aes(x = 1, y = cumsum(porcentagem) - porcentagem/2, label = porcent), size=5)
+#  
+#
+#p5
 
-p5 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = idade_cat))+
-  geom_bar(width = 1, stat="identity") +
-  ggtitle("Negócios de toda empresa em aberto") +
-  coord_polar("y", start=0)+
-  scale_fill_manual(values = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"),)+
-  theme_void() +
-  #theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text = element_blank(),
-  #      panel.border = element_blank(), panel.grid = element_blank(),
-  #      axis.ticks = element_blank(),
-  #      plot.title=element_text(size=14, face="bold"))+
-  geom_text(aes(x = 1, y = cumsum(porcentagem) - porcentagem/2, label = porcent), size=5)
-  
+vetor_auxiliar <- `ng_rj_hist_lj_emp_num$num_negocios_idades`= ng_rj_hist_lj_emp_num$num_negocios_idades
 
+ng_rj_hist_lj_emp_num <- ng_rj_hist_lj_emp_num %>%
+  mutate(categorias = (`ng_rj_hist_lj_emp_num$num_negocios_idades` + ng_rj_hist_lj_emp_num$num_negocios_idades))
+
+p5 <- plot_ly()
+p5 <- waffle(ng_rj_hist_lj_emp_num$num_negocios_idades/30,
+             size=0.5,
+             title = "Negócios de toda a empresa em aberto",
+             xlab=" 1 quadrado = 30 negócios")
 p5
 #######################################################################################################
 
