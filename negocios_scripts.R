@@ -1,12 +1,10 @@
 rm(list = ls())
 
-#Lib q será futuramente usada pros painéis interativos
-library(shiny)
 #Lib pra conexão com o banco
 library(odbc)
 #Libs pra trabalhar com a base (cortes e funções similares ao SQL)
 library(dplyr)
-library(dbplyr)
+#library(dbplyr)
 library(tidyverse)
 #Lib pro gráfico
 library(ggplot2)
