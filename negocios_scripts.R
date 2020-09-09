@@ -108,7 +108,7 @@ ng_lj_vn_2020$negocio_negocio_situacao_id[ng_lj_vn_2020$negocio_negocio_situacao
 
 ##Gráfico do número de clientes por vendedor
 ##############################################
-p0 <- ggplot(ng_lj_vn_2020, aes(vendedor_nome, num_negocios, fill=factor(negocio_negocio_situacao_id), label = num_negocios)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+n0 <- ggplot(ng_lj_vn_2020, aes(vendedor_nome, num_negocios, fill=factor(negocio_negocio_situacao_id), label = num_negocios)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   ylab("Número de clientes") +
   #ggtitle("Volume de negócios cadastrados por vendedor, ano 2020") +
@@ -119,7 +119,7 @@ p0 <- ggplot(ng_lj_vn_2020, aes(vendedor_nome, num_negocios, fill=factor(negocio
 
 ##Se usar ggplot vai pro lugar, se usar o plotly tem q mover como fiz abaixo
 #p0 <- p0+theme (legend.position = "bottom") -> 
-ggplotly(p0) %>%
+ggplotly(n0) %>%
   layout(legend = list(orientation = "h", x = 0, y = -0.25))
 
 
@@ -193,7 +193,7 @@ ng_f_cn_d_vn <- ng_f_cn_d_vn %>%
   distinct (negocio_vendedor_id, .keep_all = TRUE) %>%
   collect ()
 
-p3 <- ggplot(ng_f_cn_d_vn, aes(vendedor_nome, num_negocios, fill=factor(negocio_negocio_situacao_id), label = num_negocios)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+n3 <- ggplot(ng_f_cn_d_vn, aes(vendedor_nome, num_negocios, fill=factor(negocio_negocio_situacao_id), label = num_negocios)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   xlab("Vendedores") +
   ylab("Número de clientes") +
@@ -205,7 +205,7 @@ p3 <- ggplot(ng_f_cn_d_vn, aes(vendedor_nome, num_negocios, fill=factor(negocio_
   coord_flip(expand = F) +
   geom_text(position = position_stack(vjust = +0.5))
 
-ggplotly(p3) %>%
+ggplotly(n3) %>%
   layout(legend = list( orientation = "h", x = 0, y = -0.05))
 
 
@@ -307,13 +307,13 @@ chart_ng_top_ag <- ng_top_ag
 ### Chart 1
 ##################################################################
 ##Aqui são mostradas todas as máquinas negociadas em 2020
-hc <- chart_ng_top_ag %>%
+hc_n4 <- chart_ng_top_ag %>%
   hchart (
     "treemap",
     hcaes(x=categoria_nome, value=faturamento, color = faturamento)) %>%
   hc_colorAxis(minColor = "#ADD8E6", maxColor = "#3182FF")
 
-hc
+hc_n4
 
 ng_rj_hist_lj_ven_lj_ngp_lj_pd_lj_cat_fat <-  ng_rj_hist_lj_ven_lj_ngp_lj_pd_lj_cat %>%
   filter(negocio_negocio_situacao_id == 4)
@@ -342,13 +342,13 @@ if (teste == 0) {
 ### Chart 2, Aqui são mostradas todasas máquinas faturadas em 2020
 ##################################################################
 
-hc1 <- chart_ng_top_ag_fat %>%
+hc_n5 <- chart_ng_top_ag_fat %>%
   hchart (
     "treemap",
     hcaes(x=categoria_nome, value=faturamento, color = faturamento)) %>%
   hc_colorAxis(minColor = "#90EE90", maxColor = "#32CD32")
 
-hc1
+hc_n5
 if (teste == 0) {
   rm(ng_top_ag, ng_top_ag_fat, ng_rj_hist_lj_ven_lj_ngp_lj_pd_lj_cat_fat, chart_ng_top_ag, chart_ng_top_ag_fat, ng_top10_ag_fat, ng_rj_hist_lj_ven)
 }
@@ -432,7 +432,7 @@ ng_rj_hist_lj_ven_num$vendedor_nome[ng_rj_hist_lj_ven_num$negocio_vendedor_id ==
 
 ##Gráfico de idade dos negócios abertos, por vendedor, por idade do negocio
 ##############################################
-p4 <- ggplot(ng_rj_hist_lj_ven_num, aes(vendedor_nome, num_negocios_idades, fill=idade_cat, label = num_negocios_idades)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+n6 <- ggplot(ng_rj_hist_lj_ven_num, aes(vendedor_nome, num_negocios_idades, fill=idade_cat, label = num_negocios_idades)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   ylab("Número de clientes") +
   ggtitle("Negócios abertos por vendedor") +
@@ -443,7 +443,7 @@ p4 <- ggplot(ng_rj_hist_lj_ven_num, aes(vendedor_nome, num_negocios_idades, fill
 
 ##Se usar ggplot vai pro lugar, se usar o plotly tem q mover como fiz abaixo
 #p0 <- p0+theme (legend.position = "bottom") -> 
-ggplotly(p4) %>%
+ggplotly(n6) %>%
   layout(legend = list(orientation = "h", x = 0, y = -0.25))
 ############################################################################
 
@@ -472,7 +472,7 @@ ng_rj_hist_lj_emp_num$idade_cat = factor(ng_rj_hist_lj_emp_num$idade_cat, levels
 
 ##Gráfico de pizza (substituído por waffle)
 
-p5 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = idade_cat))+
+n7 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = idade_cat))+
   geom_bar(width = 1, stat="identity") +
   ggtitle("Negócios de toda empresa em aberto") +
   coord_polar("y", start=0)+
@@ -480,8 +480,7 @@ p5 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = idade_c
   theme_void() +
   geom_text(aes(x = 1, y = cumsum(porcentagem) - porcentagem/2, label = porcent), size=5)
   
-
-p5
+n7
 
 ## Gráfico de waffle, ainda flata arrumar nome dos agrupamentos
 #vetor_auxiliar <- `ng_rj_hist_lj_emp_num$num_negocios_idades`= ng_rj_hist_lj_emp_num$num_negocios_idades
@@ -540,8 +539,8 @@ ng_rj_hist_lj_ven_funil_cnt <- ng_rj_hist_lj_ven_funil %>%
 
 ##Funil de vendas (simples)
 
-p6 <- plot_ly()
-p6 <- p6 %>%
+n8 <- plot_ly()
+n8 <- n8 %>%
   add_trace(
     type="funnelarea",
     values = ng_rj_hist_lj_ven_funil_cnt$contagem,
@@ -552,7 +551,7 @@ p6 <- p6 %>%
     )
 #p6 <- p6 %>%
 #  layout(yaxis = list(categoryarray = c("Intenção ou prospecção", "Em negociação", "Montagem de cadastro", "Aguardando aprovação", "Financiamento aprovado", "Faturado", "Financiamento não aprovado", "Desistência do cliente", "Perdemos para a concorrência")))
-p6
+n8
 ########################################################################################
 
 ##Remover tudo utilizado

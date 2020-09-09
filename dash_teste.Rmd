@@ -40,6 +40,9 @@ con <- DBI::dbConnect(odbc::odbc(),
                       Database = "nhmobile_agriculture", 
                       Trusted_Connection = "True")
 
+###Começando scripts negocio_scripts
+###########################################################################################################
+
 ##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
 negocio <- tbl(con, "negocio") %>%
   select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro) %>%
@@ -415,7 +418,103 @@ ng_rj_hist_lj_ven_funil_cnt <- ng_rj_hist_lj_ven_funil %>%
 
 #############################################################
 
+###Começando scripts proposta_scripts
+###########################################################################################################
 
+##coleta todas as propostas
+proposta <- tbl(con, "proposta") %>%
+  select(proposta_id, proposta_versao, proposta_negocio_id, proposta_data_cadastro, proposta_status) %>%
+  collect()
+
+##coleta todos os negócios
+negocio <- tbl(con, "negocio") %>%
+  select(negocio_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_vendedor_id, negocio_usado) %>%
+  collect()
+
+##coleta todos os vendedores
+vendedor <- tbl(con, "vendedor") %>%
+  select(vendedor_id, vendedor_nome, vendedor_id, vendedor_empresa_id, vendedor_ativo) %>%
+  collect()
+
+##Aqui vou filtrar os ativos e já vou filtrar a empresa
+vendedor <- vendedor %>%
+  filter(vendedor_ativo == TRUE)
+
+prop_lj_negocio <- left_join(proposta, negocio, by=c("proposta_negocio_id" = "negocio_id")) %>%
+  select (proposta_id, proposta_data_cadastro, proposta_status, proposta_negocio_id, negocio_data_cadastro, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_usado)
+
+##removendo os campos onde um ID de proposta não corresponde a um ID de negócio (erro no banco?)
+prop_lj_negocio <- prop_lj_negocio[!is.na(prop_lj_negocio$negocio_vendedor_id),]
+
+rm(proposta, negocio)
+
+##Aqui tenho a contagem de status da empresa
+prop_lj_neg_cont <- prop_lj_negocio %>%
+  select (proposta_status) %>%
+  group_by(proposta_status) %>%
+  mutate(cont_status = n()) %>%
+  distinct(proposta_status, .keep_all = TRUE) %>%
+  collect()
+
+prop_lj_neg_cont$proposta_status[prop_lj_neg_cont$proposta_status == 0] <- "0 - Pendente"
+prop_lj_neg_cont$proposta_status[prop_lj_neg_cont$proposta_status == 1] <- "1 - Aceito"
+prop_lj_neg_cont$proposta_status[prop_lj_neg_cont$proposta_status == 2] <- "2 - Recusado"
+prop_lj_neg_cont$proposta_status[prop_lj_neg_cont$proposta_status == 3] <- "3 - Cancelado"
+prop_lj_neg_cont$proposta_status[prop_lj_neg_cont$proposta_status == 4] <- "4 - Finalizado"
+
+
+##Juntando com vendedor pra obter o nome do vendedor
+prop_lj_neg_lj_vend <- left_join(prop_lj_negocio, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
+
+##Filtrando a empresa
+prop_lj_neg_lj_vend <- prop_lj_neg_lj_vend %>%
+  filter(vendedor_empresa_id == 16)
+
+#aqui eu estou alterando o joão paulo, que havia problemas com codificação
+prop_lj_neg_lj_vend$vendedor_nome[prop_lj_neg_lj_vend$negocio_vendedor_id == 45] <- "JOÃO PAULO"
+
+##removendo os campos onde um ID de proposta não corresponde a um ID de negócio (erro no banco?)
+prop_lj_neg_lj_vend <- prop_lj_neg_lj_vend[!is.na(prop_lj_neg_lj_vend$negocio_vendedor_id),]
+
+##Aqui tenho a contagem de status por vendedor
+prop_lj_neg_cont_vend <- prop_lj_neg_lj_vend %>%
+  select (negocio_vendedor_id, negocio_vendedor_id, vendedor_nome, proposta_status) %>%
+  group_by(proposta_status, negocio_vendedor_id) %>%
+  mutate(cont_status = n()) %>%
+  distinct(negocio_vendedor_id, proposta_status, .keep_all = TRUE) %>%
+  collect()
+
+prop_lj_neg_cont_vend$proposta_status[prop_lj_neg_cont_vend$proposta_status == 0] <- "0 - Pendente"
+prop_lj_neg_cont_vend$proposta_status[prop_lj_neg_cont_vend$proposta_status == 1] <- "1 - Aceito"
+prop_lj_neg_cont_vend$proposta_status[prop_lj_neg_cont_vend$proposta_status == 2] <- "2 - Recusado"
+prop_lj_neg_cont_vend$proposta_status[prop_lj_neg_cont_vend$proposta_status == 3] <- "3 - Cancelado"
+prop_lj_neg_cont_vend$proposta_status[prop_lj_neg_cont_vend$proposta_status == 4] <- "4 - Finalizado"
+
+###########################################################################################################
+
+```
+
+Funil de vendas
+=======================================================================
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+### Funil da empresa
+```{r}
+
+##Funil de vendas (simples)
+
+n8 <- plot_ly()
+n8 <- n8 %>%
+  add_trace(
+    type="funnelarea",
+    values = ng_rj_hist_lj_ven_funil_cnt$contagem,
+    text = c("Intenção ou prospecção", "Em negociação", "Montagem de cadastro", "Aguardando aprovação", "Financiamento aprovado", "Faturado", "Financiamento não aprovado", "Desistência do cliente", "Perdemos para a concorrência")
+    ,
+    marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"))
+    )
+
+n8
 ```
 
 Volume de negócios
@@ -428,7 +527,7 @@ Column {data-width=650}
 
 ```{r}
 ##Gráfico do número de clientes por vendedor
-p0 <- ggplot(ng_lj_vn_2020, aes(vendedor_nome, num_negocios, fill=factor(negocio_negocio_situacao_id), label = num_negocios)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+n0 <- ggplot(ng_lj_vn_2020, aes(vendedor_nome, num_negocios, fill=factor(negocio_negocio_situacao_id), label = num_negocios)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   ylab("Número de clientes") +
   #ggtitle("Volume de negócios cadastrados por vendedor, ano 2020") +
@@ -439,7 +538,7 @@ p0 <- ggplot(ng_lj_vn_2020, aes(vendedor_nome, num_negocios, fill=factor(negocio
 
 ##Se usar ggplot vai pro lugar, se usar o plotly tem q mover como fiz abaixo
 #p0 <- p0+theme (legend.position = "bottom") -> 
-ggplotly(p0) %>%
+ggplotly(n0) %>%
   layout(legend = list(orientation = "h", x = 0, y = -0.20), textfont = list(size = 4))
 
 
@@ -451,7 +550,7 @@ Column {data-width=350}
 ### Volume de negócios fechados em 2020
 
 ```{r}
-p3 <- ggplot(ng_f_cn_d_vn, aes(vendedor_nome, num_negocios, fill=factor(negocio_negocio_situacao_id), label = num_negocios)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+n3 <- ggplot(ng_f_cn_d_vn, aes(vendedor_nome, num_negocios, fill=factor(negocio_negocio_situacao_id), label = num_negocios)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   xlab("Vendedores") +
   ylab("Número de clientes") +
@@ -463,7 +562,7 @@ p3 <- ggplot(ng_f_cn_d_vn, aes(vendedor_nome, num_negocios, fill=factor(negocio_
   coord_flip(expand = F) +
   geom_text(position = position_stack(vjust = +0.5))
 
-ggplotly(p3) %>%
+ggplotly(n3) %>%
   layout(legend = list( orientation = "h", x = 0, y = -0.05))
 
 ```
@@ -477,13 +576,13 @@ Column {data-width=350}
 
 ```{r}
 ##Aqui são mostradas todas as máquinas negociadas em 2020
-hc <- chart_ng_top_ag %>%
+hc_n4 <- chart_ng_top_ag %>%
   hchart (
     "treemap",
     hcaes(x=categoria_nome, value=faturamento, color = faturamento)) %>%
   hc_colorAxis(minColor = "#ADD8E6", maxColor = "#3182FF")
 
-hc
+hc_n4
 
 ```
 
@@ -493,13 +592,13 @@ Column {data-width=350}
 
 ```{r}
 ##Aqui são mostradas todasas máquinas faturadas em 2020
-hc1 <- chart_ng_top_ag_fat %>%
+hc_n5 <- chart_ng_top_ag_fat %>%
   hchart (
     "treemap",
     hcaes(x=categoria_nome, value=faturamento, color = faturamento)) %>%
   hc_colorAxis(minColor = "#90EE90", maxColor = "#32CD32")
 
-hc1
+hc_n5
 
 ```
 
@@ -512,13 +611,13 @@ Column {data-width=350}
 ```{r}
 ##Gráfico de idade dos negócios abertos, por vendedor, por idade do negocio
 ##############################################
-p4 <- ggplot(ng_rj_hist_lj_ven_num, aes(vendedor_nome, num_negocios_idades, fill=idade_cat, label = num_negocios_idades)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+n6 <- ggplot(ng_rj_hist_lj_ven_num, aes(vendedor_nome, num_negocios_idades, fill=idade_cat, label = num_negocios_idades)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   ylab("Número de clientes") +
   theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank())+
   scale_fill_manual(values = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"),
   )
-ggplotly(p4) %>%
+ggplotly(n6) %>%
   layout(legend = list(orientation = "h", x = 0, y = -0.25))
 ############################################################################
 ```
@@ -530,7 +629,7 @@ Column {data-width=350}
 ```{r}
 ####Gráfico de pizza
 
-p5 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = idade_cat))+
+n7 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = idade_cat))+
   geom_bar(width = 1, stat="identity") +
   coord_polar("y", start=0)+
   scale_fill_manual(values = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"),)+
@@ -538,28 +637,55 @@ p5 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = idade_c
   geom_text(aes(x = 1, y = cumsum(porcentagem) - porcentagem/2, label = porcent), size=5)
   
 
-p5
+n7
 ```
 
-Funil de vendas
+
+Volume de propostas
 =======================================================================
 
-Column {data-width=350}
+Column {data-width=650}
 -----------------------------------------------------------------------
-### Funil da empresa
+
+### Volume de propostas por vendedor
+
 ```{r}
 
-##Funil de vendas (simples)
+##Gráfico do número propostas, por tipo, por vendedor (total)
+##############################################
+p0 <- ggplot(prop_lj_neg_cont_vend, aes(vendedor_nome, cont_status, fill=factor(proposta_status), label = cont_status)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+  geom_col(position = "stack") +
+  ggtitle("Número de propostas") +
+  theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank()) +
+  scale_fill_manual(values = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"))+
+  coord_flip(expand = F)
+#geom_text(position = position_stack(vjust = +0.5))
 
-p6 <- plot_ly()
-p6 <- p6 %>%
-  add_trace(
-    type="funnelarea",
-    values = ng_rj_hist_lj_ven_funil_cnt$contagem,
-    text = c("Intenção ou prospecção", "Em negociação", "Montagem de cadastro", "Aguardando aprovação", "Financiamento aprovado", "Faturado", "Financiamento não aprovado", "Desistência do cliente", "Perdemos para a concorrência")
-    ,
-    marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"))
-    )
+p0 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+##Se usar ggplot vai pro lugar, se usar o plotly tem q mover como fiz abaixo
+ggplotly(p0) %>%
+  layout(legend = list(orientation = "h", x = 0, y = -0.25))
+##############################################
 
-p6
+
+```
+
+Column {data-width=450}
+-----------------------------------------------------------------------
+
+### Volume de propostas da empresa
+
+```{r}
+##Gráfico do número propostas, por tipo (total)
+##############################################
+p1 <- ggplot(prop_lj_neg_cont, aes(x = proposta_status, y = cont_status, fill=as.factor(proposta_status))) +
+  geom_col(position = "identity") +
+  theme (axis.title = element_blank()) +
+  scale_fill_manual(values = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"))
+
+ggplotly(p1) %>%
+  layout(showlegend = FALSE)
+
+##############################################
+
 ```
