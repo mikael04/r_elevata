@@ -398,7 +398,7 @@ idades = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 mese
 ng_rj_hist_lj_ven_idd <- ng_rj_hist_lj_ven_ab %>%
   select (negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, vendedor_nome, historico_negocio_situacao_data) %>%
   mutate(idade = (as.integer(as.POSIXct(Sys.time()) - as.POSIXct(negocio_data_cadastro)))) %>%
-  mutate(idade_cat = NA) %>%
+  mutate(idade_cat = 0) %>%
   arrange(idade)
 
 
@@ -544,8 +544,7 @@ n8 <- n8 %>%
   add_trace(
     type="funnelarea",
     values = ng_rj_hist_lj_ven_funil_cnt$contagem,
-    text = c("Intenção ou prospecção", "Em negociação", "Montagem de cadastro", "Aguardando aprovação", "Financiamento aprovado", "Faturado", "Financiamento não aprovado", "Desistência do cliente", "Perdemos para a concorrência")
-    ,
+    text = c("Intenção ou prospecção", "Em negociação", "Montagem de cadastro", "Aguardando aprovação", "Financiamento aprovado", "Faturado", "Financiamento não aprovado", "Desistência do cliente", "Perdemos para a concorrência"),
     marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"))
     #marker = list(color = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"))
     )

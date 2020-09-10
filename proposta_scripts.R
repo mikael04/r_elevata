@@ -50,16 +50,20 @@ vendedor <- tbl(con, "vendedor") %>%
 vendedor <- vendedor %>%
   filter(vendedor_ativo == TRUE)
 
-prop_lj_negocio <- left_join(proposta, negocio, by=c("proposta_negocio_id" = "negocio_id")) %>%
+##junção de proposta com negócio
+prop_lj_neg <- left_join(proposta, negocio, by=c("proposta_negocio_id" = "negocio_id")) %>%
   select (proposta_id, proposta_data_cadastro, proposta_status, proposta_negocio_id, negocio_data_cadastro, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_usado)
 
 ##removendo os campos onde um ID de proposta não corresponde a um ID de negócio (erro no banco?)
-prop_lj_negocio <- prop_lj_negocio[!is.na(prop_lj_negocio$negocio_vendedor_id),]
+prop_lj_neg <- prop_lj_neg[!is.na(prop_lj_neg$negocio_vendedor_id),]
 
 rm(proposta, negocio)
 
+prop_lj_neg_2020 <- prop_lj_neg %>%
+  filter(proposta_data_cadastro >= '2020-01-01')
+
 ##Aqui tenho a contagem de status da empresa
-prop_lj_neg_cont <- prop_lj_negocio %>%
+prop_lj_neg_cont <- prop_lj_neg_2020 %>%
   select (proposta_status) %>%
   group_by(proposta_status) %>%
   mutate(cont_status = n()) %>%
@@ -74,11 +78,11 @@ prop_lj_neg_cont$proposta_status[prop_lj_neg_cont$proposta_status == 4] <- "4 - 
 
 
 ##Juntando com vendedor pra obter o nome do vendedor
-prop_lj_neg_lj_vend <- left_join(prop_lj_negocio, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
+prop_lj_neg_lj_vend <- left_join(prop_lj_neg, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
 
 ##Filtrando a empresa
 prop_lj_neg_lj_vend <- prop_lj_neg_lj_vend %>%
-  filter(vendedor_empresa_id == 16)
+  filter(vendedor_empresa_id == 16, proposta_data_cadastro >= '2020-01-01')
 
 #aqui eu estou alterando o joão paulo, que havia problemas com codificação
 prop_lj_neg_lj_vend$vendedor_nome[prop_lj_neg_lj_vend$negocio_vendedor_id == 45] <- "JOÃO PAULO"
@@ -102,11 +106,11 @@ prop_lj_neg_cont_vend$proposta_status[prop_lj_neg_cont_vend$proposta_status == 4
 
 ##Gráfico do número propostas, por tipo, por vendedor (total)
 ##############################################
-p0 <- ggplot(prop_lj_neg_cont_vend, aes(vendedor_nome, cont_status, fill=factor(proposta_status), label = cont_status)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+p0 <- ggplot(prop_lj_neg_cont_vend, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), cont_status, fill=factor(proposta_status), label = cont_status)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
-  ggtitle("Número de propostas") +
-  theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank()) +
-  scale_fill_manual(values = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"))
+  theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_manual(values = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"))+
+  coord_flip(expand = F)
 #geom_text(position = position_stack(vjust = +0.5))
 
 ##Se usar ggplot vai pro lugar, se usar o plotly tem q mover como fiz abaixo
@@ -117,21 +121,47 @@ ggplotly(p0) %>%
 ##Gráfico do número propostas, por tipo (total)
 ##############################################
 p1 <- ggplot(prop_lj_neg_cont, aes(x = proposta_status, y = cont_status, fill=as.factor(proposta_status))) +
-  geom_col(position = "identity") +
-  theme (axis.title = element_blank()) +
+  geom_col(position = "dodge") +
+  theme (axis.text.x = element_text(angle = 20, hjust = 1), axis.title = element_blank()) +
   scale_fill_manual(values = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"))
 
 ggplotly(p1) %>%
-  layout(showlegend = FALSE)
+  layout(showlegend = FALSE) #remove a legenda (factor)
 
-gp1 <- ggplotly(p1)
-gp1 <- style(gp1, line = list(color = 'gold'), hoverinfo = "y", traces = 1)
+#gp1 <- ggplotly(p1)
+#gp1 <- style(gp1, line = list(color = 'gold'), hoverinfo = "y", traces = 1)
 
-gp1
+#gp1
 
 ##############################################
 
+##Propostas por categoria (usado)
+##############################################
+##Aqui tenho a contagem de usados em propostasda empresa
+prop_lj_neg_cont_us <- prop_lj_neg %>%
+  select (negocio_usado) %>%
+  group_by(negocio_usado) %>%
+  mutate(usado = n()) %>%
+  distinct(negocio_usado, .keep_all = TRUE) %>%
+  collect()
 
+total = sum(prop_lj_neg_cont_us$usado)
+
+prop_lj_neg_cont_us <- prop_lj_neg_cont_us %>%
+  mutate(total = total)
+
+prop_lj_neg_cont_us$negocio_usado[prop_lj_neg_cont_us$negocio_usado == TRUE] <- "Proposta com usado"
+prop_lj_neg_cont_us$negocio_usado[prop_lj_neg_cont_us$negocio_usado == FALSE] <- "Proposta sem usado"
+
+###Gráfico de pizza
+##############################################
+p2 <- plot_ly(prop_lj_neg_cont_us, labels = ~negocio_usado, values = ~usado, type = 'pie')
+p2 <- p2 %>%
+  layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+p2
+  
+##############################################  
 
 if (teste == 0) {
   #rm(list=ls())

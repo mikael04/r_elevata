@@ -440,16 +440,20 @@ vendedor <- tbl(con, "vendedor") %>%
 vendedor <- vendedor %>%
   filter(vendedor_ativo == TRUE)
 
-prop_lj_negocio <- left_join(proposta, negocio, by=c("proposta_negocio_id" = "negocio_id")) %>%
+##junção de proposta com negócio
+prop_lj_neg <- left_join(proposta, negocio, by=c("proposta_negocio_id" = "negocio_id")) %>%
   select (proposta_id, proposta_data_cadastro, proposta_status, proposta_negocio_id, negocio_data_cadastro, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_usado)
 
 ##removendo os campos onde um ID de proposta não corresponde a um ID de negócio (erro no banco?)
-prop_lj_negocio <- prop_lj_negocio[!is.na(prop_lj_negocio$negocio_vendedor_id),]
+prop_lj_neg <- prop_lj_neg[!is.na(prop_lj_neg$negocio_vendedor_id),]
 
 rm(proposta, negocio)
 
+prop_lj_neg_2020 <- prop_lj_neg %>%
+  filter(proposta_data_cadastro >= '2020-01-01')
+
 ##Aqui tenho a contagem de status da empresa
-prop_lj_neg_cont <- prop_lj_negocio %>%
+prop_lj_neg_cont <- prop_lj_neg_2020 %>%
   select (proposta_status) %>%
   group_by(proposta_status) %>%
   mutate(cont_status = n()) %>%
@@ -464,11 +468,11 @@ prop_lj_neg_cont$proposta_status[prop_lj_neg_cont$proposta_status == 4] <- "4 - 
 
 
 ##Juntando com vendedor pra obter o nome do vendedor
-prop_lj_neg_lj_vend <- left_join(prop_lj_negocio, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
+prop_lj_neg_lj_vend <- left_join(prop_lj_neg, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
 
 ##Filtrando a empresa
 prop_lj_neg_lj_vend <- prop_lj_neg_lj_vend %>%
-  filter(vendedor_empresa_id == 16)
+  filter(vendedor_empresa_id == 16, proposta_data_cadastro >= '2020-01-01')
 
 #aqui eu estou alterando o joão paulo, que havia problemas com codificação
 prop_lj_neg_lj_vend$vendedor_nome[prop_lj_neg_lj_vend$negocio_vendedor_id == 45] <- "JOÃO PAULO"
@@ -491,6 +495,26 @@ prop_lj_neg_cont_vend$proposta_status[prop_lj_neg_cont_vend$proposta_status == 3
 prop_lj_neg_cont_vend$proposta_status[prop_lj_neg_cont_vend$proposta_status == 4] <- "4 - Finalizado"
 
 ###########################################################################################################
+
+##Propostas por categoria (usado)
+##############################################
+##Aqui tenho a contagem de usados em propostasda empresa
+prop_lj_neg_cont_us <- prop_lj_neg %>%
+  select (negocio_usado) %>%
+  group_by(negocio_usado) %>%
+  mutate(usado = n()) %>%
+  distinct(negocio_usado, .keep_all = TRUE) %>%
+  collect()
+
+total = sum(prop_lj_neg_cont_us$usado)
+
+prop_lj_neg_cont_us <- prop_lj_neg_cont_us %>%
+  mutate(total = total)
+
+prop_lj_neg_cont_us$negocio_usado[prop_lj_neg_cont_us$negocio_usado == TRUE] <- "Proposta com usado"
+prop_lj_neg_cont_us$negocio_usado[prop_lj_neg_cont_us$negocio_usado == FALSE] <- "Proposta sem usado"
+
+##############################################
 
 ```
 
@@ -527,19 +551,17 @@ Column {data-width=650}
 
 ```{r}
 ##Gráfico do número de clientes por vendedor
-n0 <- ggplot(ng_lj_vn_2020, aes(vendedor_nome, num_negocios, fill=factor(negocio_negocio_situacao_id), label = num_negocios)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+n0 <- ggplot(ng_lj_vn_2020, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), num_negocios, fill=factor(negocio_negocio_situacao_id), label = num_negocios)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
-  ylab("Número de clientes") +
-  #ggtitle("Volume de negócios cadastrados por vendedor, ano 2020") +
   theme (axis.text.x = element_text(angle = 25, hjust = 1), axis.title = element_blank())+
-  scale_fill_manual(values = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"),
-  )#+
+  scale_fill_manual(values = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"))+
+  coord_flip(expand = F)#+
 #geom_text(position = position_stack(vjust = +0.5))
 
 ##Se usar ggplot vai pro lugar, se usar o plotly tem q mover como fiz abaixo
 #p0 <- p0+theme (legend.position = "bottom") -> 
 ggplotly(n0) %>%
-  layout(legend = list(orientation = "h", x = 0, y = -0.20), textfont = list(size = 4))
+  layout(legend = list(orientation = "h", x = -0.4, y = -0.15))
 
 
 ```
@@ -550,11 +572,8 @@ Column {data-width=350}
 ### Volume de negócios fechados em 2020
 
 ```{r}
-n3 <- ggplot(ng_f_cn_d_vn, aes(vendedor_nome, num_negocios, fill=factor(negocio_negocio_situacao_id), label = num_negocios)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+n3 <- ggplot(ng_f_cn_d_vn, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), num_negocios, fill=factor(negocio_negocio_situacao_id), label = num_negocios)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
-  xlab("Vendedores") +
-  ylab("Número de clientes") +
-  ggtitle("Volume de negócios fechados em 2020") +
   theme (axis.text.x = element_blank(), axis.title = element_blank(), axis.title.y = element_blank())+
   scale_fill_manual(name = "situação do contrato",
                     values = c("#32CD32", "orange", "#DE0D26"),
@@ -563,7 +582,7 @@ n3 <- ggplot(ng_f_cn_d_vn, aes(vendedor_nome, num_negocios, fill=factor(negocio_
   geom_text(position = position_stack(vjust = +0.5))
 
 ggplotly(n3) %>%
-  layout(legend = list( orientation = "h", x = 0, y = -0.05))
+  layout(legend = list(orientation = "h", x = 0, y = -0.05))
 
 ```
 
@@ -572,7 +591,7 @@ Negócios por categoria
 
 Column {data-width=350}
 -----------------------------------------------------------------------
-### Faturamento por tipos de máquina em negociação, por categoria, em 2020
+###  Valor Financeiro de Negocios Cadastrados, por categoria de Máquinas em 2020
 
 ```{r}
 ##Aqui são mostradas todas as máquinas negociadas em 2020
@@ -588,7 +607,7 @@ hc_n4
 
 Column {data-width=350}
 -----------------------------------------------------------------------
-### Faturamento por tipos de máquina faturadas, por categoria, em 2020
+### Valor Financeiro de Negocios Faturados, por categoria de Máquinas em 2020
 
 ```{r}
 ##Aqui são mostradas todasas máquinas faturadas em 2020
@@ -605,20 +624,19 @@ hc_n5
 Idade dos negócios
 =======================================================================
 
-Column {data-width=350}
+Column {data-width=450}
 -----------------------------------------------------------------------
 ### Idade dos negócios abertos, por vendedor
 ```{r}
 ##Gráfico de idade dos negócios abertos, por vendedor, por idade do negocio
 ##############################################
-n6 <- ggplot(ng_rj_hist_lj_ven_num, aes(vendedor_nome, num_negocios_idades, fill=idade_cat, label = num_negocios_idades)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+n6 <- ggplot(ng_rj_hist_lj_ven_num, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), num_negocios_idades, fill=idade_cat, label = num_negocios_idades)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
-  ylab("Número de clientes") +
   theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank())+
-  scale_fill_manual(values = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"),
-  )
+  scale_fill_manual(values = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"))+
+  coord_flip(expand = F)
 ggplotly(n6) %>%
-  layout(legend = list(orientation = "h", x = 0, y = -0.25))
+  layout(legend = list(orientation = "h", x = -0.3, y = -0.08))
 ############################################################################
 ```
 
@@ -629,7 +647,7 @@ Column {data-width=350}
 ```{r}
 ####Gráfico de pizza
 
-n7 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = idade_cat))+
+n7 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = factor(idade_cat)))+
   geom_bar(width = 1, stat="identity") +
   coord_polar("y", start=0)+
   scale_fill_manual(values = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"),)+
@@ -653,18 +671,15 @@ Column {data-width=650}
 
 ##Gráfico do número propostas, por tipo, por vendedor (total)
 ##############################################
-p0 <- ggplot(prop_lj_neg_cont_vend, aes(vendedor_nome, cont_status, fill=factor(proposta_status), label = cont_status)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+p0 <- ggplot(prop_lj_neg_cont_vend, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), cont_status, fill=factor(proposta_status), label = cont_status)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
-  ggtitle("Número de propostas") +
   theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank()) +
   scale_fill_manual(values = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"))+
   coord_flip(expand = F)
-#geom_text(position = position_stack(vjust = +0.5))
 
-p0 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 ##Se usar ggplot vai pro lugar, se usar o plotly tem q mover como fiz abaixo
 ggplotly(p0) %>%
-  layout(legend = list(orientation = "h", x = 0, y = -0.25))
+  layout(legend = list(orientation = "h", x = -0.3, y = -0.15))
 ##############################################
 
 
@@ -680,12 +695,28 @@ Column {data-width=450}
 ##############################################
 p1 <- ggplot(prop_lj_neg_cont, aes(x = proposta_status, y = cont_status, fill=as.factor(proposta_status))) +
   geom_col(position = "identity") +
-  theme (axis.title = element_blank()) +
+  theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank()) +
   scale_fill_manual(values = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"))
 
 ggplotly(p1) %>%
   layout(showlegend = FALSE)
 
 ##############################################
+
+```
+
+
+### Proporção de usados nas propostas
+
+```{r}
+###Gráfico de pizza proporção de usados
+##############################################
+p2 <- plot_ly(prop_lj_neg_cont_us, labels = ~negocio_usado, values = ~usado, type = 'pie')
+p2 <- p2 %>%
+  layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+p2
+  
+##############################################  
 
 ```
