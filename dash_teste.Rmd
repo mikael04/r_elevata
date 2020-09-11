@@ -34,6 +34,9 @@ library(waffle)
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = 1
 
+##Variável "Global"
+empresa = 16 #Super
+
 con <- DBI::dbConnect(odbc::odbc(), 
                       Driver = "SQL Server", 
                       Server = "localhost\\SQLEXPRESS", 
@@ -58,53 +61,60 @@ vendedor_todos <- tbl(con, "vendedor") %>%
 negocio_lj_vendedor <- left_join(negocio, vendedor_todos, by=c("negocio_vendedor_id" = "vendedor_id"))
 
 
+##corte inicial, selecionando apenas uma empresa, id 16 = Super, vendedor_ativo se o vendedor está ativo (true ou false), data
+##Aqui vejo só negócios cadastrados em 2020, preciso ver negócios faturados em 2020
+
+corte_1 <- negocio_lj_vendedor %>%
+  filter(vendedor_empresa_id == empresa, vendedor_ativo == TRUE, negocio_data_cadastro >= as.Date("2020-01-01"), negocio_negocio_situacao_id != 0) %>%
+  select(negocio_id, negocio_negocio_situacao_id, negocio_vendedor_id, vendedor_ativo, vendedor_nome, negocio_data_cadastro)
+
 ##removendo elementos não mais usados
 if (teste == 0) {
   rm(negocio, vendedor_todos) #vou precisar dele pro funil mais pra baixo negocio_rj_historico_lj_vendedor_2020)
 }
 
-##corte inicial, selecionando apenas uma empresa, id 16 = Super, vendedor_ativo se o vendedor está ativo (true ou false), data
-##Aqui vejo só negócios cadastrados em 2020, preciso ver negócios faturados em 2020
-
-corte_1 <- negocio_lj_vendedor %>%
-  filter(vendedor_empresa_id =="16", vendedor_ativo == TRUE, negocio_data_cadastro >= as.Date("2020-01-01"), negocio_negocio_situacao_id != 0) %>%
-  select(negocio_id, negocio_negocio_situacao_id, negocio_vendedor_id, vendedor_ativo, vendedor_nome, negocio_data_cadastro)
-
-
-##agrupamento de negocios por vendedor
+##agrupamento de negocios por vendedor, contando número de negócios por status e por vendedor
 ##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
-ng_lj_vn_2020 <- corte_1 %>%
+ng_lj_vn_2020_n <- corte_1 %>%
   select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, vendedor_nome, negocio_vendedor_id) %>%
   group_by(negocio_negocio_situacao_id, negocio_vendedor_id) %>%
   mutate(num_negocios = n()) %>%
   distinct (negocio_vendedor_id, .keep_all = TRUE) %>%
   collect ()
 
+##agrupamento de negocios por vendedor, contando número de negócios por status e por vendedor
+##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
+ng_lj_vn_2020_fat <- corte_1 %>%
+  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, vendedor_nome, negocio_vendedor_id) %>%
+  group_by(negocio_negocio_situacao_id, negocio_vendedor_id) %>%
+  mutate(num_negocios = n()) %>%
+  distinct (negocio_vendedor_id, .keep_all = TRUE) %>%
+  collect ()
 
 #removendo elementos não mais usados
 rm(corte_1)
 
 #aqui eu estou alterando o joão paulo, que havia problemas com codificação
-ng_lj_vn_2020$vendedor_nome[ng_lj_vn_2020$negocio_vendedor_id == 45] <- "JOÃO PAULO"
+ng_lj_vn_2020_n$vendedor_nome[ng_lj_vn_2020_n$negocio_vendedor_id == 45] <- "JOÃO PAULO"
 
 ##remover status "desconsiderar (erro cadastro)"
-ng_lj_vn_2020 <- ng_lj_vn_2020[!(ng_lj_vn_2020$negocio_negocio_situacao_id==9),]
+ng_lj_vn_2020_n <- ng_lj_vn_2020_n[!(ng_lj_vn_2020_n$negocio_negocio_situacao_id==9),]
 
 ##aqui ele transforma os inteiros em chars pra fazermos a alteração
-ng_lj_vn_2020$negocio_negocio_situacao_id <- as.character(ng_lj_vn_2020$negocio_negocio_situacao_id)
+ng_lj_vn_2020_n$negocio_negocio_situacao_id <- as.character(ng_lj_vn_2020_n$negocio_negocio_situacao_id)
 
 
 status = c("1 - em negociacao", "2 - montagem de cadastro", "3 - aguardando aprovacao", "4 - financiamento aprovado", "5 - faturado", "6 - financiamento nao aprovado", "7 - desistencia do cliente", "8 - perdemos para concorrencia", "0 - intencao ou prospeccao")
 ##aqui ele substitui linha a linha cada situação pelo seu respectivo em string
-ng_lj_vn_2020$negocio_negocio_situacao_id[ng_lj_vn_2020$negocio_negocio_situacao_id == 1] <- status[1]
-ng_lj_vn_2020$negocio_negocio_situacao_id[ng_lj_vn_2020$negocio_negocio_situacao_id == 2] <- status[2]
-ng_lj_vn_2020$negocio_negocio_situacao_id[ng_lj_vn_2020$negocio_negocio_situacao_id == 3] <- status[3]
-ng_lj_vn_2020$negocio_negocio_situacao_id[ng_lj_vn_2020$negocio_negocio_situacao_id == 4] <- status[5]
-ng_lj_vn_2020$negocio_negocio_situacao_id[ng_lj_vn_2020$negocio_negocio_situacao_id == 5] <- status[6]
-ng_lj_vn_2020$negocio_negocio_situacao_id[ng_lj_vn_2020$negocio_negocio_situacao_id == 6] <- status[7]
-ng_lj_vn_2020$negocio_negocio_situacao_id[ng_lj_vn_2020$negocio_negocio_situacao_id == 7] <- status[8]
-ng_lj_vn_2020$negocio_negocio_situacao_id[ng_lj_vn_2020$negocio_negocio_situacao_id == 8] <- status[4]
-ng_lj_vn_2020$negocio_negocio_situacao_id[ng_lj_vn_2020$negocio_negocio_situacao_id == 10] <- status[9]
+ng_lj_vn_2020_n$negocio_negocio_situacao_id[ng_lj_vn_2020_n$negocio_negocio_situacao_id == 1] <- status[1]
+ng_lj_vn_2020_n$negocio_negocio_situacao_id[ng_lj_vn_2020_n$negocio_negocio_situacao_id == 2] <- status[2]
+ng_lj_vn_2020_n$negocio_negocio_situacao_id[ng_lj_vn_2020_n$negocio_negocio_situacao_id == 3] <- status[3]
+ng_lj_vn_2020_n$negocio_negocio_situacao_id[ng_lj_vn_2020_n$negocio_negocio_situacao_id == 4] <- status[5]
+ng_lj_vn_2020_n$negocio_negocio_situacao_id[ng_lj_vn_2020_n$negocio_negocio_situacao_id == 5] <- status[6]
+ng_lj_vn_2020_n$negocio_negocio_situacao_id[ng_lj_vn_2020_n$negocio_negocio_situacao_id == 6] <- status[7]
+ng_lj_vn_2020_n$negocio_negocio_situacao_id[ng_lj_vn_2020_n$negocio_negocio_situacao_id == 7] <- status[8]
+ng_lj_vn_2020_n$negocio_negocio_situacao_id[ng_lj_vn_2020_n$negocio_negocio_situacao_id == 8] <- status[4]
+ng_lj_vn_2020_n$negocio_negocio_situacao_id[ng_lj_vn_2020_n$negocio_negocio_situacao_id == 10] <- status[9]
 
 ##factor no "fill" cria os léveis da variável
 
@@ -127,7 +137,7 @@ ng_rj_hist_lj_ven <- negocio_rj_historico_lj_vendedor_2020[!duplicated(negocio_r
 
 ##tabela vem dessa: ng_rj_hist_lj_ven, já foi filtrada para histórico 2020, filtrando empresa_id, vendedor_ativo
 ng_rj_hist_lj_ven <- ng_rj_hist_lj_ven %>%
-  filter(vendedor_empresa_id =="16", vendedor_ativo == TRUE) %>%
+  filter(vendedor_empresa_id ==empresa, vendedor_ativo == TRUE) %>%
   select(negocio_id, negocio_negocio_situacao_id, negocio_vendedor_id, vendedor_ativo, vendedor_nome, negocio_data_cadastro, historico_negocio_situacao_data)
 
 ##filtrando dois negócios que tem seu status 0 (possivel erro)
@@ -288,7 +298,7 @@ chart_ng_top_ag_fat <- ng_top_ag_fat
 ##################################################################
 ##Filtrar vendedores ativos e empresa
 ng_rj_hist_lj_ven <- negocio_rj_historico_lj_vendedor_total %>%
-  filter (vendedor_ativo == TRUE, vendedor_empresa_id == 16)
+  filter (vendedor_ativo == TRUE, vendedor_empresa_id == empresa)
 
 ##filtrando dois negócios que tem seu status 0 (possivel erro)
 ng_rj_hist_lj_ven <- ng_rj_hist_lj_ven %>%
@@ -472,7 +482,7 @@ prop_lj_neg_lj_vend <- left_join(prop_lj_neg, vendedor, by=c("negocio_vendedor_i
 
 ##Filtrando a empresa
 prop_lj_neg_lj_vend <- prop_lj_neg_lj_vend %>%
-  filter(vendedor_empresa_id == 16, proposta_data_cadastro >= '2020-01-01')
+  filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= '2020-01-01')
 
 #aqui eu estou alterando o joão paulo, que havia problemas com codificação
 prop_lj_neg_lj_vend$vendedor_nome[prop_lj_neg_lj_vend$negocio_vendedor_id == 45] <- "JOÃO PAULO"
@@ -550,11 +560,15 @@ Column {data-width=650}
 ### Volume de negócios cadastrados por vendedor, ano 2020 (Status atual)
 
 ```{r}
+
 ##Gráfico do número de clientes por vendedor
-n0 <- ggplot(ng_lj_vn_2020, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), num_negocios, fill=factor(negocio_negocio_situacao_id), label = num_negocios)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+##############################################
+n0 <- ggplot(ng_lj_vn_2020_n, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), num_negocios, fill=factor(negocio_negocio_situacao_id), label = num_negocios)) + #léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
-  theme (axis.text.x = element_text(angle = 25, hjust = 1), axis.title = element_blank())+
-  scale_fill_manual(values = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"))+
+  #ggtitle("Volume de negócios cadastrados por vendedor, ano 2020") +
+  theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank())+
+  scale_fill_manual(values = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"),
+  )+
   coord_flip(expand = F)#+
 #geom_text(position = position_stack(vjust = +0.5))
 
@@ -688,7 +702,7 @@ ggplotly(p0) %>%
 Column {data-width=450}
 -----------------------------------------------------------------------
 
-### Volume de propostas da empresa
+### Volume de propostas da empresa em 2020
 
 ```{r}
 ##Gráfico do número propostas, por tipo (total)
@@ -706,7 +720,7 @@ ggplotly(p1) %>%
 ```
 
 
-### Proporção de usados nas propostas
+### Proporção de usados nas propostas (total)
 
 ```{r}
 ###Gráfico de pizza proporção de usados
