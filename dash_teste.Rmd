@@ -83,7 +83,7 @@ if (teste == 0) {
   rm(negocio, vendedor_todos) #vou precisar dele pro funil mais pra baixo negocio_rj_historico_lj_vendedor_2020)
 }
 
-##agrupamento de negocios por vendedor, contando número de negócios por status e por vendedor
+##agrupamento de negocios por vendedor, contando faturamento por status e por vendedor
 ##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
 ng_lj_vn_in_np_2020_fat <- corte_1 %>%
   select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, vendedor_nome, negocio_vendedor_id, np_valor) %>%
@@ -139,56 +139,64 @@ historico_negocio_situacao_2020 <- historico_negocio_situacao %>%
   filter(historico_negocio_situacao_data >= as.Date("2020-01-01 00:00:00"))
 
 ##Right join de negocios, vendedores com histórico pra ter apenas a última
-negocio_rj_historico_lj_vendedor_2020 <- right_join(negocio_lj_vendedor, historico_negocio_situacao_2020, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
-negocio_rj_historico_lj_vendedor_total <- right_join(negocio_lj_vendedor, historico_negocio_situacao, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
+negocio_rj_historico_lj_vendedor_2020 <- inner_join(negocio_lj_vendedor, historico_negocio_situacao_2020, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
+negocio_rj_historico_lj_vendedor_total <- inner_join(negocio_lj_vendedor, historico_negocio_situacao, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
 
 ##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais antigas, ficar só com a última atualização no negócio
 negocio_rj_historico_lj_vendedor_2020 <- negocio_rj_historico_lj_vendedor_2020[order(-negocio_rj_historico_lj_vendedor_2020$historico_negocio_situacao_situacao_id, negocio_rj_historico_lj_vendedor_2020$negocio_id),]
-ng_rj_hist_lj_ven <- negocio_rj_historico_lj_vendedor_2020[!duplicated(negocio_rj_historico_lj_vendedor_2020$negocio_id),]
+ng_ij_hist_ij_ven <- negocio_rj_historico_lj_vendedor_2020[!duplicated(negocio_rj_historico_lj_vendedor_2020$negocio_id),]
 
 
-##tabela vem dessa: ng_rj_hist_lj_ven, já foi filtrada para histórico 2020, filtrando empresa_id, vendedor_ativo
-ng_rj_hist_lj_ven <- ng_rj_hist_lj_ven %>%
+##tabela vem dessa: ng_ij_hist_ij_ven, já foi filtrada para histórico 2020, filtrando empresa_id, vendedor_ativo
+ng_ij_hist_ij_ven <- ng_ij_hist_ij_ven %>%
   filter(vendedor_empresa_id ==empresa, vendedor_ativo == TRUE) %>%
   select(negocio_id, negocio_negocio_situacao_id, negocio_vendedor_id, vendedor_ativo, vendedor_nome, negocio_data_cadastro, historico_negocio_situacao_data)
 
 ##filtrando dois negócios que tem seu status 0 (possivel erro)
-ng_rj_hist_lj_ven <- ng_rj_hist_lj_ven %>%
+ng_ij_hist_ij_ven <- ng_ij_hist_ij_ven %>%
   filter(negocio_negocio_situacao_id != 0)
 
 ####Aqui é pra testar um top10 de uma empresa específica
-##ng_rj_hist_lj_ven_top10 <-ng_rj_hist_lj_ven
+##ng_rj_hist_lj_ven_top10 <-ng_ij_hist_ij_ven
 
 #aqui eu estou alterando o joão paulo (da super empresa_id 16), que havia problemas com codificação
-ng_rj_hist_lj_ven$vendedor_nome[ng_rj_hist_lj_ven$negocio_vendedor_id == 45] <- "JOÃO PAULO"
+ng_ij_hist_ij_ven$vendedor_nome[ng_ij_hist_ij_ven$negocio_vendedor_id == 45] <- "JOÃO PAULO"
+
+ng_ij_hist_ij_ven_ij_np_2020 <- inner_join(ng_ij_hist_ij_ven, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
 
 
-#rm(ng_cn_d_vn, ng_rj_hist_lj_ven)
+#rm(ng_cn_d_vn, ng_ij_hist_ij_ven)
 #########################################################
 
 ###Começar a junção dos gráficos
 ##aqui caso o filtro seja mais de um, usamos o %in% ff
 ###Cuidar que status 4 e 5 estão trocados
 ## 5 - faturado, status[4], 7 - desistencia do cliente, status[6], 8 - perdemos para a concorrencia, status[8]
-
-
-ng_rj_hist_lj_ven_in_np <- inner_join(ng_rj_hist_lj_ven, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
-
 ff <- c(4, 6, 7)
 #ggplotly(p1)
 
-ng_f_cn_d_vn <-  ng_rj_hist_lj_ven_in_np%>%
+ng_ij_hist_ij_ven_ij_np_fec <-  ng_ij_hist_ij_ven_ij_np_2020%>%
   filter(negocio_negocio_situacao_id %in% ff)
 
-ng_f_cn_d_vn$negocio_negocio_situacao_id[ng_f_cn_d_vn$negocio_negocio_situacao_id == 4] <- status[5]
-ng_f_cn_d_vn$negocio_negocio_situacao_id[ng_f_cn_d_vn$negocio_negocio_situacao_id == 6] <- status[7]
-ng_f_cn_d_vn$negocio_negocio_situacao_id[ng_f_cn_d_vn$negocio_negocio_situacao_id == 7] <- status[8]
+ng_ij_hist_ij_ven_ij_np_fec <- ng_ij_hist_ij_ven_ij_np_fec %>%
+  mutate(Negocio_Status = negocio_negocio_situacao_id)
+
+
+status_4_6_7 = c("5 - faturado", "7 - desistencia do cliente", "8 - perdemos para concorrencia")
+##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
+ng_ij_hist_ij_ven_ij_np_fec$Negocio_Status <- with(ng_ij_hist_ij_ven_ij_np_fec, cut(negocio_negocio_situacao_id, breaks = c(0,4,6,7),
+                                                                            labels = status_4_6_7))
+
+
+#ng_ij_hist_ij_ven_ij_np_fec$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_ij_np_fec$negocio_negocio_situacao_id == 4] <- status[5]
+#ng_ij_hist_ij_ven_ij_np_fec$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_ij_np_fec$negocio_negocio_situacao_id == 6] <- status[7]
+#ng_ij_hist_ij_ven_ij_np_fec$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_ij_np_fec$negocio_negocio_situacao_id == 7] <- status[8]
 
 ##agrupamento de negocios por vendedor, contando número de negócios por status e por vendedor
 ##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
-ng_lj_vn_in_np_2020_fech_fat <- ng_f_cn_d_vn %>%
-  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, vendedor_nome, negocio_vendedor_id, np_valor) %>%
-  group_by(negocio_negocio_situacao_id, negocio_vendedor_id) %>%
+ng_lj_vn_in_np_2020_fech_fat <- ng_ij_hist_ij_ven_ij_np_fec %>%
+  select(negocio_id, negocio_vendedor_id, Negocio_Status, vendedor_nome, negocio_vendedor_id, np_valor) %>%
+  group_by(Negocio_Status, negocio_vendedor_id) %>%
   mutate(total_fat = sum(np_valor)) %>%
   distinct (negocio_vendedor_id, .keep_all = TRUE) %>%
   collect ()
@@ -220,7 +228,7 @@ if (teste == 0) {
 
 ##tabela usada pra termos negócios, data de atualização (hist), nome do vendedor (vend) e produtos (negocio produto e produto)
 ##Aqui temos já com alguns cortes (np_ativo)
-ng_rj_hist_lj_ven_lj_ngp_lj_pd <- left_join(ng_rj_hist_lj_ven, ngp_lj_pd, by = c("negocio_id" = "np_negocio_id"))
+ng_rj_hist_lj_ven_lj_ngp_lj_pd <- left_join(ng_ij_hist_ij_ven, ngp_lj_pd, by = c("negocio_id" = "np_negocio_id"))
 ## Removendo os inativos (np_ativo == 0)
 
 
@@ -315,23 +323,23 @@ chart_ng_top_ag_fat <- ng_top_ag_fat
 ### Idade dos negócios
 ##################################################################
 ##Filtrar vendedores ativos e empresa
-ng_rj_hist_lj_ven <- negocio_rj_historico_lj_vendedor_total %>%
+ng_ij_hist_ij_ven <- negocio_rj_historico_lj_vendedor_total %>%
   filter (vendedor_ativo == TRUE, vendedor_empresa_id == empresa)
 
 ##filtrando dois negócios que tem seu status 0 (possivel erro)
-ng_rj_hist_lj_ven <- ng_rj_hist_lj_ven %>%
+ng_ij_hist_ij_ven <- ng_ij_hist_ij_ven %>%
   filter(negocio_negocio_situacao_id != 0)
 
 ## Vou ordenar por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais novas, ficar só com a primeira atualização após mudança de status
-ng_rj_hist_lj_ven <- ng_rj_hist_lj_ven[order(ng_rj_hist_lj_ven$historico_negocio_situacao_situacao_id, ng_rj_hist_lj_ven$negocio_id), ]
+ng_ij_hist_ij_ven <- ng_ij_hist_ij_ven[order(ng_ij_hist_ij_ven$historico_negocio_situacao_situacao_id, ng_ij_hist_ij_ven$negocio_id), ]
 
 ##Aqui estou removendo duplicatas (de outra forma), que removem apenas quando o histórico_situacao e negocio_id se repetem
-ng_rj_hist_lj_ven <- subset(ng_rj_hist_lj_ven, !duplicated(subset(ng_rj_hist_lj_ven, select=c(historico_negocio_situacao_situacao_id, negocio_id))))
+ng_ij_hist_ij_ven <- subset(ng_ij_hist_ij_ven, !duplicated(subset(ng_ij_hist_ij_ven, select=c(historico_negocio_situacao_situacao_id, negocio_id))))
 
 ##filtrando apenas negócios não fechados negocio_situacao_id != 4,5,6,7,9
 ff = c(4,5,6,7,9)
 
-ng_rj_hist_lj_ven_ab <- ng_rj_hist_lj_ven %>%
+ng_rj_hist_lj_ven_ab <- ng_ij_hist_ij_ven %>%
   filter(!negocio_negocio_situacao_id %in% ff)
 
 status = c("1 - em negociacao", "2 - montagem de cadastro", "3 - aguardando aprovacao", "4 - financiamento aprovado", "5 - faturado", "6 - financiamento nao aprovado", "7 - desistencia do cliente", "8 - perdemos para concorrencia", "0 - intencao ou prospeccao")
@@ -356,7 +364,7 @@ ng_rj_hist_lj_ven_idd <- ng_rj_hist_lj_ven_ab %>%
   arrange(idade)
 
 
-#ng_rj_hist_lj_ven$idade <- as.numeric(ng_rj_hist_lj_ven$idade)
+#ng_ij_hist_ij_ven$idade <- as.numeric(ng_ij_hist_ij_ven$idade)
 ng_rj_hist_lj_ven_idd <- ng_rj_hist_lj_ven_idd %>%
   select (negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, vendedor_nome, historico_negocio_situacao_data, idade) %>%
   mutate(idade = as.integer(idade)) %>%
@@ -414,38 +422,105 @@ ng_rj_hist_lj_emp_num$idade_cat = factor(ng_rj_hist_lj_emp_num$idade_cat, levels
 ### Funil de vendas (vendas abertas)
 ########################################################################
 ##Status aberto
-ff = c(1,2,3,8,10)
+st_a = c(1,2,3,8,10)
 ##vou tentar remover apenas os que tem status fechado (4 - faturado, 5 - financiamento não aprovado, 6 - desistência do cliente, 7 - perdemos para a concorrência)
 ##Tempo: Total
 ##status abertos apenas
-ng_rj_hist_lj_ven_funil <- neg_lj_ven_in_np %>%
-  filter(negocio_negocio_situacao_id %in% ff)
-  
+ng_rj_hist_lj_ven_funil_ab <- neg_lj_ven_in_np %>%
+  filter(negocio_negocio_situacao_id %in% st_a)
+
+##filtrar apenas por empresa
+ng_rj_hist_lj_ven_funil_ab <- ng_rj_hist_lj_ven_funil_ab %>%
+  filter(vendedor_empresa_id == empresa, vendedor_ativo == T)
 
 status = c("1 - em negociacao", "2 - montagem de cadastro", "3 - aguardando aprovacao", "4 - financiamento aprovado", "0 - intencao ou prospeccao")
+#Criando nova coluna para não perder o id status (ao mudar pra string)
+ng_rj_hist_lj_ven_funil_ab <- ng_rj_hist_lj_ven_funil_ab %>%
+  mutate(Negocio_Status = negocio_negocio_situacao_id)
 
 ##aqui ele substitui linha a linha cada situação pelo seu respectivo em string
-ng_rj_hist_lj_ven_funil$negocio_negocio_situacao_id[ng_rj_hist_lj_ven_funil$negocio_negocio_situacao_id == 1] <- status[1]
-ng_rj_hist_lj_ven_funil$negocio_negocio_situacao_id[ng_rj_hist_lj_ven_funil$negocio_negocio_situacao_id == 2] <- status[2]
-ng_rj_hist_lj_ven_funil$negocio_negocio_situacao_id[ng_rj_hist_lj_ven_funil$negocio_negocio_situacao_id == 3] <- status[3]
-ng_rj_hist_lj_ven_funil$negocio_negocio_situacao_id[ng_rj_hist_lj_ven_funil$negocio_negocio_situacao_id == 8] <- status[4]
-ng_rj_hist_lj_ven_funil$negocio_negocio_situacao_id[ng_rj_hist_lj_ven_funil$negocio_negocio_situacao_id == 10] <- status[5]
+ng_rj_hist_lj_ven_funil_ab$Negocio_Status <- with(ng_rj_hist_lj_ven_funil_ab, cut(negocio_negocio_situacao_id, breaks = c(0,1,2,3,8,10),
+                                                                                         labels = status))
 
 ##Agora será agrupado por pedidos em aberto e faturamento total
-ng_rj_hist_lj_ven_funil_fat <- ng_rj_hist_lj_ven_funil %>%
-  select (negocio_negocio_situacao_id, np_valor) %>%
-  group_by(negocio_negocio_situacao_id) %>%
+ng_rj_hist_lj_ven_funil_fat <- ng_rj_hist_lj_ven_funil_ab %>%
+  select (Negocio_Status, np_valor) %>%
+  group_by(Negocio_Status) %>%
   mutate(Total_Faturado = sum(np_valor)) %>%
-  arrange(negocio_negocio_situacao_id) %>%
-  distinct(negocio_negocio_situacao_id, .keep_all = TRUE) %>%
+  arrange(Negocio_Status) %>%
+  distinct(Negocio_Status, .keep_all = TRUE) %>%
   collect()
 
+##Coluna nova criada para facilitar compreensão (diminui as casas para exibir em milhões)
 ng_rj_hist_lj_ven_funil_fat <- ng_rj_hist_lj_ven_funil_fat %>%
-  select (negocio_negocio_situacao_id, Total_Faturado) %>%
+  select (Negocio_Status, Total_Faturado) %>%
   mutate(tot_fat_m = as.integer(Total_Faturado/1000000)) %>%
   collect()
 
 #############################################################
+
+##Fechados do mês
+##Status fechado
+st_f = c(4,5,6,7)
+status_f = c("5 - faturado", "6 - financiamento nao aprovado", "7 - desistencia do cliente", "8 - perdemos para concorrencia")
+
+##vou tentar remover apenas os que tem status fechado (4 - faturado, 5 - financiamento não aprovado, 6 - desistência do cliente, 7 - perdemos para a concorrência)
+##Tempo: Total
+##status abertos 
+#ng_rj já havia feito o corte apenas em fechados após 2020
+ng_rj_hist_lj_ven_fec_2020 <- ng_ij_hist_ij_ven_ij_np_2020 %>%
+  filter(negocio_negocio_situacao_id %in% st_f)
+
+##Funil já filtrou (na verdade ng_ij_hist_ij_ven já filtrou) vendedor ativo e empresa = 16
+
+#Criando nova coluna para não perder o id status (ao mudar pra string)
+ng_rj_hist_lj_ven_fec_2020 <- ng_rj_hist_lj_ven_fec_2020 %>%
+  mutate(Negocio_Status = negocio_negocio_situacao_id)
+
+##aqui ele substitui linha a linha cada situação pelo seu respectivo em string
+ng_rj_hist_lj_ven_fec_2020$Negocio_Status <- with(ng_rj_hist_lj_ven_fec_2020, cut(negocio_negocio_situacao_id, breaks = c(0,4,5,6,7),
+                                                                                  labels = status_f))
+
+##Agora será agrupado por pedidos em aberto e faturamento total
+ng_rj_hist_lj_ven_funil_fat_fec_2020 <- ng_rj_hist_lj_ven_fec_2020 %>%
+  select (Negocio_Status, np_valor) %>%
+  group_by(Negocio_Status) %>%
+  mutate(Total_Faturado = sum(np_valor)) %>%
+  arrange(Negocio_Status) %>%
+  distinct(Negocio_Status, .keep_all = TRUE) %>%
+  collect()
+
+##Coluna nova criada para facilitar compreensão (diminui as casas para exibir em milhões)
+ng_rj_hist_lj_ven_funil_fat_fec_2020  <- ng_rj_hist_lj_ven_funil_fat_fec_2020  %>%
+  select (Negocio_Status, Total_Faturado) %>%
+  mutate(tot_fat_m = as.integer(Total_Faturado/1000000)) %>%
+  collect()
+
+
+#Criando nova tabela com dados apenas do mês
+ng_rj_hist_lj_ven_funil_fat_fec_2020_mes <- ng_rj_hist_lj_ven_fec_2020 %>%
+  filter(historico_negocio_situacao_data >= '2020-08-01') %>%
+  mutate(Negocio_Status = negocio_negocio_situacao_id)
+
+##aqui ele substitui linha a linha cada situação pelo seu respectivo em string
+ng_rj_hist_lj_ven_funil_fat_fec_2020_mes$Negocio_Status <- with(ng_rj_hist_lj_ven_funil_fat_fec_2020_mes, cut(negocio_negocio_situacao_id, breaks = c(0,4,5,6,7),
+                                                                                  labels = status_f))
+
+##Agora será agrupado por pedidos em aberto e faturamento total
+ng_rj_hist_lj_ven_funil_fat_fec_2020_mes <- ng_rj_hist_lj_ven_funil_fat_fec_2020_mes %>%
+  select (Negocio_Status, np_valor) %>%
+  group_by(Negocio_Status) %>%
+  mutate(Total_Faturado = sum(np_valor)) %>%
+  arrange(Negocio_Status) %>%
+  distinct(Negocio_Status, .keep_all = TRUE) %>%
+  collect()
+
+##Coluna nova criada para facilitar compreensão (diminui as casas para exibir em milhões)
+ng_rj_hist_lj_ven_funil_fat_fec_2020_mes  <- ng_rj_hist_lj_ven_funil_fat_fec_2020_mes  %>%
+  select (Negocio_Status, Total_Faturado) %>%
+  mutate(tot_fat_m = as.integer(Total_Faturado/1000000)) %>%
+  collect()
+
 
 ###Começando scripts proposta_scripts
 ###########################################################################################################
@@ -594,11 +669,7 @@ n0 <- ggplot(ng_lj_vn_in_np_2020_fat, aes(vendedor_nome, total_fat, fill=factor(
   scale_fill_manual(values = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"))+
   scale_y_continuous(labels = scales::label_number())+
   coord_flip(expand = F)
-#geom_text(position = position_stack(vjust = +0.5))
 
-n0
-##Se usar ggplot vai pro lugar, se usar o plotly tem q mover como fiz abaixo
-#p0 <- p0+theme (legend.position = "bottom") -> 
 ggplotly(n0, tooltip=c("Nome", "total_fat")) %>%
   layout(legend = list(orientation = "h", x = -0.1, y = -0.15))
 
@@ -611,7 +682,8 @@ Column {data-width=350}
 ### Faturamento de negócios fechados em 2020
 
 ```{r}
-n3 <- ggplot(ng_lj_vn_in_np_2020_fech_fat, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), total_fat, fill=factor(negocio_negocio_situacao_id), label = total_fat)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+### Faturamento de negócios fechados em 2020
+n3 <- ggplot(ng_lj_vn_in_np_2020_fech_fat, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), total_fat, fill=factor(Negocio_Status), label = total_fat)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   theme (axis.title = element_blank(), axis.text.x = element_blank())+
   scale_fill_manual(values = c("#32CD32", "orange", "#DE0D26"),)+
