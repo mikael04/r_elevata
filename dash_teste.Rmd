@@ -403,7 +403,7 @@ ng_rj_hist_lj_emp_num <- ng_rj_hist_lj_emp_num %>%
   mutate(porcentagem = num_negocios_idades/total_negocios) %>%
   mutate(porcent = scales::percent(porcentagem)) %>%
   distinct (idade_cat, .keep_all = TRUE) %>%
-  arrange(desc(idade_cat)) %>%
+  arrange(idade) %>%
   collect ()
 
 ng_rj_hist_lj_emp_num$idade_cat = factor(ng_rj_hist_lj_emp_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
@@ -552,7 +552,7 @@ Funil de vendas
 
 Column {data-width=350}
 -----------------------------------------------------------------------
-### Funil da empresa em faturamento, por status do negócio (em milhão)
+### Funil da empresa em faturamento, por status do negócio (em milhões)
 ```{r}
 
 ###Funil agrupado por faturamento
@@ -600,7 +600,7 @@ n0
 ##Se usar ggplot vai pro lugar, se usar o plotly tem q mover como fiz abaixo
 #p0 <- p0+theme (legend.position = "bottom") -> 
 ggplotly(n0, tooltip=c("Nome", "total_fat")) %>%
-  layout(legend = list(orientation = "h", x = -0.1, y = -0.10))
+  layout(legend = list(orientation = "h", x = -0.1, y = -0.15))
 
 
 ```
@@ -624,7 +624,7 @@ ggplotly(n3) %>%
 
 ```
 
-Negócios por categoria
+Top 10 Categorias
 =======================================================================
 
 Column {data-width=350}
@@ -685,14 +685,12 @@ Column {data-width=350}
 ```{r}
 ####Gráfico de pizza
 
-n7 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = factor(idade_cat)))+
-  geom_bar(width = 1, stat="identity") +
-  coord_polar("y", start=0)+
-  scale_fill_manual(values = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"),)+
-  theme_void() +
-  geom_text(aes(x = 1, y = cumsum(porcentagem) - porcentagem/2, label = porcent), size=5)
-  
-
+colors_pie <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
+n7 <- plot_ly(ng_rj_hist_lj_emp_num, labels = ~idade_cat, values = ~num_negocios_idades, type = 'pie', sort = F,
+              marker = list(colors = colors_pie, showlegend = F))
+n7 <- n7 %>%
+  layout(xaxis = list(showgrid = F, zeroline = F, showticklabels = F),
+                      yaxis = list(showgrid = F, zeroline = F, showticklabels = F))
 n7
 ```
 

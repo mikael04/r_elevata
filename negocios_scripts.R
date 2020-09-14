@@ -494,22 +494,32 @@ ng_rj_hist_lj_emp_num <- ng_rj_hist_lj_emp_num %>%
   mutate(porcentagem = num_negocios_idades/total_negocios) %>%
   mutate(porcent = scales::percent(porcentagem)) %>%
   distinct (idade_cat, .keep_all = TRUE) %>%
-  arrange(desc(idade_cat)) %>%
+  arrange(idade) %>%
   collect ()
 
 ng_rj_hist_lj_emp_num$idade_cat = factor(ng_rj_hist_lj_emp_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
 
 ##Gráfico de pizza (substituído por waffle)
 
-n7 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = idade_cat))+
-  geom_bar(width = 1, stat="identity") +
-  ggtitle("Negócios de toda empresa em aberto") +
-  coord_polar("y", start=0)+
-  scale_fill_manual(values = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"),)+
-  theme_void() +
-  geom_text(aes(x = 1, y = cumsum(porcentagem) - porcentagem/2, label = porcent), size=5)
-  
+colors_pie <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
+n7 <- plot_ly(ng_rj_hist_lj_emp_num, labels = ~idade_cat, values = ~num_negocios_idades, type = 'pie', sort = F,
+              marker = list(colors = colors_pie, showlegend = F))
+n7 <- n7 %>%
+  layout(xaxis = list(showgrid = F, zeroline = F, showticklabels = F),
+                      yaxis = list(showgrid = F, zeroline = F, showticklabels = F))
 n7
+
+###Pizza ggplot (com porcentagem)
+#
+#n7 <- ggplot(ng_rj_hist_lj_emp_num, aes(x = "", y = porcentagem,  fill = idade_cat))+
+#  geom_bar(width = 1, stat="identity") +
+#  ggtitle("Negócios de toda empresa em aberto") +
+#  coord_polar("y", start=0)+
+#  scale_fill_manual(values = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"),)+
+#  theme_void() +
+#  geom_text(aes(x = 1, y = cumsum(porcentagem) - porcentagem/2, label = porcent), size=5)
+ # 
+#ggplotly(n7)
 
 ## Gráfico de waffle, ainda flata arrumar nome dos agrupamentos
 #vetor_auxiliar <- `ng_rj_hist_lj_emp_num$num_negocios_idades`= ng_rj_hist_lj_emp_num$num_negocios_idades
@@ -634,23 +644,24 @@ ng_rj_hist_lj_ven_funil_fat <- ng_rj_hist_lj_ven_funil_fat %>%
 ##se precisar fatorar pra ordenar
 #ng_rj_hist_lj_emp_num$idade_cat = factor(ng_rj_hist_lj_emp_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
 
-##Funil de vendas (simples)
-
-n9 <- plot_ly()
-n9 <- n9 %>%
-  add_trace(
-    type="funnelarea",
-    values = ng_rj_hist_lj_ven_funil_fat$Total_Faturado,
-    text = c("Intenção ou prospecção", "Em negociação", "Montagem de cadastro", "Aguardando aprovação", "Financiamento aprovado"),
+##Funil de vendas (simples), negócios abertos em porcentagem 
+########################################################################################
+#n9 <- plot_ly()
+#n9 <- n9 %>%
+#  add_trace(
+#    type="funnelarea",
+#    values = ng_rj_hist_lj_ven_funil_fat$Total_Faturado,
+#    text = c("Intenção ou prospecção", "Em negociação", "Montagem de cadastro", "Aguardando aprovação", "Financiamento aprovado"),
     #hoverinfo = 'text',
-    marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")),
-    showlegend = FALSE
-  )
-
-n9
+#    marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")),
+#    showlegend = FALSE
+#  )
+#
+#n9
 ########################################################################################
 
-
+##Funil de vendas (simples), negócios abertos em contagem 
+########################################################################################
 n9 <- plot_ly (ng_rj_hist_lj_ven_funil_fat) %>%
   add_trace(
     type ="funnelarea",
@@ -667,6 +678,17 @@ n9 <- plot_ly (ng_rj_hist_lj_ven_funil_fat) %>%
   )
 
 n9
+
+
+##Gráfico de pizza fechados do mês
+
+colors_pie <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
+n10 <- plot_ly(ng_rj_hist_lj_emp_num, labels = ~idade_cat, values = ~num_negocios_idades, type = 'pie', sort = F,
+              marker = list(colors = colors_pie, showlegend = F))
+n10 <- n10 %>%
+  layout(xaxis = list(showgrid = F, zeroline = F, showticklabels = F),
+         yaxis = list(showgrid = F, zeroline = F, showticklabels = F))
+n10
 
 ##Remover tudo utilizado
 if (teste == 0) {
