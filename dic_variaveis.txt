@@ -11,7 +11,7 @@ Tabelas base (banco)
       negocio <- recebe tabela do banco
       vendedor <- recebe tabela do banco
 
-  
+
 
 Junções
   - negocio_scripts
