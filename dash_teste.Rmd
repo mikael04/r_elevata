@@ -7,6 +7,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+rm(list = ls())
 #Lib q será futuramente usada pros painéis interativos
 #library(shiny)
 #Lib pra conexão com o banco
@@ -96,7 +97,7 @@ corte_1 <- neg_ij_ven_ij_np %>%
 
 
 ##removendo elementos não mais usados
-if (teste == 0) {
+if (teste == F) {
   rm(negocio, vendedor_todos) #vou precisar dele pro funil mais pra baixo negocio_ij_historico_ij_vendedor_2020)
 }
 
@@ -146,8 +147,8 @@ if(dash == F){
 }
 
 ##vou manter ng_ij_vn_ij_np_fat pra fazer o join mais pro final
-if (teste == 0) {
-  rm(ng_ij_vn_ij_np_fat, corte_1)
+if (teste == F) {
+  rm(ng_ij_vn_ij_np_fat, corte_1, status)
 }
 ##############################################
 
@@ -207,12 +208,6 @@ status_4_6_7 = c("5 - faturado", "7 - desistencia do cliente", "8 - perdemos par
 ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_status <- with(ng_ij_hist_ij_ven_2020_ij_np_fec, cut(negocio_negocio_situacao_id, breaks = c(0,4,6,7),
                                                                                               labels = status_4_6_7))
 
-
-#ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_negocio_situacao_id == 4] <- status[5]
-#ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_negocio_situacao_id == 6] <- status[7]
-#ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_negocio_situacao_id == 7] <- status[8]
->>>>>>> a3128ab405fa0e9d83274ccda6764b4318f4b37e
-
 ##agrupamento de negocios por vendedor, contando número de negócios por status e por vendedor
 ##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
 ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_2020_ij_np_fec %>%
@@ -244,11 +239,11 @@ if(dash == F){
 }
 
 
-if (teste == 0){
+if (teste == F){
   #tabelas
-  rm(historico_negocio_situacao_2020, negocio_ij_vendedor, negocio_ij_historico_ij_vendedor_2020, historico_negocio_situacao, ng_ij_vn_ij_np_fech_fat)
+  rm(historico_negocio_situacao_2020, negocio_ij_vendedor, negocio_ij_historico_ij_vendedor_2020, historico_negocio_situacao, ng_ij_vn_ij_np_fech_fat, ng_ij_hist_ij_ven_2020_ij_np_fec)
   #variáveis
-  rm (ff, status, status_4_6_7)
+  rm (ff, status_4_6_7)
 }
 
 #########################################################
@@ -272,7 +267,7 @@ ngp_ij_pd <- inner_join(negocio_produto, produto, by=c("np_produto_id"="produto_
   filter (np_ativo == TRUE) %>%
   select (np_negocio_id, np_produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id, np_quantidade, np_valor)
 
-if (teste == 0) {
+if (teste == F) {
   rm(negocio_produto, produto)
 }
 
@@ -359,6 +354,7 @@ hc_n4 <- chart_ng_top_ag %>%
 if(dash == F){
   hc_n4
 }
+
 #################################################
 
 ### Aqui começa o gráfico de Tipos de máquina faturadas por categoria, em 2020
@@ -383,7 +379,7 @@ ng_top_ag_fat <- ng_top_ag_fat %>%
   select (produto_categoria_id, categoria_nome, faturamento)
 
 #Removendo tabelas não mais usadas
-if (teste == 0) {
+if (teste == F) {
   #tabelas
   rm(categoria, ng_top10, ng_top10_ag, top10, top10_ij, ng_ij_hist_ij_ven_ij_ngp_ij_pd, ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat, ngp_ij_pd)
 }
@@ -407,7 +403,7 @@ if(dash == F){
   hc_n5
 }
 
-if (teste == 0) {
+if (teste == F) {
   rm(ng_top_ag, ng_top_ag_fat, ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat_fat, chart_ng_top_ag, chart_ng_top_ag_fat, ng_top10_ag_fat, ng_ij_hist_ij_ven_2020)
 }
 #################################################
@@ -494,16 +490,17 @@ n6 <- ggplot(ng_ij_hist_ij_ven_num, aes(x = reorder(vendedor_nome, desc(vendedor
 
 n6 <- ggplotly(n6, tooltip = 'text') %>% layout(legend = list(orientation = "h", x = -0.3, y = -0.08))
 
+##Gráfico 4 - Idade dos negócios abertos, por vendedor, por idade do negocio
 if(dash == F){
   n6
 }
 
 
-if (teste == 0) {
+if (teste == F) {
   #tabelas
   rm(negocio_ij_historico_ij_vendedor_total, ng_ij_hist_ij_ven_num, ng_ij_hist_ij_ven_ab)
   #variáveis
-  rm(ff, idades, status)
+  rm(ff, idades, status_aberto)
 }
 ###########################################
 
@@ -545,7 +542,7 @@ if(dash == F){
   n7
 }
 
-if (teste == 0) {
+if (teste == F) {
   #tabelas
   rm(ng_ij_hist_ij_ven_idd, ng_ij_hist_ij_emp_num)
   #variáveis
@@ -618,7 +615,8 @@ if(dash == F){
   n9
 }
 
-if (teste == 0){
+
+if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_2020, neg_ij_ven_ij_np, ng_ij_hist_ij_ven_funil_ab, ng_ij_hist_ij_ven_funil_fat)
   #variáveis
@@ -729,7 +727,7 @@ if(dash == F){
   n11
 }
 
-if (teste == 0){
+if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_funil_fat_fec_2020, ng_ij_hist_ij_ven_funil_fat_fec_2020_mes, ng_ij_hist_ij_ven_fec_2020)
   #variáveis
@@ -753,14 +751,15 @@ hc_n12 <- hchart(fat_2020_mes, type = 'line', hcaes(x = ym, y = ym_sum))
 
 hc_n12
 
-if (teste == 0){
+if (teste == F){
   #tabelas
-  rm(ng_ij_hist_ij_ven_ij_np_2020)
+  rm(ng_ij_hist_ij_ven_ij_np_2020, ng_ij_hist_ij_ven_ij_np_2020_fat, fat_2020_mes)
   #variáveis
   rm()
 }
 
 ##############################################
+
 
 ###Começando scripts proposta_scripts
 ###########################################################################################################
@@ -769,7 +768,7 @@ if (teste == 0){
 proposta <- tbl(con, "proposta") %>%
   select(proposta_id, proposta_versao, proposta_negocio_id, proposta_data_cadastro, proposta_status) %>%
   collect()
-
+z
 ##coleta todos os negócios
 negocio <- tbl(con, "negocio") %>%
   select(negocio_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_vendedor_id, negocio_usado) %>%
@@ -865,7 +864,7 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(negocio, proposta, vendedor, prop_ij_neg_2020, prop_ij_neg_cont, prop_ij_neg_cont_vend, prop_ij_neg_ij_vend, status)
+  rm(negocio, proposta, vendedor, prop_ij_neg_2020, prop_ij_neg_cont, prop_ij_neg_cont_vend, prop_ij_neg_ij_vend)
   #variáveis
   rm(status)
 }

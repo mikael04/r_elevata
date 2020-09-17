@@ -26,7 +26,7 @@ library(scales)
 
 
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = T
+teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = F
 
@@ -88,7 +88,7 @@ corte_1 <- neg_ij_ven_ij_np %>%
 
 
 ##removendo elementos não mais usados
-if (teste == 0) {
+if (teste == F) {
   rm(negocio, vendedor_todos) #vou precisar dele pro funil mais pra baixo negocio_ij_historico_ij_vendedor_2020)
 }
 
@@ -138,8 +138,8 @@ if(dash == F){
 }
 
 ##vou manter ng_ij_vn_ij_np_fat pra fazer o join mais pro final
-if (teste == 0) {
-  rm(ng_ij_vn_ij_np_fat, corte_1)
+if (teste == F) {
+  rm(ng_ij_vn_ij_np_fat, corte_1, status)
 }
 ##############################################
 
@@ -230,11 +230,11 @@ if(dash == F){
 }
 
 
-if (teste == 0){
+if (teste == F){
   #tabelas
-  rm(historico_negocio_situacao_2020, negocio_ij_vendedor, negocio_ij_historico_ij_vendedor_2020, historico_negocio_situacao, ng_ij_vn_ij_np_fech_fat)
+  rm(historico_negocio_situacao_2020, negocio_ij_vendedor, negocio_ij_historico_ij_vendedor_2020, historico_negocio_situacao, ng_ij_vn_ij_np_fech_fat, ng_ij_hist_ij_ven_2020_ij_np_fec)
   #variáveis
-  rm (ff, status, status_4_6_7)
+  rm (ff, status_4_6_7)
 }
 
 #########################################################
@@ -258,7 +258,7 @@ ngp_ij_pd <- inner_join(negocio_produto, produto, by=c("np_produto_id"="produto_
   filter (np_ativo == TRUE) %>%
   select (np_negocio_id, np_produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id, np_quantidade, np_valor)
 
-if (teste == 0) {
+if (teste == F) {
   rm(negocio_produto, produto)
 }
 
@@ -370,7 +370,7 @@ ng_top_ag_fat <- ng_top_ag_fat %>%
   select (produto_categoria_id, categoria_nome, faturamento)
 
 #Removendo tabelas não mais usadas
-if (teste == 0) {
+if (teste == F) {
   #tabelas
   rm(categoria, ng_top10, ng_top10_ag, top10, top10_ij, ng_ij_hist_ij_ven_ij_ngp_ij_pd, ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat, ngp_ij_pd)
 }
@@ -394,7 +394,7 @@ if(dash == F){
   hc_n5
 }
 
-if (teste == 0) {
+if (teste == F) {
   rm(ng_top_ag, ng_top_ag_fat, ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat_fat, chart_ng_top_ag, chart_ng_top_ag_fat, ng_top10_ag_fat, ng_ij_hist_ij_ven_2020)
 }
 #################################################
@@ -487,11 +487,11 @@ if(dash == F){
 }
 
 
-if (teste == 0) {
+if (teste == F) {
   #tabelas
   rm(negocio_ij_historico_ij_vendedor_total, ng_ij_hist_ij_ven_num, ng_ij_hist_ij_ven_ab)
   #variáveis
-  rm(ff, idades, status)
+  rm(ff, idades, status_aberto)
 }
 ###########################################
 
@@ -533,7 +533,7 @@ if(dash == F){
   n7
 }
 
-if (teste == 0) {
+if (teste == F) {
   #tabelas
   rm(ng_ij_hist_ij_ven_idd, ng_ij_hist_ij_emp_num)
   #variáveis
@@ -607,7 +607,7 @@ if(dash == F){
 }
 
 
-if (teste == 0){
+if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_2020, neg_ij_ven_ij_np, ng_ij_hist_ij_ven_funil_ab, ng_ij_hist_ij_ven_funil_fat)
   #variáveis
@@ -718,7 +718,7 @@ if(dash == F){
   n11
 }
 
-if (teste == 0){
+if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_funil_fat_fec_2020, ng_ij_hist_ij_ven_funil_fat_fec_2020_mes, ng_ij_hist_ij_ven_fec_2020)
   #variáveis
@@ -742,11 +742,12 @@ hc_n12 <- hchart(fat_2020_mes, type = 'line', hcaes(x = ym, y = ym_sum))
 
 hc_n12
 
-if (teste == 0){
+if (teste == F){
   #tabelas
-  rm(ng_ij_hist_ij_ven_ij_np_2020)
+  rm(ng_ij_hist_ij_ven_ij_np_2020, ng_ij_hist_ij_ven_ij_np_2020_fat, fat_2020_mes)
   #variáveis
   rm()
 }
 
 ##############################################
+
