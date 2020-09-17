@@ -23,12 +23,14 @@ library(scales)
 
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
+
+####Variável usada para não apagar coisas na dash
 dash = F
 
-con <- DBI::dbConnect(odbc::odbc(), 
-                      Driver = "SQL Server", 
-                      Server = "localhost\\SQLEXPRESS01", 
-                      Database = "nhmobile_agriculture", 
+con <- DBI::dbConnect(odbc::odbc(),
+                      Driver = "SQL Server",
+                      Server = "localhost\\SQLEXPRESS01",
+                      Database = "nhmobile_agriculture",
                       Trusted_Connection = "True")
 
 ##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
@@ -104,7 +106,7 @@ prop_ij_neg_cont_vend$proposta_status <- with(prop_ij_neg_cont_vend, cut(propost
                                                                          labels = status))
 
 ##Gráfico 6 - Número propostas, por tipo, por vendedor (total)
-p0 <- ggplot(prop_ij_neg_cont_vend, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), cont_status, fill=factor(proposta_status), label = cont_status, 
+p0 <- ggplot(prop_ij_neg_cont_vend, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), cont_status, fill=factor(proposta_status), label = cont_status,
                                         text = paste('Número de pedidos nesta categoria:', cont_status))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank()) +
@@ -118,7 +120,7 @@ if(dash == F){
 }
 
 ###Gráfico 7 - Número propostas, por tipo em 2020 (total)
-p1 <- ggplot(prop_ij_neg_cont, aes(x = proposta_status, y = cont_status, fill=as.factor(proposta_status), 
+p1 <- ggplot(prop_ij_neg_cont, aes(x = proposta_status, y = cont_status, fill=as.factor(proposta_status),
                                    text = paste('Número de pedidos nesta categoria:', cont_status))) +
   geom_col(position = "identity") +
   theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank()) +
@@ -150,7 +152,6 @@ total = sum(prop_ij_neg_cont_us$usado)
 
 prop_ij_neg_cont_us <- prop_ij_neg_cont_us %>%
   mutate(total = total)
-
 
 prop_ij_neg_cont_us$negocio_usado[prop_ij_neg_cont_us$negocio_usado == TRUE] <- "Proposta com usado"
 prop_ij_neg_cont_us$negocio_usado[prop_ij_neg_cont_us$negocio_usado == FALSE] <- "Proposta sem usado"
@@ -196,4 +197,3 @@ if(teste == F){
 if (teste == 0) {
   #rm(list=ls())
 }
-

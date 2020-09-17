@@ -1,6 +1,6 @@
 ---
 title: "Visão do gestor"
-output: 
+output:
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
@@ -54,10 +54,10 @@ function_format_din_mi <- function(inteiro)
   return(inteiro_mi_em_reais)
 }
 
-con <- DBI::dbConnect(odbc::odbc(), 
-                      Driver = "SQL Server", 
-                      Server = "localhost\\SQLEXPRESS01", 
-                      Database = "nhmobile_agriculture", 
+con <- DBI::dbConnect(odbc::odbc(),
+                      Driver = "SQL Server",
+                      Server = "localhost\\SQLEXPRESS01",
+                      Database = "nhmobile_agriculture",
                       Trusted_Connection = "True")
 
 ###Começando scripts negocio_scripts
@@ -127,7 +127,7 @@ ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>%
 
 ###Gráfico 0 - Número de clientes por vendedor
 ##############################################
-n0 <- ggplot(ng_ij_vn_ij_np_fat, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), total_fat, fill=(negocio_status), 
+n0 <- ggplot(ng_ij_vn_ij_np_fat, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), total_fat, fill=(negocio_status),
                                      text = paste('Faturado neste status:', total_fat_t))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   ylab("Número de clientes") +
@@ -207,6 +207,12 @@ status_4_6_7 = c("5 - faturado", "7 - desistencia do cliente", "8 - perdemos par
 ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_status <- with(ng_ij_hist_ij_ven_2020_ij_np_fec, cut(negocio_negocio_situacao_id, breaks = c(0,4,6,7),
                                                                                               labels = status_4_6_7))
 
+
+#ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_negocio_situacao_id == 4] <- status[5]
+#ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_negocio_situacao_id == 6] <- status[7]
+#ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_negocio_situacao_id == 7] <- status[8]
+>>>>>>> a3128ab405fa0e9d83274ccda6764b4318f4b37e
+
 ##agrupamento de negocios por vendedor, contando número de negócios por status e por vendedor
 ##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
 ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_2020_ij_np_fec %>%
@@ -222,7 +228,7 @@ ng_ij_vn_ij_np_fech_fat <- ng_ij_vn_ij_np_fech_fat %>%
 
 ### Gráfico 1 - Faturamento de negócios fechados em 2020
 #########################################################
-n3 <- ggplot(ng_ij_vn_ij_np_fech_fat, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), total_fat, fill=factor(negocio_status), 
+n3 <- ggplot(ng_ij_vn_ij_np_fech_fat, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), total_fat, fill=factor(negocio_status),
                                           text = paste('Faturado neste status:', total_fat_t))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   theme (axis.title = element_blank(), axis.text.x = element_blank())+
@@ -264,7 +270,7 @@ produto <- tbl(con, "produto") %>%
 ## Inner join pra não pegar os np_produto_id = 0
 ngp_ij_pd <- inner_join(negocio_produto, produto, by=c("np_produto_id"="produto_id"))%>%
   filter (np_ativo == TRUE) %>%
-  select (np_negocio_id, np_produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id, np_quantidade, np_valor) 
+  select (np_negocio_id, np_produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id, np_quantidade, np_valor)
 
 if (teste == 0) {
   rm(negocio_produto, produto)
@@ -353,7 +359,6 @@ hc_n4 <- chart_ng_top_ag %>%
 if(dash == F){
   hc_n4
 }
-
 #################################################
 
 ### Aqui começa o gráfico de Tipos de máquina faturadas por categoria, em 2020
@@ -480,7 +485,7 @@ ng_ij_hist_ij_ven_num$vendedor_nome[ng_ij_hist_ij_ven_num$negocio_vendedor_id ==
 
 
 ##Gráfico 4 - Idade dos negócios abertos, por vendedor, por idade do negocio, barras
-n6 <- ggplot(ng_ij_hist_ij_ven_num, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), num_negocios_idades, fill=idade_cat, label = num_negocios_idades, 
+n6 <- ggplot(ng_ij_hist_ij_ven_num, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), num_negocios_idades, fill=idade_cat, label = num_negocios_idades,
                                         text = paste('Número de negócios neste intervalo:', num_negocios_idades))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank())+
@@ -613,7 +618,6 @@ if(dash == F){
   n9
 }
 
-
 if (teste == 0){
   #tabelas
   rm(ng_ij_hist_ij_ven_2020, neg_ij_ven_ij_np, ng_ij_hist_ij_ven_funil_ab, ng_ij_hist_ij_ven_funil_fat)
@@ -629,7 +633,7 @@ status_f = c("Faturado", "Financiamento não aprovado", "Desistencia do cliente"
 
 ##vou tentar remover apenas os que tem status fechado (4 - faturado, 5 - financiamento não aprovado, 6 - desistência do cliente, 7 - perdemos para a concorrência)
 ##Tempo: Total
-##status abertos 
+##status abertos
 #ng_rj já havia feito o corte apenas em fechados após 2020
 ng_ij_hist_ij_ven_fec_2020 <- ng_ij_hist_ij_ven_ij_np_2020 %>%
   filter(negocio_negocio_situacao_id %in% st_f)
@@ -834,8 +838,9 @@ prop_ij_neg_cont_vend$proposta_status[prop_ij_neg_cont_vend$proposta_status == 3
 prop_ij_neg_cont_vend$proposta_status[prop_ij_neg_cont_vend$proposta_status == 4] <- "4 - Finalizado"
 
 ##Gráfico 6 - Número propostas, por tipo, por vendedor (total)
-p0 <- ggplot(prop_ij_neg_cont_vend, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), cont_status, fill=factor(proposta_status), label = cont_status, 
+p0 <- ggplot(prop_ij_neg_cont_vend, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), cont_status, fill=factor(proposta_status), label = cont_status,
                                         text = paste('Número de pedidos nesta categoria:', cont_status))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+
   geom_col(position = "stack") +
   theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank()) +
   scale_fill_manual(values = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"))+
@@ -848,7 +853,7 @@ if(dash == F){
 }
 
 ###Gráfico 7 - Número propostas, por tipo em 2020 (total)
-p1 <- ggplot(prop_ij_neg_cont, aes(x = proposta_status, y = cont_status, fill=as.factor(proposta_status), 
+p1 <- ggplot(prop_ij_neg_cont, aes(x = proposta_status, y = cont_status, fill=as.factor(proposta_status),
                                    text = paste('Número de pedidos nesta categoria:', cont_status))) +
   geom_col(position = "identity") +
   theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank()) +
@@ -865,6 +870,7 @@ if(teste == F){
   rm(status)
 }
 ##############################################
+
 
 ##Propostas por categoria (usado)
 ##############################################
@@ -904,7 +910,7 @@ if(teste == F){
   rm(total)
 }
 
-##############################################  
+##############################################
 
 if (teste == 0) {
   #rm(list=ls())
