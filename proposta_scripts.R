@@ -130,7 +130,7 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(negocio, proposta, vendedor, prop_ij_neg_2020, prop_ij_neg_cont, prop_ij_neg_cont_vend, prop_ij_neg_ij_vend, status)
+  rm(negocio, proposta, vendedor, prop_ij_neg_2020, prop_ij_neg_cont, prop_ij_neg_cont_vend, prop_ij_neg_ij_vend)
   #variáveis
   rm(status)
 }
@@ -177,6 +177,21 @@ if(teste == F){
 ##############################################
 ### Ticket médio por proposta
 
+### Uma proposta tem n proposta_pagamento (cuidar as ativas, pp_ativo = 1)
+##coleta todos proposta_pagamenmto
+proposta_pagamento <- tbl(con, "proposta_pagamento") %>%
+  select(pp_id, pp_proposta_id, pp_modo_id, pp_forma_id, pp_valor, pp_ativo, pp_usado_id) %>%
+  collect()
+
+pr_ij_pp <- inner_join(proposta, proposta_pagamento, by = c("proposta_id = pp_proposta_id"))
+
+if(teste == F){
+  #tabelas
+  rm(proposta, proposta_pagamento, pr_ij_pp)
+  #variáveis
+  rm(status)
+}
+##############################################
 
 if (teste == 0) {
   #rm(list=ls())
