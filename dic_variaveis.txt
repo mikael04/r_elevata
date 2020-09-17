@@ -1,0 +1,35 @@
+Variáveis em ordem de aparecimento no script
+Tabelas base (banco)
+
+  negocio <- recebe tabela de negócio do banco
+  negocio_produto <- recebe tabela negocio_produto do banco
+  produto <- recebe tabela produto do banco
+  vendedor_todos <- recebe tabela vendedor do banco
+  historico_negocio_situacao <- recebe tabela historico_negocio_situacao do banco
+
+Junções
+
+(inner na maioria pra pegar apenas onde haja linhas nas duas tabelas)
+  negocio_ij_vendedor <- inner join negocio, vendedor (negocio-vendedor_id = vendedor_id)
+  neg_ij_ven_ij_np <- inner join negocio_lj_vendedor, negocio_produto (negocio_id = np_negocio_id)
+  corte_1 <- filtrando empresa (setado globalmente) em vendedor_empresa_id, vendedor ativo em vendedor_ativo, data de cadastro
+          acima de 2020 em  negocio_data_cadastro, id da situacao de 1 a 10 negocio_negocio_situacao_id
+  ng_ij_vn_ij_np_2020_fat <- (contar faturamento por status e por vendedor), recebe faturamento, filtrando alguns campos (negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, vendedor_nome, negocio_vendedor_id, np_valor)
+          agrupa por id da situacao e id do vendedor e cria uma nova coluna com faturamento total
+          Gráfico de faturamento por vendedor por situacao id (n0)
+
+  negocio_ij_historico_ij_vendedor_2020 e _total <- inner join de negocio_lj_vendedor e historico_negocio_situacao_2020 (ou sem 2020)
+          (negocio_id = historico_negocio_situacao_negocio_id)
+          [Usado para pegar a última atualização de cada negócio (usando a tabela histórico) e pegar negócios que foram cadastrados em outros anos, mas faturados neste ano]
+  ng_ij_hist_ij_ven_2020 <- negocio_rj_historico_lj_vendedor_2020 e remove as duplicatas de np_negocio_id,
+          também é feita a filtragem da empresa aqui (vendedor_empresa_id) e vendedor ativo
+          [como ordenei antes, por última atualização, aplicar a remoção das duplicatas mantém apenas a última atualização
+          , lembrando que tenho apenas de 2020]
+  ng_ij_hist_ij_ven_ij_np_2020 <- inner join de ng_ij_hist_ij_ven_2020 com negocio_produto (negocio_id = np_negocio_id)
+          [aqui fiz a junção com negocio_produto pra obter os valores, lembrando que tenho apenas de 2020]
+  ng_ij_hist_ij_ven_ij_np_fec <- filtra ng_rj_hist_lj_ven_in_np apenas status fechados
+          [usado pra filtrar status fechados]
+  ng_lj_vn_in_np_2020_fech_fat <- usa a tabela ng_ij_hist_ij_ven_ij_np_fec para criar uma nova coluna com faturamento total por vendedor
+          [criado o gráfico n3, Faturamento de negócios fechados em 2020]
+  ngp_ij_pd <- inner join de negocio_produto com produto (np_produto_id = produto_id)
+  n
