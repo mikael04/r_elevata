@@ -297,7 +297,7 @@ top10_ij <- as.data.frame(top10_ij)
 top10_ij$categoria_nome[top10_ij$produto_categoria_id == 	120181114100824] <- "CAMINHÃO"
 
 ## Transformando tudo em "OUTRA" -1
-ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat <- inner_join(ng_ij_hist_ij_ven_ij_ngp_ij_pd, top10_ij, by=c("produto_categoria_id" = "produto_categoria_id"))
+ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat <- left_join(ng_ij_hist_ij_ven_ij_ngp_ij_pd, top10_ij, by=c("produto_categoria_id" = "produto_categoria_id"))
 ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat$produto_categoria_id[is.na(ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat$categoria_nome)] <- "-1"
 ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat$categoria_nome[is.na(ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat$categoria_nome)] <- "OUTRA"
 
