@@ -22,7 +22,7 @@ library(scales)
 
 
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 
 ####Variável usada para não apagar coisas na dash
 dash = F
@@ -125,6 +125,7 @@ p1 <- ggplot(prop_ij_neg_cont, aes(x = proposta_status, y = cont_status, fill=as
   geom_col(position = "identity") +
   theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank()) +
   scale_fill_manual(values = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"))
+
 p1 <- ggplotly(p1, tooltip = 'text') %>%
   layout(showlegend = FALSE)
 if(dash == F){
@@ -190,9 +191,38 @@ if(teste == F){
   #tabelas
   rm(proposta, proposta_pagamento, pr_ij_pp)
   #variáveis
-  rm(status)
+  rm()
 }
 ##############################################
+
+p3 <- p1
+p3 <- p3 %>% add_pie(prop_ij_neg_cont_us, labels = ~prop_ij_neg_cont_us$negocio_usado, values = ~prop_ij_neg_cont_us$usado, type = 'pie', sort = F,
+                     texttemplate = "%{value} (%{percent})",
+                     hovertemplate = paste ("%{label} <br>",
+                                            "%{value} <br>",
+                                            "Equivalente a %{percent} do total",
+                                            "<extra></extra>"),
+                     visible = F)
+p3 <- p3 %>% layout(
+  title = "Drop down menus - Styling",
+  xaxis = list(domain = c(0.1, 1)),
+  yaxis = list(title = "y"),
+  updatemenus = list(
+    list(
+      y = 0.7,
+      buttons = list(
+        list(method = "restyle",
+             args = list("visible", list(TRUE, FALSE)),
+             label = "Bar"),
+        
+        list(method = "restyle",
+             args = list("visible", list(FALSE, TRUE)),
+             label = "Pie")))
+  )
+  )
+
+p3
+
 
 if (teste == 0) {
   #rm(list=ls())

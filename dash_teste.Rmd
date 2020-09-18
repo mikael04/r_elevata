@@ -2,6 +2,8 @@
 title: "Visão do gestor"
 output:
   flexdashboard::flex_dashboard:
+    storyboard: true
+    social: menu
     orientation: columns
     vertical_layout: fill
 ---
@@ -768,7 +770,7 @@ if (teste == F){
 proposta <- tbl(con, "proposta") %>%
   select(proposta_id, proposta_versao, proposta_negocio_id, proposta_data_cadastro, proposta_status) %>%
   collect()
-z
+
 ##coleta todos os negócios
 negocio <- tbl(con, "negocio") %>%
   select(negocio_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_vendedor_id, negocio_usado) %>%

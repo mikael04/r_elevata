@@ -199,6 +199,9 @@ status_4_6_7 = c("5 - faturado", "7 - desistencia do cliente", "8 - perdemos par
 ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_status <- with(ng_ij_hist_ij_ven_2020_ij_np_fec, cut(negocio_negocio_situacao_id, breaks = c(0,4,6,7),
                                                                                               labels = status_4_6_7))
 
+ng_ij_hist_ij_ven_2020_ij_np_fec <- ng_ij_hist_ij_ven_2020_ij_np_fec %>% 
+  filter (np_ativo == TRUE)
+
 ##agrupamento de negocios por vendedor, contando número de negócios por status e por vendedor
 ##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
 ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_2020_ij_np_fec %>%
