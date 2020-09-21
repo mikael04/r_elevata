@@ -26,7 +26,7 @@ library(scales)
 
 
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
 dash = F
 
@@ -262,7 +262,7 @@ ngp_ij_pd <- inner_join(negocio_produto, produto, by=c("np_produto_id"="produto_
   select (np_negocio_id, np_produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id, np_quantidade, np_valor)
 
 if (teste == F) {
-  rm(negocio_produto, produto)
+  rm(produto)
 }
 
 ##tabela usada pra termos negócios, data de atualização (hist), nome do vendedor (vend) e produtos (negocio produto e produto)
@@ -492,7 +492,7 @@ if(dash == F){
 
 if (teste == F) {
   #tabelas
-  rm(negocio_ij_historico_ij_vendedor_total, ng_ij_hist_ij_ven_num, ng_ij_hist_ij_ven_ab)
+  rm(ng_ij_hist_ij_ven_num, ng_ij_hist_ij_ven_ab)
   #variáveis
   rm(ff, idades, status_aberto)
 }
@@ -612,7 +612,7 @@ if(dash == F){
 
 if (teste == F){
   #tabelas
-  rm(ng_ij_hist_ij_ven_2020, neg_ij_ven_ij_np, ng_ij_hist_ij_ven_funil_ab, ng_ij_hist_ij_ven_funil_fat)
+  rm(neg_ij_ven_ij_np, ng_ij_hist_ij_ven_funil_ab, ng_ij_hist_ij_ven_funil_fat)
   #variáveis
   rm(st_a, status)
 }
@@ -732,22 +732,105 @@ if (teste == F){
 ###################################################################
 
 ##Filtrando empresa, vendedores ativos e negocios de 2020
-ng_ij_hist_ij_ven_ij_np_2020_fat <- ng_ij_hist_ij_ven_ij_np_2020 %>%
+ng_ij_hist_ij_ven_2020_fat <- ng_ij_hist_ij_ven_ij_np_2020 %>%
   filter(negocio_negocio_situacao_id == 4)
 
-fat_2020_mes <- ng_ij_hist_ij_ven_ij_np_2020_fat %>%
-  mutate (ym = format(historico_negocio_situacao_data, '%y-%m')) %>%
+fat_2020_mes <- ng_ij_hist_ij_ven_2020_fat %>%
+  mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
   group_by (ym) %>%
   summarize(ym_sum = sum(np_valor))
 #as.xts(order.by = .$ym) #convertendo em xts
 
-hc_n12 <- hchart(fat_2020_mes, type = 'line', hcaes(x = ym, y = ym_sum))
+##Usando highcharts
+#hc_n12 <- hchart(fat_2020_mes, type = 'line', hcaes(x = ym, y = ym_sum))
+#hc_n12
 
-hc_n12
+#n12 <- plot_ly(fat_2020_mes, type = 'scatter', mode = 'line', x = ~ym, y =~ym_sum)
 
+
+##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais antigas, ficar só com a última atualização no negócio
+negocio_ij_historico_ij_vendedor_total <- negocio_ij_historico_ij_vendedor_total[order(-negocio_ij_historico_ij_vendedor_total$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_total$negocio_id),]
+ng_ij_hist_ij_ven_total <- negocio_ij_historico_ij_vendedor_total[!duplicated(negocio_ij_historico_ij_vendedor_total$negocio_id),]
+
+
+##tabela vem dessa: negocio_ij_historico_ij_vendedor_total, todos os vendedores, filtrando empresa_id, vendedor_ativo
+ng_ij_hist_ij_ven_total <- ng_ij_hist_ij_ven_total %>%
+  filter(vendedor_empresa_id == empresa, vendedor_ativo == TRUE) %>%
+  select(negocio_id, negocio_negocio_situacao_id, negocio_vendedor_id, vendedor_ativo, vendedor_nome, negocio_data_cadastro, historico_negocio_situacao_data)
+
+##filtrando dois negócios que tem seu status 0 (possivel erro)
+ng_ij_hist_ij_ven_total <- ng_ij_hist_ij_ven_total %>%
+  filter(negocio_negocio_situacao_id != 0)
+
+
+ng_ij_hist_ij_ven_ij_np_total <- inner_join(ng_ij_hist_ij_ven_total, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
+
+##Começando o cálculo do faturamento médio dos três anos anteriores
+
+##primeiro vou selecionar por ano, e depois apenas status faturado
+ng_ij_hist_ij_ven_ij_np_2019_fat <- ng_ij_hist_ij_ven_ij_np_total %>%
+  filter (historico_negocio_situacao_data < '2020-01-01' & historico_negocio_situacao_data > '2018-12-31' & negocio_negocio_situacao_id == 4)
+ng_ij_hist_ij_ven_ij_np_2018_fat <- ng_ij_hist_ij_ven_ij_np_total %>%
+  filter (historico_negocio_situacao_data < '2019-01-01' & historico_negocio_situacao_data > '2017-12-31' & negocio_negocio_situacao_id == 4)
+ng_ij_hist_ij_ven_ij_np_2017_fat <- ng_ij_hist_ij_ven_ij_np_total %>%
+  filter (historico_negocio_situacao_data < '2018-01-01' & historico_negocio_situacao_data > '2016-12-31' & negocio_negocio_situacao_id == 4)
+
+#Aqui vou fazer a mesma soma dos valores dos três anos anteriores, dividindo por mês
+fat_2019_mes <- ng_ij_hist_ij_ven_ij_np_2019_fat %>%
+  mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
+  group_by (ym) %>%
+  summarize(ym_sum = sum(np_valor))
+
+fat_2018_mes <- ng_ij_hist_ij_ven_ij_np_2018_fat %>%
+  mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
+  group_by (ym) %>%
+  summarize(ym_sum = sum(np_valor))
+
+fat_2017_mes <- ng_ij_hist_ij_ven_ij_np_2017_fat %>%
+  mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
+  group_by (ym) %>%
+  summarize(ym_sum = sum(np_valor))
+
+##Criando um faturamento médio
+fat_med3ant_mes <- fat_2019_mes
+fat_med3ant_mes$ym_sum <- (fat_2017_mes$ym_sum+fat_2018_mes$ym_sum+fat_2019_mes$ym_sum)/3
+
+fat_2020_med3ant_mes <- data.frame(fat_2020_mes, fat_med3ant_mes)
+
+
+n12 <- plot_ly(fat_med3ant_mes, type = 'scatter', mode = 'line', x = ~ym, y =~ym_sum, yaxis = 'y1',
+               name = 'Faturamento dos anos anteriores',
+               text = ~paste(function_format_din_mi(ym_sum)),
+               hoverinfo = "text",
+               color = I("blue")
+               )
+n12 <- n12 %>%
+  add_traces(fat_2020_mes, type = 'scatter', mode = 'line', x = ~ym, y = ~ym_sum, yaxis = 'y2',
+            name = 'Faturamento do ano 2020',
+            color = I("red"))
+#n12 <- n12 %>%
+#  add_trace(fat_2020_mes, type = 'scatter', mode = 'line', x = ~ym, y = ~ym_sum, yaxis = 'y2',
+#            name = 'Média de faturamento dos três anos anteriores',
+#            marker = list(color = 'red'),
+#            text = ~paste(function_format_din_mi(ym_sum)),
+#            hoverinfo = "text")
+#n12 <- n12 %>%
+#  layout(
+#    yaxis = list(side = 'left', showgrid = TRUE, zeroline = FALSE, range = c(0,3500000)),
+#    #range nos dois eixos iguais pra ficar na mesma proporção
+#    yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels = F, range = c(0,3500000)),
+#    ##aqui eu ajusto onde quero que apareça a legenda
+#    legend = list(x=0.8, y=0.9)#)
+#  )
+
+
+#n12 <- plot_ly(fat_2020_mes, type = 'scatter', mode = 'line', x = ~ym, y =~ym_sum)
+
+n12
 if (teste == F){
   #tabelas
-  rm(ng_ij_hist_ij_ven_ij_np_2020, ng_ij_hist_ij_ven_ij_np_2020_fat, fat_2020_mes)
+  rm(ng_ij_hist_ij_ven_ij_np_2020, ng_ij_hist_ij_ven_ij_np_2020_fat, fat_2020_mes, ng_ij_hist_ij_ven_total, negocio_ij_historico_ij_vendedor_total,
+     ng_ij_hist_ven_ij_ij_np_2019_fat, ng_ij_hist_ij_ven_ij_np_2018_fat, ng_ij_hist_ij_ven_ij_np_2017_fat, fat_2019_mes, fat_2018_mes, fat_2017_mes)
   #variáveis
   rm()
 }
