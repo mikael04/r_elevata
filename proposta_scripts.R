@@ -22,13 +22,27 @@ library(scales)
 
 
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = T
+teste = F
 
 ####Variável usada para não apagar coisas na dash
 dash = F
 
 ####Variável global da empresa a ser trabalhada
 empresa = 16
+
+#formatar dinheiro
+function_format_din <- function(inteiro)
+{
+  inteiro_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
+  return(inteiro_em_reais)
+}
+
+function_format_din_mi <- function(inteiro)
+{
+  inteiro <- round(inteiro/1000000, digits = 1)
+  inteiro_mi_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 1))
+  return(inteiro_mi_em_reais)
+}
 
 con <- DBI::dbConnect(odbc::odbc(),
                       Driver = "SQL Server",
@@ -108,7 +122,7 @@ prop_ij_neg_cont_vend <- prop_ij_neg_ij_vend_2020 %>%
 prop_ij_neg_cont_vend$proposta_status <- with(prop_ij_neg_cont_vend, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
                                                                          labels = status))
 
-##Gráfico 6 - Número propostas, por tipo, por vendedor (total)
+##Gráfico 9 - Número propostas, por tipo, por vendedor (total)
 p0 <- ggplot(prop_ij_neg_cont_vend, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), cont_status, fill=factor(proposta_status), label = cont_status,
                                         text = paste('Número de pedidos nesta categoria:', cont_status))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
@@ -122,7 +136,7 @@ if(dash == F){
   p0
 }
 
-###Gráfico 7 - Número propostas, por tipo em 2020 (total)
+###Gráfico 10 - Número propostas, por tipo em 2020 (total)
 p1 <- ggplot(prop_ij_neg_cont, aes(x = proposta_status, y = cont_status, fill=as.factor(proposta_status),
                                    text = paste('Número de pedidos nesta categoria:', cont_status))) +
   geom_col(position = "identity") +
@@ -136,10 +150,11 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(negocio, vendedor, prop_ij_neg_2020, prop_ij_neg_cont, prop_ij_neg_cont_vend, prop_ij_neg_ij_vend_2020)
+  rm(vendedor, prop_ij_neg_2020, prop_ij_neg_cont, prop_ij_neg_cont_vend, prop_ij_neg_ij_vend_2020);
   #variáveis
-  rm(status)
+  rm(status);
 }
+
 ##############################################
 
 ##Propostas por categoria (usado)
@@ -160,7 +175,7 @@ prop_ij_neg_cont_us <- prop_ij_neg_cont_us %>%
 prop_ij_neg_cont_us$negocio_usado[prop_ij_neg_cont_us$negocio_usado == TRUE] <- "Proposta com usado"
 prop_ij_neg_cont_us$negocio_usado[prop_ij_neg_cont_us$negocio_usado == FALSE] <- "Proposta sem usado"
 
-###Gráfico 8 - Proporção de usados (pizza)
+###Gráfico 11 - Proporção de usados (pizza)
 p2 <- plot_ly(prop_ij_neg_cont_us, labels = ~negocio_usado, values = ~usado, type = 'pie', sort = F,
               texttemplate = "%{value} (%{percent})",
               hovertemplate = paste ("%{label} <br>",
@@ -174,9 +189,9 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(prop_ij_neg_cont_us)
+  rm(prop_ij_neg_cont_us, prop_ij_neg);
   #variáveis
-  rm(total)
+  rm(total);
 }
 
 ##############################################
@@ -218,7 +233,8 @@ p_ij_n_ij_pp_empresa <- p_ij_n_ij_pp_empresa %>%
   collect ()
 
 ##media geral da empresa
-media_empresa <- round(mean(p_ij_n_ij_pp_empresa$valor_proposta), 2)
+total_empresa <- sum(p_ij_n_ij_pp_empresa$pp_valor)
+media_empresa <- round(total_empresa/nrow(p_ij_n_ij_pp_empresa), 2)
 
 ##Começando as junções pra chegar nas categorias
 p_ij_pprod_ij_prod <- inner_join(proposta, pprod_ij_prod, by = c('proposta_id' = 'pp_proposta_id')) %>%
@@ -230,6 +246,7 @@ pr_top10_fat <- p_ij_pprod_ij_prod %>%
   select(produto_categoria_id, pp_valor) %>%
   group_by(produto_categoria_id) %>%
   mutate(fat = sum(pp_valor)) %>%
+  mutate(n = n()) %>%
   distinct (produto_categoria_id, .keep_all = TRUE) %>%
   collect ()
 
@@ -237,47 +254,144 @@ pr_top10_fat <- p_ij_pprod_ij_prod %>%
 ##Isso aqui tudo é pra pegar o top 10, substituir os que não estão por -Outros e depois refazer a média
 top10_fat <- head.matrix(pr_top10_fat, n=10)
 
-top10_fat_ij_cat <- inner_join(top10_fat, categoria, by = c("produto_categoria_id"="categoria_id"))
-top10_fat_ij_cat <- top10_fat_ij_cat[, -2:-3]
-top10_fat_ij_cat <- as.data.frame(top10_fat_ij_cat)
-
-pr_top10_fat_aux <- left_join(pr_top10_fat, top10_fat_ij_cat, by=c("produto_categoria_id" = "produto_categoria_id"))
-pr_top10_fat_aux$produto_categoria_id[is.na(pr_top10_fat_aux$categoria_nome)] <- "-1"
-pr_top10_fat_aux$categoria_nome[is.na(pr_top10_fat_aux$categoria_nome)] <- "OUTRA"
-
-
-## Aqui já estõu fazendo a média das categorias
-pr_top10_fat_med <- pr_top10_fat_aux %>%
-  select(categoria_nome, produto_categoria_id, pp_valor) %>%
-  group_by(produto_categoria_id) %>%
-  mutate(fat_med = mean(pp_valor)) %>%
-  distinct (produto_categoria_id, .keep_all = TRUE) %>%
-  arrange(categoria_nome)
-  collect ()
-
 ##Vou fazer um join pra pegar os nomes de cada categoria
 categoria <- tbl(con, "categoria") %>%
   select(categoria_id, categoria_nome) %>%
   collect()
 
-fat_tot_categorias <- inner_join(pr_top10_fattot, categoria, by = c("produto_categoria_id" = "categoria_id"))
-fat_med_categorias <- inner_join(pr_top10_fatmed, categoria, by = c("produto_categoria_id" = "categoria_id"))
+top10_fat_ij_cat <- inner_join(top10_fat, categoria, by = c("produto_categoria_id"="categoria_id"))
+top10_fat_ij_cat <- top10_fat_ij_cat[, -2:-4]
+top10_fat_ij_cat <- as.data.frame(top10_fat_ij_cat)
+
+##Aqui estou juntando para agrupar primeiro através do na
+pr_top10_fat_aux <- left_join(pr_top10_fat, top10_fat_ij_cat, by=c("produto_categoria_id" = "produto_categoria_id"))
+pr_top10_fat_aux$produto_categoria_id[is.na(pr_top10_fat_aux$categoria_nome)] <- "-1"
 
 
-## Gráfico 9 - Ticket médio por categoria e geral da empresa
-p3 <- plot_ly(dados, type = "bar", x = ~categorias, y = fat_medio)
-##adicionando linha de média da empresa
-p3 <- 
+##Depois de setar as linhas q tem nome de coluna = na (não estão no top10) e ter setado todas pra id = -1, faço a soma dos n e faturamentos
+n_out <- sum(pr_top10_fat_aux$n[which(pr_top10_fat_aux$produto_categoria_id=="-1")])
+fat_out <- sum(pr_top10_fat_aux$fat[which(pr_top10_fat_aux$produto_categoria_id=="-1")])
+
+##E então, repasso o valor de volta para a coluna "outros", de faturamento total (de todas as categorias menos as q estão no top10) e número de vezes que aparecem
+pr_top10_fat_aux$n[pr_top10_fat_aux$produto_categoria_id=='-1'] <- n_out
+pr_top10_fat_aux$fat[pr_top10_fat_aux$produto_categoria_id=='-1'] <- fat_out
+
+##E aqui removo as demais linhas, que já foram adicionadas a "Outros"
+pr_top10_fat_aux <- pr_top10_fat_aux[!is.na(pr_top10_fat_aux$categoria_nome),]
+
+##Aqui só renomeio pra ver que a categoria outros tem um * representando a soma de todas as outras categorias também
+pr_top10_fat_aux$categoria_nome[(pr_top10_fat_aux$categoria_nome == "OUTRA")] <- "OUTRA *"
+
+
+## Aqui já estõu fazendo a média das categorias
+pr_top10_fat_med <- pr_top10_fat_aux %>%
+  select(categoria_nome, produto_categoria_id, fat, n) %>%
+  group_by(produto_categoria_id) %>%
+  mutate(fat_med = fat/n) %>%
+  distinct (produto_categoria_id, .keep_all = TRUE) %>%
+  collect ()
+
+
+fat_tot_categorias <- pr_top10_fat_med
+
+fat_tot_categorias <- fat_tot_categorias %>%
+  mutate(med_emp = media_empresa) %>%
+  collect()
+
+
+## Gráfico 6 - Ticket médio por categoria e geral da empresa
+ax <- list(
+  autotick = TRUE,
+  title = "",
+  showticklabels = TRUE)
+p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
+              name = 'Ticket médio por categoria',
+              marker = list(color = 'lightblue'),
+              text = ~paste(function_format_din(fat_med)),
+              hoverinfo = "text")
+
+p3 <- p3 %>%
+  layout(barmode = 'identity', xaxis = ax, yaxis = ax)
+
+p3 <- p3 %>% add_trace(type = 'scatter', mode = 'line', yaxis = 'y2',
+                       name = 'Ticket médio da empresa',
+                       x = ~categoria_nome,
+                       y = ~med_emp,
+                       line = list(color = 'red'),
+                       text = ~paste(function_format_din(med_emp)),
+                       hoverinfo = "text",
+                       marker = list(color = 'red', opacity=0))
+
+p3 <- p3 %>%
+  layout(
+    yaxis = list(side = 'left', title = 'Faturamento', showgrid = TRUE, zeroline = FALSE),
+    #range nos dois eixos iguais pra ficar na mesma proporção
+    yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,400000)), yaxis = list(range = c(0,400000)),
+    ##aqui eu ajusto onde quero que apareça a legenda
+    legend = list(x=0.8, y=0.9)#)
+  )
+if(dash == F){
+  p3
+}
 
 
 if(teste == F){
   #tabelas
-  rm(proposta, proposta_pagamento, pr_ij_pp)
+  rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_pprod_ij_prod, pprod_ij_prod, pr_top10_fat, pr_top10_fat_aux, pr_top10_fat_med, produto, proposta, prop_ij_neg_ij_vend, proposta_pagamento, proposta_produto, top10_fat, top10_fat_ij_cat)
   #variáveis
-  rm()
+  rm(fat_out, media_empresa, n_out, total_empresa)
+}
+
+##############################################
+### Faturamento de propostas em 2020 por status
+
+##Aqui tenho a soma de faturamento da empresa dividido em categorias
+p_ij_n_ij_pp_sum <- p_ij_n_ij_pp %>%
+  select (proposta_status, pp_valor) %>%
+  group_by(proposta_status) %>%
+  mutate (valor_proposta = sum(pp_valor)) %>%
+  distinct(proposta_status, .keep_all = TRUE) %>%
+  collect()
+
+## Aqui agrupo as categorias
+p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum %>%
+  select (proposta_status, valor_proposta) %>%
+  group_by(proposta_status) %>%
+  mutate (valor_status = sum(valor_proposta)) %>%
+  distinct(proposta_status, .keep_all = TRUE) %>%
+  arrange(proposta_status) %>%
+  collect()
+
+##Usar pra renomear os status das propostas
+status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
+##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
+p_ij_n_ij_pp_sum_cat$proposta_status <- with(p_ij_n_ij_pp_sum_cat, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
+                                                                       labels = status))
+
+###Gráfico 7 - Faturamento de propostas por status
+ax <- list(
+  autotick = TRUE,
+  title = "",
+  showticklabels = TRUE)
+p4 <- plot_ly(p_ij_n_ij_pp_sum_cat, x = ~proposta_status, y = ~valor_status, type = 'bar',
+              name = 'Faturamento por status',
+              marker = list(color = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32")),
+              text = ~paste(function_format_din(valor_status)),
+              hoverinfo = "text")
+
+p4 <- p4 %>%
+  layout(barmode = 'identity', xaxis = ax, yaxis = ax)
+
+if(dash == F){
+  p4
+}
+if(teste == F){
+  #tabelas
+  rm(ax, p_ij_n_ij_pp, p_ij_n_ij_pp_empresa_cat, p_ij_n_ij_pp_sum, p_ij_n_ij_pp_sum_cat);
+  #variáveis
+  rm(status);
 }
 ##############################################
-
 
 if (teste == 0) {
   #rm(list=ls())
