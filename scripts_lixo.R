@@ -102,3 +102,31 @@ ggplotly(p4) %>%
     ##Se usar ggplot vai pro lugar, se usar o plotly tem q mover como fiz abaixo
     #p0 <- p0+theme (legend.position = "bottom") ->
     ggplotly(p4)
+
+
+    ## Gráfico 9 - Ticket médio por categoria e geral da empresa
+    ###Aparecendo barra + linha (no lugar errado)
+    ax <- list(
+      autotick = TRUE,
+      title = "",
+      showticklabels = TRUE)
+    p3 <- plot_ly(fat_tot_categorias)
+    p3 <- p3 %>%
+      add_trace(type = "bar", x = ~categoria_nome, y = ~fat_med,
+                  name = 'bar',
+                  text = ~paste(fat_med, 'em'),
+                  hoverinfo = "text")
+
+    p3
+    p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
+                           x = ~categoria_nome,
+                           y = ~med_emp,
+                           name = 'Media',
+                           line = list(color = '#07A4B5'),
+                           marker = list(color = 'red', opacity=0))
+    p3 <- p3 %>%
+      layout(xaxis = list(title = ""),
+             yaxis = list(side = 'left', title = 'Faturamento', showgrid = TRUE, zeroline = FALSE),
+             yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F),
+             showlegend = F)
+    p3

@@ -786,14 +786,15 @@ fat_2018_mes <- ng_ij_hist_ij_ven_ij_np_2018_fat %>%
   group_by (ym) %>%
   summarize(ym_sum = sum(np_valor))
 
-fat_2017_mes <- ng_ij_hist_ij_ven_ij_np_2017_fat %>%
-  mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
-  group_by (ym) %>%
-  summarize(ym_sum = sum(np_valor))
+##Não será usado
+#fat_2017_mes <- ng_ij_hist_ij_ven_ij_np_2017_fat %>%
+#  mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
+#  group_by (ym) %>%
+#  summarize(ym_sum = sum(np_valor))
 
 ##Criando um faturamento médio
 fat_med3ant_mes <- fat_2019_mes
-fat_med3ant_mes$ym_sum <- (fat_2017_mes$ym_sum+fat_2018_mes$ym_sum+fat_2019_mes$ym_sum)/3
+fat_med3ant_mes$ym_sum <- (fat_2018_mes$ym_sum+fat_2019_mes$ym_sum)/2
 
 fat_2020_med3ant_mes <- data.frame(fat_2020_mes, fat_med3ant_mes)
 
