@@ -307,20 +307,20 @@ ax <- list(
 p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
               name = 'Ticket médio por categoria',
               marker = list(color = 'lightblue'),
-              text = ~paste(function_format_din(fat_med)),
+              text = ~paste(categoria_nome,'<br>' , function_format_din(fat_med)),
               hoverinfo = "text")
 
 p3 <- p3 %>%
   layout(barmode = 'identity', xaxis = ax, yaxis = ax)
 
-p3 <- p3 %>% add_trace(type = 'scatter', mode = 'line', yaxis = 'y2',
+p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
                        name = 'Ticket médio da empresa',
                        x = ~categoria_nome,
                        y = ~med_emp,
                        line = list(color = 'red'),
-                       text = ~paste(function_format_din(med_emp)),
+                       text = ~paste('Ticket médio<br>' , function_format_din(med_emp)),
                        hoverinfo = "text",
-                       marker = list(color = 'red', opacity=0))
+                       marker = list(color = 'orange'))
 
 p3 <- p3 %>%
   layout(
@@ -376,7 +376,7 @@ ax <- list(
 p4 <- plot_ly(p_ij_n_ij_pp_sum_cat, x = ~proposta_status, y = ~valor_status, type = 'bar',
               name = 'Faturamento por status',
               marker = list(color = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32")),
-              text = ~paste(function_format_din(valor_status)),
+              text = ~paste(proposta_status,'<br>' , function_format_din(valor_status)),
               hoverinfo = "text")
 
 p4 <- p4 %>%
@@ -387,7 +387,7 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(ax, p_ij_n_ij_pp, p_ij_n_ij_pp_empresa_cat, p_ij_n_ij_pp_sum, p_ij_n_ij_pp_sum_cat);
+  rm(ax, p_ij_n_ij_pp, p_ij_n_ij_pp_sum, p_ij_n_ij_pp_sum_cat);
   #variáveis
   rm(status);
 }

@@ -129,7 +129,7 @@ ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>%
 ###Gráfico 0 - Número de clientes por vendedor
 ##############################################
 n0 <- ggplot(ng_ij_vn_ij_np_fat, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), total_fat, fill=(negocio_status),
-                                     text = paste('Faturado neste status:', total_fat_t))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+                                     text = paste('Valor neste status:', total_fat_t))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   ylab("Número de clientes") +
   #ggtitle("Volume de negócios cadastrados por vendedor, ano 2020") +
@@ -224,7 +224,7 @@ ng_ij_vn_ij_np_fech_fat <- ng_ij_vn_ij_np_fech_fat %>%
 ### Gráfico 1 - Faturamento de negócios fechados em 2020
 #########################################################
 n3 <- ggplot(ng_ij_vn_ij_np_fech_fat, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), total_fat, fill=factor(negocio_status),
-                                          text = paste('Faturado neste status:', total_fat_t))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+                                          text = paste('Valor neste status:', total_fat_t))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   theme (axis.title = element_blank(), axis.text.x = element_blank())+
   scale_fill_manual(values = c("#32CD32", "orange", "#DE0D26"),)+
@@ -662,7 +662,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_2020  <- ng_ij_hist_ij_ven_funil_fat_fec_2020  %
   collect()
 
 ng_ij_hist_ij_ven_funil_fat_fec_2020 <- ng_ij_hist_ij_ven_funil_fat_fec_2020 %>%
-  mutate(total_fat_t = function_format_din(total_faturado))
+  mutate(total_fat_t = function_format_din_mi(total_faturado))
 
 ##Gráfico de pizza fechados do ano 2020
 ##############################################
@@ -708,19 +708,22 @@ ng_ij_hist_ij_ven_funil_fat_fec_2020_mes  <- ng_ij_hist_ij_ven_funil_fat_fec_202
 
 #criando uma coluna nova para usar como texto dentro do gráfico
 ng_ij_hist_ij_ven_funil_fat_fec_2020_mes <- ng_ij_hist_ij_ven_funil_fat_fec_2020_mes %>%
-  mutate(total_fat_t = function_format_din(total_faturado))
+  mutate(total_fat_t = function_format_din_mi(total_faturado))
 
 ##Gráfico de pizza fechados do mês
 ##############################################
 
 colors_pie <- c("#32CD32", "yellow" , "orange" , "#DE0D26")
 n11 <- plot_ly(ng_ij_hist_ij_ven_funil_fat_fec_2020_mes, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
+               
                text = ~total_fat_t,
                texttemplate = "%{text}mi (%{percent})",
                hovertemplate = paste ("%{label} <br>",
                                       "%{text}mi <br>",
                                       "Equivalente a %{percent}",
                                       "<extra></extra>"),
+               #text = ~paste(negocio_status, '<br>',function_format_din_mi(total_fat_t),'milhões'),
+               #hoverinfo = "text+ <br>percent",
                marker = list(colors = colors_pie))
 
 if(dash == F){
@@ -1024,20 +1027,20 @@ ax <- list(
 p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
               name = 'Ticket médio por categoria',
               marker = list(color = 'lightblue'),
-              text = ~paste(function_format_din(fat_med)),
+              text = ~paste(categoria_nome,'<br>' , function_format_din(fat_med)),
               hoverinfo = "text")
 
 p3 <- p3 %>%
   layout(barmode = 'identity', xaxis = ax, yaxis = ax)
 
-p3 <- p3 %>% add_trace(type = 'scatter', mode = 'line', yaxis = 'y2',
+p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
                        name = 'Ticket médio da empresa',
                        x = ~categoria_nome,
                        y = ~med_emp,
                        line = list(color = 'red'),
-                       text = ~paste(function_format_din(med_emp)),
+                       text = ~paste('Ticket médio<br>' , function_format_din(med_emp)),
                        hoverinfo = "text",
-                       marker = list(color = 'red', opacity=0))
+                       marker = list(color = 'orange'))
 
 p3 <- p3 %>%
   layout(
@@ -1046,7 +1049,7 @@ p3 <- p3 %>%
     yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,400000)), yaxis = list(range = c(0,400000)),
     ##aqui eu ajusto onde quero que apareça a legenda
     legend = list(x=0.8, y=0.9)#)
-    )
+  )
 if(dash == F){
   p3
 }
@@ -1068,7 +1071,7 @@ p_ij_n_ij_pp_sum <- p_ij_n_ij_pp %>%
   group_by(proposta_status) %>%
   mutate (valor_proposta = sum(pp_valor)) %>%
   distinct(proposta_status, .keep_all = TRUE) %>%
-    collect()
+  collect()
 
 ## Aqui agrupo as categorias
 p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum %>%
@@ -1083,7 +1086,7 @@ p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum %>%
 status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
 p_ij_n_ij_pp_sum_cat$proposta_status <- with(p_ij_n_ij_pp_sum_cat, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
-                                                                         labels = status))
+                                                                       labels = status))
 
 ###Gráfico 7 - Faturamento de propostas por status
 ax <- list(
@@ -1093,7 +1096,7 @@ ax <- list(
 p4 <- plot_ly(p_ij_n_ij_pp_sum_cat, x = ~proposta_status, y = ~valor_status, type = 'bar',
               name = 'Faturamento por status',
               marker = list(color = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32")),
-              text = ~paste(function_format_din(valor_status)),
+              text = ~paste(proposta_status,'<br>' , function_format_din(valor_status)),
               hoverinfo = "text")
 
 p4 <- p4 %>%
@@ -1104,7 +1107,7 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(ax, p_ij_n_ij_pp, p_ij_n_ij_pp_empresa_cat, p_ij_n_ij_pp_sum, p_ij_n_ij_pp_sum_cat);
+  rm(ax, p_ij_n_ij_pp, p_ij_n_ij_pp_sum, p_ij_n_ij_pp_sum_cat);
   #variáveis
   rm(status);
 }
