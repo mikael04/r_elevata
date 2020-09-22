@@ -48,5 +48,10 @@ Junções
       n
   ______________________________________________________________________________________________________
   - proposta_scripts
-      prop_ij_neg <- inner join proposta, negócio (proposta_negocio_id e negocio_id)
+      prop_ij_neg <- inner join proposta, negócio (proposta_negocio_id e negocio_id) (removido negócios sem vendedor_id)
+      prop_ij_neg_2020 <- anterior filtrado 2020
+      prop_ij_neg_cont_2020 <- contando número de negócios 2020 (campo: cont_status)
+      prop_ij_neg_ij_vend <- inner join prop_ij_neg com vendedor (negocio_vendedor_id e vendedor_id) usado pra ter o nome do vendedor
+      prop_ij_neg_ij_vend_2020 <- filtrando empresa (só tabela de vendedor tem, por isso não foi feita antes)
+
   ______________________________________________________________________________________________________

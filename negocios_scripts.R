@@ -341,8 +341,8 @@ chart_ng_top_ag <- ng_top_ag
 hc_n4 <- chart_ng_top_ag %>%
   hchart (
     type = "treemap",
-    hcaes(x=categoria_nome, value=faturamento, color = faturamento)) %>%
-  hc_tooltip(formatter= JS("function () { return 'Faturado da categoria: ' + this.point.fat_t;}")) %>%
+    hcaes(x=categoria_nome, value=faturamento, color = faturamento, name = categoria_nome)) %>%
+  hc_tooltip(formatter = JS("function () { return '<b>' + this.point.categoria_nome + '</b><br /> ' + ' <br />' + this.point.fat_t;}")) %>%
   hc_colorAxis(minColor = "#ADD8E6", maxColor = "#3182FF")
 
 if(dash == F){
@@ -390,7 +390,7 @@ hc_n5 <- chart_ng_top_ag_fat %>%
   hchart (
     "treemap",
     hcaes(x=categoria_nome, value=faturamento, color = faturamento)) %>%
-  hc_tooltip(formatter= JS("function () { return 'Faturado da categoria: ' + this.point.fat_t;}")) %>%
+  hc_tooltip(formatter = JS("function () { return '<b>' + this.point.categoria_nome + '</b><br /> ' + ' <br />' + this.point.fat_t;}")) %>%
   hc_colorAxis(minColor = "#90EE90", maxColor = "#32CD32")
 
 if(dash == F){
@@ -786,48 +786,27 @@ fat_2018_mes <- ng_ij_hist_ij_ven_ij_np_2018_fat %>%
   group_by (ym) %>%
   summarize(ym_sum = sum(np_valor))
 
-##Não será usado
-#fat_2017_mes <- ng_ij_hist_ij_ven_ij_np_2017_fat %>%
-#  mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
-#  group_by (ym) %>%
-#  summarize(ym_sum = sum(np_valor))
-
-##Criando um faturamento médio
-fat_med2ant_mes <- fat_2019_mes
-fat_med2ant_mes$ym_sum <- (fat_2018_mes$ym_sum+fat_2019_mes$ym_sum)/2
-
-##Vou usar isso pra remover as linhas que não existem no 2020_mes (ainda não aconteceram)
-n_linhas_rem <- 12-nrow(fat_2020_mes)
-fat_med2ant_mes_rem <- fat_med2ant_mes[c(1:n_linhas),]
-fat_med2ant_mes_rem <- fat_med2ant_mes_rem[,-1]
-
-##Pegando o de 2020 que será o primeiro a comparar
-fat_2020_med2ant_mes <- fat_2020_mes
-## Renomeando pra ym_sum_ant e colocando tudo no mesmo data frame
-fat_2020_med2ant_mes[, "ym_sum_2ant"]<- fat_med2ant_mes_rem$ym_sum
 
 
-##Repetindo para anos anteriores
-fat_2018_mes_rem <- fat_2018_mes[c(1:n_linhas),]
-fat_2018_mes_rem <- fat_2018_mes_rem[,-1]
+###Forma 2 de fazer o gráfico de linhas com faturamento anual (substituindo com NA linhas faltantes)
+#######################################################################
+n_linhas <- nrow(fat_2020_mes)
+fat_2020_mes_aux <- fat_2019_mes
+fat_2020_mes_aux$ym_sum <- NA
+fat_2020_mes_aux$ym_sum[1:n_linhas] <- fat_2020_mes$ym_sum
 
-## Renomeando pra ym_sum_ant e colocando tudo no mesmo data frame
-fat_2020_med2ant_mes[, "ym_sum_2018"]<- fat_2018_mes_rem$ym_sum
+fat_2020_2019_2018_mes <- fat_2020_mes_aux
+fat_2020_2019_2018_mes[, "ym_sum_2019"] <- fat_2019_mes$ym_sum
+fat_2020_2019_2018_mes[, "ym_sum_2018"] <- fat_2018_mes$ym_sum
 
-##Repetindo para anos anteriores
-fat_2019_mes_rem <- fat_2019_mes[c(1:n_linhas),]
-fat_2019_mes_rem <- fat_2019_mes_rem[,-1]
-
-## Renomeando pra ym_sum_ant e colocando tudo no mesmo data frame
-fat_2020_med2ant_mes[, "ym_sum_2019"]<- fat_2019_mes_rem$ym_sum
-
-##terei que fazer algumas mudanças pra automatizar o processo
 meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
-meses_rem = meses[1:n_linhas]
 ## alterando pra números pra poder fazer da mesma forma
-fat_2020_med2ant_mes$ym <- as.integer(fat_2020_med2ant_mes$ym)
-fat_2020_med2ant_mes$ym <- with(fat_2020_med2ant_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8),
-                                                                              labels = meses_rem))
+fat_2020_2019_2018_mes$ym <- as.integer(fat_2020_2019_2018_mes$ym)
+fat_2020_2019_2018_mes$ym <- with(fat_2020_2019_2018_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
+                                                          labels = meses))
+
+
+#######################################################################
 
 ##Começando o gráfico
 ###Assim estarei mostrando 2020 e uma média dos anos anteriores
@@ -841,20 +820,28 @@ ay <- list(
   title = ''
 )
 
-n12 <- plot_ly(fat_2020_med2ant_mes)
+###Assim estarei mostrando 2020, 2019 e 2018
+
+n12 <- plot_ly(fat_2020_2019_2018_mes)
 n12 <- n12 %>%
   add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y =~ym_sum,
             name = 'Faturamento de 2020',
             text = ~paste(function_format_din_mi(ym_sum),'milhões'),
             hoverinfo = "text",
             color = I("blue")
-           )
+  )
 n12 <- n12 %>%
-  add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y = ~ym_sum_2ant, yaxis = ay,
-            name = 'Média de faturamento dos dois anos anteriores',
-            text = ~paste(function_format_din_mi(ym_sum_2ant),'milhões'),
+  add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y = ~ym_sum_2019, yaxis = ay,
+            name = 'Faturamento de 2019',
+            text = ~paste(function_format_din_mi(ym_sum_2019),'milhões'),
             hoverinfo = "text",
             color = I("red"))
+n12 <- n12 %>%
+  add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y = ~ym_sum_2018, yaxis = ay,
+            name = 'Faturamento de 2018',
+            text = ~paste(function_format_din_mi(ym_sum_2018),'milhões'),
+            hoverinfo = "text",
+            color = I("green"))
 
 n12 <- n12 %>%
   layout(xaxis = a, yaxis = a,
@@ -862,44 +849,6 @@ n12 <- n12 %>%
     legend = list(x=0.8, y=0.9)#)
   )
 n12
-###Assim estarei mostrando 2020, 2019 e 2018
-
-n13 <- plot_ly(fat_2020_med2ant_mes)
-n13 <- n13 %>%
-  add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y =~ym_sum,
-            name = 'Faturamento de 2020',
-            text = ~paste(function_format_din_mi(ym_sum),'milhões'),
-            hoverinfo = "text",
-            color = I("blue")
-  )
-n13 <- n13 %>%
-  add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y = ~ym_sum_2019, yaxis = ay,
-            name = 'Faturamento de 2019',
-            text = ~paste(function_format_din_mi(ym_sum_2019),'milhões'),
-            hoverinfo = "text",
-            color = I("red"))
-n13 <- n13 %>%
-  add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y = ~ym_sum_2018, yaxis = ay,
-            name = 'Faturamento de 2018',
-            text = ~paste(function_format_din_mi(ym_sum_2018),'milhões'),
-            hoverinfo = "text",
-            color = I("green"))
-
-n13 <- n13 %>%
-  layout(xaxis = a, yaxis = a,
-    #aqui eu ajusto onde quero que apareça a legenda
-    legend = list(x=0.8, y=0.9)#)
-  )
-n13
-
-
-#n12 <- n12 %>%
-#  add_trace(fat_2020_mes, type = 'scatter', mode = 'line', x = ~ym, y = ~ym_sum, yaxis = 'y2',
-#            name = 'Média de faturamento dos três anos anteriores',
-#            marker = list(color = 'red'),
-#            text = ~paste(function_format_din_mi(ym_sum)),
-#            hoverinfo = "text")
-
 
 ay <- list(
   tickfont = list(color = "red"),
@@ -907,34 +856,7 @@ ay <- list(
   side = 'right',
   title = ''
 )
-#TESTE
-n13 <- plot_ly(fat_2020_med2ant_mes)
-n13 <- n13 %>%
-  add_lines(x = ~ym, y = ~ym_sum)
-n13
-n13 <- n13 %>%
-  add_lines(x = ~ym, y = ~ym_sum_ant,
-            xaxis = list(tittle = "x"))
-n13
 
-
-ay <- list(
-  tickfont = list(color = "red"),
-  overlaying = 'y',
-  side = 'right',
-  title = ''
-)
-#TESTE
-n13 <- plot_ly(fat_2020_med2ant_mes)
-n13 <- n13 %>%
-  add_lines(x = ~ym, y = ~ym_sum)
-n13
-n13 <- n13 %>%
-  add_lines(x = ~ym, y = ~ym_sum_ant, yaxis2 = ay,
-            xaxis = list(tittle = "x"))
-n13
-
-#n12 <- plot_ly(fat_2020_mes, type = 'scatter', mode = 'line', x = ~ym, y =~ym_sum)
 
 
 if (teste == F){

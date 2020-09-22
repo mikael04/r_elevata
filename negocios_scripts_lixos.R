@@ -27,10 +27,10 @@ teste = 0
 ##Variável "Global"
 empresa = 16 #Super
 
-con <- DBI::dbConnect(odbc::odbc(), 
-                      Driver = "SQL Server", 
-                      Server = "localhost\\SQLEXPRESS", 
-                      Database = "nhmobile_agriculture", 
+con <- DBI::dbConnect(odbc::odbc(),
+                      Driver = "SQL Server",
+                      Server = "localhost\\SQLEXPRESS",
+                      Database = "nhmobile_agriculture",
                       Trusted_Connection = "True")
 
 ##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
@@ -256,7 +256,7 @@ if (teste == 0) {
 ## Inner join pra não pegar os np_produto_id = 0
 ngp_ij_pd <- inner_join(negocio_produto, produto, by=c("np_produto_id"="produto_id"))%>%
   filter (np_ativo == TRUE) %>%
-  select (np_negocio_id, np_produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id, np_quantidade, np_valor) 
+  select (np_negocio_id, np_produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id, np_quantidade, np_valor)
 
 if (teste == 0) {
   rm(negocio_produto, produto)
@@ -383,11 +383,11 @@ if (teste == 0) {
 ##################################################################
 ### Gráfico de produtos mais vendidos por negócios e seu faturamento (FAZER DEPOIS)
 ##################################################################
-#vou pegar a tabela de negócios historico e vendedor com negócio produto 
+#vou pegar a tabela de negócios historico e vendedor com negócio produto
 #ng_prod <- ng_ij_hist_ij_ven_ij_ngp_ij_pd %>%
 #  select(negocio_id, negocio_negocio_situacao_id, negocio_data_cadastro, np_produto_id, produto_nome, np_quantidade, np_valor)
 
-##Join com produto pra saber qual produto 
+##Join com produto pra saber qual produto
 #ng_ij_hist_ij_prod <- inner_join(ng_ij_hist_ij_ven_2020, ngp_ij_pd, by=c("negocio_id" = "np_negocio_id"))
 
 ### Idade dos negócios
@@ -445,7 +445,7 @@ ng_ij_hist_ij_ven_idd$idade_cat[ng_ij_hist_ij_ven_idd$idade < 366] <- idades[3]
 ng_ij_hist_ij_ven_idd$idade_cat[ng_ij_hist_ij_ven_idd$idade < 181] <- idades[2]
 ng_ij_hist_ij_ven_idd$idade_cat[ng_ij_hist_ij_ven_idd$idade < 61] <- idades[1]
 
-          
+
 ##Aqui eu posso fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios c/status) e depois o join, sem o select, ou então usar o mutate como foi feito
 ng_ij_hist_ij_ven_num <- ng_ij_hist_ij_ven_idd %>%
   select(negocio_id, negocio_vendedor_id, vendedor_nome, idade, idade_cat) %>%
@@ -526,7 +526,7 @@ if (teste == 0) {
 #  scale_fill_manual(values = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"),)+
 #  theme_void() +
 #  geom_text(aes(x = 1, y = cumsum(porcentagem) - porcentagem/2, label = porcent), size=5)
- # 
+ #
 #ggplotly(n7)
 
 ## Gráfico de waffle, ainda flata arrumar nome dos agrupamentos
@@ -556,7 +556,7 @@ ng_ij_hist_ij_ven_funil <- ng_ij_hist_ij_ven_2020[!(ng_ij_hist_ij_ven_2020$negoc
 
 ng_ij_hist_ij_ven_funil <- ng_ij_hist_ij_ven_funil %>%
   filter(negocio_negocio_situacao_id != 0)
-  
+
 status = c("1 - em negociacao", "2 - montagem de cadastro", "3 - aguardando aprovacao", "4 - financiamento aprovado", "5 - faturado", "6 - financiamento nao aprovado", "7 - desistencia do cliente", "8 - perdemos para concorrencia", "0 - intencao ou prospeccao")
 
 ##aqui ele substitui linha a linha cada situação pelo seu respectivo em string
@@ -669,7 +669,7 @@ ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
 #ng_ij_hist_ij_emp_num$idade_cat = factor(ng_ij_hist_ij_emp_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
 
 
-##Funil de vendas (simples), negócios abertos em contagem 
+##Funil de vendas (simples), negócios abertos em contagem
 n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat) %>%
   add_trace(
     type ="funnelarea",
@@ -701,7 +701,7 @@ status_f = c("5 - faturado", "6 - financiamento nao aprovado", "7 - desistencia 
 
 ##vou tentar remover apenas os que tem status fechado (4 - faturado, 5 - financiamento não aprovado, 6 - desistência do cliente, 7 - perdemos para a concorrência)
 ##Tempo: Total
-##status abertos 
+##status abertos
 #ng_rj já havia feito o corte apenas em fechados após 2020
 ng_ij_hist_ij_ven_fec_2020 <- ng_ij_hist_ij_ven_ij_np_2020 %>%
   filter(negocio_negocio_situacao_id %in% st_f)
@@ -805,3 +805,257 @@ if (teste == 0) {
   #rm(list=ls())
 }
 
+
+###Forma 1 de fazer o gráfico de linhas com faturamento anual (cortando os meses que não aparecem no ano atual)
+#######################################################################
+##Criando um faturamento médio
+fat_med2ant_mes <- fat_2019_mes
+fat_med2ant_mes$ym_sum <- (fat_2018_mes$ym_sum+fat_2019_mes$ym_sum)/2
+
+##Vou usar isso pra remover as linhas que não existem no 2020_mes (ainda não aconteceram)
+n_linhas <- nrow(fat_2020_mes)
+fat_med2ant_mes_rem <- fat_med2ant_mes[c(1:n_linhas),]
+fat_med2ant_mes_rem <- fat_med2ant_mes_rem[,-1]
+
+##Pegando o de 2020 que será o primeiro a comparar
+fat_2020_med2ant_mes <- fat_2020_mes
+## Renomeando pra ym_sum_ant e colocando tudo no mesmo data frame
+fat_2020_med2ant_mes[, "ym_sum_2ant"]<- fat_med2ant_mes_rem$ym_sum
+
+
+##Repetindo para anos anteriores
+fat_2018_mes_rem <- fat_2018_mes[c(1:n_linhas),]
+fat_2018_mes_rem <- fat_2018_mes_rem[,-1]
+
+## Renomeando pra ym_sum_ant e colocando tudo no mesmo data frame
+fat_2020_med2ant_mes[, "ym_sum_2018"]<- fat_2018_mes_rem$ym_sum
+
+##Repetindo para anos anteriores
+fat_2019_mes_rem <- fat_2019_mes[c(1:n_linhas),]
+fat_2019_mes_rem <- fat_2019_mes_rem[,-1]
+
+## Renomeando pra ym_sum_ant e colocando tudo no mesmo data frame
+fat_2020_med2ant_mes[, "ym_sum_2019"]<- fat_2019_mes_rem$ym_sum
+
+##terei que fazer algumas mudanças pra automatizar o processo
+meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
+meses_rem = meses[1:n_linhas]
+## alterando pra números pra poder fazer da mesma forma
+fat_2020_med2ant_mes$ym <- as.integer(fat_2020_med2ant_mes$ym)
+fat_2020_med2ant_mes$ym <- with(fat_2020_med2ant_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8),
+                                                                              labels = meses_rem))
+##########################################################################################################
+
+###Plot de 2020 e 2 anos anteriores
+### Gráfico com a média dos dois anos anteriores
+#n12 <- plot_ly(fat_med2an_mes)
+#n12 <- n12 %>%
+#  add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y =~ym_sum,
+#            name = 'Faturamento de 2020',
+#            text = ~paste(function_format_din_mi(ym_sum),'milhões'),
+#            hoverinfo = "text",
+#            color = I("blue")
+#           )
+#n12 <- n12 %>%
+#  add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y = ~ym_sum_2019, yaxis = ay,
+#            name = 'Média de faturamento dos dois anos anteriores',
+#            text = ~paste(function_format_din_mi(ym_sum_2ant),'milhões'),
+#            hoverinfo = "text",
+#            color = I("red"))
+
+#n12 <- n12 %>%
+#  layout(xaxis = a, yaxis = a,
+    #aqui eu ajusto onde quero que apareça a legenda
+#    legend = list(x=0.8, y=0.9)#)
+#  )
+#n12
+
+### Ticket médio por proposta
+
+### Uma proposta tem n proposta_pagamento (cuidar as ativas, pp_ativo = 1)
+##coleta todos proposta_pagamenmto
+proposta_pagamento <- tbl(con, "proposta_pagamento") %>%
+  select(pp_id, pp_proposta_id, pp_modo_id, pp_forma_id, pp_valor, pp_ativo, pp_usado_id) %>%
+  collect()
+
+proposta_pagamento <- proposta_pagamento %>%
+  filter(pp_ativo == TRUE)
+
+proposta_produto <- tbl(con, "proposta_produto") %>%
+  select(pp_id, pp_proposta_id, pp_produto_id, pp_quantidade, pp_valor, pp_ativo) %>%
+  collect()
+
+proposta_produto <- proposta_produto %>%
+  filter(pp_ativo == TRUE)
+
+produto <- tbl(con, "produto") %>%
+  select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id) %>%
+  collect()
+
+pprod_ij_prod <- inner_join(proposta_produto, produto, by = c("pp_produto_id" = "produto_id"))
+
+##Junção pra termos valor da proposta (preciso do negócio pra filtrar empresa e vendedores se preciso)
+p_ij_n_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_pagamento, by = c("proposta_id" = "pp_proposta_id")) %>%
+  arrange(pp_valor)
+
+##filtro da empresa e também propostas finalizadas
+p_ij_n_ij_pp_empresa <- p_ij_n_ij_pp %>%
+  filter(vendedor_empresa_id == empresa, proposta_status == 4)
+
+p_ij_n_ij_pp_empresa <- p_ij_n_ij_pp_empresa %>%
+  group_by(proposta_id) %>%
+  mutate (valor_proposta = sum(pp_valor)) %>%
+  collect ()
+
+##media geral da empresa
+total_empresa <- sum(p_ij_n_ij_pp_empresa$pp_valor)
+media_empresa <- round(total_empresa/nrow(p_ij_n_ij_pp_empresa), 2)
+
+##Começando as junções pra chegar nas categorias
+p_ij_pprod_ij_prod <- inner_join(proposta, pprod_ij_prod, by = c('proposta_id' = 'pp_proposta_id')) %>%
+  select(proposta_id, proposta_status, pp_produto_id, pp_quantidade, pp_valor, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id) %>%
+  filter (proposta_status == 4)
+
+## Primeira vez pra verificar quais são os top8
+pr_top8_fat <- p_ij_pprod_ij_prod %>%
+  select(produto_categoria_id, pp_valor) %>%
+  group_by(produto_categoria_id) %>%
+  mutate(fat = sum(pp_valor)) %>%
+  mutate(n = n()) %>%
+  distinct (produto_categoria_id, .keep_all = TRUE) %>%
+  collect ()
+
+
+##Isso aqui tudo é pra pegar o top 8 (antes top10, mas aparecia uma categoria que não queríamos), substituir os que não estão por -Outros e depois refazer a média
+top8_fat <- head.matrix(pr_top8_fat, n=8)
+
+##Vou fazer um join pra pegar os nomes de cada categoria
+categoria <- tbl(con, "categoria") %>%
+  select(categoria_id, categoria_nome) %>%
+  collect()
+
+top8_fat_ij_cat <- inner_join(top8_fat, categoria, by = c("produto_categoria_id"="categoria_id"))
+top8_fat_ij_cat <- top8_fat_ij_cat[, -2:-4]
+top8_fat_ij_cat <- as.data.frame(top8_fat_ij_cat)
+
+##Aqui estou juntando para agrupar primeiro através do na
+pr_top8_fat_aux <- left_join(pr_top8_fat, top8_fat_ij_cat, by=c("produto_categoria_id" = "produto_categoria_id"))
+pr_top8_fat_aux$produto_categoria_id[is.na(pr_top8_fat_aux$categoria_nome)] <- "-1"
+
+
+##Depois de setar as linhas q tem nome de coluna = na (não estão no top8) e ter setado todas pra id = -1, faço a soma dos n e faturamentos
+n_out <- sum(pr_top8_fat_aux$n[which(pr_top8_fat_aux$produto_categoria_id=="-1")])
+fat_out <- sum(pr_top8_fat_aux$fat[which(pr_top8_fat_aux$produto_categoria_id=="-1")])
+
+##E então, repasso o valor de volta para a coluna "outros", de faturamento total (de todas as categorias menos as q estão no top8) e número de vezes que aparecem
+pr_top8_fat_aux$n[pr_top8_fat_aux$produto_categoria_id=='-1'] <- n_out
+pr_top8_fat_aux$fat[pr_top8_fat_aux$produto_categoria_id=='-1'] <- fat_out
+
+##E aqui removo as demais linhas, que já foram adicionadas a "Outros"
+pr_top8_fat_aux <- pr_top8_fat_aux[!is.na(pr_top8_fat_aux$categoria_nome),]
+
+##Aqui só renomeio pra ver que a categoria outros tem um * representando a soma de todas as outras categorias também
+pr_top8_fat_aux$categoria_nome[(pr_top8_fat_aux$categoria_nome == "OUTRA")] <- "OUTRA *"
+
+
+## Aqui já estõu fazendo a média das categorias
+pr_top8_fat_med <- pr_top8_fat_aux %>%
+  select(categoria_nome, produto_categoria_id, fat, n) %>%
+  group_by(produto_categoria_id) %>%
+  mutate(fat_med = fat/n) %>%
+  distinct (produto_categoria_id, .keep_all = TRUE) %>%
+  collect ()
+
+
+fat_tot_categorias <- pr_top8_fat_med
+
+fat_tot_categorias <- fat_tot_categorias %>%
+  mutate(med_emp = media_empresa) %>%
+  collect()
+
+
+## Gráfico 6 - Ticket médio por categoria e geral da empresa
+ax <- list(
+  autotick = TRUE,
+  title = "",
+  showticklabels = TRUE)
+p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
+              name = 'Ticket médio por categoria',
+              marker = list(color = 'lightblue'),
+              text = ~paste(categoria_nome,'<br>' , function_format_din(fat_med)),
+              hoverinfo = "text")
+
+p3 <- p3 %>%
+  layout(barmode = 'identity', xaxis = ax, yaxis = ax)
+
+p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
+                       name = 'Ticket médio da empresa',
+                       x = ~categoria_nome,
+                       y = ~med_emp,
+                       line = list(color = 'red'),
+                       text = ~paste('Ticket médio<br>' , function_format_din(med_emp)),
+                       hoverinfo = "text",
+                       marker = list(color = 'orange'))
+
+p3 <- p3 %>%
+  layout(
+    yaxis = list(side = 'left', title = 'Faturamento', showgrid = TRUE, zeroline = FALSE, title = ''),
+    #range nos dois eixos iguais pra ficar na mesma proporção
+    yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,400000)), yaxis = list(range = c(0,400000)),
+    ##aqui eu ajusto onde quero que apareça a legenda
+    legend = list(x=0.8, y=0.9)#)
+  )
+if(dash == F){
+  p3
+}
+
+
+if(teste == F){
+  #tabelas
+  rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_pprod_ij_prod, pprod_ij_prod, pr_top8_fat, pr_top8_fat_aux,
+     pr_top8_fat_med, produto, prop_ij_neg_ij_vend,proposta_produto, top8_fat, top8_fat_ij_cat)
+  #variáveis
+  rm(fat_out, media_empresa, n_out, total_empresa)
+}
+
+##############################################
+
+###Forma 1 de fazer o gráfico de linhas com faturamento anual (cortando os meses que não aparecem no ano atual)
+#######################################################################
+##Criando um faturamento médio
+fat_med2ant_mes <- fat_2019_mes
+fat_med2ant_mes$ym_sum <- (fat_2018_mes$ym_sum+fat_2019_mes$ym_sum)/2
+
+##Vou usar isso pra remover as linhas que não existem no 2020_mes (ainda não aconteceram)
+n_linhas <- nrow(fat_2020_mes)
+fat_med2ant_mes_rem <- fat_med2ant_mes[c(1:n_linhas),]
+fat_med2ant_mes_rem <- fat_med2ant_mes_rem[,-1]
+
+##Pegando o de 2020 que será o primeiro a comparar
+fat_2020_med2ant_mes <- fat_2020_mes
+## Renomeando pra ym_sum_ant e colocando tudo no mesmo data frame
+fat_2020_med2ant_mes[, "ym_sum_2ant"]<- fat_med2ant_mes_rem$ym_sum
+
+
+##Repetindo para anos anteriores
+fat_2018_mes_rem <- fat_2018_mes[c(1:n_linhas),]
+fat_2018_mes_rem <- fat_2018_mes_rem[,-1]
+
+## Renomeando pra ym_sum_ant e colocando tudo no mesmo data frame
+fat_2020_med2ant_mes[, "ym_sum_2018"]<- fat_2018_mes_rem$ym_sum
+
+##Repetindo para anos anteriores
+fat_2019_mes_rem <- fat_2019_mes[c(1:n_linhas),]
+fat_2019_mes_rem <- fat_2019_mes_rem[,-1]
+
+## Renomeando pra ym_sum_ant e colocando tudo no mesmo data frame
+fat_2020_med2ant_mes[, "ym_sum_2019"]<- fat_2019_mes_rem$ym_sum
+
+##terei que fazer algumas mudanças pra automatizar o processo
+meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
+meses_rem = meses[1:n_linhas]
+## alterando pra números pra poder fazer da mesma forma
+fat_2020_med2ant_mes$ym <- as.integer(fat_2020_med2ant_mes$ym)
+fat_2020_med2ant_mes$ym <- with(fat_2020_med2ant_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8),
+                                                                              labels = meses_rem))
+##########################################################################################################

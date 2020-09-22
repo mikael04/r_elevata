@@ -347,8 +347,8 @@ chart_ng_top_ag <- ng_top_ag
 hc_n4 <- chart_ng_top_ag %>%
   hchart (
     type = "treemap",
-    hcaes(x=categoria_nome, value=faturamento, color = faturamento)) %>%
-  hc_tooltip(formatter= JS("function () { return 'Faturado da categoria: ' + this.point.fat_t;}")) %>%
+    hcaes(x=categoria_nome, value=faturamento, color = faturamento, name = categoria_nome)) %>%
+  hc_tooltip(formatter = JS("function () { return '<b>' + this.point.categoria_nome + '</b><br /> ' + ' <br />' + this.point.fat_t;}")) %>%
   hc_colorAxis(minColor = "#ADD8E6", maxColor = "#3182FF")
 
 if(dash == F){
@@ -396,7 +396,7 @@ hc_n5 <- chart_ng_top_ag_fat %>%
   hchart (
     "treemap",
     hcaes(x=categoria_nome, value=faturamento, color = faturamento)) %>%
-  hc_tooltip(formatter= JS("function () { return 'Faturado da categoria: ' + this.point.fat_t;}")) %>%
+  hc_tooltip(formatter = JS("function () { return '<b>' + this.point.categoria_nome + '</b><br /> ' + ' <br />' + this.point.fat_t;}")) %>%
   hc_colorAxis(minColor = "#90EE90", maxColor = "#32CD32")
 
 if(dash == F){
@@ -770,7 +770,7 @@ if (teste == F){
 ###########################################################################################################
 ###########################################################################################################
 
-
+##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
 ##coleta todas as propostas
 proposta <- tbl(con, "proposta") %>%
   select(proposta_id, proposta_versao, proposta_negocio_id, proposta_data_cadastro, proposta_status) %>%
@@ -961,8 +961,8 @@ p_ij_pprod_ij_prod <- inner_join(proposta, pprod_ij_prod, by = c('proposta_id' =
   select(proposta_id, proposta_status, pp_produto_id, pp_quantidade, pp_valor, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id) %>%
   filter (proposta_status == 4)
 
-## Primeira vez pra verificar quais são os top10
-pr_top10_fat <- p_ij_pprod_ij_prod %>%
+## Primeira vez pra verificar quais são os top8
+pr_top8_fat <- p_ij_pprod_ij_prod %>%
   select(produto_categoria_id, pp_valor) %>%
   group_by(produto_categoria_id) %>%
   mutate(fat = sum(pp_valor)) %>%
@@ -971,40 +971,40 @@ pr_top10_fat <- p_ij_pprod_ij_prod %>%
   collect ()
 
 
-##Isso aqui tudo é pra pegar o top 10, substituir os que não estão por -Outros e depois refazer a média
-top10_fat <- head.matrix(pr_top10_fat, n=10)
+##Isso aqui tudo é pra pegar o top 8 (antes top10, mas aparecia uma categoria que não queríamos), substituir os que não estão por -Outros e depois refazer a média
+top8_fat <- head.matrix(pr_top8_fat, n=8)
 
 ##Vou fazer um join pra pegar os nomes de cada categoria
 categoria <- tbl(con, "categoria") %>%
   select(categoria_id, categoria_nome) %>%
   collect()
 
-top10_fat_ij_cat <- inner_join(top10_fat, categoria, by = c("produto_categoria_id"="categoria_id"))
-top10_fat_ij_cat <- top10_fat_ij_cat[, -2:-4]
-top10_fat_ij_cat <- as.data.frame(top10_fat_ij_cat)
+top8_fat_ij_cat <- inner_join(top8_fat, categoria, by = c("produto_categoria_id"="categoria_id"))
+top8_fat_ij_cat <- top8_fat_ij_cat[, -2:-4]
+top8_fat_ij_cat <- as.data.frame(top8_fat_ij_cat)
 
 ##Aqui estou juntando para agrupar primeiro através do na
-pr_top10_fat_aux <- left_join(pr_top10_fat, top10_fat_ij_cat, by=c("produto_categoria_id" = "produto_categoria_id"))
-pr_top10_fat_aux$produto_categoria_id[is.na(pr_top10_fat_aux$categoria_nome)] <- "-1"
+pr_top8_fat_aux <- left_join(pr_top8_fat, top8_fat_ij_cat, by=c("produto_categoria_id" = "produto_categoria_id"))
+pr_top8_fat_aux$produto_categoria_id[is.na(pr_top8_fat_aux$categoria_nome)] <- "-1"
 
 
-##Depois de setar as linhas q tem nome de coluna = na (não estão no top10) e ter setado todas pra id = -1, faço a soma dos n e faturamentos
-n_out <- sum(pr_top10_fat_aux$n[which(pr_top10_fat_aux$produto_categoria_id=="-1")])
-fat_out <- sum(pr_top10_fat_aux$fat[which(pr_top10_fat_aux$produto_categoria_id=="-1")])
+##Depois de setar as linhas q tem nome de coluna = na (não estão no top8) e ter setado todas pra id = -1, faço a soma dos n e faturamentos
+n_out <- sum(pr_top8_fat_aux$n[which(pr_top8_fat_aux$produto_categoria_id=="-1")])
+fat_out <- sum(pr_top8_fat_aux$fat[which(pr_top8_fat_aux$produto_categoria_id=="-1")])
 
-##E então, repasso o valor de volta para a coluna "outros", de faturamento total (de todas as categorias menos as q estão no top10) e número de vezes que aparecem
-pr_top10_fat_aux$n[pr_top10_fat_aux$produto_categoria_id=='-1'] <- n_out
-pr_top10_fat_aux$fat[pr_top10_fat_aux$produto_categoria_id=='-1'] <- fat_out
+##E então, repasso o valor de volta para a coluna "outros", de faturamento total (de todas as categorias menos as q estão no top8) e número de vezes que aparecem
+pr_top8_fat_aux$n[pr_top8_fat_aux$produto_categoria_id=='-1'] <- n_out
+pr_top8_fat_aux$fat[pr_top8_fat_aux$produto_categoria_id=='-1'] <- fat_out
 
 ##E aqui removo as demais linhas, que já foram adicionadas a "Outros"
-pr_top10_fat_aux <- pr_top10_fat_aux[!is.na(pr_top10_fat_aux$categoria_nome),]
+pr_top8_fat_aux <- pr_top8_fat_aux[!is.na(pr_top8_fat_aux$categoria_nome),]
 
 ##Aqui só renomeio pra ver que a categoria outros tem um * representando a soma de todas as outras categorias também
-pr_top10_fat_aux$categoria_nome[(pr_top10_fat_aux$categoria_nome == "OUTRA")] <- "OUTRA *"
+pr_top8_fat_aux$categoria_nome[(pr_top8_fat_aux$categoria_nome == "OUTRA")] <- "OUTRA *"
 
 
 ## Aqui já estõu fazendo a média das categorias
-pr_top10_fat_med <- pr_top10_fat_aux %>%
+pr_top8_fat_med <- pr_top8_fat_aux %>%
   select(categoria_nome, produto_categoria_id, fat, n) %>%
   group_by(produto_categoria_id) %>%
   mutate(fat_med = fat/n) %>%
@@ -1012,7 +1012,7 @@ pr_top10_fat_med <- pr_top10_fat_aux %>%
   collect ()
 
 
-fat_tot_categorias <- pr_top10_fat_med
+fat_tot_categorias <- pr_top8_fat_med
 
 fat_tot_categorias <- fat_tot_categorias %>%
   mutate(med_emp = media_empresa) %>%
@@ -1044,7 +1044,7 @@ p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
 
 p3 <- p3 %>%
   layout(
-    yaxis = list(side = 'left', title = 'Faturamento', showgrid = TRUE, zeroline = FALSE),
+    yaxis = list(side = 'left', title = 'Faturamento', showgrid = TRUE, zeroline = FALSE, title = ''),
     #range nos dois eixos iguais pra ficar na mesma proporção
     yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,400000)), yaxis = list(range = c(0,400000)),
     ##aqui eu ajusto onde quero que apareça a legenda
@@ -1057,7 +1057,7 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_pprod_ij_prod, pprod_ij_prod, pr_top10_fat, pr_top10_fat_aux, pr_top10_fat_med, produto, proposta, prop_ij_neg_ij_vend, proposta_pagamento, proposta_produto, top10_fat, top10_fat_ij_cat)
+  rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_pprod_ij_prod, pprod_ij_prod, pr_top8_fat, pr_top8_fat_aux, pr_top8_fat_med, produto, proposta, prop_ij_neg_ij_vend, proposta_pagamento, proposta_produto, top8_fat, top8_fat_ij_cat)
   #variáveis
   rm(fat_out, media_empresa, n_out, total_empresa)
 }
@@ -1110,11 +1110,6 @@ if(teste == F){
   rm(ax, p_ij_n_ij_pp, p_ij_n_ij_pp_sum, p_ij_n_ij_pp_sum_cat);
   #variáveis
   rm(status);
-}
-##############################################
-
-if (teste == 0) {
-  #rm(list=ls())
 }
 
 ```

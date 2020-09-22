@@ -58,7 +58,7 @@ proposta <- tbl(con, "proposta") %>%
 
 ##coleta todos os negócios
 negocio <- tbl(con, "negocio") %>%
-  select(negocio_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_vendedor_id, negocio_usado) %>%
+  select(negocio_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_vendedor_id, negocio_usado, negocio_produto_id) %>%
   collect()
 
 ##coleta todos os vendedores
@@ -72,10 +72,10 @@ vendedor <- vendedor %>%
 
 ##junção de proposta com negócio
 prop_ij_neg <- inner_join(proposta, negocio, by=c("proposta_negocio_id" = "negocio_id")) %>%
-  select (proposta_id, proposta_data_cadastro, proposta_status, proposta_negocio_id, negocio_data_cadastro, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_usado)
+  select (proposta_id, proposta_data_cadastro, proposta_status, proposta_negocio_id, negocio_data_cadastro, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_usado, negocio_produto_id)
 
-##removendo os campos onde um ID de proposta não corresponde a um ID de negócio (erro no banco?)
-prop_ij_neg <- prop_ij_neg[!is.na(prop_ij_neg$negocio_vendedor_id),]
+##removendo os campos onde um ID de proposta não corresponde a um ID de negócio (erro no banco?)/Acho que era erro na junção (inner parece ter resolvido)
+#prop_ij_neg <- prop_ij_neg[!is.na(prop_ij_neg$negocio_vendedor_id),]
 
 if (teste == F){
   rm(negocio)
@@ -85,7 +85,7 @@ prop_ij_neg_2020 <- prop_ij_neg %>%
   filter(proposta_data_cadastro >= '2020-01-01')
 
 ##Aqui tenho a contagem de status da empresa
-prop_ij_neg_cont <- prop_ij_neg_2020 %>%
+prop_ij_neg_cont_2020 <- prop_ij_neg_2020 %>%
   select (proposta_status) %>%
   group_by(proposta_status) %>%
   mutate(cont_status = n()) %>%
@@ -94,7 +94,7 @@ prop_ij_neg_cont <- prop_ij_neg_2020 %>%
 
 status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
-prop_ij_neg_cont$proposta_status <- with(prop_ij_neg_cont, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
+prop_ij_neg_cont_2020$proposta_status <- with(prop_ij_neg_cont_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
                                                                labels = status))
 
 ##Juntando com vendedor pra obter o nome do vendedor
@@ -102,16 +102,16 @@ prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor, by=c("negocio_vendedor_
 
 ##Filtrando a empresa
 prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend %>%
-  filter(vendedor_empresa_id == 16, proposta_data_cadastro >= '2020-01-01')
+  filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= '2020-01-01')
 
 #aqui eu estou alterando o joão paulo, que havia problemas com codificação
 prop_ij_neg_ij_vend_2020$vendedor_nome[prop_ij_neg_ij_vend_2020$negocio_vendedor_id == 45] <- "JOÃO PAULO"
 
-##removendo os campos onde um ID de proposta não corresponde a um ID de negócio (erro no banco?)
-prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend_2020[!is.na(prop_ij_neg_ij_vend_2020$negocio_vendedor_id),]
+##removendo os campos onde um ID de proposta não corresponde a um ID de negócio (erro no banco?) /Acho que era erro na junção (inner parece ter resolvido)
+#prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend_2020[!is.na(prop_ij_neg_ij_vend_2020$negocio_vendedor_id),]
 
 ##Aqui tenho a contagem de status por vendedor
-prop_ij_neg_cont_vend <- prop_ij_neg_ij_vend_2020 %>%
+prop_ij_neg_cont_vend_2020 <- prop_ij_neg_ij_vend_2020 %>%
   select (negocio_vendedor_id, negocio_vendedor_id, vendedor_nome, proposta_status) %>%
   group_by(proposta_status, negocio_vendedor_id) %>%
   mutate(cont_status = n()) %>%
@@ -119,11 +119,11 @@ prop_ij_neg_cont_vend <- prop_ij_neg_ij_vend_2020 %>%
   collect()
 
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
-prop_ij_neg_cont_vend$proposta_status <- with(prop_ij_neg_cont_vend, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
+prop_ij_neg_cont_vend_2020$proposta_status <- with(prop_ij_neg_cont_vend_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
                                                                          labels = status))
 
 ##Gráfico 9 - Número propostas, por tipo, por vendedor (total)
-p0 <- ggplot(prop_ij_neg_cont_vend, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), cont_status, fill=factor(proposta_status), label = cont_status,
+p0 <- ggplot(prop_ij_neg_cont_vend_2020, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), cont_status, fill=factor(proposta_status), label = cont_status,
                                         text = paste('Número de pedidos nesta categoria:', cont_status))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank()) +
@@ -137,7 +137,7 @@ if(dash == F){
 }
 
 ###Gráfico 10 - Número propostas, por tipo em 2020 (total)
-p1 <- ggplot(prop_ij_neg_cont, aes(x = proposta_status, y = cont_status, fill=as.factor(proposta_status),
+p1 <- ggplot(prop_ij_neg_cont_2020, aes(x = proposta_status, y = cont_status, fill=as.factor(proposta_status),
                                    text = paste('Número de pedidos nesta categoria:', cont_status))) +
   geom_col(position = "identity") +
   theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank()) +
@@ -150,7 +150,7 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(vendedor, prop_ij_neg_2020, prop_ij_neg_cont, prop_ij_neg_cont_vend, prop_ij_neg_ij_vend_2020);
+  rm(vendedor, prop_ij_neg_2020, prop_ij_neg_cont_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_ij_vend_2020);
   #variáveis
   rm(status);
 }
@@ -195,36 +195,26 @@ if(teste == F){
 }
 
 ##############################################
-### Ticket médio por proposta
+###Ticket médio por proposta
 
-### Uma proposta tem n proposta_pagamento (cuidar as ativas, pp_ativo = 1)
-##coleta todos proposta_pagamenmto
-proposta_pagamento <- tbl(con, "proposta_pagamento") %>%
-  select(pp_id, pp_proposta_id, pp_modo_id, pp_forma_id, pp_valor, pp_ativo, pp_usado_id) %>%
+negocio_produto <- tbl(con, "negocio_produto") %>%
+  select(np_id, np_negocio_id, np_produto_id, np_quantidade,np_ativo, np_valor) %>%
   collect()
 
-proposta_pagamento <- proposta_pagamento %>%
-  filter(pp_ativo == TRUE)
-
-proposta_produto <- tbl(con, "proposta_produto") %>%
-  select(pp_id, pp_proposta_id, pp_produto_id, pp_quantidade, pp_valor, pp_ativo) %>%
-  collect()
-
-proposta_produto <- proposta_produto %>%
-  filter(pp_ativo == TRUE)
-
+##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
 produto <- tbl(con, "produto") %>%
   select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id) %>%
   collect()
 
-pprod_ij_prod <- inner_join(proposta_produto, produto, by = c("pp_produto_id" = "produto_id"))
+proposta_produto <- tbl(con, "proposta_produto") %>%
+  select(pp_id, pp_proposta_id, pp_produto_id, pp_quantidade, pp_valor, pp_ativo) %>%
+  filter (pp_ativo == 1) %>% #Filtrando pp_ativo = true
+  collect()
 
-##Junção pra termos valor da proposta (preciso do negócio pra filtrar empresa e vendedores se preciso)
-p_ij_n_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_pagamento, by = c("proposta_id" = "pp_proposta_id")) %>%
-  arrange(pp_valor)
+p_ij_n_ij_v_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_produto, by = c("proposta_id" = "pp_proposta_id"))
 
 ##filtro da empresa e também propostas finalizadas
-p_ij_n_ij_pp_empresa <- p_ij_n_ij_pp %>%
+p_ij_n_ij_pp_empresa <- p_ij_n_ij_v_ij_pp %>%
   filter(vendedor_empresa_id == empresa, proposta_status == 4)
 
 p_ij_n_ij_pp_empresa <- p_ij_n_ij_pp_empresa %>%
@@ -236,13 +226,15 @@ p_ij_n_ij_pp_empresa <- p_ij_n_ij_pp_empresa %>%
 total_empresa <- sum(p_ij_n_ij_pp_empresa$pp_valor)
 media_empresa <- round(total_empresa/nrow(p_ij_n_ij_pp_empresa), 2)
 
-##Começando as junções pra chegar nas categorias
-p_ij_pprod_ij_prod <- inner_join(proposta, pprod_ij_prod, by = c('proposta_id' = 'pp_proposta_id')) %>%
-  select(proposta_id, proposta_status, pp_produto_id, pp_quantidade, pp_valor, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id) %>%
-  filter (proposta_status == 4)
+##Calculando ticket médio por categoria
+
+p_ij_n_ij_pp_ij_prod <- inner_join (p_ij_n_ij_v_ij_pp, produto, by= c('pp_produto_id' = 'produto_id')) %>%
+  select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_produto_id, pp_quantidade, pp_valor, pp_ativo, produto_categoria_id, vendedor_empresa_id) %>%
+  filter(proposta_status == 4, vendedor_empresa_id == empresa) #Proposta finalizada
+
 
 ## Primeira vez pra verificar quais são os top10
-pr_top10_fat <- p_ij_pprod_ij_prod %>%
+pr_top10_fat <- p_ij_n_ij_pp_ij_prod %>%
   select(produto_categoria_id, pp_valor) %>%
   group_by(produto_categoria_id) %>%
   mutate(fat = sum(pp_valor)) %>%
@@ -251,7 +243,7 @@ pr_top10_fat <- p_ij_pprod_ij_prod %>%
   collect ()
 
 
-##Isso aqui tudo é pra pegar o top 10, substituir os que não estão por -Outros e depois refazer a média
+##Isso aqui tudo é pra pegar o top 8 (antes top10, mas aparecia uma categoria que não queríamos), substituir os que não estão por -Outros e depois refazer a média
 top10_fat <- head.matrix(pr_top10_fat, n=10)
 
 ##Vou fazer um join pra pegar os nomes de cada categoria
@@ -324,7 +316,7 @@ p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
 
 p3 <- p3 %>%
   layout(
-    yaxis = list(side = 'left', title = 'Faturamento', showgrid = TRUE, zeroline = FALSE),
+    yaxis = list(side = 'left', title = 'Faturamento', showgrid = TRUE, zeroline = FALSE, title = ''),
     #range nos dois eixos iguais pra ficar na mesma proporção
     yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,400000)), yaxis = list(range = c(0,400000)),
     ##aqui eu ajusto onde quero que apareça a legenda
@@ -337,13 +329,26 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_pprod_ij_prod, pprod_ij_prod, pr_top10_fat, pr_top10_fat_aux, pr_top10_fat_med, produto, proposta, prop_ij_neg_ij_vend, proposta_pagamento, proposta_produto, top10_fat, top10_fat_ij_cat)
+  rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_pprod_ij_prod, pprod_ij_prod, pr_top10_fat, pr_top10_fat_aux,
+     pr_top10_fat_med, produto, prop_ij_neg_ij_vend,proposta_produto, top10_fat, top10_fat_ij_cat)
   #variáveis
   rm(fat_out, media_empresa, n_out, total_empresa)
 }
 
-##############################################
+##################################################################
 ### Faturamento de propostas em 2020 por status
+
+##coleta todos proposta_pagamenmto
+proposta_pagamento <- tbl(con, "proposta_pagamento") %>%
+  select(pp_id, pp_proposta_id, pp_modo_id, pp_forma_id, pp_valor, pp_ativo, pp_usado_id) %>%
+  collect()
+
+proposta_pagamento <- proposta_pagamento %>%
+  filter(pp_ativo == TRUE)
+
+##Junção pra termos valor da proposta (preciso do negócio pra filtrar empresa e vendedores se preciso)
+p_ij_n_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_pagamento, by = c("proposta_id" = "pp_proposta_id")) %>%
+  arrange(pp_valor)
 
 ##Aqui tenho a soma de faturamento da empresa dividido em categorias
 p_ij_n_ij_pp_sum <- p_ij_n_ij_pp %>%
@@ -392,7 +397,31 @@ if(teste == F){
   rm(status);
 }
 ##############################################
+##Começando a distribuição de propostas por tipo de pagamento
+##Vou selecionar só o que for usar para contar tipos de pagamentos
+p_ij_ppa_2 <- inner_join(proposta, proposta_pagamento, by=c('proposta_id' = 'pp_proposta_id')) %>%
+  select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id) %>%
+  distinct(proposta_id, .keep_all = TRUE)
 
+
+##Gráfico 8 - Distribuição das formas de pagamento
+p5 <- plot_ly(data)
+p5 <- p5 %>%
+  add_pie(value = x, labels = categorias,
+          name = 'Modo de pagamento',
+          )
+p5 <- p5 %>%
+  add_pie(value = x, labels = categorias,
+          name = 'Modo de pagamento',
+  )
+
+p5 <- p5 %>% 
+  layout(title = "Pie Charts with Subplots", showlegend = F,
+         grid=list(rows=1, columns=2),
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+  
 if (teste == 0) {
   #rm(list=ls())
 }
+
