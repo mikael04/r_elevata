@@ -31,13 +31,13 @@ dash = F
 empresa = 16
 
 #formatar dinheiro
-function_format_din <- function(inteiro)
+func_fmt_din <- function(inteiro)
 {
   inteiro_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
   return(inteiro_em_reais)
 }
-
-function_format_din_mi <- function(inteiro)
+#formatar dinheiro (milhões)
+func_fmt_din_mi <- function(inteiro)
 {
   inteiro <- round(inteiro/1000000, digits = 1)
   inteiro_mi_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 1))
@@ -66,6 +66,8 @@ vendedor <- tbl(con, "vendedor") %>%
   select(vendedor_id, vendedor_nome, vendedor_id, vendedor_empresa_id, vendedor_ativo) %>%
   collect()
 
+#Arrumando encoding
+Encoding(vendedor$vendedor_nome) <- 'latin1'
 ##Aqui vou filtrar os ativos e já vou filtrar a empresa
 vendedor <- vendedor %>%
   filter(vendedor_ativo == TRUE)
@@ -95,7 +97,7 @@ prop_ij_neg_cont_2020 <- prop_ij_neg_2020 %>%
 status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
 prop_ij_neg_cont_2020$proposta_status <- with(prop_ij_neg_cont_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
-                                                               labels = status))
+                                                                         labels = status))
 
 ##Juntando com vendedor pra obter o nome do vendedor
 prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
@@ -103,9 +105,6 @@ prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor, by=c("negocio_vendedor_
 ##Filtrando a empresa
 prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend %>%
   filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= '2020-01-01')
-
-#aqui eu estou alterando o joão paulo, que havia problemas com codificação
-prop_ij_neg_ij_vend_2020$vendedor_nome[prop_ij_neg_ij_vend_2020$negocio_vendedor_id == 45] <- "JOÃO PAULO"
 
 ##removendo os campos onde um ID de proposta não corresponde a um ID de negócio (erro no banco?) /Acho que era erro na junção (inner parece ter resolvido)
 #prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend_2020[!is.na(prop_ij_neg_ij_vend_2020$negocio_vendedor_id),]
@@ -120,11 +119,11 @@ prop_ij_neg_cont_vend_2020 <- prop_ij_neg_ij_vend_2020 %>%
 
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
 prop_ij_neg_cont_vend_2020$proposta_status <- with(prop_ij_neg_cont_vend_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
-                                                                         labels = status))
+                                                                                   labels = status))
 
 ##Gráfico 9 - Número propostas, por tipo, por vendedor (total)
 p0 <- ggplot(prop_ij_neg_cont_vend_2020, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), cont_status, fill=factor(proposta_status), label = cont_status,
-                                        text = paste('Número de pedidos nesta categoria:', cont_status))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+                                             text = paste('Número de pedidos nesta categoria:', cont_status))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank()) +
   scale_fill_manual(values = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"))+
@@ -138,7 +137,7 @@ if(dash == F){
 
 ###Gráfico 10 - Número propostas, por tipo em 2020 (total)
 p1 <- ggplot(prop_ij_neg_cont_2020, aes(x = proposta_status, y = cont_status, fill=as.factor(proposta_status),
-                                   text = paste('Número de pedidos nesta categoria:', cont_status))) +
+                                        text = paste('Número de pedidos nesta categoria:', cont_status))) +
   geom_col(position = "identity") +
   theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank()) +
   scale_fill_manual(values = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"))
@@ -287,13 +286,10 @@ pr_top10_fat_med <- pr_top10_fat_aux %>%
 
 
 fat_tot_categorias <- pr_top10_fat_med
-
-fat_med_categorias <- sum(fat_tot_categorias$fat/fat_tot_categorias$n)
-
+##Adicionando a matriz pra poder exibir no gráfico
 fat_tot_categorias <- fat_tot_categorias %>%
   mutate(med_emp = media_empresa) %>%
   collect()
-
 
 ## Gráfico 6 - Ticket médio por categoria e geral da empresa
 ax <- list(
@@ -303,7 +299,7 @@ ax <- list(
 p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
               name = 'Ticket médio por categoria',
               marker = list(color = 'lightblue'),
-              text = ~paste(categoria_nome,'<br>' , function_format_din(fat_med)),
+              text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
               hoverinfo = "text")
 
 p3 <- p3 %>%
@@ -314,7 +310,7 @@ p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
                        x = ~categoria_nome,
                        y = ~med_emp,
                        line = list(color = 'red'),
-                       text = ~paste('Ticket médio<br>' , function_format_din(med_emp)),
+                       text = ~paste('Ticket médio<br>' , func_fmt_din(med_emp)),
                        hoverinfo = "text",
                        marker = list(color = 'orange'))
 
@@ -334,7 +330,8 @@ if(dash == F){
 if(teste == F){
   #tabelas
   rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, pr_top10_fat, pr_top10_fat_aux,
-     pr_top10_fat_med, produto, proposta_produto, top10_fat, top10_fat_ij_cat)
+     pr_top10_fat_med, produto, proposta_produto, top10_fat, top10_fat_ij_cat, p_ij_n_ij_pp_ij_prod,
+     p_ij_n_ij_v_ij_pp, negocio_produto)
   #variáveis
   rm(fat_out, media_empresa, n_out, total_empresa)
 }
@@ -385,7 +382,7 @@ ax <- list(
 p4 <- plot_ly(p_ij_n_ij_pp_sum_cat, x = ~proposta_status, y = ~valor_status, type = 'bar',
               name = 'Faturamento por status',
               marker = list(color = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32")),
-              text = ~paste(proposta_status,'<br>' , function_format_din(valor_status)),
+              text = ~paste(proposta_status,'<br>' , func_fmt_din(valor_status)),
               hoverinfo = "text")
 
 p4 <- p4 %>%
@@ -403,29 +400,74 @@ if(teste == F){
 ##############################################
 ##Começando a distribuição de propostas por tipo de pagamento
 ##Vou selecionar só o que for usar para contar tipos de pagamentos
-p_ij_ppa_2 <- inner_join(proposta, proposta_pagamento, by=c('proposta_id' = 'pp_proposta_id')) %>%
-  select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id) %>%
-  distinct(proposta_id, .keep_all = TRUE)
+
+##Já faço o filtro da empresa aqui na hora de puxar do banco
+proposta_modo_forma <-tbl(con, "proposta_modo_forma") %>%
+  select (pmf_id, pmf_nome, pmf_ativo, PMF_EMPRESA_ID) %>%
+  filter (pmf_ativo == 1 & PMF_EMPRESA_ID == empresa) %>%
+  collect()
+
+#Arrumando encoding
+Encoding(proposta_modo_forma$pmf_nome) <- 'latin1'
+
+##Criada sem nome e pmf_empresa (não consegui fazer a junção duas vezes, provavelmente por já ter o tempo)
+#proposta_modo_forma_aux <-proposta_modo_forma[,1:2]
+
+p_ij_ppa <- inner_join(proposta, proposta_pagamento, by=c('proposta_id' = 'pp_proposta_id')) %>%
+  select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id, pp_ativo) %>%
+  filter (pp_ativo == T, pp_modo_id != 0, pp_forma_id != 0)
+
+
+#conta antes de substituir (provavelmente mais rápido lidar com int do que string) (1 contando modo) (conta todos, depois filtro através de proposta_modo_forma)
+p_ij_ppa_count_modo <- p_ij_ppa %>%
+  select (pp_id, pp_modo_id) %>%
+  group_by(pp_modo_id) %>%
+  mutate(cont_modo = n()) %>%
+  distinct(pp_modo_id, .keep_all = T)
+
+p_ij_ppa_cont_modo_ij_pmf <- inner_join (p_ij_ppa_count_modo, proposta_modo_forma, by = c("pp_modo_id" = "pmf_id")) %>%
+  select(pp_modo_id, cont_modo, pmf_nome) %>%
+  rename(
+    Modo = pmf_nome)
+
+#conta antes de substituir (provavelmente mais rápido lidar com int do que string) (2 contando forma) (conta todos, depois filtro através de proposta_modo_forma)
+p_ij_ppa_count_forma <- p_ij_ppa %>%
+  select (pp_id, pp_forma_id) %>%
+  group_by(pp_forma_id) %>%
+  mutate(cont_forma = n()) %>%
+  distinct(pp_forma_id, .keep_all = T)
+
+p_ij_ppa_cont_forma_ij_pmf <- inner_join (p_ij_ppa_count_forma, proposta_modo_forma, by = c("pp_forma_id" = "pmf_id")) %>%
+  select(pp_forma_id, cont_forma, pmf_nome) %>%
+  rename(
+    Forma = pmf_nome)
 
 
 ##Gráfico 8 - Distribuição das formas de pagamento
-p5 <- plot_ly(data)
+p5 <- plot_ly()
 p5 <- p5 %>%
-  add_pie(value = x, labels = categorias,
-          name = 'Modo de pagamento',
-          )
-p5 <- p5 %>%
-  add_pie(value = x, labels = categorias,
-          name = 'Modo de pagamento',
+  add_pie(data = p_ij_ppa_cont_modo_ij_pmf, values = ~cont_modo, labels = ~Modo,
+          name = 'Modo de pagamento'
   )
+if(dash == F){
+  p5
+}
+p6 <- plot_ly()
+p6 <- p6 %>%
+  add_pie(data = p_ij_ppa_cont_forma_ij_pmf, values = ~cont_forma, labels = ~Forma,
+          name = 'Forma de pagamento'
+  )
+if(dash == F){
+  p6
+}
 
-p5 <- p5 %>% 
-  layout(title = "Pie Charts with Subplots", showlegend = F,
-         grid=list(rows=1, columns=2),
-         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
-  
+if(teste == F){
+  #tabelas
+  rm(p_ij_ppa, proposta, proposta_modo_forma, p_ij_ppa_count_modo, p_ij_ppa_cont_modo_ij_pmf,
+     p_ij_ppa_count_forma, p_ij_ppa_cont_forma_ij_pmf);
+  #variáveis
+  rm();
+}
 if (teste == 0) {
   #rm(list=ls())
 }
-

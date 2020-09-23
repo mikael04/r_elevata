@@ -65,6 +65,9 @@ vendedor_todos <- tbl(con, "vendedor") %>%
   select(vendedor_id, vendedor_nome, vendedor_id, vendedor_empresa_id,vendedor_ativo) %>%
   collect()
 
+#Arrumando encode
+Encoding(vendedor_todos$vendedor_nome) <- 'latin1'
+
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- tbl(con, "negocio_produto") %>%
   select(np_id, np_negocio_id, np_produto_id, np_quantidade,np_ativo, np_valor) %>%
@@ -101,9 +104,6 @@ ng_ij_vn_ij_np_fat <- corte_1 %>%
   distinct (negocio_vendedor_id, .keep_all = TRUE) %>%
   collect ()
 
-##aqui eu estou alterando o joão paulo, que havia problemas com codificação
-ng_ij_vn_ij_np_fat$vendedor_nome[ng_ij_vn_ij_np_fat$negocio_vendedor_id == 45] <- "JOÃO PAULO"
-
 ###remover status "desconsiderar (erro cadastro)"
 ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat[!(ng_ij_vn_ij_np_fat$negocio_negocio_situacao_id==9),]
 
@@ -115,7 +115,7 @@ ng_ij_vn_ij_np_fat$negocio_status = factor(ng_ij_vn_ij_np_fat$negocio_status, le
 
 #usando função pra criar outra coluna com número formatado (em Real, com pontos)
 ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>%
-  mutate(total_fat_t = function_format_din(total_fat))
+  mutate(total_fat_t = func_fmt_din(total_fat))
 
 ###Gráfico 0 - Número de clientes por vendedor
 ##############################################
@@ -171,9 +171,6 @@ ng_ij_hist_ij_ven_2020 <- ng_ij_hist_ij_ven_2020 %>%
 ####Aqui é pra testar um top10 de uma empresa específica
 ##ng_ij_hist_ij_ven_top10 <-ng_ij_hist_ij_ven_2020
 
-#aqui eu estou alterando o joão paulo (da super empresa_id 16), que havia problemas com codificação
-ng_ij_hist_ij_ven_2020$vendedor_nome[ng_ij_hist_ij_ven_2020$negocio_vendedor_id == 45] <- "JOÃO PAULO"
-
 ng_ij_hist_ij_ven_ij_np_2020 <- inner_join(ng_ij_hist_ij_ven_2020, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
 
 
@@ -213,7 +210,7 @@ ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_2020_ij_np_fec %>%
 
 #usando função pra criar outra coluna com número formatado (em Real, com pontos)
 ng_ij_vn_ij_np_fech_fat <- ng_ij_vn_ij_np_fech_fat %>%
-  mutate(total_fat_t = function_format_din(total_fat))
+  mutate(total_fat_t = func_fmt_din(total_fat))
 
 ### Gráfico 1 - Faturamento de negócios fechados em 2020
 #########################################################
@@ -276,6 +273,8 @@ categoria <- tbl(con, "categoria") %>%
   select(categoria_id, categoria_nome) %>%
   collect()
 
+Encoding(categoria$categoria_nome) <- 'latin1'
+
 
 ## Primeira vez pra verificar quais são os top10
 ng_top10 <- ng_ij_hist_ij_ven_ij_ngp_ij_pd %>%
@@ -293,8 +292,6 @@ top10_ij <- inner_join(top10, categoria, by = c("produto_categoria_id"="categori
 #Removendo a contagem que ele fez de faturamento (usado pra gerar o top10)
 top10_ij <- top10_ij[, -2:-3]
 top10_ij <- as.data.frame(top10_ij)
-##Alterando por causa do caracter especial ########## AQUI VOU TER Q ALTERAR POR EMPRESA
-top10_ij$categoria_nome[top10_ij$produto_categoria_id == 	120181114100824] <- "CAMINHÃO"
 
 ## Transformando tudo em "OUTRA" -1
 ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat <- left_join(ng_ij_hist_ij_ven_ij_ngp_ij_pd, top10_ij, by=c("produto_categoria_id" = "produto_categoria_id"))
@@ -323,14 +320,12 @@ top10_ij <- inner_join(top10, categoria, by = c("produto_categoria_id"="categori
 top10_ij <- top10_ij[, -2]
 top10_ij <- top10_ij[, -2]
 top10_ij <- as.data.frame(top10_ij)
-##Alterando por causa do caracter especial
-top10_ij$categoria_nome[top10_ij$produto_categoria_id == 	120181114100824] <- "CAMINHÃO"
 
 ng_top_ag <- inner_join(ng_top10_ag, top10_ij, by=c("produto_categoria_id" = "produto_categoria_id"))
 
 #conversão de faturamento para texto
 ng_top_ag <- ng_top_ag %>%
-  mutate(fat_t = function_format_din(faturamento))
+  mutate(fat_t = func_fmt_din(faturamento))
 
 ##Chart gerado para o treemap de categorias por faturamento em 2020
 chart_ng_top_ag <- ng_top_ag
@@ -380,7 +375,7 @@ if (teste == F) {
 
 #conversão de faturamento para texto
 ng_top_ag_fat <- ng_top_ag_fat %>%
-  mutate(fat_t = function_format_din(faturamento))
+  mutate(fat_t = func_fmt_din(faturamento))
 
 ##Chart gerado para o treemap de categorias por faturamento em 2020
 chart_ng_top_ag_fat <- ng_top_ag_fat
@@ -469,8 +464,7 @@ ng_ij_hist_ij_ven_num <- ng_ij_hist_ij_ven_idd %>%
 
 ##Usado pra ordenar o gráfico
 ng_ij_hist_ij_ven_num$idade_cat = factor(ng_ij_hist_ij_ven_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
-#aqui eu estou alterando o joão paulo, que havia problemas com codificação
-ng_ij_hist_ij_ven_num$vendedor_nome[ng_ij_hist_ij_ven_num$negocio_vendedor_id == 45] <- "JOÃO PAULO"
+
 
 
 
@@ -579,7 +573,7 @@ ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_ab %>%
 
 ##conversão de faturamento para texto
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
-  mutate(tot_fat_t = function_format_din(total_faturado))
+  mutate(tot_fat_t = func_fmt_din(total_faturado))
 
 ##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
@@ -656,7 +650,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_2020  <- ng_ij_hist_ij_ven_funil_fat_fec_2020  %
   collect()
 
 ng_ij_hist_ij_ven_funil_fat_fec_2020 <- ng_ij_hist_ij_ven_funil_fat_fec_2020 %>%
-  mutate(total_fat_t = function_format_din_mi(total_faturado))
+  mutate(total_fat_t = func_fmt_din_mi(total_faturado))
 
 ##Gráfico de pizza fechados do ano 2020
 ##############################################
@@ -702,7 +696,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_2020_mes  <- ng_ij_hist_ij_ven_funil_fat_fec_202
 
 #criando uma coluna nova para usar como texto dentro do gráfico
 ng_ij_hist_ij_ven_funil_fat_fec_2020_mes <- ng_ij_hist_ij_ven_funil_fat_fec_2020_mes %>%
-  mutate(total_fat_t = function_format_din_mi(total_faturado))
+  mutate(total_fat_t = func_fmt_din_mi(total_faturado))
 
 ##Gráfico de pizza fechados do mês
 ##############################################
@@ -803,7 +797,7 @@ meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', '
 ## alterando pra números pra poder fazer da mesma forma
 fat_2020_2019_2018_mes$ym <- as.integer(fat_2020_2019_2018_mes$ym)
 fat_2020_2019_2018_mes$ym <- with(fat_2020_2019_2018_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
-                                                          labels = meses))
+                                                              labels = meses))
 
 
 #######################################################################
@@ -826,27 +820,27 @@ n12 <- plot_ly(fat_2020_2019_2018_mes)
 n12 <- n12 %>%
   add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y =~ym_sum,
             name = 'Faturamento de 2020',
-            text = ~paste(function_format_din_mi(ym_sum),'milhões'),
+            text = ~paste(func_fmt_din_mi(ym_sum),'milhões'),
             hoverinfo = "text",
             color = I("blue")
   )
 n12 <- n12 %>%
   add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y = ~ym_sum_2019, yaxis = ay,
             name = 'Faturamento de 2019',
-            text = ~paste(function_format_din_mi(ym_sum_2019),'milhões'),
+            text = ~paste(func_fmt_din_mi(ym_sum_2019),'milhões'),
             hoverinfo = "text",
             color = I("red"))
 n12 <- n12 %>%
   add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y = ~ym_sum_2018, yaxis = ay,
             name = 'Faturamento de 2018',
-            text = ~paste(function_format_din_mi(ym_sum_2018),'milhões'),
+            text = ~paste(func_fmt_din_mi(ym_sum_2018),'milhões'),
             hoverinfo = "text",
             color = I("green"))
 
 n12 <- n12 %>%
   layout(xaxis = a, yaxis = a,
-    #aqui eu ajusto onde quero que apareça a legenda
-    legend = list(x=0.8, y=0.9)#)
+         #aqui eu ajusto onde quero que apareça a legenda
+         legend = list(x=0.8, y=0.9)#)
   )
 n12
 
@@ -861,11 +855,10 @@ ay <- list(
 
 if (teste == F){
   #tabelas
-  rm(ng_ij_hist_ij_ven_ij_np_2020, ng_ij_hist_ij_ven_ij_np_2020_fat, fat_2020_mes, ng_ij_hist_ij_ven_total, negocio_ij_historico_ij_vendedor_total,
-     ng_ij_hist_ven_ij_ij_np_2019_fat, ng_ij_hist_ij_ven_ij_np_2018_fat, ng_ij_hist_ij_ven_ij_np_2017_fat, fat_2019_mes, fat_2018_mes, fat_2017_mes)
+  rm(ng_ij_hist_ij_ven_ij_np_2020, fat_2020_mes, ng_ij_hist_ij_ven_total, negocio_ij_historico_ij_vendedor_total,
+     fat_2019_mes, fat_2018_mes)
   #variáveis
   rm()
 }
 
 ##############################################
-

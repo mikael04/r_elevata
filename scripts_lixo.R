@@ -291,3 +291,7 @@ ggplotly(p4) %>%
     fat_2020_med2ant_mes$ym <- with(fat_2020_med2ant_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8),
                                                                                   labels = meses_rem))
     ##########################################################################################################
+    ##aqui eu estou alterando o joão paulo, que havia problemas com codificação (FORMA ANTIGA)
+    ng_ij_vn_ij_np_fat$vendedor_nome[ng_ij_vn_ij_np_fat$negocio_vendedor_id == 45] <- "JOÃO PAULO"
+    #Arrumando encoding (FORMA NOVA, RESOLVE TUDO DE UMA VEZ)
+    vendedor$vendedor_nome <- func_fmt_char_esp(vendedor$vendedor_nome)
