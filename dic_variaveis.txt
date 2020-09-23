@@ -53,5 +53,8 @@ Junções
       prop_ij_neg_cont_2020 <- contando número de negócios 2020 (campo: cont_status)
       prop_ij_neg_ij_vend <- inner join prop_ij_neg com vendedor (negocio_vendedor_id e vendedor_id) usado pra ter o nome do vendedor
       prop_ij_neg_ij_vend_2020 <- filtrando empresa (só tabela de vendedor tem, por isso não foi feita antes)
+      prop_ij_neg_cont_vend_2020 <- Contando status por vendedor (cont_status), agrupado por status e vendedor
+      prop_ij_neg_cont_us <- proj_ij_neg contando número de usados (campo: usado) agrupando por tipo de negocio (negocio_usado)
+      pr_ij_n_ij_v_np_ij_p <- junção com negócio, vendedor (pra selecionar empresa), negocio_produto e produto (pegar a categoria do produto)
 
   ______________________________________________________________________________________________________
