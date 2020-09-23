@@ -226,9 +226,10 @@ p_ij_n_ij_pp_empresa <- p_ij_n_ij_pp_empresa %>%
 total_empresa <- sum(p_ij_n_ij_pp_empresa$pp_valor)
 media_empresa <- round(total_empresa/nrow(p_ij_n_ij_pp_empresa), 2)
 
+
 ##Calculando ticket médio por categoria
 
-p_ij_n_ij_pp_ij_prod <- inner_join (p_ij_n_ij_v_ij_pp, produto, by= c('pp_produto_id' = 'produto_id')) %>%
+p_ij_n_ij_pp_ij_prod <- inner_join (p_ij_n_ij_pp_empresa, produto, by= c('pp_produto_id' = 'produto_id')) %>%
   select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_produto_id, pp_quantidade, pp_valor, pp_ativo, produto_categoria_id, vendedor_empresa_id) %>%
   filter(proposta_status == 4, vendedor_empresa_id == empresa) #Proposta finalizada
 
@@ -252,6 +253,7 @@ categoria <- tbl(con, "categoria") %>%
   collect()
 
 top10_fat_ij_cat <- inner_join(top10_fat, categoria, by = c("produto_categoria_id"="categoria_id"))
+top10_fat_ij_cat <- top10_fat_ij_cat[, -1]
 top10_fat_ij_cat <- top10_fat_ij_cat[, -2:-4]
 top10_fat_ij_cat <- as.data.frame(top10_fat_ij_cat)
 
@@ -285,6 +287,8 @@ pr_top10_fat_med <- pr_top10_fat_aux %>%
 
 
 fat_tot_categorias <- pr_top10_fat_med
+
+fat_med_categorias <- sum(fat_tot_categorias$fat/fat_tot_categorias$n)
 
 fat_tot_categorias <- fat_tot_categorias %>%
   mutate(med_emp = media_empresa) %>%
@@ -329,8 +333,8 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_pprod_ij_prod, pprod_ij_prod, pr_top10_fat, pr_top10_fat_aux,
-     pr_top10_fat_med, produto, prop_ij_neg_ij_vend,proposta_produto, top10_fat, top10_fat_ij_cat)
+  rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, pr_top10_fat, pr_top10_fat_aux,
+     pr_top10_fat_med, produto, proposta_produto, top10_fat, top10_fat_ij_cat)
   #variáveis
   rm(fat_out, media_empresa, n_out, total_empresa)
 }
@@ -392,7 +396,7 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(ax, p_ij_n_ij_pp, p_ij_n_ij_pp_sum, p_ij_n_ij_pp_sum_cat);
+  rm(ax, p_ij_n_ij_pp, p_ij_n_ij_pp_sum, p_ij_n_ij_pp_sum_cat, prop_ij_neg_ij_vend);
   #variáveis
   rm(status);
 }
