@@ -159,7 +159,7 @@ if(teste == F){
 
 ##Propostas por categoria (usado)
 ##############################################
-##Aqui tenho a contagem de usados em propostasda empresa
+##Aqui tenho a contagem de usados em propostas da empresa
 prop_ij_neg_cont_us <- prop_ij_neg %>%
   select (negocio_usado) %>%
   group_by(negocio_usado) %>%
@@ -332,9 +332,9 @@ p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
 p3 <- p3 %>%
   layout(
     autosize = F,
-    yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,2000000)),
+    yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,700000)),
     #range nos dois eixos iguais pra ficar na mesma proporção
-    yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,2000000)),
+    yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,700000)),
     ##aqui eu ajusto onde quero que apareça a legenda
     legend = list(x=0.7, y=0.8)#)
   )
@@ -600,6 +600,7 @@ p6 <- p6 %>%
 if(dash == F){
   p6
 }
+##Gráfico 9 - Distribuição das formas de pagamento
 p7 <- plot_ly()
 p7 <- p7 %>%
   add_pie(data = p_ij_ppa_cont_forma_ij_pmf, values = ~cont_forma, labels = ~Forma,

@@ -31,9 +31,7 @@ teste = T
 dash = F
 
 ##Variável "Global"
-#empresa = 16 #Super
-
-##Variável "Global"
+empresa = 16 #Super
 empresa = 78 #Komatsu
 
 func_fmt_din <- function(inteiro)
@@ -202,7 +200,7 @@ status_4_6_7 = c("5 - faturado", "7 - desistencia do cliente", "8 - perdemos par
 ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_status <- with(ng_ij_hist_ij_ven_2020_ij_np_fec, cut(negocio_negocio_situacao_id, breaks = c(0,4,6,7),
                                                                                               labels = status_4_6_7))
 
-ng_ij_hist_ij_ven_2020_ij_np_fec <- ng_ij_hist_ij_ven_2020_ij_np_fec %>% 
+ng_ij_hist_ij_ven_2020_ij_np_fec <- ng_ij_hist_ij_ven_2020_ij_np_fec %>%
   filter (np_ativo == TRUE)
 
 ##agrupamento de negocios por vendedor, contando número de negócios por status e por vendedor
@@ -792,25 +790,25 @@ fat_2018_mes <- ng_ij_hist_ij_ven_ij_np_2018_fat %>%
 #######################################################################
 if (empresa == 16)
 {
-  
+
   n_linhas <- nrow(fat_2020_mes)
   fat_2020_mes_aux <- fat_2019_mes
   fat_2020_mes_aux$ym_sum <- NA
   fat_2020_mes_aux$ym_sum[1:n_linhas] <- fat_2020_mes$ym_sum
-  
+
   fat_2020_2019_2018_mes <- fat_2020_mes_aux
   fat_2020_2019_2018_mes[, "ym_sum_2019"] <- fat_2019_mes$ym_sum
   fat_2020_2019_2018_mes[, "ym_sum_2018"] <- fat_2018_mes$ym_sum
-  
+
   meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
   ## alterando pra números pra poder fazer da mesma forma
   fat_2020_2019_2018_mes$ym <- as.integer(fat_2020_2019_2018_mes$ym)
   fat_2020_2019_2018_mes$ym <- with(fat_2020_2019_2018_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
                                                                 labels = meses))
-  
-  
+
+
   #######################################################################
-  
+
   ##Começando o gráfico
   ###Assim estarei mostrando 2020 e uma média dos anos anteriores
   a <- list(
@@ -822,9 +820,9 @@ if (empresa == 16)
     side = 'right',
     title = ''
   )
-  
+
   ###Assim estarei mostrando 2020, 2019 e 2018
-  
+
   n12 <- plot_ly(fat_2020_2019_2018_mes)
   n12 <- n12 %>%
     add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y =~ym_sum,
@@ -845,23 +843,23 @@ if (empresa == 16)
               text = ~paste(func_fmt_din_mi(ym_sum_2018),'milhões'),
               hoverinfo = "text",
               color = I("green"))
-  
+
   n12 <- n12 %>%
     layout(xaxis = a, yaxis = a,
            #aqui eu ajusto onde quero que apareça a legenda
            legend = list(x=0.8, y=0.9)#)
     )
   n12
-  
+
   ay <- list(
     tickfont = list(color = "red"),
     overlaying = 'y',
     side = 'right',
     title = ''
   )
-  
-  
-  
+
+
+
   if (teste == F){
     #tabelas
     rm(ng_ij_hist_ij_ven_ij_np_2020, fat_2020_mes, ng_ij_hist_ij_ven_total, negocio_ij_historico_ij_vendedor_total,
@@ -869,7 +867,7 @@ if (empresa == 16)
     #variáveis
     rm()
   }
-  
+
 }
 
 ##############################################
