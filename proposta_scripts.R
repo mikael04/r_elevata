@@ -122,7 +122,7 @@ prop_ij_neg_cont_vend_2020 <- prop_ij_neg_ij_vend_2020 %>%
 prop_ij_neg_cont_vend_2020$proposta_status <- with(prop_ij_neg_cont_vend_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
                                                                                    labels = status))
 
-##Gráfico 9 - Número propostas, por tipo, por vendedor (total)
+### Gráfico p0 - Número propostas, por tipo, por vendedor (total)
 p0 <- ggplot(prop_ij_neg_cont_vend_2020, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), cont_status, fill=factor(proposta_status), label = cont_status,
                                              text = paste('Número de pedidos nesta categoria:', cont_status))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
@@ -136,7 +136,7 @@ if(dash == F){
   p0
 }
 
-###Gráfico 10 - Número propostas, por tipo em 2020 (total)
+### Gráfico p1 - Número propostas, por tipo em 2020 (total)
 p1 <- ggplot(prop_ij_neg_cont_2020, aes(x = proposta_status, y = cont_status, fill=as.factor(proposta_status),
                                         text = paste('Número de pedidos nesta categoria:', cont_status))) +
   geom_col(position = "identity") +
@@ -159,7 +159,7 @@ if(teste == F){
 
 ##Propostas por categoria (usado)
 ##############################################
-##Aqui tenho a contagem de usados em propostas da empresa
+##Aqui tenho a contagem de usados em propostasda empresa
 prop_ij_neg_cont_us <- prop_ij_neg %>%
   select (negocio_usado) %>%
   group_by(negocio_usado) %>%
@@ -175,7 +175,7 @@ prop_ij_neg_cont_us <- prop_ij_neg_cont_us %>%
 prop_ij_neg_cont_us$negocio_usado[prop_ij_neg_cont_us$negocio_usado == TRUE] <- "Proposta com usado"
 prop_ij_neg_cont_us$negocio_usado[prop_ij_neg_cont_us$negocio_usado == FALSE] <- "Proposta sem usado"
 
-###Gráfico 11 - Proporção de usados (pizza)
+### Gráfico p2 - Proporção de usados (pizza)
 p2 <- plot_ly(prop_ij_neg_cont_us, labels = ~negocio_usado, values = ~usado, type = 'pie', sort = F,
               texttemplate = "%{value} (%{percent})",
               hovertemplate = paste ("%{label} <br>",
@@ -259,8 +259,11 @@ categoria <- tbl(con, "categoria") %>%
   select(categoria_id, categoria_nome) %>%
   collect()
 
-##Super apenas
-categoria$categoria_nome[categoria$categoria_id == '120160830102326'] <- 'SEMEADORA'
+##Super apenas (para diminuir o tamanho do nome)
+if (empresa == 16)
+{
+  categoria$categoria_nome[categoria$categoria_id == '120160830102326'] <- 'SEMEADORA'
+}
 #Arrumando encoding
 Encoding(categoria$categoria_nome) <- 'latin1'
 
@@ -306,7 +309,7 @@ fat_tot_categorias <- fat_tot_categorias %>%
   mutate(med_emp = media_empresa) %>%
   collect()
 
-## Gráfico 6 - Ticket médio por categoria e geral da empresa
+### Gráfico p3 - Ticket médio novos
 ax <- list(
   autotick = TRUE,
   title = "",
@@ -329,15 +332,28 @@ p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
                        hoverinfo = "text",
                        marker = list(color = 'orange'))
 
-p3 <- p3 %>%
-  layout(
-    autosize = F,
-    yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,700000)),
-    #range nos dois eixos iguais pra ficar na mesma proporção
-    yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,700000)),
-    ##aqui eu ajusto onde quero que apareça a legenda
-    legend = list(x=0.7, y=0.8)#)
-  )
+
+if(empresa == 16){
+  p3 <- p3 %>%
+    layout(
+      autosize = F,
+      yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,700000)),
+      #range nos dois eixos iguais pra ficar na mesma proporção
+      yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,700000)),
+      ##aqui eu ajusto onde quero que apareça a legenda
+      legend = list(x=0.7, y=0.8)#)
+    )
+}else if(empresa == 78){
+  p3 <- p3 %>%
+    layout(
+      autosize = F,
+      yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,2000000)),
+      #range nos dois eixos iguais pra ficar na mesma proporção
+      yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,2000000)),
+      ##aqui eu ajusto onde quero que apareça a legenda
+      legend = list(x=0.7, y=0.8)#)
+    )
+}
 if(dash == F){
   p3
 }
@@ -437,7 +453,7 @@ fat_tot_categorias_us <- fat_tot_categorias_us %>%
   mutate(med_emp = media_empresa_us) %>%
   collect()
 
-## Gráfico 6.5 - Ticket médio de usados por categoria e geral da empresa
+### Gráfico p4 - Ticket médio usados
 ax <- list(
   autotick = TRUE,
   title = "",
@@ -522,7 +538,7 @@ status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - F
 p_ij_n_ij_pp_sum_cat$proposta_status <- with(p_ij_n_ij_pp_sum_cat, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
                                                                        labels = status))
 
-###Gráfico 7 - Faturamento de propostas por status
+###Gráfico p5 - Faturamento de propostas por status (não usado)
 ax <- list(
   autotick = TRUE,
   title = "",
@@ -591,7 +607,8 @@ p_ij_ppa_cont_forma_ij_pmf <- inner_join (p_ij_ppa_count_forma, proposta_modo_fo
     Forma = pmf_nome)
 
 
-##Gráfico 8 - Distribuição das formas de pagamento
+### Gráfico p6 - Modos de pagamento
+
 p6 <- plot_ly()
 p6 <- p6 %>%
   add_pie(data = p_ij_ppa_cont_modo_ij_pmf, values = ~cont_modo, labels = ~Modo,
@@ -600,7 +617,9 @@ p6 <- p6 %>%
 if(dash == F){
   p6
 }
-##Gráfico 9 - Distribuição das formas de pagamento
+
+### Gráfico p7 - Formas de pagamento
+
 p7 <- plot_ly()
 p7 <- p7 %>%
   add_pie(data = p_ij_ppa_cont_forma_ij_pmf, values = ~cont_forma, labels = ~Forma,

@@ -26,13 +26,13 @@ library(scales)
 
 
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = T
+teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = F
 
 ##Variável "Global"
 empresa = 16 #Super
-empresa = 78 #Komatsu
+#empresa = 78 #Komatsu
 
 func_fmt_din <- function(inteiro)
 {
@@ -53,8 +53,6 @@ con <- DBI::dbConnect(odbc::odbc(),
                       Database = "nhmobile_agriculture",
                       Trusted_Connection = "True")
 
-###Começando scripts negocio_scripts
-###########################################################################################################
 
 ###Começando scripts negocio_scripts
 ###########################################################################################################
@@ -136,7 +134,7 @@ n0 <- ggplot(ng_ij_vn_ij_np_fat, aes(x = reorder(vendedor_nome, desc(vendedor_no
 
 n0 <- ggplotly(n0, tooltip = 'text') %>% layout(legend = list(orientation = "h", x = -0.1, y = -0.15))
 
-###Gráfico 0 - Número de clientes por vendedor
+### Gráfico n0 - Número de clientes por vendedor
 if(dash == F){
   n0
 }
@@ -216,7 +214,7 @@ ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_2020_ij_np_fec %>%
 ng_ij_vn_ij_np_fech_fat <- ng_ij_vn_ij_np_fech_fat %>%
   mutate(total_fat_t = func_fmt_din(total_fat))
 
-### Gráfico 1 - Faturamento de negócios fechados em 2020
+### Gráfico n3 - Faturamento de negócios fechados em 2020
 #########################################################
 n3 <- ggplot(ng_ij_vn_ij_np_fech_fat, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), total_fat, fill=factor(negocio_status),
                                           text = paste('Valor neste status:', total_fat_t))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
@@ -228,7 +226,6 @@ n3 <- ggplot(ng_ij_vn_ij_np_fech_fat, aes(x = reorder(vendedor_nome, desc(vended
 
 n3 <- ggplotly(n3, tooltip = 'text') %>% layout(legend = list(orientation = "h", x = -0.2, y = -0.05))
 
-### Gráfico 1 - Faturamento de negócios fechados em 2020
 if(dash == F){
   n3
 }
@@ -334,7 +331,7 @@ ng_top_ag <- ng_top_ag %>%
 ##Chart gerado para o treemap de categorias por faturamento em 2020
 chart_ng_top_ag <- ng_top_ag
 
-##Gráfico 2 - Valor financeiro de negócios em 2020  (por categoria)
+### Gráfico hc_n4 - Valor financeiro de negócios em 2020  (por categoria)
 #################################################
 
 hc_n4 <- chart_ng_top_ag %>%
@@ -384,7 +381,7 @@ ng_top_ag_fat <- ng_top_ag_fat %>%
 ##Chart gerado para o treemap de categorias por faturamento em 2020
 chart_ng_top_ag_fat <- ng_top_ag_fat
 
-##Gráfico 3 - Máquinas faturadas em 2020 (por categoria)
+### Gráfico hc_n5 - Máquinas faturadas em 2020 (por categoria)
 hc_n5 <- chart_ng_top_ag_fat %>%
   hchart (
     "treemap",
@@ -472,7 +469,7 @@ ng_ij_hist_ij_ven_num$idade_cat = factor(ng_ij_hist_ij_ven_num$idade_cat, levels
 
 
 
-##Gráfico 4 - Idade dos negócios abertos, por vendedor, por idade do negocio, barras
+### Gráfico n6 - Idade dos negócios abertos, por vendedor, por idade do negocio
 n6 <- ggplot(ng_ij_hist_ij_ven_num, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), num_negocios_idades, fill=idade_cat, label = num_negocios_idades,
                                         text = paste('Número de negócios neste intervalo:', num_negocios_idades))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
@@ -482,7 +479,6 @@ n6 <- ggplot(ng_ij_hist_ij_ven_num, aes(x = reorder(vendedor_nome, desc(vendedor
 
 n6 <- ggplotly(n6, tooltip = 'text') %>% layout(legend = list(orientation = "h", x = -0.3, y = -0.08))
 
-##Gráfico 4 - Idade dos negócios abertos, por vendedor, por idade do negocio
 if(dash == F){
   n6
 }
@@ -520,7 +516,7 @@ ng_ij_hist_ij_emp_num <- ng_ij_hist_ij_emp_num %>%
 
 ng_ij_hist_ij_emp_num$idade_cat = factor(ng_ij_hist_ij_emp_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
 
-###Gráfico 5 - Negócios abertos da empresa, pizza
+### Gráfico n7 - Negócios abertos da empresa, pizza
 
 colors_pie <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
 n7 <- plot_ly(ng_ij_hist_ij_emp_num, labels = ~idade_cat, values = ~num_negocios_idades, type = 'pie', sort = F,
@@ -588,7 +584,7 @@ ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_funil_
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
   arrange(negocio_negocio_situacao_id)
 
-###Funil agrupado por faturamento
+### Gráfico n9 - Funil agrupado por faturamento
 n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat) %>%
   add_trace(
     type ="funnelarea",
@@ -656,7 +652,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_2020  <- ng_ij_hist_ij_ven_funil_fat_fec_2020  %
 ng_ij_hist_ij_ven_funil_fat_fec_2020 <- ng_ij_hist_ij_ven_funil_fat_fec_2020 %>%
   mutate(total_fat_t = func_fmt_din_mi(total_faturado))
 
-##Gráfico de pizza fechados do ano 2020
+### Gráfico n10 - Pizza fechados do ano
 ##############################################
 colors_pie <- c("#32CD32", "yellow" , "orange" , "#DE0D26")
 n10 <- plot_ly(ng_ij_hist_ij_ven_funil_fat_fec_2020, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
@@ -702,7 +698,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_2020_mes  <- ng_ij_hist_ij_ven_funil_fat_fec_202
 ng_ij_hist_ij_ven_funil_fat_fec_2020_mes <- ng_ij_hist_ij_ven_funil_fat_fec_2020_mes %>%
   mutate(total_fat_t = func_fmt_din_mi(total_faturado))
 
-##Gráfico de pizza fechados do mês
+### Gráfico n11 - Pizza fechados do mês
 ##############################################
 
 colors_pie <- c("#32CD32", "yellow" , "orange" , "#DE0D26")
@@ -770,8 +766,9 @@ ng_ij_hist_ij_ven_ij_np_2019_fat <- ng_ij_hist_ij_ven_ij_np_total %>%
   filter (historico_negocio_situacao_data < '2020-01-01' & historico_negocio_situacao_data > '2018-12-31' & negocio_negocio_situacao_id == 4)
 ng_ij_hist_ij_ven_ij_np_2018_fat <- ng_ij_hist_ij_ven_ij_np_total %>%
   filter (historico_negocio_situacao_data < '2019-01-01' & historico_negocio_situacao_data > '2017-12-31' & negocio_negocio_situacao_id == 4)
-ng_ij_hist_ij_ven_ij_np_2017_fat <- ng_ij_hist_ij_ven_ij_np_total %>%
-  filter (historico_negocio_situacao_data < '2018-01-01' & historico_negocio_situacao_data > '2016-12-31' & negocio_negocio_situacao_id == 4)
+##Usando só os dois anos anteriores
+#ng_ij_hist_ij_ven_ij_np_2017_fat <- ng_ij_hist_ij_ven_ij_np_total %>%
+#  filter (historico_negocio_situacao_data < '2018-01-01' & historico_negocio_situacao_data > '2016-12-31' & negocio_negocio_situacao_id == 4)
 
 #Aqui vou fazer a mesma soma dos valores dos três anos anteriores, dividindo por mês
 fat_2019_mes <- ng_ij_hist_ij_ven_ij_np_2019_fat %>%
@@ -786,31 +783,31 @@ fat_2018_mes <- ng_ij_hist_ij_ven_ij_np_2018_fat %>%
 
 
 
-###Forma 2 de fazer o gráfico de linhas com faturamento anual (substituindo com NA linhas faltantes)
+###Fazer o gráfico de linhas com faturamento anual (substituindo com NA linhas faltantes)
+###Na super temos 2018, na komatsu tem q verificar se possui 2018 e 2019
 #######################################################################
 if (empresa == 16)
 {
-
+  
   n_linhas <- nrow(fat_2020_mes)
   fat_2020_mes_aux <- fat_2019_mes
   fat_2020_mes_aux$ym_sum <- NA
   fat_2020_mes_aux$ym_sum[1:n_linhas] <- fat_2020_mes$ym_sum
-
+  
   fat_2020_2019_2018_mes <- fat_2020_mes_aux
   fat_2020_2019_2018_mes[, "ym_sum_2019"] <- fat_2019_mes$ym_sum
   fat_2020_2019_2018_mes[, "ym_sum_2018"] <- fat_2018_mes$ym_sum
-
+  
   meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
   ## alterando pra números pra poder fazer da mesma forma
   fat_2020_2019_2018_mes$ym <- as.integer(fat_2020_2019_2018_mes$ym)
   fat_2020_2019_2018_mes$ym <- with(fat_2020_2019_2018_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
                                                                 labels = meses))
-
-
+  
+  
   #######################################################################
-
+  
   ##Começando o gráfico
-  ###Assim estarei mostrando 2020 e uma média dos anos anteriores
   a <- list(
     title = '',
     showticklabels = T
@@ -820,9 +817,9 @@ if (empresa == 16)
     side = 'right',
     title = ''
   )
-
+  
   ###Assim estarei mostrando 2020, 2019 e 2018
-
+  ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
   n12 <- plot_ly(fat_2020_2019_2018_mes)
   n12 <- n12 %>%
     add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y =~ym_sum,
@@ -843,33 +840,25 @@ if (empresa == 16)
               text = ~paste(func_fmt_din_mi(ym_sum_2018),'milhões'),
               hoverinfo = "text",
               color = I("green"))
-
+  
   n12 <- n12 %>%
     layout(xaxis = a, yaxis = a,
            #aqui eu ajusto onde quero que apareça a legenda
            legend = list(x=0.8, y=0.9)#)
     )
   n12
-
-  ay <- list(
-    tickfont = list(color = "red"),
-    overlaying = 'y',
-    side = 'right',
-    title = ''
-  )
-
-
-
+  
+  
   if (teste == F){
     #tabelas
     rm(ng_ij_hist_ij_ven_ij_np_2020, fat_2020_mes, ng_ij_hist_ij_ven_total, negocio_ij_historico_ij_vendedor_total,
-       fat_2019_mes, fat_2018_mes)
+       fat_2019_mes, fat_2018_mes, fat_2020_2019_2018_mes, fat_2020_mes_aux, ay, a, negocio_produto,
+       ng_ij_hist_ij_ven_2020, ng_ij_hist_ij_ven_2020_fat, ng_ij_hist_ij_ven_ij_np_2019_fat, ng_ij_hist_ij_ven_ij_np_2018_fat,
+       ng_ij_hist_ij_ven_ij_np_total)
     #variáveis
-    rm()
+    rm(meses, n_linhas)
   }
-
 }
 
 ##############################################
 
-##############################################
