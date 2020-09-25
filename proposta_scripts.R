@@ -22,14 +22,14 @@ library(scales)
 
 
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = T
+teste = F
 
 ####Variável usada para não apagar coisas na dash
 dash = F
 
 ##Variável "Global"
-empresa = 16 #Super
-#empresa = 78 #Komatsu
+#empresa = 16 #Super
+empresa = 78 #Komatsu
 
 #formatar dinheiro
 func_fmt_din <- function(inteiro)
@@ -399,9 +399,6 @@ pr_top5_fat_us <- p_ij_n_ij_pp_ij_prod_us %>%
   distinct (produto_categoria_id, .keep_all = TRUE) %>%
   collect ()
 
-##Isso aqui tudo é pra pegar o top 5 (antes top10, mas aparecia uma categoria que não queríamos), substituir os que não estão por -Outros e depois refazer a média
-top5_fat_us <- head.matrix(pr_top5_fat_us, n=5)
-
 ##Vou fazer um join pra pegar os nomes de cada categoria
 categoria <- tbl(con, "categoria") %>%
   select(categoria_id, categoria_nome) %>%
@@ -409,11 +406,6 @@ categoria <- tbl(con, "categoria") %>%
 
 #Arrumando encoding
 Encoding(categoria$categoria_nome) <- 'latin1'
-
-top5_fat_ij_cat_us <- inner_join(top5_fat_us, categoria, by = c("produto_categoria_id"="categoria_id"))
-top5_fat_ij_cat_us <- top5_fat_ij_cat_us[, -1]
-top5_fat_ij_cat_us <- top5_fat_ij_cat_us[, -2:-4]
-top5_fat_ij_cat_us <- as.data.frame(top5_fat_ij_cat_us)
 
 ##Aqui estou juntando para agrupar primeiro através do na
 pr_top5_fat_aux <- left_join(pr_top5_fat_us, top5_fat_ij_cat, by=c("produto_categoria_id" = "produto_categoria_id"))
@@ -495,7 +487,8 @@ if(teste == F){
   #tabelas
   rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_n_ij_pp_empresa_us, pr_top5_fat, pr_top5_fat_aux,
      pr_top5_fat_med, produto, proposta_produto, top5_fat, top5_fat_ij_cat, p_ij_n_ij_pp_ij_prod,
-     p_ij_n_ij_v_ij_pp, p_ij_n_ij_v_ij_pp_n, negocio_produto, negocio)
+     p_ij_n_ij_v_ij_pp, p_ij_n_ij_v_ij_pp_n, negocio_produto, negocio, fat_tot_categorias_us, p_ij_n_ij_pp_ij_prod_us,
+     pr_top5_fat_med_us, pr_top5_fat_us)
   #variáveis
   rm(fat_out, media_empresa, n_out, total_empresa)
 }
@@ -581,12 +574,28 @@ p_ij_ppa <- inner_join(proposta, proposta_pagamento, by=c('proposta_id' = 'pp_pr
   select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id, pp_ativo) %>%
   filter (pp_ativo == T, pp_modo_id != 0, pp_forma_id != 0)
 
-
-#conta antes de substituir (provavelmente mais rápido lidar com int do que string) (1 contando modo) (conta todos, depois filtro através de proposta_modo_forma)
+##conta antes de substituir (provavelmente mais rápido lidar com int do que string) (1 contando modo) (conta todos, depois filtro através de proposta_modo_forma)
 p_ij_ppa_count_modo <- p_ij_ppa %>%
   select (pp_id, pp_modo_id) %>%
   group_by(pp_modo_id) %>%
-  mutate(cont_modo = n()) %>%
+  mutate(cont_modo_aux = n()) %>%
+  ungroup() %>%
+  distinct(pp_modo_id, .keep_all = T)
+
+if (empresa == 16)
+{
+  ##Vou calcular 5% e agrupar esses que forem menores que 5% em outra categoria (outros)
+  n_total_modo <- sum(p_ij_ppa_count_modo$cont_modo_aux)
+  aux_3perc <- n_total_modo/33
+  p_ij_ppa_count_modo$pp_modo_id[p_ij_ppa_count_modo$cont_modo_aux < aux_3perc] <- 26
+}
+
+##Aqui eu estou refazendo a contagem pq já havia uma categoria "Outras", só estou adicionando os demais (com taxa <3%) nela
+p_ij_ppa_count_modo <- p_ij_ppa_count_modo %>%
+  select (pp_modo_id, cont_modo_aux) %>%
+  group_by(pp_modo_id) %>%
+  mutate(cont_modo = sum(cont_modo_aux)) %>%
+  ungroup() %>%
   distinct(pp_modo_id, .keep_all = T)
 
 p_ij_ppa_cont_modo_ij_pmf <- inner_join (p_ij_ppa_count_modo, proposta_modo_forma, by = c("pp_modo_id" = "pmf_id")) %>%
@@ -594,18 +603,32 @@ p_ij_ppa_cont_modo_ij_pmf <- inner_join (p_ij_ppa_count_modo, proposta_modo_form
   rename(
     Modo = pmf_nome)
 
+
+
 #conta antes de substituir (provavelmente mais rápido lidar com int do que string) (2 contando forma) (conta todos, depois filtro através de proposta_modo_forma)
 p_ij_ppa_count_forma <- p_ij_ppa %>%
   select (pp_id, pp_forma_id) %>%
   group_by(pp_forma_id) %>%
   mutate(cont_forma = n()) %>%
+  ungroup() %>%
   distinct(pp_forma_id, .keep_all = T)
+
+if (empresa == 16){
+  ##Aqui terei que fazer difernte, porque não existe a coluna OUTRAS, criarei uma
+  p_ij_ppa_count_forma$pp_forma_id[p_ij_ppa_count_forma$cont_forma < aux_3perc] <- 2
+  n_outros_forma <- sum(p_ij_ppa_count_forma$cont_forma[which(p_ij_ppa_count_forma$pp_forma_id==2)])
+}
 
 p_ij_ppa_cont_forma_ij_pmf <- inner_join (p_ij_ppa_count_forma, proposta_modo_forma, by = c("pp_forma_id" = "pmf_id")) %>%
   select(pp_forma_id, cont_forma, pmf_nome) %>%
   rename(
     Forma = pmf_nome)
 
+if (empresa == 16){
+  ##Adicicionando a linha "outros"
+  p_ij_ppa_cont_forma_ij_pmf <- p_ij_ppa_cont_forma_ij_pmf %>%
+    add_row(pp_forma_id = -1, cont_forma = n_outros_forma, Forma = "OUTRAS")
+}
 
 ### Gráfico p6 - Modos de pagamento
 
@@ -632,10 +655,11 @@ if(dash == F){
 if(teste == F){
   #tabelas
   rm(p_ij_ppa, proposta, proposta_modo_forma, p_ij_ppa_count_modo, p_ij_ppa_cont_modo_ij_pmf,
-     p_ij_ppa_count_forma, p_ij_ppa_cont_forma_ij_pmf);
+     p_ij_ppa_count_forma, p_ij_ppa_cont_forma_ij_pmf, proposta_pagamento);
   #variáveis
-  rm();
+  rm(aux_3perc, media_empresa_us, n_empresa, n_empresa_us, n_outros_forma, n_total_modo, total_empresa_us);
 }
 if (teste == 0) {
   #rm(list=ls())
 }
+

@@ -26,7 +26,7 @@ library(scales)
 
 
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
 dash = F
 
