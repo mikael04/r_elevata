@@ -51,7 +51,7 @@ con <- DBI::dbConnect(odbc::odbc(),
                       Database = "nhmobile_agriculture",
                       Trusted_Connection = "True")
 
-##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
+##-> Collect cria o dataframe resultado da query, proposta será a tabela na qual estou lendo (FROM cliente)
 ##coleta todas as propostas
 proposta <- tbl(con, "proposta") %>%
   select(proposta_id, proposta_versao, proposta_negocio_id, proposta_data_cadastro, proposta_status) %>%
@@ -662,4 +662,3 @@ if(teste == F){
 if (teste == 0) {
   #rm(list=ls())
 }
-
