@@ -87,6 +87,7 @@ negocio <- tbl(con, "negocio") %>%
 ##coleta todos os vendedores
 vendedor_todos <- tbl(con, "vendedor") %>%
   select(vendedor_id, vendedor_nome, vendedor_id, vendedor_empresa_id,vendedor_ativo) %>%
+  filter (vendedor_empresa_id == empresa, vendedor_ativo == 1) %>%
   collect()
 
 #Arrumando encode
