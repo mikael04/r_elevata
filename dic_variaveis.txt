@@ -1,16 +1,16 @@
-Variáveis em ordem de aparecimento no script
-Funções
+## Variáveis em ordem de aparecimento no script
+#Funções
   - Formatar dinheiro (function_format_din, function_format_din_mi)
     Ambas usadas pra formatar o valor do banco em dinheiro (retorna uma string com "R$X", sendo X o valor), mi (divide por 1 milhão)
     Tabelas base (banco)
-  - negocio_scripts
+  ### negocio_scripts
       negocio <- recebe tabela de negócio do banco
       negocio_produto <- recebe tabela negocio_produto do banco
       produto <- recebe tabela produto do banco
       categoria <- recebe tabela do banco
       vendedor_todos <- recebe tabela vendedor do banco
       historico_negocio_situacao <- recebe tabela historico_negocio_situacao do banco
-  - proposta_scripts
+  ### proposta_scripts
       proposta <- recebe tabela de negócio do banco
       negocio <- recebe tabela do banco
       vendedor <- recebe tabela do banco
@@ -20,9 +20,9 @@ Funções
 
 
 
-Junções
+#Junções
   ______________________________________________________________________________________________________
-  - negocio_scripts
+  ### negocio_scripts
   (inner na maioria pra pegar apenas onde haja linhas nas duas tabelas)
       negocio_ij_vendedor <- inner join negocio, vendedor (negocio_vendedor_id = vendedor_id)
       neg_ij_ven_ij_np <- inner join negocio_lj_vendedor, negocio_produto (negocio_id = np_negocio_id)
@@ -47,14 +47,15 @@ Junções
       ngp_ij_pd <- inner join de negocio_produto com produto (np_produto_id = produto_id)
       n
   ______________________________________________________________________________________________________
-  - proposta_scripts
+  ### proposta_scripts
       prop_ij_neg <- inner join proposta, negócio (proposta_negocio_id e negocio_id) (removido negócios sem vendedor_id)
-      prop_ij_neg_2020 <- anterior filtrado 2020
+      prop_ij_neg_2020 <- anterior filtrado anok 2020
       prop_ij_neg_cont_2020 <- contando número de negócios 2020 (campo: cont_status)
       prop_ij_neg_ij_vend <- inner join prop_ij_neg com vendedor (negocio_vendedor_id e vendedor_id) usado pra ter o nome do vendedor
       prop_ij_neg_ij_vend_2020 <- filtrando empresa (só tabela de vendedor tem, por isso não foi feita antes)
       prop_ij_neg_cont_vend_2020 <- Contando status por vendedor (cont_status), agrupado por status e vendedor
       prop_ij_neg_cont_us <- proj_ij_neg contando número de usados (campo: usado) agrupando por tipo de negocio (negocio_usado)
-      pr_ij_n_ij_v_np_ij_p <- junção com negócio, vendedor (pra selecionar empresa), negocio_produto e produto (pegar a categoria do produto)
+      pr_ij_n_ij_v_np_ij_n <- junção proposta, negócio, vendedor (pra selecionar empresa), proposta_produto
+      pr_ij_n_ij_pp_empresa <- corte na anterior com a empresa (vendedor_empresa_id == empresa), status finalizado da proposta (proposta_status == 4) e tipo do negócio novo (negocio_tipo_negocio == N), valor > 10 (para remover os que estão zerados)
 
   ______________________________________________________________________________________________________
