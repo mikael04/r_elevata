@@ -18,7 +18,7 @@ library(htmlwidgets)
 library(RColorBrewer)
 
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = T
+teste = F
 
 ####Variável usada para não apagar coisas na dash
 dash = F
@@ -181,8 +181,8 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(visita_cliente, visita_resultado_empresa, vis_res_emp, vis_st_emp, vc_ij_vre, vc_ij_vse,
-     vc_ij_vse_ij_v, vc_ij_vre_ij_v, vendedor, visita_resultado, visita_status, visita_status_empresa,
+  rm(visita_resultado_empresa, vis_res_emp, vc_ij_vre, vc_ij_vse, ##vis_st_emp, ##vou usar a vis_st_emp para uma junção (saber qual empresa são feitas as visitas)
+     vc_ij_vse_ij_v, vc_ij_vre_ij_v, visita_resultado, visita_status, visita_status_empresa,
      axis_h);
   #variáveis
   rm(brbg_mot, brbg_res, n_r_color, n_m_color);
@@ -195,22 +195,6 @@ cliente <- tbl(con,'cliente') %>%
   select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_cidade, cliente_ultima_visita) %>%
   filter(cliente_empresa_id == empresa) %>%
   collect()
-
-##coleta todos os vendedores
-vendedor <- tbl(con, "vendedor") %>%
-  select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter(vendedor_ativo == 1, vendedor_empresa_id == empresa) %>%
-  collect()
-#Arrumando encoding
-Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
-
-if(empresa == 16){
-  vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
-  vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
-  vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
-}
-
 
 ##Clientes cadastrados por vendedor ate 2020
 cli_p_v <- cliente %>%
@@ -275,11 +259,13 @@ n_clientes_2020 <- nrow(cliente_2020)
 
 ##Contar quantos clientes aparecem em negócio
 negocio <- tbl(con, "negocio") %>%
-  select(negocio_id, negocio_vendedor_id, negocio_cliente_id) %>%
+  select(negocio_id, negocio_vendedor_id, negocio_cliente_id, negocio_data_cadastro) %>%
   collect()
 
-cli_ij_ng <- inner_join(cliente, negocio, by=c("cliente_id" = "negocio_cliente_id"))
-cli_2020_ij_ng <- inner_join(cliente_2020, negocio, by=c("cliente_id" = "negocio_cliente_id"))
+cli_ij_ng <- inner_join(cliente, negocio, by=c("cliente_id" = "negocio_cliente_id")) %>%
+  select(cliente_id, negocio_id)
+cli_2020_ij_ng <- inner_join(cliente_2020, negocio, by=c("cliente_id" = "negocio_cliente_id"))%>%
+  select(cliente_id, negocio_id)
 ##Variáveis usadas
 n_cli_cneg <- nrow(cli_ij_ng)
 n_cli_cneg_2020 <- nrow(cli_2020_ij_ng)
@@ -323,8 +309,67 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(cliente, cliente_2020, cli_ij_ng, cli_2020_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_2020, n_2020_p);
+  rm(cliente_2020, cli_ij_ng, cli_2020_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_2020, n_2020_p);
   #variáveis
-  rm(n_cli_cneg, n_cli_cneg_2020, n_clientes, n_clientes_2020);
+  rm(n_cli_cneg, n_cli_cneg_2020, n_clientes, n_clientes_2020, colors_pie);
 }
+####################################
 
+
+###Contar clientes/visitas/negocios cadastrados por mês
+####################################
+
+##Já filtrado apenas empresa (variavel global)
+clientes_mes <- cliente %>%
+  filter (cliente_data_cadastro >= ano_atual) %>%
+  mutate (ym = format(cliente_data_cadastro, '%m')) %>%
+  group_by (ym) %>%
+  summarize(n_cli = n()) %>%
+  ungroup ()
+
+##Visita precisa juntar com visita_status ou _resultado () pra obter empresa_id ##poderia ser vendedor, mas a tabela vis_st_emp (status c/ status_empresa) já está pronta
+##vis_st_emp já vem filtrada pela empresa (var global)
+vc_ij_emp <- inner_join(visita_cliente, vis_st_emp, by = c("vc_status_id" = "vs_id")) %>%
+  #select(vc_id, vc_status_id, vc_data_cadastro) ##Sem empresa_id
+  select(vc_id, vc_status_id, vc_data_cadastro, vse_empresa_id)
+
+visitas_mes <- vc_ij_emp %>%
+  filter (vc_data_cadastro >= ano_atual) %>%
+  mutate (ym = format(vc_data_cadastro, '%m')) %>%
+  group_by (ym) %>%
+  summarize(n_vis = n()) %>%
+  ungroup ()
+
+##Negocio precisa juntar com vendedor pra obter empresa_id ##Poderia ser cliente também, mas a tabela vendedor é menor
+##vendedor já vem filtrado pela empresa (var global)
+ng_ij_emp <- inner_join(negocio, vendedor, by = c("negocio_vendedor_id" = "vendedor_id")) %>%
+  #select(negocio_id, negocio_vendedor_id, negocio_data_cadastro)%>% ##Sem empresa_id
+  select(negocio_id, negocio_vendedor_id, negocio_data_cadastro, vendedor_empresa_id)
+
+negocios_mes <- ng_ij_emp %>%
+  filter (negocio_data_cadastro >= ano_atual) %>%
+  mutate (ym = format(negocio_data_cadastro, '%m')) %>%
+  group_by (ym) %>%
+  summarize(n_neg = n()) %>%
+  ungroup ()
+
+##Juntando tudo em um só dataframe
+cli_ij_vc_mes <- inner_join(clientes_mes, visitas_mes, by = c("ym"))
+cli_ij_vc_ij_ng_mes <- inner_join(cli_ij_vc_mes, negocios_mes, by = c("ym"))
+
+##Criando nomes de colunas
+meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
+## alterando pra números pra poder fazer da mesma forma
+cli_ij_vc_ij_ng_mes$ym <- as.integer(cli_ij_vc_ij_ng_mes$ym)
+cli_ij_vc_ij_ng_mes$ym <- with(cli_ij_vc_ij_ng_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
+                                                              labels = meses))
+
+
+
+if(teste == F){
+  #tabelas
+  rm(cliente, visita_cliente, negocio, vendedor, vis_st_emp);
+  #variáveis
+  rm();
+}
+####################################
