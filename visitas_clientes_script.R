@@ -58,6 +58,7 @@ con <- DBI::dbConnect(odbc::odbc(),
 ##Collect cria o df resultado da query, nesse caso, visitas_cliente
 visita_cliente <- tbl(con,'visita_cliente') %>%
   select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
+  filter (vc_data_cadastro >= ano_atual) %>%
   collect ()
 ##Pra pegar o nome do resultado
 visita_resultado <- tbl(con, "visita_resultado") %>%
@@ -130,7 +131,7 @@ vc_ij_vse_ij_v <- vc_ij_vse_ij_v %>%
   mutate(motivo_n = n()) %>%
   distinct(vc_vendedor_id, .keep_all = T)
   
-### Gráfico v0 - Motivo das visitas (status) por vendedor
+### Gráfico v0 - Motivo das visitas (status) por vendedor em 2020
 
 ##descobrindo numero de status diferentes para criar paleta de cores
 n_m_color <- n_distinct(vc_ij_vse_ij_v$vc_status_id)
@@ -157,7 +158,7 @@ vc_ij_vre_ij_v <- vc_ij_vre_ij_v %>%
   mutate(resultado_n = n()) %>%
   distinct(vc_vendedor_id, .keep_all = T)
 
-### Gráfico v1 - Resultado das visitas (resultados) por vendedor
+### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
 ##descobrindo numero de status diferentes para criar paleta de cores
 n_r_color <- n_distinct(vc_ij_vre_ij_v$vc_resultado_id)
 brbg_res <- brewer.pal(n_r_color,'BrBG')
@@ -188,7 +189,8 @@ if(teste == F){
   rm(brbg_mot, brbg_res, n_r_color, n_m_color);
 }
 
-################################
+################################################################################################
+################################################################################################
 ### Tabelas e graficos de Clientes
 
 cliente <- tbl(con,'cliente') %>%
@@ -231,19 +233,19 @@ cli_p_v_2020 <- inner_join(cli_p_v_2020, vendedor, by = c('cliente_vendedor_id' 
 cli_p_v_t_2020 <- left_join(cli_p_v_2020, cli_p_v, by = c('cliente_vendedor_id')) %>%
   select (cliente_vendedor_id, vendedor_nome, n_clientes, n_clientes_2020)
 
-### Grafico v2 - Distribuicao de clientes cadastrados por vendedor
+### Grafico c0 - Distribuicao de clientes cadastrados por vendedor
 
-v2 <- plot_ly(cli_p_v_t_2020, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
+c0 <- plot_ly(cli_p_v_t_2020, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
               name = 'Até 2020')
-v2 <- v2 %>%
+c0 <- c0 %>%
   add_trace(y= ~n_clientes_2020, name = 'Em 2020')
-v2 <- v2 %>%
+c0 <- c0 %>%
   layout(barmode = 'grouped',
          xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
          yaxis = list(title = ''))
 
 if(dash == F){
-  v2
+  c0
 }
 
 if(teste == F){
@@ -281,9 +283,9 @@ n_2020_p <- c(round((n_cli_cneg_2020/n_clientes_2020), 2), round(((n_clientes_20
 cli_c_s_ng <- data.frame(Clientes, n_total, n_total_p, n_2020, n_2020_p)
 
 
-### Grafico v3 - Clientes cadastrados que possuem negocio (pizza)
+### Grafico c1 - Clientes cadastrados que possuem negocio (pizza)
 colors_pie<- c("#32CD32", "#FFA500")
-v3 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_total, type = 'pie', sort = F,
+c1 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_total, type = 'pie', sort = F,
               text = func_fmt_numbr(n_total),
               texttemplate = "%{text} (%{percent})",
               hovertemplate = paste ("%{label} <br>",
@@ -292,11 +294,11 @@ v3 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_total, type = 'pie', s
               marker = list(colors = colors_pie))
 
 if(dash == F){
-  v3
+  c1
 }
 
-### Grafico v4 - Clientes cadastrados em 2020 que possuem negocio (pizza)
-v4 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_2020, type = 'pie', sort = F,
+### Grafico c2 - Clientes cadastrados em 2020 que possuem negocio (pizza)
+c2 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_2020, type = 'pie', sort = F,
               text = func_fmt_numbr(n_2020),
               texttemplate = "%{text} (%{percent})",
               hovertemplate = paste ("%{label} <br>",
@@ -305,7 +307,7 @@ v4 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_2020, type = 'pie', so
               marker = list(colors = colors_pie))
 
 if(dash == F){
-  v4
+  c2
 }
 if(teste == F){
   #tabelas
@@ -364,12 +366,39 @@ cli_ij_vc_ij_ng_mes$ym <- as.integer(cli_ij_vc_ij_ng_mes$ym)
 cli_ij_vc_ij_ng_mes$ym <- with(cli_ij_vc_ij_ng_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
                                                               labels = meses))
 
-
+### Gráfico c3 - Cadastro de clientes, visitas e negócios no ano de 2020
+c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~ym, y = ~n_cli,
+              name = 'Clientes',
+              text = ~paste(func_fmt_numbr(n_cli), 'clientes'),
+              hoverinfo = "text",
+              color = I('blue'))
+c3 <- c3 %>%
+  add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_vis,
+             name = 'Visitas',
+             text = ~paste(func_fmt_numbr(n_vis), 'visitas'),
+             hoverinfo = "text",
+             color = I('#DAA520'))
+c3 <- c3 %>%
+  add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_neg,
+             name = 'Negócios',
+             text = ~paste(func_fmt_numbr(n_neg), 'negócios'),
+             hoverinfo = "text",
+             color = I('green'))
+  
+c3 <- c3 %>%
+layout(xaxis = list(title = ''),
+       yaxis = list(title = ''))
+if(dash == F){
+  c3
+}
 
 if(teste == F){
   #tabelas
-  rm(cliente, visita_cliente, negocio, vendedor, vis_st_emp);
+  rm(cliente, visita_cliente, negocio, vendedor, vis_st_emp, cli_ij_vc_mes, cli_ij_vc_ij_ng_mes);
   #variáveis
   rm();
 }
+
+
+
 ####################################
