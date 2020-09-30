@@ -113,7 +113,7 @@ neg_ij_ven_ij_np <- inner_join(negocio_ij_vendedor, negocio_produto, by=c("negoc
 
 ##Filtrando empresa, vendedores ativos e negocios de 2020
 corte_1 <- neg_ij_ven_ij_np %>%
-  filter(vendedor_empresa_id == empresa, vendedor_ativo == TRUE, negocio_data_cadastro >= as.Date("2020-01-01"), negocio_negocio_situacao_id != 0)
+  filter(negocio_data_cadastro >= as.Date("2020-01-01"), negocio_negocio_situacao_id != 0)
 
 
 ##removendo elementos não mais usados
@@ -143,7 +143,7 @@ ng_ij_vn_ij_np_fat$negocio_status = factor(ng_ij_vn_ij_np_fat$negocio_status, le
 ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>%
   mutate(total_fat_t = func_fmt_din(total_fat))
 
-###Gráfico 0 - Número de clientes por vendedor
+###Gráfico n0 - Faturamento dos negócios por vendedor (2020, status atual)
 ##############################################
 n0 <- ggplot(ng_ij_vn_ij_np_fat, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), total_fat, fill=(negocio_status),
                                      text = paste('Valor neste status:', total_fat_t))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética

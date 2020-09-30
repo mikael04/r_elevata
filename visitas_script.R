@@ -28,6 +28,7 @@ empresa = 16 #Super
 #empresa = 78 #Komatsu
 ano_atual = '2020-01-01'
 
+##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
 func_nome <- function (nome_comp)
 {
   lista <- str_split_fixed(nome_comp, " ", 4)
@@ -40,6 +41,12 @@ func_nome <- function (nome_comp)
   lista[,3] <- gsub('^.$', '',lista[,3])
   lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
   return (lista[,1])
+}
+##Alterar o número apresentado na forma americana (com vírgula) para a forma brasileira (com ponto), através da transformação em string
+func_fmt_numbr <- function(inteiro)
+{
+  inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
+  return(inteiro_br)
 }
 
 con <- DBI::dbConnect(odbc::odbc(),
@@ -231,7 +238,6 @@ cli_p_v_t_2020 <- left_join(cli_p_v_2020, cli_p_v, by = c('cliente_vendedor_id')
 ### Grafico v2 - Distribuicao de clientes cadastrados por vendedor
 
 v2 <- plot_ly(cli_p_v_t_2020, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
-              color = ~'',
               name = 'Até 2020')
 v2 <- v2 %>%
   add_trace(y= ~n_clientes_2020, name = 'Em 2020')
@@ -248,5 +254,61 @@ if(teste == F){
   #variáveis
   rm();
 }
-### Grafico v3 - Clientes cadastrados que possuem negocio (pizza)
+### Gráficos de pizza de clientes com e sem negócio
+##Contando número de clientes geral e em 2020
+n_clientes <- nrow(cliente)
+n_clientes_2020 <- nrow(cliente_2020)
 
+##Contar quantos clientes aparecem em negócio
+negocio <- tbl(con, "negocio") %>%
+  select(negocio_id, negocio_vendedor_id, negocio_cliente_id) %>%
+  collect()
+
+cli_ij_ng <- inner_join(cliente, negocio, by=c("cliente_id" = "negocio_cliente_id"))
+cli_2020_ij_ng <- inner_join(cliente_2020, negocio, by=c("cliente_id" = "negocio_cliente_id"))
+##Variáveis usadas
+n_cli_cneg <- nrow(cli_ij_ng)
+n_cli_cneg_2020 <- nrow(cli_2020_ij_ng)
+
+Clientes <- c("Clientes com negócios", "Clientes sem negócio")
+
+n_total <- c(n_cli_cneg, n_clientes-nrow(cli_ij_ng))
+n_total_p <- c(round((n_cli_cneg/n_clientes), 2), round(((n_clientes-n_cli_cneg)/n_clientes), 2))
+
+n_2020 <- c(n_cli_cneg_2020, n_clientes_2020-n_cli_cneg_2020)
+n_2020_p <- c(round((n_cli_cneg_2020/n_clientes_2020), 2), round(((n_clientes_2020-n_cli_cneg_2020)/n_clientes_2020), 2))
+
+cli_c_s_ng <- data.frame(Clientes, n_total, n_total_p, n_2020, n_2020_p)
+
+
+### Grafico v3 - Clientes cadastrados que possuem negocio (pizza)
+colors_pie<- c("#32CD32", "#FFA500")
+v3 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_total, type = 'pie', sort = F,
+              text = func_fmt_numbr(n_total),
+              texttemplate = "%{text} (%{percent})",
+              hovertemplate = paste ("%{label} <br>",
+                                     "Equivalente a %{percent}",
+                                     "<extra></extra>"),
+              marker = list(colors = colors_pie))
+
+if(dash == F){
+  v3
+}
+
+v4 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_2020, type = 'pie', sort = F,
+              text = func_fmt_numbr(n_2020),
+              texttemplate = "%{text} (%{percent})",
+              hovertemplate = paste ("%{label} <br>",
+                                     "Equivalente a %{percent}",
+                                     "<extra></extra>"),
+              marker = list(colors = colors_pie))
+
+if(dash == F){
+  v4
+}
+if(teste == F){
+  #tabelas
+  rm(cli_ij_ng, cli_2020_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_2020, n_2020_p);
+  #variáveis
+  rm(n_cli_cneg, n_cli_cneg_2020, n_clientes, n_clientes_2020);
+}
