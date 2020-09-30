@@ -280,7 +280,7 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(cliente_2020, cli_p_v, cli_p_v_2020, cli_p_v_t_2020);
+  rm(cli_p_v, cli_p_v_2020, cli_p_v_t_2020);
   #variáveis
   rm();
 }

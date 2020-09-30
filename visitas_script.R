@@ -264,7 +264,7 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(cliente_2020, cli_p_v, cli_p_v_2020, cli_p_v_t_2020);
+  rm(cli_p_v, cli_p_v_2020, cli_p_v_t_2020);
   #variáveis
   rm();
 }
@@ -327,3 +327,4 @@ if(teste == F){
   #variáveis
   rm(n_cli_cneg, n_cli_cneg_2020, n_clientes, n_clientes_2020);
 }
+
