@@ -145,7 +145,8 @@ vc_ij_vre_ij_v <- inner_join(vc_ij_vre, vendedor, by = c('vc_vendedor_id' = 'ven
 vc_ij_vse_ij_v <- vc_ij_vse_ij_v %>%
   group_by(vc_vendedor_id, vc_status_id) %>%
   mutate(motivo_n = n()) %>%
-  distinct(vc_vendedor_id, .keep_all = T)
+  distinct(vc_vendedor_id, .keep_all = T) %>%
+  ungroup()
   
 ### Gráfico v0 - Motivo das visitas (status) por vendedor em 2020
 
@@ -172,7 +173,8 @@ if(dash == F){
 vc_ij_vre_ij_v <- vc_ij_vre_ij_v %>%
   group_by(vc_vendedor_id, vc_resultado_id) %>%
   mutate(resultado_n = n()) %>%
-  distinct(vc_vendedor_id, .keep_all = T)
+  distinct(vc_vendedor_id, .keep_all = T) %>%
+  ungroup() 
 
 ### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
 ##descobrindo numero de status diferentes para criar paleta de cores
@@ -198,8 +200,9 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(visita_resultado_empresa, vis_res_emp, vc_ij_vre, vc_ij_vse, ##vis_st_emp, ##vou usar a vis_st_emp para uma junção (saber qual empresa são feitas as visitas)
-     vc_ij_vse_ij_v, vc_ij_vre_ij_v, visita_resultado, visita_status, visita_status_empresa,
+  rm(visita_resultado_empresa, vis_res_emp, vc_ij_vre, vc_ij_vse,
+     ##vis_st_emp, vc_ij_vse_ij_v, ##vou usar a vis_st_emp para uma junção (saber qual empresa são feitas as visitas)
+     vc_ij_vre_ij_v, visita_resultado, visita_status, visita_status_empresa,
      axis_h);
   #variáveis
   rm(brbg_mot, brbg_res, n_r_color, n_m_color);
@@ -214,51 +217,63 @@ cliente <- tbl(con,'cliente') %>%
   filter(cliente_empresa_id == empresa) %>%
   collect()
 
-##Clientes cadastrados por vendedor ate 2020
+##Clientes cadastrados por vendedor
 cli_p_v <- cliente %>%
-  filter(cliente_data_cadastro < ano_atual) %>%
   group_by(cliente_vendedor_id) %>%
   mutate(n_clientes = n()) %>%
   distinct(cliente_vendedor_id, .keep_all = T) %>%
   select(cliente_vendedor_id, n_clientes) %>%
-  ungroup() %>%
-  arrange(cliente_vendedor_id)
+  arrange(cliente_vendedor_id) %>%
+  ungroup()
 
 ##Juncao pra pegar nome do vendedor
-#cli_p_v <- inner_join(cli_p_v, vendedor, by = c('cliente_vendedor_id' = 'vendedor_id')) %>%
-#  select(cliente_vendedor_id, vendedor_nome, n_clientes) %>%
-#  arrange(cliente_vendedor_id)
+cli_p_v_ij_vend <- inner_join(cli_p_v, vendedor, by = c('cliente_vendedor_id' = 'vendedor_id')) %>%
+  select(cliente_vendedor_id, vendedor_nome, n_clientes)
 
-##Clientes cadastrados em 2020 por vendedor
-cliente_2020 <- cliente %>%
-  filter(cliente_data_cadastro >= ano_atual)
 
-cli_p_v_2020 <- cliente_2020 %>%
-  group_by(cliente_vendedor_id) %>%
-  mutate(n_clientes_2020 = n()) %>%
-  distinct(cliente_vendedor_id, .keep_all = T) %>%
-  select(cliente_vendedor_id, n_clientes_2020) %>%
-  ungroup() %>%
-  arrange(cliente_vendedor_id)
+##Já é filtrado em 2020 (filtra na tabela de visitas_cliente)
+vc_ij_vse_ij_v_count <- vc_ij_vse_ij_v %>%
+  select (vc_vendedor_id, motivo_n) %>% ##Não vou salvar o nome pq vou fazer uma junção com a outra tabela, então só preciso do id
+  group_by(vc_vendedor_id) %>%
+  mutate(n_visitas = sum(motivo_n)) %>%
+  distinct(vc_vendedor_id, .keep_all = T) %>%
+  ungroup ()
 
-##Juncao pra pegar nome do vendedor
-cli_p_v_2020 <- inner_join(cli_p_v_2020, vendedor, by = c('cliente_vendedor_id' = 'vendedor_id')) %>%
-  select(cliente_vendedor_id, vendedor_nome, n_clientes_2020)
+##Distribuição de clientes total, visita e negócios em 2020 por vendedor
+vend_cli_vis <- left_join(cli_p_v_ij_vend, vc_ij_vse_ij_v_count, by = c("cliente_vendedor_id" = "vc_vendedor_id")) %>%
+  select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas)
 
-##Juntando anos anteriores + 2020 em uma tabela (pro plotly)
-cli_p_v_t_2020 <- left_join(cli_p_v_2020, cli_p_v, by = c('cliente_vendedor_id')) %>%
-  select (cliente_vendedor_id, vendedor_nome, n_clientes, n_clientes_2020)
+##Contar quantos negócios são feitos por vendedor em 2020
+negocio <- tbl(con, "negocio") %>%
+  select(negocio_id, negocio_vendedor_id, negocio_cliente_id, negocio_data_cadastro) %>%
+  filter(negocio_data_cadastro >= ano_atual) %>%
+  collect()
 
-### Grafico c0 - Distribuicao de clientes cadastrados por vendedor
+##Juncao pra pegar a empresa do negócio (e vendedor)
+neg_ij_vend <- inner_join(negocio, vendedor, by = c('negocio_vendedor_id' = 'vendedor_id')) %>%
+  select(negocio_id, negocio_vendedor_id)
 
-c0 <- plot_ly(cli_p_v_t_2020, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
-              name = 'Até 2020')
+neg_ij_vend_count <- neg_ij_vend %>%
+  select(negocio_vendedor_id) %>%
+  group_by(negocio_vendedor_id) %>%
+  mutate(n_negocios = n()) %>%
+  distinct(negocio_vendedor_id, .keep_all = T) %>%
+  ungroup()
+  
+vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_vendedor_id" = "negocio_vendedor_id")) %>%
+  select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas, n_negocios)
+
+### Grafico c0 - Distribuicao de clientes (total), visitas (2020) e negocios (2020) cadastrados por vendedor
+c0 <- plot_ly(vend_cli_vis_neg, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
+              name = 'Clientes (total)')
 c0 <- c0 %>%
-  add_trace(y= ~n_clientes_2020, name = 'Em 2020')
+  add_trace(y= ~n_visitas, name = 'Visitas (2020)')
 c0 <- c0 %>%
-  layout(barmode = 'grouped',
-         xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
-         yaxis = list(title = ''))
+  add_trace(y= ~n_negocios, name = 'Negócios (2020)')
+c0 <- c0 %>%
+ layout(barmode = 'grouped',
+        xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
+        yaxis = list(title = ''))
 
 if(dash == F){
   c0
@@ -266,20 +281,19 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(cli_p_v, cli_p_v_2020, cli_p_v_t_2020);
+  rm(cli_p_v);
   #variáveis
   rm();
 }
 ### Gráficos de pizza de clientes com e sem negócio
 ##Contando número de clientes geral e em 2020
 n_clientes <- nrow(cliente)
+##Clientes cadastrados em 2020 por vendedor
+cliente_2020 <- cliente %>%
+  filter(cliente_data_cadastro >= ano_atual)
 n_clientes_2020 <- nrow(cliente_2020)
 
 ##Contar quantos clientes aparecem em negócio
-negocio <- tbl(con, "negocio") %>%
-  select(negocio_id, negocio_vendedor_id, negocio_cliente_id, negocio_data_cadastro) %>%
-  collect()
-
 cli_ij_ng <- inner_join(cliente, negocio, by=c("cliente_id" = "negocio_cliente_id")) %>%
   select(cliente_id, negocio_id)
 cli_2020_ij_ng <- inner_join(cliente_2020, negocio, by=c("cliente_id" = "negocio_cliente_id"))%>%
@@ -327,7 +341,7 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(cliente_2020, cli_ij_ng, cli_2020_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_2020, n_2020_p);
+  rm(cli_ij_ng, cli_2020_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_2020, n_2020_p);
   #variáveis
   rm(n_cli_cneg, n_cli_cneg_2020, n_clientes, n_clientes_2020, colors_pie);
 }
@@ -451,19 +465,19 @@ v1
 Clientes
 =======================================================================
 
-Column {data-width=550}
+Column {data-width=750}
 -----------------------------------------------------------------------
 
-### Distribuição de clientes cadastrados por vendedor
+### Distribuição do cadastro de clientes (total), visitas (2020), e negócios (2020) por vendedor
 
 ```{r}
 
-### Grafico c0 - Distribuicao de clientes cadastrados por vendedor
+### Grafico c0 - Distribuicao de clientes (total), visitas (2020) e negocios (2020) cadastrados por vendedor
 c0
 
 ```
 
-Column {data-width=550}
+Column {data-width=350}
 -----------------------------------------------------------------------
 
 ### Distribuição de clientes com ou sem negócios
