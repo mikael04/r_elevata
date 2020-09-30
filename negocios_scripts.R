@@ -68,8 +68,15 @@ vendedor_todos <- tbl(con, "vendedor") %>%
   filter (vendedor_empresa_id == empresa, vendedor_ativo == 1) %>%
   collect()
 
-#Arrumando encode
+#Arrumando encoding
 Encoding(vendedor_todos$vendedor_nome) <- 'latin1'
+vendedor_todos$vendedor_nome <- func_nome(vendedor_todos$vendedor_nome)
+
+if(empresa == 16){
+  vendedor_todos$vendedor_nome[vendedor_todos$vendedor_id == 723] <- "BRUNO PE.";
+  vendedor_todos$vendedor_nome[vendedor_todos$vendedor_id == 812] <- "BRUNO PO.";
+  vendedor_todos$vendedor_nome[vendedor_todos$vendedor_id == 942] <- "LUCAS V. I.";
+}
 
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- tbl(con, "negocio_produto") %>%

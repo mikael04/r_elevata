@@ -98,7 +98,13 @@ vendedor <- tbl(con, "vendedor") %>%
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
 vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
-  
+
+if(empresa == 16){
+  vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
+  vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
+  vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
+}
+
 
 ##junta as duas tabelas (status e status_empresa) pra pegar o id da empresa (vs_empresa_id) e o nome do status (vs_nome)
 vis_st_emp <- inner_join(visita_status, visita_status_empresa, by = c('vs_id'= 'vse_status_id'))
@@ -199,6 +205,12 @@ vendedor <- tbl(con, "vendedor") %>%
 Encoding(vendedor$vendedor_nome) <- 'latin1'
 vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
 
+if(empresa == 16){
+  vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
+  vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
+  vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
+}
+
 
 ##Clientes cadastrados por vendedor ate 2020
 cli_p_v <- cliente %>%
@@ -242,7 +254,9 @@ v2 <- plot_ly(cli_p_v_t_2020, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
 v2 <- v2 %>%
   add_trace(y= ~n_clientes_2020, name = 'Em 2020')
 v2 <- v2 %>%
-  layout(yaxis = list(tittle = 'Clientes'), barmode = 'stack')
+  layout(barmode = 'grouped',
+         xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
+         yaxis = list(title = ''))
 
 if(dash == F){
   v2
@@ -250,7 +264,7 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(cliente, cliente_2020, cli_p_v, cli_p_v_2020, cli_p_v_t_2020);
+  rm(cliente_2020, cli_p_v, cli_p_v_2020, cli_p_v_t_2020);
   #variáveis
   rm();
 }
@@ -295,6 +309,7 @@ if(dash == F){
   v3
 }
 
+### Grafico v4 - Clientes cadastrados em 2020 que possuem negocio (pizza)
 v4 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_2020, type = 'pie', sort = F,
               text = func_fmt_numbr(n_2020),
               texttemplate = "%{text} (%{percent})",
@@ -308,7 +323,7 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(cli_ij_ng, cli_2020_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_2020, n_2020_p);
+  rm(cliente, cliente_2020, cli_ij_ng, cli_2020_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_2020, n_2020_p);
   #variáveis
   rm(n_cli_cneg, n_cli_cneg_2020, n_clientes, n_clientes_2020);
 }
