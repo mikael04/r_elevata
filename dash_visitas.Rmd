@@ -38,6 +38,8 @@ library(scales)
 teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = T
+####Variavel global c/ ano atual (para comparação)
+ano_atual = '2020-01-01'
 
 emp_am = 42 # Amazonia
 emp_ar = 77 # Araguaia
@@ -48,8 +50,8 @@ emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
 ##Empresa utilizada
-empresa <- emp_su
-ano_atual = '2020-01-01' #Para comparação dos campos
+empresa <- emp_ko
+
 ###################################
 
 ##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes

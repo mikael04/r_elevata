@@ -35,12 +35,16 @@ library(lubridate)
 
 
 
+###################################
+##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = T
 ####Variavel global c/ ano atual (para comparação)
 ano_atual = '2020-01-01'
+####Variável global para ver se tem usados Ainda não usada
+#usados = T
 
 ##Variável "Global"
 emp_am = 42 # Amazonia
@@ -53,6 +57,8 @@ emp_ta = 60 # Taisa
 
 ##Empresa utilizada
 empresa <- emp_su
+
+###################################
 
 ##Alterar o valor de inteiro para reais
 func_fmt_din <- function(inteiro)
@@ -1170,52 +1176,70 @@ ax <- list(
   autotick = TRUE,
   title = "",
   showticklabels = TRUE)
-p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
-              name = 'Categorias',
-              marker = list(color = 'lightblue'),
-              text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
-              hoverinfo = "text")
 
-p3 <- p3 %>%
-  layout(barmode = 'identity', xaxis = ax, yaxis = ax)
-
-p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
-                       name = 'Empresa (geral)',
-                       x = ~categoria_nome,
-                       y = ~med_emp,
-                       line = list(color = 'red'),
-                       text = ~paste('Ticket médio<br>' , func_fmt_din(med_emp)),
-                       hoverinfo = "text",
-                       marker = list(color = 'orange'))
-
-
-if(empresa == 16){
+if(empresa == emp_su)
+{
+  p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
+                name = 'Categorias (novos',
+                marker = list(color = 'lightblue'),
+                text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
+                hoverinfo = "text")
+  
   p3 <- p3 %>%
-    layout(
-      autosize = F,
-      yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,700000)),
-      #range nos dois eixos iguais pra ficar na mesma proporção
-      yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,700000)),
-      ##aqui eu ajusto onde quero que apareça a legenda
-      legend = list(x=0.7, y=0.8)#)
-    )
-}else if(empresa == 78){
+    layout(barmode = 'identity', xaxis = ax, yaxis = ax)
+  
+  p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
+                         name = 'Empresa (geral, novos)',
+                         x = ~categoria_nome,
+                         y = ~med_emp,
+                         line = list(color = 'red'),
+                         text = ~paste('Ticket médio<br>' , func_fmt_din(med_emp)),
+                         hoverinfo = "text",
+                         marker = list(color = 'orange'))
   p3 <- p3 %>%
-    layout(
-      autosize = F,
-      yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,2000000)),
-      #range nos dois eixos iguais pra ficar na mesma proporção
-      yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,2000000)),
-      ##aqui eu ajusto onde quero que apareça a legenda
-      legend = list(x=0.7, y=0.8)#)
-    )
-}
-if(dash == F){
-  p3
+      layout(
+        autosize = F,
+        yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,700000)),
+        #range nos dois eixos iguais pra ficar na mesma proporção
+        yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,700000)),
+        ##aqui eu ajusto onde quero que apareça a legenda
+        legend = list(x=0.7, y=0.8)#)
+      )
+  if(dash == F){
+    p3
+  }
+} else{
+  if(empresa == emp_ko){
+    p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
+                name = 'Categorias',
+                marker = list(color = 'lightblue'),
+                text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
+                hoverinfo = "text")
+    p3 <- p3 %>%
+    layout(barmode = 'identity', xaxis = ax, yaxis = ax)
+    p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
+                         name = 'Empresa (geral)',
+                         x = ~categoria_nome,
+                         y = ~med_emp,
+                         line = list(color = 'red'),
+                         text = ~paste('Ticket médio<br>' , func_fmt_din(med_emp)),
+                         hoverinfo = "text",
+                         marker = list(color = 'orange'))
+    p3 <- p3 %>%
+      layout(
+        autosize = F,
+        yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,2000000)),
+        #range nos dois eixos iguais pra ficar na mesma proporção
+        yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,2000000)),
+        ##aqui eu ajusto onde quero que apareça a legenda
+        legend = list(x=0.7, y=0.8)#)
+      )
+  }
 }
 
 ###Ticket médio por proposta (apenas usados)
-
+if (empresa == emp_su)
+{
 p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio_aux, by = c("proposta_negocio_id" = "negocio_id"))
 
 ##filtro da empresa e também propostas finalizadas, também filtrando só negócios novos e com valores acima de 10
@@ -1307,8 +1331,8 @@ ax <- list(
   title = "",
   showticklabels = TRUE)
 p4 <- plot_ly(fat_tot_categorias_us, type = "bar", x = ~categoria_nome, y = ~fat_med,
-              name = 'Categorias',
-              marker = list(color = 'lightblue'),
+              name = 'Categorias (usados)',
+              marker = list(color = '#CD853F'),
               text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
               hoverinfo = "text")
 
@@ -1316,7 +1340,7 @@ p4 <- p4 %>%
   layout(barmode = 'identity', xaxis = ax, yaxis = ax)
 
 p4 <- p4 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
-                       name = 'Empresa (geral)',
+                       name = 'Empresa (geral, usados)',
                        x = ~categoria_nome,
                        y = ~med_emp,
                        line = list(color = 'red'),
@@ -1348,7 +1372,7 @@ if(teste == F){
   #variáveis
   rm(fat_out, media_empresa, n_out, total_empresa)
 }
-
+}
 ##################################################################
 ### Faturamento de propostas em 2020 por status
 
@@ -1700,9 +1724,7 @@ Faturamento ano a ano
 
 ```{r}
 ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
-if(empresa == 16){
-  subplot(n12, c3, nrows = 2, shareX = T)
-}
+subplot(n12, c3, nrows = 2, shareX = T)
 
 ```
 
@@ -1756,22 +1778,17 @@ Faturamento de propostas
 Column {data-width=550}
 -----------------------------------------------------------------------
 
-### Ticket médio das propostas (novos)
+### Ticket médio das propostas
 
 ```{r}
 ### Gráfico p3 - Ticket médio novos
-p3
-
-```
-
-Column {data-width=650}
------------------------------------------------------------------------
-
-### Ticket médio das propostas (usados)
-
-```{r}
-### Gráfico p4 - Ticket médio usados
-p4
+if (empresa == 16){
+  subplot(p3, p4, shareX = T, shareY = T)
+} else{
+  if(empresa == 78){
+    p3
+  }
+}
 
 ```
 
