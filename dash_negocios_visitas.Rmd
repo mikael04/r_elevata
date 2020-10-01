@@ -35,6 +35,8 @@ library(lubridate)
 
 
 
+###################################
+##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável usada para não plotar os gráficos na dash
@@ -52,7 +54,9 @@ emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
 ##Empresa utilizada
-empresa <- emp_am
+empresa <- emp_ta
+
+###################################
 
 ##Alterar o valor de inteiro para reais
 func_fmt_din <- function(inteiro)
@@ -980,6 +984,7 @@ vc_ij_vse_ij_v <- vc_ij_vse_ij_v %>%
 
 ##descobrindo numero de status diferentes para criar paleta de cores
 n_m_color <- n_distinct(vc_ij_vse_ij_v$vc_status_id)
+#brbg_mot <- colorRampPalette(brewer.pal(8, "Set2"))(n_m_color)
 brbg_mot <- brewer.pal(n_m_color,'BrBG')
 axis_h <- list(
   title = ""
@@ -1429,7 +1434,7 @@ v1
 ```
 
 
-Oportunidades?
+Oportunidades
 =======================================================================
 
 Column {data-width=750}
