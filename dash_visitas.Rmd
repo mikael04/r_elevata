@@ -1,6 +1,6 @@
 ---
 title: "Visão do gestor"
-output:
+output: 
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
@@ -32,16 +32,25 @@ library(RColorBrewer)
 #usada para converter números em moeda
 library(scales)
 
+###################################
+##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = T
 
-##Variável "Global"
-##Variável "Global"
-empresa = 16 #Super
-#empresa = 78 #Komatsu
+emp_am = 42 # Amazonia
+emp_ar = 77 # Araguaia
+emp_ko = 78 # Komatsu
+emp_ms = 35 # Ms
+emp_si = 59 # Simex 
+emp_su = 16 # Super
+emp_ta = 60 # Taisa
+
+##Empresa utilizada
+empresa <- emp_su
 ano_atual = '2020-01-01' #Para comparação dos campos
+###################################
 
 ##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
 func_nome <- function (nome_comp)
@@ -302,7 +311,7 @@ cli_2020_ij_ng <- inner_join(cliente_2020, negocio, by=c("cliente_id" = "negocio
 n_cli_cneg <- nrow(cli_ij_ng)
 n_cli_cneg_2020 <- nrow(cli_2020_ij_ng)
 
-Clientes <- c("Clientes com negócios", "Clientes sem negócio")
+Clientes <- c("Clientes c/ negócios", "Clientes s/ negócio")
 
 n_total <- c(n_cli_cneg, n_clientes-nrow(cli_ij_ng))
 n_total_p <- c(round((n_cli_cneg/n_clientes), 2), round(((n_clientes-n_cli_cneg)/n_clientes), 2))
@@ -348,8 +357,37 @@ if(teste == F){
 ####################################
 
 
+####################################
 ###Contar clientes/visitas/negocios cadastrados por mês
 ####################################
+
+cliente <- tbl(con,'cliente') %>%
+  select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_cidade, cliente_ultima_visita) %>%
+  filter(cliente_empresa_id == empresa) %>%
+  collect()
+
+##Collect cria o df resultado da query, nesse caso, visitas_cliente, já filtrando apenas ano atual
+visita_cliente <- tbl(con,'visita_cliente') %>%
+  select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
+  filter (vc_data_cadastro >= ano_atual) %>%
+  collect ()
+
+##Pra pegar o nome do status
+visita_status <- tbl(con,'visita_status') %>%
+  select(vs_id, vs_nome, vs_ativo) %>%
+  filter(vs_ativo == 1) %>%
+  rename (motivo = vs_nome) %>%
+  collect()
+##Pra filtrar os status da empresa
+visita_status_empresa <- tbl(con, "visita_status_empresa") %>%
+  select(vse_status_id, vse_empresa_id, vse_ativo) %>%
+  filter(vse_ativo == 1, vse_empresa_id == empresa) %>%
+  collect()
+#Arrumando encoding
+Encoding(visita_status$motivo) <- 'latin1'
+
+##junta as duas tabelas (status e status_empresa) pra pegar o id da empresa (vs_empresa_id) e o nome do status (vs_nome)
+vis_st_emp <- inner_join(visita_status, visita_status_empresa, by = c('vs_id'= 'vse_status_id'))
 
 ##Já filtrado apenas empresa (variavel global)
 clientes_mes <- cliente %>%
@@ -389,19 +427,26 @@ negocios_mes <- ng_ij_emp %>%
 cli_ij_vc_mes <- inner_join(clientes_mes, visitas_mes, by = c("ym"))
 cli_ij_vc_ij_ng_mes <- inner_join(cli_ij_vc_mes, negocios_mes, by = c("ym"))
 
+
 ##Criando nomes de colunas
 meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
 ## alterando pra números pra poder fazer da mesma forma
 cli_ij_vc_ij_ng_mes$ym <- as.integer(cli_ij_vc_ij_ng_mes$ym)
-cli_ij_vc_ij_ng_mes$ym <- with(cli_ij_vc_ij_ng_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
-                                                              labels = meses))
+
+##Vou usar dessa forma, ao invés de transformar, irei apenas criar uma nova coluna (poderia ser feito com um join também)
+cli_ij_vc_ij_ng_mes <- cli_ij_vc_ij_ng_mes %>%
+  mutate(mes = cut(ym,breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
+                   labels = meses))
+###Não farei dessa forma pois quero manter a coluna
+#cli_ij_vc_ij_ng_mes$ym <- with(cli_ij_vc_ij_ng_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
+#                                                        labels = meses))
 
 ### Gráfico c3 - Cadastro de clientes, visitas e negócios no ano de 2020
-c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~ym, y = ~n_cli,
+c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
               name = 'Clientes',
               text = ~paste(func_fmt_numbr(n_cli), 'clientes'),
               hoverinfo = "text",
-              color = I('blue'))
+              color = I('#7B68EE'))
 c3 <- c3 %>%
   add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_vis,
              name = 'Visitas',
@@ -414,10 +459,10 @@ c3 <- c3 %>%
              text = ~paste(func_fmt_numbr(n_neg), 'negócios'),
              hoverinfo = "text",
              color = I('green'))
-  
+
 c3 <- c3 %>%
-layout(xaxis = list(title = ''),
-       yaxis = list(title = ''))
+  layout(xaxis = list(title = '', range = c(min(0), max(12))), ##Dessa forma pego os 12 meses do ano
+         yaxis = list(title = ''))
 if(dash == F){
   c3
 }
@@ -462,10 +507,10 @@ v1
 ```
 
 
-Clientes
+Oportunidades?
 =======================================================================
 
-Column {data-width=750}
+Column {data-width=700}
 -----------------------------------------------------------------------
 
 ### Distribuição do cadastro de clientes (total), visitas (2020), e negócios (2020) por vendedor
@@ -477,7 +522,7 @@ c0
 
 ```
 
-Column {data-width=350}
+Column {data-width=400}
 -----------------------------------------------------------------------
 
 ### Distribuição de clientes com ou sem negócios
@@ -500,7 +545,7 @@ c2
 
 ```
 
-Cadastros em 2020
+Campo em 2020
 =======================================================================
 
 Column {data-width=550}

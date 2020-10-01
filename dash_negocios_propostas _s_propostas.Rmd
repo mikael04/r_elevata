@@ -1,10 +1,20 @@
-rm(list = ls())
+---
+title: "Visão do gestor"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+#rm(list = ls())
 #Lib q será futuramente usada pros painéis interativos
 #library(shiny)
 #Lib pra conexão com o banco
 library(odbc)
-#library(dbplyr)
 library(tidyverse)
+#Libs pra trabalhar com a base (cortes e funções similares ao SQL)
+#library(dplyr) #Contido no tidyverse
 #Lib pro gráfico
 library(ggplot2)
 #lib pros gráficos mais "interativos"
@@ -12,7 +22,7 @@ library(plotly)
 library(highcharter)
 #library(htmlwidgets)
 #Lib pra usar paletas de cores
-#library(RColorBrewer)
+library(RColorBrewer)
 #library(viridis)
 #Lib usada pros treemaps
 #library(treemap)
@@ -26,9 +36,9 @@ library(lubridate)
 
 
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = T
+teste = F
 ####Variável usada para não plotar os gráficos na dash
-dash = F
+dash = T
 ####Variavel global c/ ano atual (para comparação)
 ano_atual = '2020-01-01'
 
@@ -37,14 +47,14 @@ emp_am = 42 # Amazonia
 emp_ar = 77 # Araguaia
 emp_ko = 78 # Komatsu
 emp_ms = 35 # Ms
-emp_su = 16 # Super
 emp_si = 59 # Simex 
+emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
 ##Empresa utilizada
 empresa <- emp_am
 
-#Alterar o valor de inteiro para reais
+##Alterar o valor de inteiro para reais
 func_fmt_din <- function(inteiro)
 {
   inteiro_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
@@ -83,10 +93,6 @@ con <- DBI::dbConnect(odbc::odbc(),
                       Server = "localhost\\SQLEXPRESS01",
                       Database = "nhmobile_agriculture",
                       Trusted_Connection = "True")
-
-
-###Começando scripts negocio_scripts
-###########################################################################################################
 
 ##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
 negocio <- tbl(con, "negocio") %>%
@@ -887,11 +893,289 @@ if (teste == F){
   rm(meses, n_linhas)
 }
 
-##############################################
-
-################################################################################################################################
+##################################################################################
 #############################################################################################################################
 ###Contar clientes/visitas/negocios cadastrados por mês -> vem do script visita_clientes
+################################################################################################################################
+
+
+##Collect cria o df resultado da query, nesse caso, visitas_cliente
+visita_cliente <- tbl(con,'visita_cliente') %>%
+  select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
+  filter (vc_data_cadastro >= ano_atual) %>%
+  collect ()
+##Pra pegar o nome do resultado
+visita_resultado <- tbl(con, "visita_resultado") %>%
+  select(vr_id, vr_nome, vr_ativo) %>%
+  #filter(vre_ativo == 1) %>% ##Ja sao todos ativos
+  rename (resultado = vr_nome) %>%
+  collect()
+##Pra filtrar os resultados da empresa
+visita_resultado_empresa <- tbl(con, "visita_resultado_empresa") %>%
+  select(vre_resultado_id, vre_empresa_id, vre_ativo) %>%
+  filter(vre_ativo == 1, vre_empresa_id == empresa) %>% ##Ja sao todos ativos mas mantive pra manter o filtro, ja filtro a empresa 
+  collect()
+#Arrumando encoding
+Encoding(visita_resultado$resultado) <- 'latin1'
+
+##junta as duas tabelas (resultado e resultado_empresa) pra pegar o id da empresa (vre_empresa_id) e o nome do resultado (vr_nome)
+vis_res_emp <- inner_join(visita_resultado, visita_resultado_empresa, by = c('vr_id'= 'vre_resultado_id'))
+
+##Pra pegar o nome do status
+visita_status <- tbl(con,'visita_status') %>%
+  select(vs_id, vs_nome, vs_ativo) %>%
+  filter(vs_ativo == 1) %>%
+  rename (motivo = vs_nome) %>%
+  collect()
+##Pra filtrar os status da empresa
+visita_status_empresa <- tbl(con, "visita_status_empresa") %>%
+  select(vse_status_id, vse_empresa_id, vse_ativo) %>%
+  filter(vse_ativo == 1, vse_empresa_id == empresa) %>%
+  collect()
+#Arrumando encoding
+Encoding(visita_status$motivo) <- 'latin1'
+
+##coleta todos os vendedores
+vendedor <- tbl(con, "vendedor") %>%
+  select(vendedor_id, vendedor_nome, vendedor_id, vendedor_empresa_id, vendedor_ativo) %>%
+  filter(vendedor_ativo == 1, vendedor_empresa_id == empresa) %>%
+  collect()
+#Arrumando encoding
+Encoding(vendedor$vendedor_nome) <- 'latin1'
+vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+
+if(empresa == 16){
+  vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
+  vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
+  vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
+}
+
+
+##junta as duas tabelas (status e status_empresa) pra pegar o id da empresa (vs_empresa_id) e o nome do status (vs_nome)
+vis_st_emp <- inner_join(visita_status, visita_status_empresa, by = c('vs_id'= 'vse_status_id'))
+
+##Juntando visita_cliente com os resultados
+vc_ij_vre <- inner_join(visita_cliente, vis_res_emp, by = c('vc_resultado_id' = 'vr_id')) %>%
+  select (vc_id, vc_vendedor_id, vc_resultado_id, resultado)
+##Juntando visita_cliente com os motivos (status)
+vc_ij_vse <- inner_join(visita_cliente, vis_st_emp, by = c('vc_status_id' = 'vs_id'))%>%
+  select (vc_id, vc_vendedor_id, vc_status_id, motivo)
+
+##juntando com vendedor pra separar por vendedor
+vc_ij_vse_ij_v <- inner_join(vc_ij_vse, vendedor, by = c('vc_vendedor_id' = 'vendedor_id')) %>%
+  select (vc_id, vc_vendedor_id, vendedor_nome, vc_status_id, motivo)
+
+##juntando com vendedor pra separar por vendedor
+vc_ij_vre_ij_v <- inner_join(vc_ij_vre, vendedor, by = c('vc_vendedor_id' = 'vendedor_id')) %>%
+  select (vc_id, vc_vendedor_id, vendedor_nome, vc_resultado_id, resultado)
+
+##Agrupando por vendedor e por motivo (vc_status_id, depois mostrar so motivo)
+vc_ij_vse_ij_v <- vc_ij_vse_ij_v %>%
+  group_by(vc_vendedor_id, vc_status_id) %>%
+  mutate(motivo_n = n()) %>%
+  distinct(vc_vendedor_id, .keep_all = T) %>%
+  ungroup()
+  
+### Gráfico v0 - Motivo das visitas (status) por vendedor em 2020
+
+##descobrindo numero de status diferentes para criar paleta de cores
+n_m_color <- n_distinct(vc_ij_vse_ij_v$vc_status_id)
+brbg_mot <- brewer.pal(n_m_color,'BrBG')
+axis_h <- list(
+  title = ""
+)
+v0 <- plot_ly(vc_ij_vse_ij_v, type = "bar", x = ~vendedor_nome, y = ~motivo_n,# colors = ~I(motivo),
+              colors = brbg_mot,
+              name = ~motivo)
+
+v0 <- v0 %>%
+  layout(barmode = 'stack',
+         xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
+         yaxis = list(title = ''))
+if(dash == F){
+  v0
+}
+
+
+##Agrupando por vendedor e por resultado (vc_status_id, depois mostrar so motivo)
+vc_ij_vre_ij_v <- vc_ij_vre_ij_v %>%
+  group_by(vc_vendedor_id, vc_resultado_id) %>%
+  mutate(resultado_n = n()) %>%
+  distinct(vc_vendedor_id, .keep_all = T) %>%
+  ungroup() 
+
+### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
+##descobrindo numero de status diferentes para criar paleta de cores
+n_r_color <- n_distinct(vc_ij_vre_ij_v$vc_resultado_id)
+brbg_res <- brewer.pal(n_r_color,'BrBG')
+
+v1 <- plot_ly(vc_ij_vre_ij_v, type = "bar", x = ~vendedor_nome, y = ~resultado_n,# colors = ~I(motivo),
+              colors = brbg_res,
+              name = ~resultado)
+#marker = list(color = 'lightblue'))
+#text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
+#hoverinfo = "text")
+#v0 <- v0 %>%
+#  add_trace (y = y = ~motivo_n)
+
+v1 <- v1 %>%
+  layout(barmode = 'stack',
+         xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
+         yaxis = list(title = ''))
+if(dash == F){
+  v1
+}
+
+if(teste == F){
+  #tabelas
+  rm(visita_resultado_empresa, vis_res_emp, vc_ij_vre, vc_ij_vse,
+     ##vis_st_emp, vc_ij_vse_ij_v, ##vou usar a vis_st_emp para uma junção (saber qual empresa são feitas as visitas)
+     vc_ij_vre_ij_v, visita_resultado, visita_status, visita_status_empresa,
+     axis_h);
+  #variáveis
+  rm(brbg_mot, brbg_res, n_r_color, n_m_color);
+}
+
+################################################################################################
+################################################################################################
+### Tabelas e graficos de Clientes
+
+cliente <- tbl(con,'cliente') %>%
+  select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_cidade, cliente_ultima_visita) %>%
+  filter(cliente_empresa_id == empresa) %>%
+  collect()
+
+##Clientes cadastrados por vendedor
+cli_p_v <- cliente %>%
+  group_by(cliente_vendedor_id) %>%
+  mutate(n_clientes = n()) %>%
+  distinct(cliente_vendedor_id, .keep_all = T) %>%
+  select(cliente_vendedor_id, n_clientes) %>%
+  arrange(cliente_vendedor_id) %>%
+  ungroup()
+
+##Juncao pra pegar nome do vendedor
+cli_p_v_ij_vend <- inner_join(cli_p_v, vendedor, by = c('cliente_vendedor_id' = 'vendedor_id')) %>%
+  select(cliente_vendedor_id, vendedor_nome, n_clientes)
+
+
+##Já é filtrado em 2020 (filtra na tabela de visitas_cliente)
+vc_ij_vse_ij_v_count <- vc_ij_vse_ij_v %>%
+  select (vc_vendedor_id, motivo_n) %>% ##Não vou salvar o nome pq vou fazer uma junção com a outra tabela, então só preciso do id
+  group_by(vc_vendedor_id) %>%
+  mutate(n_visitas = sum(motivo_n)) %>%
+  distinct(vc_vendedor_id, .keep_all = T) %>%
+  ungroup ()
+
+##Distribuição de clientes total, visita e negócios em 2020 por vendedor
+vend_cli_vis <- left_join(cli_p_v_ij_vend, vc_ij_vse_ij_v_count, by = c("cliente_vendedor_id" = "vc_vendedor_id")) %>%
+  select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas)
+
+##Contar quantos negócios são feitos por vendedor em 2020
+negocio <- tbl(con, "negocio") %>%
+  select(negocio_id, negocio_vendedor_id, negocio_cliente_id, negocio_data_cadastro) %>%
+  filter(negocio_data_cadastro >= ano_atual) %>%
+  collect()
+
+##Juncao pra pegar a empresa do negócio (e vendedor)
+neg_ij_vend <- inner_join(negocio, vendedor, by = c('negocio_vendedor_id' = 'vendedor_id')) %>%
+  select(negocio_id, negocio_vendedor_id)
+
+neg_ij_vend_count <- neg_ij_vend %>%
+  select(negocio_vendedor_id) %>%
+  group_by(negocio_vendedor_id) %>%
+  mutate(n_negocios = n()) %>%
+  distinct(negocio_vendedor_id, .keep_all = T) %>%
+  ungroup()
+  
+vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_vendedor_id" = "negocio_vendedor_id")) %>%
+  select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas, n_negocios)
+
+### Grafico c0 - Distribuicao de clientes (total), visitas (2020) e negocios (2020) cadastrados por vendedor
+c0 <- plot_ly(vend_cli_vis_neg, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
+              name = 'Clientes (total)')
+c0 <- c0 %>%
+  add_trace(y= ~n_visitas, name = 'Visitas (2020)')
+c0 <- c0 %>%
+  add_trace(y= ~n_negocios, name = 'Negócios (2020)')
+c0 <- c0 %>%
+ layout(barmode = 'grouped',
+        xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
+        yaxis = list(title = ''))
+
+if(dash == F){
+  c0
+}
+
+if(teste == F){
+  #tabelas
+  rm(cli_p_v);
+  #variáveis
+  rm();
+}
+### Gráficos de pizza de clientes com e sem negócio
+##Contando número de clientes geral e em 2020
+n_clientes <- nrow(cliente)
+##Clientes cadastrados em 2020 por vendedor
+cliente_2020 <- cliente %>%
+  filter(cliente_data_cadastro >= ano_atual)
+n_clientes_2020 <- nrow(cliente_2020)
+
+##Contar quantos clientes aparecem em negócio
+cli_ij_ng <- inner_join(cliente, negocio, by=c("cliente_id" = "negocio_cliente_id")) %>%
+  select(cliente_id, negocio_id)
+cli_2020_ij_ng <- inner_join(cliente_2020, negocio, by=c("cliente_id" = "negocio_cliente_id"))%>%
+  select(cliente_id, negocio_id)
+##Variáveis usadas
+n_cli_cneg <- nrow(cli_ij_ng)
+n_cli_cneg_2020 <- nrow(cli_2020_ij_ng)
+
+Clientes <- c("Clientes c/ negócios", "Clientes s/ negócio")
+
+n_total <- c(n_cli_cneg, n_clientes-nrow(cli_ij_ng))
+n_total_p <- c(round((n_cli_cneg/n_clientes), 2), round(((n_clientes-n_cli_cneg)/n_clientes), 2))
+
+n_2020 <- c(n_cli_cneg_2020, n_clientes_2020-n_cli_cneg_2020)
+n_2020_p <- c(round((n_cli_cneg_2020/n_clientes_2020), 2), round(((n_clientes_2020-n_cli_cneg_2020)/n_clientes_2020), 2))
+
+cli_c_s_ng <- data.frame(Clientes, n_total, n_total_p, n_2020, n_2020_p)
+
+
+### Grafico c1 - Clientes cadastrados que possuem negocio (pizza)
+colors_pie<- c("#32CD32", "#FFA500")
+c1 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_total, type = 'pie', sort = F,
+              text = func_fmt_numbr(n_total),
+              texttemplate = "%{text} (%{percent})",
+              hovertemplate = paste ("%{label} <br>",
+                                     "Equivalente a %{percent}",
+                                     "<extra></extra>"),
+              marker = list(colors = colors_pie))
+
+if(dash == F){
+  c1
+}
+
+### Grafico c2 - Clientes cadastrados em 2020 que possuem negocio (pizza)
+c2 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_2020, type = 'pie', sort = F,
+              text = func_fmt_numbr(n_2020),
+              texttemplate = "%{text} (%{percent})",
+              hovertemplate = paste ("%{label} <br>",
+                                     "Equivalente a %{percent}",
+                                     "<extra></extra>"),
+              marker = list(colors = colors_pie))
+
+if(dash == F){
+  c2
+}
+if(teste == F){
+  #tabelas
+  rm(cli_ij_ng, cli_2020_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_2020, n_2020_p);
+  #variáveis
+  rm(n_cli_cneg, n_cli_cneg_2020, n_clientes, n_clientes_2020, colors_pie);
+}
+
+####################################
+###Contar clientes/visitas/negocios cadastrados por mês
 ####################################
 
 cliente <- tbl(con,'cliente') %>%
@@ -1006,6 +1290,179 @@ if(teste == F){
   #variáveis
   rm();
 }
+################################################################################################################################
+
+```
+
+Funil de vendas
+=======================================================================
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+### Funil da empresa em faturamento, por status do negócio (em milhões)
+```{r}
+### Gráfico n9 - Funil agrupado por faturamento
+n9
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+### Distribuição do faturamento em pedidos fechados no ano de 2020
+
+```{r}
+### Gráfico n10 - Pizza fechados do ano
+n10
+```
+
+### Distribuição do faturamento em pedidos fechados no último mês
+
+```{r}
+### Gráfico n11 - Pizza fechados do mês
+n11
+```
+
+Faturamento de negócios
+=======================================================================
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Faturamento dos negócios cadastrados por vendedor, ano 2020 (Status atual)
+
+```{r}
+### Gráfico n0 - Número de clientes por vendedor
+n0
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Faturamento de negócios fechados em 2020
+
+```{r}
+### Gráfico n3 - Faturamento de negócios fechados em 2020
+ggplotly(n3) %>%
+  layout(legend = list(orientation = "h", x = -0.2, y = -0.05))
+
+```
+
+Faturamento ano a ano
+=======================================================================
+
+### Faturamento mês a mês e distribuição do cadastro de clientes, visitas e negócios no ano 2020
+
+```{r}
+### Gráfico n12+c3 - n12: Faturamento anual (ano atual + até dois anteriores), c3: cadastro de clientes, visitas e negócios em 2020
 subplot(n12, c3, nrows = 2, shareX = T)
-################################################################################################################################
-################################################################################################################################
+
+```
+
+
+Top 10 Categorias
+=======================================================================
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+###  Valor Financeiro de Negócios Cadastrados, por categoria em 2020
+
+```{r}
+### Gráfico hc_n4 - Valor financeiro de negócios em 2020  (por categoria)
+hc_n4
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+### Valor Financeiro de Negócios Faturados, por categoria em 2020
+
+```{r}
+### Gráfico hc_n5 - Máquinas faturadas em 2020 (por categoria)
+hc_n5
+
+```
+
+Idade dos negócios
+=======================================================================
+
+Column {data-width=450}
+-----------------------------------------------------------------------
+### Idade dos negócios abertos, por vendedor
+```{r}
+### Gráfico n6 - Idade dos negócios abertos, por vendedor, por idade do negocio
+n6
+```
+
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+### Negócios abertos da empresa
+```{r}
+### Gráfico n7 - Negócios abertos da empresa, pizza
+n7
+```
+
+Volume de visitas
+=======================================================================
+
+Column {data-width=550}
+-----------------------------------------------------------------------
+
+### Distribuição dos motivos das visitas por vendedor em 2020
+
+```{r}
+
+### Gráfico v0 - Motivo das visitas (status) por vendedor em 2020
+v0
+
+```
+
+Column {data-width=550}
+-----------------------------------------------------------------------
+
+### Distribuição de resultado das visitas por vendedor em 2020
+
+```{r}
+### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
+v1
+
+```
+
+
+Oportunidades?
+=======================================================================
+
+Column {data-width=750}
+-----------------------------------------------------------------------
+
+### Distribuição do cadastro de clientes (total), visitas (2020), e negócios (2020) por vendedor
+
+```{r}
+
+### Grafico c0 - Distribuicao de clientes (total), visitas (2020) e negocios (2020) cadastrados por vendedor
+c0
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Distribuição de clientes com ou sem negócios
+
+```{r}
+
+### Grafico c1 - Clientes cadastrados que possuem negocio (pizza)
+c1
+
+```
+
+
+
+### Distribuição de clientes cadastrados em 2020 com ou sem negócios
+
+```{r}
+
+### Grafico c2 - Clientes cadastrados em 2020 que possuem negocio (pizza)
+c2
+
+```

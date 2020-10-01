@@ -214,11 +214,11 @@ proposta_produto <- tbl(con, "proposta_produto") %>%
 p_ij_n_ij_v_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_produto, by = c("proposta_id" = "pp_proposta_id"))
 
 ##Vou puxar negócio novamente pra pegar a coluna de se é usado ou não (acho que é mais eficiente do que usar a tabela completa desde o início)
-negocio <- tbl(con, "negocio") %>%
+negocio_aux <- tbl(con, "negocio") %>%
   select(negocio_id, negocio_tipo_negocio) %>%
   collect()
 
-p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio, by = c("proposta_negocio_id" = "negocio_id"))
+p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio_aux, by = c("proposta_negocio_id" = "negocio_id"))
 
 ##filtro da empresa e também propostas finalizadas, também filtrando só negócios novos e com valores acima de 10
 p_ij_n_ij_pp_empresa <- p_ij_n_ij_v_ij_pp_n %>%
@@ -360,7 +360,7 @@ if(dash == F){
 
 ###Ticket médio por proposta (apenas usados)
 
-p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio, by = c("proposta_negocio_id" = "negocio_id"))
+p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio_aux, by = c("proposta_negocio_id" = "negocio_id"))
 
 ##filtro da empresa e também propostas finalizadas, também filtrando só negócios novos e com valores acima de 10
 p_ij_n_ij_pp_empresa_us <- p_ij_n_ij_v_ij_pp_n %>%
@@ -487,7 +487,7 @@ if(teste == F){
   #tabelas
   rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_n_ij_pp_empresa_us, pr_top5_fat, pr_top5_fat_aux,
      pr_top5_fat_med, produto, proposta_produto, top5_fat, top5_fat_ij_cat, p_ij_n_ij_pp_ij_prod,
-     p_ij_n_ij_v_ij_pp, p_ij_n_ij_v_ij_pp_n, negocio_produto, negocio, fat_tot_categorias_us, p_ij_n_ij_pp_ij_prod_us,
+     p_ij_n_ij_v_ij_pp, p_ij_n_ij_v_ij_pp_n, negocio_produto, negocio_aux, fat_tot_categorias_us, p_ij_n_ij_pp_ij_prod_us,
      pr_top5_fat_med_us, pr_top5_fat_us)
   #variáveis
   rm(fat_out, media_empresa, n_out, total_empresa)

@@ -1,6 +1,6 @@
 ---
 title: "Visão do gestor"
-output:
+output: 
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
@@ -12,10 +12,9 @@ output:
 #library(shiny)
 #Lib pra conexão com o banco
 library(odbc)
-#Libs pra trabalhar com a base (cortes e funções similares ao SQL)
-library(dplyr)
-#library(dbplyr)
 library(tidyverse)
+#Libs pra trabalhar com a base (cortes e funções similares ao SQL)
+#library(dplyr) #Contido no tidyverse
 #Lib pro gráfico
 library(ggplot2)
 #lib pros gráficos mais "interativos"
@@ -31,6 +30,8 @@ library(RColorBrewer)
 #library(waffle)
 #usada para converter números em moeda
 library(scales)
+#Lib para lidar com o tempo
+library(lubridate)
 
 
 
@@ -38,24 +39,35 @@ library(scales)
 teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = T
+####Variavel global c/ ano atual (para comparação)
+ano_atual = '2020-01-01'
 
 ##Variável "Global"
-empresa = 16 #Super
-#empresa = 78 #Komatsu
+emp_am = 42 # Amazonia
+emp_ar = 77 # Araguaia
+emp_ko = 78 # Komatsu
+emp_ms = 35 # Ms
+emp_si = 59 # Simex 
+emp_su = 16 # Super
+emp_ta = 60 # Taisa
 
+##Empresa utilizada
+empresa <- emp_su
+
+##Alterar o valor de inteiro para reais
 func_fmt_din <- function(inteiro)
 {
   inteiro_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
   return(inteiro_em_reais)
 }
-
+##Alterar o valor de inteiro para reais convertendo para milhões (78000000 = R$78,0) -> posteriormente adicionar o "mi"
 func_fmt_din_mi <- function(inteiro)
 {
   inteiro <- round(inteiro/1000000, digits = 1)
   inteiro_mi_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 1))
   return(inteiro_mi_em_reais)
 }
-
+##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
 func_nome <- function (nome_comp)
 {
   lista <- str_split_fixed(nome_comp, " ", 4)
@@ -69,6 +81,12 @@ func_nome <- function (nome_comp)
   lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
   return (lista[,1])
 }
+##Alterar o número apresentado na forma americana (com vírgula) para a forma brasileira (com ponto), através da transformação em string
+func_fmt_numbr <- function(inteiro)
+{
+  inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
+  return(inteiro_br)
+}
 
 con <- DBI::dbConnect(odbc::odbc(),
                       Driver = "SQL Server",
@@ -76,28 +94,25 @@ con <- DBI::dbConnect(odbc::odbc(),
                       Database = "nhmobile_agriculture",
                       Trusted_Connection = "True")
 
-###Começando scripts negocio_scripts
-###########################################################################################################
-
 ##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
 negocio <- tbl(con, "negocio") %>%
   select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro) %>%
   collect()
 
 ##coleta todos os vendedores
-vendedor_todos <- tbl(con, "vendedor") %>%
+vendedor <- tbl(con, "vendedor") %>%
   select(vendedor_id, vendedor_nome, vendedor_id, vendedor_empresa_id,vendedor_ativo) %>%
   filter (vendedor_empresa_id == empresa, vendedor_ativo == 1) %>%
   collect()
 
 #Arrumando encoding
-Encoding(vendedor_todos$vendedor_nome) <- 'latin1'
-vendedor_todos$vendedor_nome <- func_nome(vendedor_todos$vendedor_nome)
+Encoding(vendedor$vendedor_nome) <- 'latin1'
+vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
 
 if(empresa == 16){
-  vendedor_todos$vendedor_nome[vendedor_todos$vendedor_id == 723] <- "BRUNO PE.";
-  vendedor_todos$vendedor_nome[vendedor_todos$vendedor_id == 812] <- "BRUNO PO.";
-  vendedor_todos$vendedor_nome[vendedor_todos$vendedor_id == 942] <- "LUCAS V. I.";
+  vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
+  vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
+  vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
 }
 
 ##negocio_produto para pegar os valores de cada negócio
@@ -111,7 +126,7 @@ produto <- tbl(con, "produto") %>%
   collect()
 
 ##join de negocios e vendedores
-negocio_ij_vendedor <- inner_join(negocio, vendedor_todos, by=c("negocio_vendedor_id" = "vendedor_id"))
+negocio_ij_vendedor <- inner_join(negocio, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
 
 ########## Para o funil e para agrupar por faturamento
 #### Vou alterar o agrupamento de número de negócios para faturamento, portanto precisarei da tabela negocio_produto
@@ -121,10 +136,9 @@ neg_ij_ven_ij_np <- inner_join(negocio_ij_vendedor, negocio_produto, by=c("negoc
 corte_1 <- neg_ij_ven_ij_np %>%
   filter(negocio_data_cadastro >= as.Date("2020-01-01"), negocio_negocio_situacao_id != 0)
 
-
 ##removendo elementos não mais usados
 if (teste == F) {
-  rm(negocio, vendedor_todos) #vou precisar dele pro funil mais pra baixo negocio_ij_historico_ij_vendedor_2020)
+  rm(negocio) #vou precisar dele pro funil mais pra baixo negocio_ij_historico_ij_vendedor_2020)
 }
 
 ##agrupamento de negocios por vendedor, contando faturamento por status e por vendedor
@@ -205,16 +219,7 @@ ng_ij_hist_ij_ven_2020 <- ng_ij_hist_ij_ven_2020 %>%
 
 ng_ij_hist_ij_ven_ij_np_2020 <- inner_join(ng_ij_hist_ij_ven_2020, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
 
-
-#rm(ng_cn_d_vn, ng_ij_hist_ij_ven_2020)
-#########################################################
-
-###Começar a junção dos gráficos
-##aqui caso o filtro seja mais de um, usamos o %in% ff
-###Cuidar que status 4 e 5 estão trocados
-## 5 - faturado, status[4], 7 - desistencia do cliente, status[6], 8 - perdemos para a concorrencia, status[8]
 ff <- c(4, 6, 7)
-#ggplotly(p1)
 
 ng_ij_hist_ij_ven_2020_ij_np_fec <-  ng_ij_hist_ij_ven_ij_np_2020%>%
   filter(negocio_negocio_situacao_id %in% ff)
@@ -464,26 +469,12 @@ idades = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 mese
 
 ng_ij_hist_ij_ven_idd <- ng_ij_hist_ij_ven_ab %>%
   select (negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, vendedor_nome, historico_negocio_situacao_data) %>%
-  mutate(idade = (as.integer(as.POSIXct(Sys.time()) - as.POSIXct(negocio_data_cadastro)))) %>%
+  mutate(idade = (as.integer(today() - as_date(negocio_data_cadastro)))) %>%
   mutate(idade_cat = NA) %>%
   arrange(idade)
 
-
-#ng_ij_hist_ij_ven_2020$idade <- as.numeric(ng_ij_hist_ij_ven_2020$idade)
-ng_ij_hist_ij_ven_idd <- ng_ij_hist_ij_ven_idd %>%
-  select (negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, vendedor_nome, historico_negocio_situacao_data, idade) %>%
-  mutate(idade = as.integer(idade)) %>%
-  arrange(idade)
-
-#typeof(ng_ij_hist_ij_ven_idd$idade)
-
-
-ng_ij_hist_ij_ven_idd$idade_cat[ng_ij_hist_ij_ven_idd$idade < 10000]<- idades[5]
-ng_ij_hist_ij_ven_idd$idade_cat[ng_ij_hist_ij_ven_idd$idade < 735] <- idades[4]
-ng_ij_hist_ij_ven_idd$idade_cat[ng_ij_hist_ij_ven_idd$idade < 366] <- idades[3]
-ng_ij_hist_ij_ven_idd$idade_cat[ng_ij_hist_ij_ven_idd$idade < 181] <- idades[2]
-ng_ij_hist_ij_ven_idd$idade_cat[ng_ij_hist_ij_ven_idd$idade < 61] <- idades[1]
-
+ng_ij_hist_ij_ven_idd$idade_cat <- with(ng_ij_hist_ij_ven_idd, cut(idade, breaks = c(0,60, 180, 365, 730, 10000),
+                                                                   label = idades))
 
 ##Aqui eu posso fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios c/status) e depois o join, sem o select, ou então usar o mutate como foi feito
 ng_ij_hist_ij_ven_num <- ng_ij_hist_ij_ven_idd %>%
@@ -496,18 +487,14 @@ ng_ij_hist_ij_ven_num <- ng_ij_hist_ij_ven_idd %>%
 ##Usado pra ordenar o gráfico
 ng_ij_hist_ij_ven_num$idade_cat = factor(ng_ij_hist_ij_ven_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
 
-
-
-
-### Gráfico n6 - Idade dos negócios abertos, por vendedor, por idade do negocio
-n6 <- ggplot(ng_ij_hist_ij_ven_num, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), num_negocios_idades, fill=idade_cat, label = num_negocios_idades,
-                                        text = paste('Número de negócios neste intervalo:', num_negocios_idades))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
-  geom_col(position = "stack") +
-  theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank())+
-  scale_fill_manual(values = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"))+
-  coord_flip(expand = F)
-
-n6 <- ggplotly(n6, tooltip = 'text') %>% layout(legend = list(orientation = "h", x = -0.3, y = -0.08))
+n6 <- plot_ly(ng_ij_hist_ij_ven_num, type = 'bar', orientation = 'h', x=~num_negocios_idades , y=~vendedor_nome,
+              color = ~idade_cat,
+              colors = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"))
+n6 <- n6 %>%
+  layout(barmode = 'stack',
+         xaxis = list(title = ''),
+         yaxis = list(title = ''))
+n6
 
 if(dash == F){
   n6
@@ -763,14 +750,6 @@ fat_2020_mes <- ng_ij_hist_ij_ven_2020_fat %>%
   mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
   group_by (ym) %>%
   summarize(ym_sum = sum(np_valor))
-#as.xts(order.by = .$ym) #convertendo em xts
-
-##Usando highcharts
-#hc_n12 <- hchart(fat_2020_mes, type = 'line', hcaes(x = ym, y = ym_sum))
-#hc_n12
-
-#n12 <- plot_ly(fat_2020_mes, type = 'scatter', mode = 'line', x = ~ym, y =~ym_sum)
-
 
 ##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais antigas, ficar só com a última atualização no negócio
 negocio_ij_historico_ij_vendedor_total <- negocio_ij_historico_ij_vendedor_total[order(-negocio_ij_historico_ij_vendedor_total$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_total$negocio_id),]
@@ -789,105 +768,129 @@ ng_ij_hist_ij_ven_total <- ng_ij_hist_ij_ven_total %>%
 
 ng_ij_hist_ij_ven_ij_np_total <- inner_join(ng_ij_hist_ij_ven_total, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
 
+
 ##Começando o cálculo do faturamento médio dos três anos anteriores
 
+anos_ant = year(today()) - min(year(ng_ij_hist_ij_ven_ij_np_total$historico_negocio_situacao_data))
+
 ##primeiro vou selecionar por ano, e depois apenas status faturado
-ng_ij_hist_ij_ven_ij_np_2019_fat <- ng_ij_hist_ij_ven_ij_np_total %>%
-  filter (historico_negocio_situacao_data < '2020-01-01' & historico_negocio_situacao_data > '2018-12-31' & negocio_negocio_situacao_id == 4)
-ng_ij_hist_ij_ven_ij_np_2018_fat <- ng_ij_hist_ij_ven_ij_np_total %>%
-  filter (historico_negocio_situacao_data < '2019-01-01' & historico_negocio_situacao_data > '2017-12-31' & negocio_negocio_situacao_id == 4)
+if(anos_ant > 0) {
+  ng_ij_hist_ij_ven_ij_np_2019_fat <- ng_ij_hist_ij_ven_ij_np_total %>%
+    filter (historico_negocio_situacao_data < '2020-01-01' & historico_negocio_situacao_data > '2018-12-31' & negocio_negocio_situacao_id == 4)
+}
+if(anos_ant > 1) {
+  ng_ij_hist_ij_ven_ij_np_2018_fat <- ng_ij_hist_ij_ven_ij_np_total %>%
+    filter (historico_negocio_situacao_data < '2019-01-01' & historico_negocio_situacao_data > '2017-12-31' & negocio_negocio_situacao_id == 4)
+}
+
 ##Usando só os dois anos anteriores
 #ng_ij_hist_ij_ven_ij_np_2017_fat <- ng_ij_hist_ij_ven_ij_np_total %>%
 #  filter (historico_negocio_situacao_data < '2018-01-01' & historico_negocio_situacao_data > '2016-12-31' & negocio_negocio_situacao_id == 4)
 
 #Aqui vou fazer a mesma soma dos valores dos três anos anteriores, dividindo por mês
-fat_2019_mes <- ng_ij_hist_ij_ven_ij_np_2019_fat %>%
-  mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
-  group_by (ym) %>%
-  summarize(ym_sum = sum(np_valor))
-
-fat_2018_mes <- ng_ij_hist_ij_ven_ij_np_2018_fat %>%
-  mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
-  group_by (ym) %>%
-  summarize(ym_sum = sum(np_valor))
-
+if(anos_ant > 0) {
+  fat_2019_mes <- ng_ij_hist_ij_ven_ij_np_2019_fat %>%
+    mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
+    group_by (ym) %>%
+    summarize(ym_sum_2019 = sum(np_valor)) %>%
+    ungroup ()
+}
+if(anos_ant > 1) {
+  fat_2018_mes <- ng_ij_hist_ij_ven_ij_np_2018_fat %>%
+    mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
+    group_by (ym) %>%
+    summarize(ym_sum_2018 = sum(np_valor))%>%
+    ungroup ()
+}
 
 
 ###Fazer o gráfico de linhas com faturamento anual (substituindo com NA linhas faltantes)
 ###Na super temos 2018, na komatsu tem q verificar se possui 2018 e 2019
 #######################################################################
-if (empresa == 16)
-{
+n_linhas <- nrow(fat_2020_mes)
+ym <- c("01","02","03","04","05","06","07","08","09","10","11","12")
+fat_2020_mes_aux <- data.frame(ym)
+fat_2020_mes_aux$ym_sum <- NA
+fat_2020_mes_aux$ym_sum[1:n_linhas] <- fat_2020_mes$ym_sum
 
-  n_linhas <- nrow(fat_2020_mes)
-  fat_2020_mes_aux <- fat_2019_mes
-  fat_2020_mes_aux$ym_sum <- NA
-  fat_2020_mes_aux$ym_sum[1:n_linhas] <- fat_2020_mes$ym_sum
+fat_2020_2019_2018_mes <- fat_2020_mes_aux
+if(anos_ant > 0) {
+  fat_2020_2019_2018_mes <- left_join(fat_2020_2019_2018_mes, fat_2019_mes, by = c("ym"))
+}
+if(anos_ant > 1) {
+  fat_2020_2019_2018_mes <- left_join(fat_2020_2019_2018_mes, fat_2018_mes, by = c("ym"))
+}
 
-  fat_2020_2019_2018_mes <- fat_2020_mes_aux
-  fat_2020_2019_2018_mes[, "ym_sum_2019"] <- fat_2019_mes$ym_sum
-  fat_2020_2019_2018_mes[, "ym_sum_2018"] <- fat_2018_mes$ym_sum
+meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
+## alterando pra números pra poder fazer da mesma forma
+fat_2020_2019_2018_mes$ym <- as.integer(fat_2020_2019_2018_mes$ym)
+##Vou usar dessa forma, ao invés de transformar, irei apenas criar uma nova coluna (poderia ser feito com um join também)
+fat_2020_2019_2018_mes <- fat_2020_2019_2018_mes %>%
+  mutate(mes = cut(ym,breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
+                   labels = meses))
+##Forma antiga, agora a nova mantém a coluna "identificadora"
+#fat_2020_2019_2018_mes$ym <- with(fat_2020_2019_2018_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
+#                                                              labels = meses))
 
-  meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
-  ## alterando pra números pra poder fazer da mesma forma
-  fat_2020_2019_2018_mes$ym <- as.integer(fat_2020_2019_2018_mes$ym)
-  fat_2020_2019_2018_mes$ym <- with(fat_2020_2019_2018_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
-                                                                labels = meses))
 
+#######################################################################
 
-  #######################################################################
+##Começando o gráfico
+a <- list(
+  title = '',
+  showticklabels = T
+)
+ay <- list(
+  overlaying = 'y',
+  side = 'right',
+  title = ''
+)
 
-  ##Começando o gráfico
-  a <- list(
-    title = '',
-    showticklabels = T
+###Assim estarei mostrando 2020, 2019 e 2018
+### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
+n12 <- plot_ly(fat_2020_2019_2018_mes)
+n12 <- n12 %>%
+  add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum,
+            name = 'Faturamento de 2020',
+            text = ~paste(func_fmt_din_mi(ym_sum),'milhões'),
+            hoverinfo = "text",
+            color = I("green")
   )
-  ay <- list(
-    overlaying = 'y',
-    side = 'right',
-    title = ''
-  )
-
-  ###Assim estarei mostrando 2020, 2019 e 2018
-  ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
-  n12 <- plot_ly(fat_2020_2019_2018_mes)
+if(anos_ant > 0) {
   n12 <- n12 %>%
-    add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y =~ym_sum,
-              name = 'Faturamento de 2020',
-              text = ~paste(func_fmt_din_mi(ym_sum),'milhões'),
-              hoverinfo = "text",
-              color = I("blue")
-    )
-  n12 <- n12 %>%
-    add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y = ~ym_sum_2019, yaxis = ay,
+    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_2019, yaxis = ay,
               name = 'Faturamento de 2019',
               text = ~paste(func_fmt_din_mi(ym_sum_2019),'milhões'),
               hoverinfo = "text",
-              color = I("red"))
+              color = I("#1E90FF"))
+}
+if(anos_ant > 1) {
   n12 <- n12 %>%
-    add_trace(type = 'scatter', mode = 'lines+markers',x = ~ym, y = ~ym_sum_2018, yaxis = ay,
+    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_2018, yaxis = ay,
               name = 'Faturamento de 2018',
               text = ~paste(func_fmt_din_mi(ym_sum_2018),'milhões'),
               hoverinfo = "text",
-              color = I("green"))
+              color = I("#4682B4"))
+}
 
-  n12 <- n12 %>%
-    layout(xaxis = a, yaxis = a,
-           #aqui eu ajusto onde quero que apareça a legenda
-           legend = list(x=0.8, y=0.9)#)
-    )
+n12 <- n12 %>%
+  layout(xaxis = list(title = ''), yaxis = list(title = ''),
+         #aqui eu ajusto onde quero que apareça a legenda
+         legend = list(x=0.8, y=0.9)#)
+  )
+if (dash == F){
   n12
+}
 
 
-  if (teste == F){
-    #tabelas
-    rm(ng_ij_hist_ij_ven_ij_np_2020, fat_2020_mes, ng_ij_hist_ij_ven_total, negocio_ij_historico_ij_vendedor_total,
-       fat_2019_mes, fat_2018_mes, fat_2020_2019_2018_mes, fat_2020_mes_aux, ay, a, negocio_produto,
-       ng_ij_hist_ij_ven_2020, ng_ij_hist_ij_ven_2020_fat, ng_ij_hist_ij_ven_ij_np_2019_fat, ng_ij_hist_ij_ven_ij_np_2018_fat,
-       ng_ij_hist_ij_ven_ij_np_total)
-    #variáveis
-    rm(meses, n_linhas)
-  }
+if (teste == F){
+  #tabelas
+  rm(ng_ij_hist_ij_ven_ij_np_2020, fat_2020_mes, ng_ij_hist_ij_ven_total, negocio_ij_historico_ij_vendedor_total,
+     fat_2019_mes, fat_2018_mes, fat_2020_2019_2018_mes, fat_2020_mes_aux, ay, a, negocio_produto,
+     ng_ij_hist_ij_ven_2020, ng_ij_hist_ij_ven_2020_fat, ng_ij_hist_ij_ven_ij_np_2019_fat, ng_ij_hist_ij_ven_ij_np_2018_fat,
+     ng_ij_hist_ij_ven_ij_np_total)
+  #variáveis
+  rm(meses, n_linhas)
 }
 
 ##############################################
@@ -934,7 +937,7 @@ prop_ij_neg <- inner_join(proposta, negocio, by=c("proposta_negocio_id" = "negoc
 #prop_ij_neg <- prop_ij_neg[!is.na(prop_ij_neg$negocio_vendedor_id),]
 
 if (teste == F){
-  rm(negocio)
+  rm()
 }
 
 prop_ij_neg_2020 <- prop_ij_neg %>%
@@ -1003,7 +1006,7 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(vendedor, prop_ij_neg_2020, prop_ij_neg_cont_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_ij_vend_2020);
+  rm(prop_ij_neg_2020, prop_ij_neg_cont_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_ij_vend_2020);
   #variáveis
   rm(status);
 }
@@ -1067,11 +1070,11 @@ proposta_produto <- tbl(con, "proposta_produto") %>%
 p_ij_n_ij_v_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_produto, by = c("proposta_id" = "pp_proposta_id"))
 
 ##Vou puxar negócio novamente pra pegar a coluna de se é usado ou não (acho que é mais eficiente do que usar a tabela completa desde o início)
-negocio <- tbl(con, "negocio") %>%
+negocio_aux <- tbl(con, "negocio") %>%
   select(negocio_id, negocio_tipo_negocio) %>%
   collect()
 
-p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio, by = c("proposta_negocio_id" = "negocio_id"))
+p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio_aux, by = c("proposta_negocio_id" = "negocio_id"))
 
 ##filtro da empresa e também propostas finalizadas, também filtrando só negócios novos e com valores acima de 10
 p_ij_n_ij_pp_empresa <- p_ij_n_ij_v_ij_pp_n %>%
@@ -1213,7 +1216,7 @@ if(dash == F){
 
 ###Ticket médio por proposta (apenas usados)
 
-p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio, by = c("proposta_negocio_id" = "negocio_id"))
+p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio_aux, by = c("proposta_negocio_id" = "negocio_id"))
 
 ##filtro da empresa e também propostas finalizadas, também filtrando só negócios novos e com valores acima de 10
 p_ij_n_ij_pp_empresa_us <- p_ij_n_ij_v_ij_pp_n %>%
@@ -1340,7 +1343,7 @@ if(teste == F){
   #tabelas
   rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_n_ij_pp_empresa_us, pr_top5_fat, pr_top5_fat_aux,
      pr_top5_fat_med, produto, proposta_produto, top5_fat, top5_fat_ij_cat, p_ij_n_ij_pp_ij_prod,
-     p_ij_n_ij_v_ij_pp, p_ij_n_ij_v_ij_pp_n, negocio_produto, negocio, fat_tot_categorias_us, p_ij_n_ij_pp_ij_prod_us,
+     p_ij_n_ij_v_ij_pp, p_ij_n_ij_v_ij_pp_n, negocio_produto, fat_tot_categorias_us, p_ij_n_ij_pp_ij_prod_us,
      pr_top5_fat_med_us, pr_top5_fat_us)
   #variáveis
   rm(fat_out, media_empresa, n_out, total_empresa)
@@ -1516,6 +1519,125 @@ if (teste == 0) {
   #rm(list=ls())
 }
 
+################################################################################################################################
+#############################################################################################################################
+###Contar clientes/visitas/negocios cadastrados por mês -> vem do script visita_clientes
+####################################
+
+cliente <- tbl(con,'cliente') %>%
+  select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_cidade, cliente_ultima_visita) %>%
+  filter(cliente_empresa_id == empresa) %>%
+  collect()
+
+##Collect cria o df resultado da query, nesse caso, visitas_cliente, já filtrando apenas ano atual
+visita_cliente <- tbl(con,'visita_cliente') %>%
+  select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
+  filter (vc_data_cadastro >= ano_atual) %>%
+  collect ()
+
+##Pra pegar o nome do status
+visita_status <- tbl(con,'visita_status') %>%
+  select(vs_id, vs_nome, vs_ativo) %>%
+  filter(vs_ativo == 1) %>%
+  rename (motivo = vs_nome) %>%
+  collect()
+##Pra filtrar os status da empresa
+visita_status_empresa <- tbl(con, "visita_status_empresa") %>%
+  select(vse_status_id, vse_empresa_id, vse_ativo) %>%
+  filter(vse_ativo == 1, vse_empresa_id == empresa) %>%
+  collect()
+#Arrumando encoding
+Encoding(visita_status$motivo) <- 'latin1'
+
+##junta as duas tabelas (status e status_empresa) pra pegar o id da empresa (vs_empresa_id) e o nome do status (vs_nome)
+vis_st_emp <- inner_join(visita_status, visita_status_empresa, by = c('vs_id'= 'vse_status_id'))
+
+##Já filtrado apenas empresa (variavel global)
+clientes_mes <- cliente %>%
+  filter (cliente_data_cadastro >= ano_atual) %>%
+  mutate (ym = format(cliente_data_cadastro, '%m')) %>%
+  group_by (ym) %>%
+  summarize(n_cli = n()) %>%
+  ungroup ()
+
+##Visita precisa juntar com visita_status ou _resultado () pra obter empresa_id ##poderia ser vendedor, mas a tabela vis_st_emp (status c/ status_empresa) já está pronta
+##vis_st_emp já vem filtrada pela empresa (var global)
+vc_ij_emp <- inner_join(visita_cliente, vis_st_emp, by = c("vc_status_id" = "vs_id")) %>%
+  #select(vc_id, vc_status_id, vc_data_cadastro) ##Sem empresa_id
+  select(vc_id, vc_status_id, vc_data_cadastro, vse_empresa_id)
+
+visitas_mes <- vc_ij_emp %>%
+  filter (vc_data_cadastro >= ano_atual) %>%
+  mutate (ym = format(vc_data_cadastro, '%m')) %>%
+  group_by (ym) %>%
+  summarize(n_vis = n()) %>%
+  ungroup ()
+
+##Negocio precisa juntar com vendedor pra obter empresa_id ##Poderia ser cliente também, mas a tabela vendedor é menor
+##vendedor já vem filtrado pela empresa (var global)
+ng_ij_emp <- inner_join(negocio, vendedor, by = c("negocio_vendedor_id" = "vendedor_id")) %>%
+  #select(negocio_id, negocio_vendedor_id, negocio_data_cadastro)%>% ##Sem empresa_id
+  select(negocio_id, negocio_vendedor_id, negocio_data_cadastro, vendedor_empresa_id)
+
+negocios_mes <- ng_ij_emp %>%
+  filter (negocio_data_cadastro >= ano_atual) %>%
+  mutate (ym = format(negocio_data_cadastro, '%m')) %>%
+  group_by (ym) %>%
+  summarize(n_neg = n()) %>%
+  ungroup ()
+
+##Juntando tudo em um só dataframe
+cli_ij_vc_mes <- inner_join(clientes_mes, visitas_mes, by = c("ym"))
+cli_ij_vc_ij_ng_mes <- inner_join(cli_ij_vc_mes, negocios_mes, by = c("ym"))
+
+
+##Criando nomes de colunas
+meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
+## alterando pra números pra poder fazer da mesma forma
+cli_ij_vc_ij_ng_mes$ym <- as.integer(cli_ij_vc_ij_ng_mes$ym)
+
+##Vou usar dessa forma, ao invés de transformar, irei apenas criar uma nova coluna (poderia ser feito com um join também)
+cli_ij_vc_ij_ng_mes <- cli_ij_vc_ij_ng_mes %>%
+  mutate(mes = cut(ym,breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
+                   labels = meses))
+###Não farei dessa forma pois quero manter a coluna
+#cli_ij_vc_ij_ng_mes$ym <- with(cli_ij_vc_ij_ng_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
+#                                                        labels = meses))
+
+### Gráfico c3 - Cadastro de clientes, visitas e negócios no ano de 2020
+c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
+              name = 'Clientes',
+              text = ~paste(func_fmt_numbr(n_cli), 'clientes'),
+              hoverinfo = "text",
+              color = I('#7B68EE'))
+c3 <- c3 %>%
+  add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_vis,
+             name = 'Visitas',
+             text = ~paste(func_fmt_numbr(n_vis), 'visitas'),
+             hoverinfo = "text",
+             color = I('#DAA520'))
+c3 <- c3 %>%
+  add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_neg,
+             name = 'Negócios',
+             text = ~paste(func_fmt_numbr(n_neg), 'negócios'),
+             hoverinfo = "text",
+             color = I('green'))
+
+c3 <- c3 %>%
+  layout(xaxis = list(title = '', range = c(min(0), max(12))), ##Dessa forma pego os 12 meses do ano
+         yaxis = list(title = ''))
+if(dash == F){
+  c3
+}
+
+if(teste == F){
+  #tabelas
+  rm(cliente, visita_cliente, negocio, vendedor, vis_st_emp, cli_ij_vc_mes, cli_ij_vc_ij_ng_mes);
+  #variáveis
+  rm();
+}
+################################################################################################################################
+
 ```
 
 Funil de vendas
@@ -1574,16 +1696,15 @@ ggplotly(n3) %>%
 Faturamento ano a ano
 =======================================================================
 
-### Faturamento em 2020, 2019 e 2018
+### Faturamento mês a mês e distribuição do cadastro de clientes, visitas e negócios no ano 2020
 
 ```{r}
 ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
 if(empresa == 16){
-  n12
+  subplot(n12, c3, nrows = 2, shareX = T)
 }
 
 ```
-
 
 Top 10 Categorias
 =======================================================================
@@ -1616,8 +1737,7 @@ Column {data-width=450}
 ### Idade dos negócios abertos, por vendedor
 ```{r}
 ### Gráfico n6 - Idade dos negócios abertos, por vendedor, por idade do negocio
-ggplotly(n6) %>%
-  layout(legend = list(orientation = "h", x = -0.3, y = -0.08))
+n6
 ```
 
 

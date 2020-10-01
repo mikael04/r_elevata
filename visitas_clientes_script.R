@@ -26,6 +26,7 @@ dash = F
 ##Variável "Global"
 empresa = 16 #Super
 #empresa = 78 #Komatsu
+####Variavel global c/ ano atual (para comparação)
 ano_atual = '2020-01-01'
 
 ##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
@@ -69,7 +70,7 @@ visita_resultado <- tbl(con, "visita_resultado") %>%
 ##Pra filtrar os resultados da empresa
 visita_resultado_empresa <- tbl(con, "visita_resultado_empresa") %>%
   select(vre_resultado_id, vre_empresa_id, vre_ativo) %>%
-  filter(vre_ativo == 1, vre_empresa_id == empresa) %>% ##Ja sao todos ativos mas mantive pra manter o filtro, ja filtro a empresa 
+  filter(vre_ativo == 1, vre_empresa_id == empresa) %>% ##Ja sao todos ativos mas mantive pra manter o filtro, ja filtro a empresa
   collect()
 #Arrumando encoding
 Encoding(visita_resultado$resultado) <- 'latin1'
@@ -131,7 +132,7 @@ vc_ij_vse_ij_v <- vc_ij_vse_ij_v %>%
   mutate(motivo_n = n()) %>%
   distinct(vc_vendedor_id, .keep_all = T) %>%
   ungroup()
-  
+
 ### Gráfico v0 - Motivo das visitas (status) por vendedor em 2020
 
 ##descobrindo numero de status diferentes para criar paleta de cores
@@ -158,7 +159,7 @@ vc_ij_vre_ij_v <- vc_ij_vre_ij_v %>%
   group_by(vc_vendedor_id, vc_resultado_id) %>%
   mutate(resultado_n = n()) %>%
   distinct(vc_vendedor_id, .keep_all = T) %>%
-  ungroup() 
+  ungroup()
 
 ### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
 ##descobrindo numero de status diferentes para criar paleta de cores
@@ -243,7 +244,7 @@ neg_ij_vend_count <- neg_ij_vend %>%
   mutate(n_negocios = n()) %>%
   distinct(negocio_vendedor_id, .keep_all = T) %>%
   ungroup()
-  
+
 vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_vendedor_id" = "negocio_vendedor_id")) %>%
   select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas, n_negocios)
 
@@ -377,11 +378,17 @@ cli_ij_vc_ij_ng_mes <- inner_join(cli_ij_vc_mes, negocios_mes, by = c("ym"))
 meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
 ## alterando pra números pra poder fazer da mesma forma
 cli_ij_vc_ij_ng_mes$ym <- as.integer(cli_ij_vc_ij_ng_mes$ym)
-cli_ij_vc_ij_ng_mes$ym <- with(cli_ij_vc_ij_ng_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
-                                                              labels = meses))
+
+##Vou usar dessa forma, ao invés de transformar, irei apenas criar uma nova coluna (poderia ser feito com um join também)
+cli_ij_vc_ij_ng_mes <- cli_ij_vc_ij_ng_mes %>%
+  mutate(mes = cut(ym,breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
+                   labels = meses))
+###Não farei dessa forma pois quero manter a coluna
+#cli_ij_vc_ij_ng_mes$ym <- with(cli_ij_vc_ij_ng_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
+#                                                        labels = meses))
 
 ### Gráfico c3 - Cadastro de clientes, visitas e negócios no ano de 2020
-c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~ym, y = ~n_cli,
+c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
               name = 'Clientes',
               text = ~paste(func_fmt_numbr(n_cli), 'clientes'),
               hoverinfo = "text",
@@ -398,10 +405,10 @@ c3 <- c3 %>%
              text = ~paste(func_fmt_numbr(n_neg), 'negócios'),
              hoverinfo = "text",
              color = I('green'))
-  
+
 c3 <- c3 %>%
-layout(xaxis = list(title = ''),
-       yaxis = list(title = ''))
+  layout(xaxis = list(title = '', range = c(min(0), max(12))), ##Dessa forma pego os 12 meses do ano
+         yaxis = list(title = ''))
 if(dash == F){
   c3
 }
@@ -412,7 +419,5 @@ if(teste == F){
   #variáveis
   rm();
 }
-
-
 
 ####################################
