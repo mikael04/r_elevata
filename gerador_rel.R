@@ -4,7 +4,7 @@ render_report_neg_prop <- function(var1) {
   
   template <- "dash_negocios_propostas.Rmd"
   
-  out_file <- sprintf("Negocios_Propostas_%s", var1)
+  out_file <- sprintf("Dashs/Negocios_Propostas_%s", var1)
   
   parameters <- list(variable1 = var1)
   
@@ -18,7 +18,7 @@ render_report_vis <- function(var1) {
   
   template <- "dash_visitas.Rmd"
   
-  out_file <- sprintf("Visitas_%s", var1)
+  out_file <- sprintf("Dashs/Visitas_%s", var1)
   
   parameters <- list(variable1 = var1)
   
@@ -32,7 +32,7 @@ render_report_neg_vis <- function(var1) {
   
   template <- "dash_negocios_visitas.Rmd"
   
-  out_file <- sprintf("Negocios_Visitas_%s", var1)
+  out_file <- sprintf("Dashs/Negocios_Visitas_%s", var1)
   
   parameters <- list(variable1 = var1)
   
@@ -41,8 +41,6 @@ render_report_neg_vis <- function(var1) {
                     params = parameters)
   invisible(TRUE)
 }
-
-setwd("E:/Mikael/Projetos/Scripts/Testes/Testes com a dash")
 
 library(purrr)
 ##Gerando das que tem propostas (duas dashs separadas, a primeira negócios+propostas, segunda visitas+clientes)
