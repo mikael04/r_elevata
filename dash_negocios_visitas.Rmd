@@ -54,7 +54,7 @@ emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
 ##Empresa utilizada
-empresa <- emp_ta
+empresa <- emp_si
 
 ###################################
 
@@ -984,8 +984,12 @@ vc_ij_vse_ij_v <- vc_ij_vse_ij_v %>%
 
 ##descobrindo numero de status diferentes para criar paleta de cores
 n_m_color <- n_distinct(vc_ij_vse_ij_v$vc_status_id)
-#brbg_mot <- colorRampPalette(brewer.pal(8, "Set2"))(n_m_color)
-brbg_mot <- brewer.pal(n_m_color,'BrBG')
+if (n_m_color <3){
+  brbg_mot <- '#9ACD32'
+} else
+{
+  brbg_mot <- brewer.pal(n_m_color,'BrBG')
+}
 axis_h <- list(
   title = ""
 )
@@ -1012,7 +1016,12 @@ vc_ij_vre_ij_v <- vc_ij_vre_ij_v %>%
 ### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
 ##descobrindo numero de status diferentes para criar paleta de cores
 n_r_color <- n_distinct(vc_ij_vre_ij_v$vc_resultado_id)
-brbg_res <- brewer.pal(n_r_color,'BrBG')
+if (n_m_color <3){
+  brbg_res <- 'lighgreen'
+} else
+{
+  brbg_res <- brewer.pal(n_m_color,'BrBG')
+}
 
 v1 <- plot_ly(vc_ij_vre_ij_v, type = "bar", x = ~vendedor_nome, y = ~resultado_n,# colors = ~I(motivo),
               colors = brbg_res,

@@ -24,7 +24,8 @@ teste = F
 dash = F
 
 ##Variável "Global"
-empresa = 16 #Super
+empresa = 59 #Simex
+#empresa = 16 #Super
 #empresa = 78 #Komatsu
 ####Variavel global c/ ano atual (para comparação)
 ano_atual = '2020-01-01'
@@ -137,12 +138,18 @@ vc_ij_vse_ij_v <- vc_ij_vse_ij_v %>%
 
 ##descobrindo numero de status diferentes para criar paleta de cores
 n_m_color <- n_distinct(vc_ij_vse_ij_v$vc_status_id)
-brbg_mot <- brewer.pal(n_m_color,'BrBG')
+if (n_m_color <3){
+  brbg_mot <- 'green'
+} else
+{
+  brbg_mot <- brewer.pal(n_m_color,'BrBG')
+}
+
 axis_h <- list(
   title = ""
 )
-v0 <- plot_ly(vc_ij_vse_ij_v, type = "bar", x = ~vendedor_nome, y = ~motivo_n,# colors = ~I(motivo),
-              colors = brbg_mot,
+v0 <- plot_ly(vc_ij_vse_ij_v, type = "bar", x = ~vendedor_nome, y = ~motivo_n, #colors = ~I(motivo),
+              color = '#brbg_mot',
               name = ~motivo)
 
 v0 <- v0 %>%
@@ -164,7 +171,12 @@ vc_ij_vre_ij_v <- vc_ij_vre_ij_v %>%
 ### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
 ##descobrindo numero de status diferentes para criar paleta de cores
 n_r_color <- n_distinct(vc_ij_vre_ij_v$vc_resultado_id)
-brbg_res <- brewer.pal(n_r_color,'BrBG')
+if (n_m_color <3){
+  brbg_res <- 'lighgreen'
+} else
+{
+  brbg_res <- brewer.pal(n_m_color,'BrBG')
+}
 
 v1 <- plot_ly(vc_ij_vre_ij_v, type = "bar", x = ~vendedor_nome, y = ~resultado_n,# colors = ~I(motivo),
               colors = brbg_res,
@@ -421,3 +433,17 @@ if(teste == F){
 }
 
 ####################################
+
+consis <-135.3*3
+esbo <- 250*7
+ana <- 148.83*6
+shiny <- 300*10
+bi <- 300*8
+apr <- 135.30
+reu_sh <- 270.70
+reu_bi <- 202.95
+
+##shiny
+consis+esbo+ana+shiny+apr+reu_sh
+##bi
+consis+esbo+ana+bi+apr+reu_bi
