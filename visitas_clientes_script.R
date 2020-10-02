@@ -17,18 +17,29 @@ library(htmlwidgets)
 #Lib usada pra gerar cores aleatoriamente
 library(RColorBrewer)
 
+###################################
+##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
-
-####Variável usada para não apagar coisas na dash
+####Variável usada para não plotar os gráficos na dash
 dash = F
-
-##Variável "Global"
-empresa = 59 #Simex
-#empresa = 16 #Super
-#empresa = 78 #Komatsu
 ####Variavel global c/ ano atual (para comparação)
 ano_atual = '2020-01-01'
+####Variável global para ver se tem usados Ainda não usada
+#usados = T
+
+
+##Emprsas"
+emp_am = 42 # Amazonia
+emp_ar = 77 # Araguaia
+emp_ko = 78 # Komatsu
+emp_ms = 35 # Ms
+emp_si = 59 # Simex 
+emp_su = 16 # Super
+emp_ta = 60 # Taisa
+
+empresa <- emp_si
+###################################
 
 ##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
 func_nome <- function (nome_comp)
@@ -139,19 +150,20 @@ vc_ij_vse_ij_v <- vc_ij_vse_ij_v %>%
 ##descobrindo numero de status diferentes para criar paleta de cores
 n_m_color <- n_distinct(vc_ij_vse_ij_v$vc_status_id)
 if (n_m_color <3){
-  brbg_mot <- 'green'
-} else
-{
-  brbg_mot <- brewer.pal(n_m_color,'BrBG')
+  brbg_mot <- '#9ACD32'
+} else{
+  if(n_m_color > 11){
+    brbg_mot <- colorRampPalette(brewer.pal(name="Dark2", n = 8)) (n_m_color)
+  }else{
+    brbg_mot <- brewer.pal(n_m_color,'BrBG')
+  }
 }
 
 axis_h <- list(
-  title = ""
-)
-v0 <- plot_ly(vc_ij_vse_ij_v, type = "bar", x = ~vendedor_nome, y = ~motivo_n, #colors = ~I(motivo),
-              color = '#brbg_mot',
+  title = "")
+v0 <- plot_ly(vc_ij_vse_ij_v, type = "bar", x = ~vendedor_nome, y = ~motivo_n, color = ~motivo,
+              colors = brbg_mot,
               name = ~motivo)
-
 v0 <- v0 %>%
   layout(barmode = 'stack',
          xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
@@ -162,7 +174,7 @@ if(dash == F){
 
 
 ##Agrupando por vendedor e por resultado (vc_status_id, depois mostrar so motivo)
-vc_ij_vre_ij_v <- vc_ij_vre_ij_v %>%
+vc_ij_vre_ij_v_ag <- vc_ij_vre_ij_v %>%
   group_by(vc_vendedor_id, vc_resultado_id) %>%
   mutate(resultado_n = n()) %>%
   distinct(vc_vendedor_id, .keep_all = T) %>%
@@ -170,15 +182,18 @@ vc_ij_vre_ij_v <- vc_ij_vre_ij_v %>%
 
 ### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
 ##descobrindo numero de status diferentes para criar paleta de cores
-n_r_color <- n_distinct(vc_ij_vre_ij_v$vc_resultado_id)
-if (n_m_color <3){
-  brbg_res <- 'lighgreen'
-} else
-{
-  brbg_res <- brewer.pal(n_m_color,'BrBG')
+n_r_color <- n_distinct(vc_ij_vre_ij_v_ag$vc_resultado_id)
+if (n_r_color <3){
+  brbg_res <- '#9ACD32'
+} else{
+  if(n_r_color > 11){
+    brbg_res <- c(brewer.pal(name="Dark2", n = 8), brewer.pal(name="BrBG", n = 8))
+  }else{
+    brbg_res <- brewer.pal(n_m_color,'BrBG')
+  }
 }
 
-v1 <- plot_ly(vc_ij_vre_ij_v, type = "bar", x = ~vendedor_nome, y = ~resultado_n,# colors = ~I(motivo),
+v1 <- plot_ly(vc_ij_vre_ij_v_ag, type = "bar", x = ~vendedor_nome, y = ~resultado_n, color = ~resultado,
               colors = brbg_res,
               name = ~resultado)
 #marker = list(color = 'lightblue'))
@@ -199,7 +214,7 @@ if(teste == F){
   #tabelas
   rm(visita_resultado_empresa, vis_res_emp, vc_ij_vre, vc_ij_vse,
      ##vis_st_emp, vc_ij_vse_ij_v, ##vou usar a vis_st_emp para uma junção (saber qual empresa são feitas as visitas)
-     vc_ij_vre_ij_v, visita_resultado, visita_status, visita_status_empresa,
+     vc_ij_vre_ij_v, vc_ij_vre_ij_v_ag, visita_resultado, visita_status, visita_status_empresa,
      axis_h);
   #variáveis
   rm(brbg_mot, brbg_res, n_r_color, n_m_color);
