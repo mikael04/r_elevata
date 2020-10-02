@@ -1,9 +1,11 @@
 ---
 title: "Visão do gestor"
-output: 
+output:
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
+params:
+  variable1: "emp_par"
 ---
 
 ```{r setup, include=FALSE}
@@ -46,17 +48,24 @@ ano_atual = '2020-01-01'
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
+
 ##Variável "Global"
 emp_am = 42 # Amazonia
 emp_ar = 77 # Araguaia
 emp_ko = 78 # Komatsu
 emp_ms = 35 # Ms
-emp_si = 59 # Simex 
+emp_si = 59 # Simex
 emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
 ##Empresa utilizada
-empresa <- emp_su
+if (params$variable1 == 'Super'){
+  empresa = emp_su
+} else{
+  if(params$variable1 == 'Komatsu'){
+    empresa = emp_ko
+  }
+}
 
 ###################################
 
@@ -892,11 +901,12 @@ if (dash == F){
 if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_ij_np_2020, fat_2020_mes, ng_ij_hist_ij_ven_total, negocio_ij_historico_ij_vendedor_total,
-     fat_2019_mes, fat_2018_mes, fat_2020_2019_2018_mes, fat_2020_mes_aux, ay, a, negocio_produto,
-     ng_ij_hist_ij_ven_2020, ng_ij_hist_ij_ven_2020_fat, ng_ij_hist_ij_ven_ij_np_2019_fat, ng_ij_hist_ij_ven_ij_np_2018_fat,
-     ng_ij_hist_ij_ven_ij_np_total)
+     fat_2019_mes, fat_2020_2019_2018_mes, fat_2020_mes_aux, ay, a, negocio_produto,
+     ng_ij_hist_ij_ven_2020, ng_ij_hist_ij_ven_2020_fat, ng_ij_hist_ij_ven_ij_np_2019_fat,
+     ng_ij_hist_ij_ven_ij_np_total);
   #variáveis
-  rm(meses, n_linhas)
+  rm(meses, n_linhas);
+  if(empresa == 16){rm(fat_2018_mes, ng_ij_hist_ij_ven_ij_np_2018_fat)}
 }
 
 ##############################################
@@ -1184,10 +1194,10 @@ if(empresa == emp_su)
                 marker = list(color = 'lightblue'),
                 text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
                 hoverinfo = "text")
-  
+
   p3 <- p3 %>%
     layout(barmode = 'identity', xaxis = ax, yaxis = ax)
-  
+
   p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
                          name = 'Empresa (geral, novos)',
                          x = ~categoria_nome,
@@ -1365,12 +1375,14 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
+  if (empresa == emp_su){
   rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_n_ij_pp_empresa_us, pr_top5_fat, pr_top5_fat_aux,
      pr_top5_fat_med, produto, proposta_produto, top5_fat, top5_fat_ij_cat, p_ij_n_ij_pp_ij_prod,
      p_ij_n_ij_v_ij_pp, p_ij_n_ij_v_ij_pp_n, negocio_produto, fat_tot_categorias_us, p_ij_n_ij_pp_ij_prod_us,
      pr_top5_fat_med_us, pr_top5_fat_us)
   #variáveis
   rm(fat_out, media_empresa, n_out, total_empresa)
+  }
 }
 }
 ##################################################################
@@ -1494,7 +1506,7 @@ p_ij_ppa_count_forma <- p_ij_ppa %>%
   distinct(pp_forma_id, .keep_all = T)
 
 if (empresa == 16){
-  ##Aqui terei que fazer difernte, porque não existe a coluna OUTRAS, criarei uma
+  ##Aqui terei que fazer diferente, porque não existe a coluna OUTRAS, criarei uma
   p_ij_ppa_count_forma$pp_forma_id[p_ij_ppa_count_forma$cont_forma < aux_3perc] <- 2
   n_outros_forma <- sum(p_ij_ppa_count_forma$cont_forma[which(p_ij_ppa_count_forma$pp_forma_id==2)])
 }
@@ -1537,7 +1549,7 @@ if(teste == F){
   rm(p_ij_ppa, proposta, proposta_modo_forma, p_ij_ppa_count_modo, p_ij_ppa_cont_modo_ij_pmf,
      p_ij_ppa_count_forma, p_ij_ppa_cont_forma_ij_pmf, proposta_pagamento);
   #variáveis
-  rm(aux_3perc, media_empresa_us, n_empresa, n_empresa_us, n_outros_forma, n_total_modo, total_empresa_us);
+  if(empresa == 16){rm(aux_3perc, media_empresa_us, n_empresa, n_empresa_us, n_outros_forma, n_total_modo, total_empresa_us)}
 }
 if (teste == 0) {
   #rm(list=ls())
