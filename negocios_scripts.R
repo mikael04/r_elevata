@@ -26,7 +26,7 @@ library(lubridate)
 
 
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = T
+teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = F
 ####Variavel global c/ ano atual (para comparação)
@@ -680,10 +680,13 @@ if(dash == F){
 }
 
 ##############################################
-
-#Criando nova tabela com dados apenas do mês
+##Criando nova tabela com dados apenas do mês anterior
+##Auxiliares para meses
+this_month <- today()
+day(this_month) <- 1
+last_month <- this_month-months(1)
 ng_ij_hist_ij_ven_funil_fat_fec_2020_mes <- ng_ij_hist_ij_ven_fec_2020 %>%
-  filter(historico_negocio_situacao_data >= '2020-08-01') %>%
+  filter(last_month <= historico_negocio_situacao_data,  historico_negocio_situacao_data < this_month) %>%
   mutate(negocio_status = negocio_negocio_situacao_id)
 
 ##aqui ele substitui linha a linha cada situação pelo seu respectivo em string
@@ -709,7 +712,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_2020_mes  <- ng_ij_hist_ij_ven_funil_fat_fec_202
 ng_ij_hist_ij_ven_funil_fat_fec_2020_mes <- ng_ij_hist_ij_ven_funil_fat_fec_2020_mes %>%
   mutate(total_fat_t = func_fmt_din_mi(total_faturado))
 
-### Gráfico n11 - Pizza fechados do mês
+### Gráfico n11 - Pizza fechados no último mês
 ##############################################
 
 colors_pie <- c("#32CD32", "yellow" , "orange" , "#DE0D26")
@@ -730,7 +733,7 @@ if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_funil_fat_fec_2020, ng_ij_hist_ij_ven_funil_fat_fec_2020_mes, ng_ij_hist_ij_ven_fec_2020)
   #variáveis
-  rm(colors_pie, st_f, status_f)
+  rm(colors_pie, st_f, status_f, this_month, last_month)
 }
 
 ### Começando código p/ gráficos highchart de distribuição no tempo
@@ -884,7 +887,7 @@ if (teste == F){
      ng_ij_hist_ij_ven_2020, ng_ij_hist_ij_ven_2020_fat, ng_ij_hist_ij_ven_ij_np_2019_fat, ng_ij_hist_ij_ven_ij_np_2018_fat,
      ng_ij_hist_ij_ven_ij_np_total)
   #variáveis
-  rm(meses, n_linhas)
+  rm(meses, n_linhas, ym, anos_ant)
 }
 
 ##############################################
@@ -1002,10 +1005,10 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(cliente, visita_cliente, negocio, vendedor, vis_st_emp, cli_ij_vc_mes, cli_ij_vc_ij_ng_mes);
+  rm(cliente, visita_cliente, negocio, vendedor, vis_st_emp, cli_ij_vc_mes, cli_ij_vc_ij_ng_mes,
+     clientes_mes, negocios_mes, ng_ij_emp, visitas_mes, vc_ij_emp, visita_status, visita_status_empresa);
   #variáveis
-  rm();
+  rm(meses);
 }
 subplot(n12, c3, nrows = 2, shareX = T)
-################################################################################################################################
 ################################################################################################################################

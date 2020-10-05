@@ -2,7 +2,7 @@
 
 ### Gráfico n10 - Pizza fechados do ano
 
-### Gráfico n11 - Pizza fechados do mês
+### Gráfico n11 - Pizza fechados no último mês
 
 ### Gráfico n0 - Número de clientes por vendedor
 

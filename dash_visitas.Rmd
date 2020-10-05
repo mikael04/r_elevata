@@ -41,6 +41,8 @@ library(lubridate)
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
+####Variável para testar empresa individualmente
+teste_d = T
 ####Variável usada para não plotar os gráficos na dash
 dash = T
 ####Variavel global c/ ano atual (para comparação)
@@ -65,6 +67,10 @@ if (params$variable1 == 'Super'){
   if(params$variable1 == 'Komatsu'){
     empresa = emp_ko
   }
+}
+##teste
+if (teste_d == T){
+  empresa = emp_su
 }
 ###################################
 
@@ -110,7 +116,7 @@ visita_resultado <- tbl(con, "visita_resultado") %>%
 ##Pra filtrar os resultados da empresa
 visita_resultado_empresa <- tbl(con, "visita_resultado_empresa") %>%
   select(vre_resultado_id, vre_empresa_id, vre_ativo) %>%
-  filter(vre_ativo == 1, vre_empresa_id == empresa) %>% ##Ja sao todos ativos mas mantive pra manter o filtro, ja filtro a empresa 
+  filter(vre_ativo == 1, vre_empresa_id == empresa) %>% ##Ja sao todos ativos mas mantive pra manter o filtro, ja filtro a empresa
   collect()
 #Arrumando encoding
 Encoding(visita_resultado$resultado) <- 'latin1'
@@ -172,7 +178,7 @@ vc_ij_vse_ij_v <- vc_ij_vse_ij_v %>%
   mutate(motivo_n = n()) %>%
   distinct(vc_vendedor_id, .keep_all = T) %>%
   ungroup()
-  
+
 ### Gráfico v0 - Motivo das visitas (status) por vendedor em 2020
 
 ##descobrindo numero de status diferentes para criar paleta de cores
@@ -299,7 +305,7 @@ neg_ij_vend_count <- neg_ij_vend %>%
   mutate(n_negocios = n()) %>%
   distinct(negocio_vendedor_id, .keep_all = T) %>%
   ungroup()
-  
+
 vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_vendedor_id" = "negocio_vendedor_id")) %>%
   select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas, n_negocios)
 
@@ -321,7 +327,8 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(cli_p_v);
+  rm(cli_p_v, vend_cli_vis, vend_cli_vis_neg, neg_ij_vend, neg_ij_vend_count, vc_ij_vse_ij_v,
+     vc_ij_vse_ij_v_count, cli_p_v_ij_vend);
   #variáveis
   rm();
 }
@@ -342,7 +349,7 @@ cli_2020_ij_ng <- inner_join(cliente_2020, negocio, by=c("cliente_id" = "negocio
 n_cli_cneg <- nrow(cli_ij_ng)
 n_cli_cneg_2020 <- nrow(cli_2020_ij_ng)
 
-Clientes <- c("Clientes c/ negócios", "Clientes s/ negócio")
+Clientes <- c("Clientes com negócios", "Clientes sem negócio")
 
 n_total <- c(n_cli_cneg, n_clientes-nrow(cli_ij_ng))
 n_total_p <- c(round((n_cli_cneg/n_clientes), 2), round(((n_clientes-n_cli_cneg)/n_clientes), 2))
@@ -381,15 +388,14 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(cli_ij_ng, cli_2020_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_2020, n_2020_p);
+  rm(cli_ij_ng, cli_2020_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_2020, n_2020_p, cliente_2020);
   #variáveis
   rm(n_cli_cneg, n_cli_cneg_2020, n_clientes, n_clientes_2020, colors_pie);
 }
 ####################################
 
 
-####################################
-###Contar clientes/visitas/negocios cadastrados por mês
+###Contar clientes/visitas/negocios cadastrados por mês -> vem do script visita_clientes
 ####################################
 
 cliente <- tbl(con,'cliente') %>%
@@ -500,13 +506,13 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(cliente, visita_cliente, negocio, vendedor, vis_st_emp, cli_ij_vc_mes, cli_ij_vc_ij_ng_mes);
+  rm(cliente, visita_cliente, negocio, vendedor, vis_st_emp, cli_ij_vc_mes, cli_ij_vc_ij_ng_mes,
+     clientes_mes, negocios_mes, ng_ij_emp, visitas_mes, vc_ij_emp, visita_status, visita_status_empresa);
   #variáveis
-  rm();
+  rm(meses);
 }
 
-################################################################################################################################
-################################################################################################################################
+########################################################
 
 
 ```
