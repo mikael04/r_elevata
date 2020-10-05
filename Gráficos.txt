@@ -37,3 +37,5 @@
 ### Gráfico v0 - Motivo das visitas (status) por vendedor em 2020
 
 ### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
+
+### Gráfico n13 - Tempo de vida médio de um negócio fechado

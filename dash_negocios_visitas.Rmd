@@ -34,6 +34,9 @@ library(RColorBrewer)
 library(scales)
 #Lib para lidar com o tempo
 library(lubridate)
+#Lib usada para emojis/fonts/box de valores
+library(ggplot2)
+library(emojifont)
 
 
 
@@ -171,7 +174,7 @@ corte_1 <- neg_ij_ven_ij_np %>%
 
 ##removendo elementos não mais usados
 if (teste == F) {
-  rm(negocio) #vou precisar dele pro funil mais pra baixo negocio_ij_historico_ij_vendedor_2020)
+  rm() #vou precisar dele pro funil mais pra baixo negocio_ij_historico_ij_vendedor_2020)
 }
 
 ##agrupamento de negocios por vendedor, contando faturamento por status e por vendedor
@@ -221,6 +224,7 @@ if (teste == F) {
   rm(ng_ij_vn_ij_np_fat, corte_1, status)
 }
 ##############################################
+##Faturamento de negócios fechados em 2020
 
 historico_negocio_situacao <- tbl(con, "historico_negocio_situacao") %>%
   select(historico_negocio_situacao_data, historico_negocio_situacao_negocio_id, historico_negocio_situacao_situacao_id) %>%
@@ -469,23 +473,23 @@ if (teste == F) {
 ### Idade dos negócios
 ###################################################################################################################################
 ##Filtrar vendedores ativos e empresa
-ng_ij_hist_ij_ven_2020 <- negocio_ij_historico_ij_vendedor_total %>%
+ng_ij_hist_ij_ven_emp <- negocio_ij_historico_ij_vendedor_total %>%
   filter (vendedor_ativo == TRUE, vendedor_empresa_id == empresa)
 
 ##filtrando dois negócios que tem seu status 0 (possivel erro)
-ng_ij_hist_ij_ven_2020 <- ng_ij_hist_ij_ven_2020 %>%
+ng_ij_hist_ij_ven_emp <- ng_ij_hist_ij_ven_emp %>%
   filter(negocio_negocio_situacao_id != 0)
 
 ## Vou ordenar por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais novas, ficar só com a primeira atualização após mudança de status
-ng_ij_hist_ij_ven_2020 <- ng_ij_hist_ij_ven_2020[order(ng_ij_hist_ij_ven_2020$historico_negocio_situacao_situacao_id, ng_ij_hist_ij_ven_2020$negocio_id), ]
+ng_ij_hist_ij_ven_emp_idd <- ng_ij_hist_ij_ven_emp[order(ng_ij_hist_ij_ven_emp$historico_negocio_situacao_situacao_id, ng_ij_hist_ij_ven_emp$negocio_id), ]
 
 ##Aqui estou removendo duplicatas (de outra forma), que removem apenas quando o histórico_situacao e negocio_id se repetem
-ng_ij_hist_ij_ven_2020 <- subset(ng_ij_hist_ij_ven_2020, !duplicated(subset(ng_ij_hist_ij_ven_2020, select=c(historico_negocio_situacao_situacao_id, negocio_id))))
+ng_ij_hist_ij_ven_emp_idd <- subset(ng_ij_hist_ij_ven_emp_idd, !duplicated(subset(ng_ij_hist_ij_ven_emp_idd, select=c(negocio_id))))
 
 ##filtrando apenas negócios não fechados negocio_situacao_id != 4,5,6,7,9
 ff = c(4,5,6,7,9)
 
-ng_ij_hist_ij_ven_ab <- ng_ij_hist_ij_ven_2020 %>%
+ng_ij_hist_ij_ven_ab <- ng_ij_hist_ij_ven_emp_idd %>%
   filter(!negocio_negocio_situacao_id %in% ff)
 
 
@@ -923,13 +927,89 @@ if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_ij_np_2020, fat_2020_mes, ng_ij_hist_ij_ven_total, negocio_ij_historico_ij_vendedor_total,
      fat_2019_mes, fat_2018_mes, fat_2020_2019_2018_mes, fat_2020_mes_aux, ay, a, negocio_produto,
-     ng_ij_hist_ij_ven_2020, ng_ij_hist_ij_ven_2020_fat, ng_ij_hist_ij_ven_ij_np_2019_fat, ng_ij_hist_ij_ven_ij_np_2018_fat,
+     ng_ij_hist_ij_ven_2020_fat, ng_ij_hist_ij_ven_ij_np_2019_fat, ng_ij_hist_ij_ven_ij_np_2018_fat,
      ng_ij_hist_ij_ven_ij_np_total)
   #variáveis
   rm(meses, n_linhas, ym, anos_ant)
 }
 
 ##############################################
+###Tempo médio de vida de um negócio
+
+ng_cad_fin <- ng_ij_hist_ij_ven_emp %>%
+  select (negocio_id, negocio_data_cadastro, negocio_negocio_situacao_id, historico_negocio_situacao_situacao_id, historico_negocio_situacao_data) %>%
+  arrange (desc(historico_negocio_situacao_data), negocio_id)
+
+##Aqui estou removendo duplicatas (de outra forma), que removem apenas quando negocio_id se repete
+ng_cad_fin <- subset(ng_cad_fin, !duplicated(subset(ng_cad_fin, select=c(negocio_id))))
+
+##Já estou filtrando apenas status fechados (faturado, financiamento não aprovado, desistência do cliente, perdemos para a concorrência) 
+ng_cad_fin <- ng_cad_fin %>%
+  filter(negocio_negocio_situacao_id == 4 | negocio_negocio_situacao_id == 5 | negocio_negocio_situacao_id == 6 | negocio_negocio_situacao_id == 7) %>%
+  mutate(temp_d = date(historico_negocio_situacao_data) - date(negocio_data_cadastro))
+
+##Calculando tempo médio
+ng_cad_fin <- ng_cad_fin %>%
+  group_by(negocio_negocio_situacao_id) %>%
+  mutate(media_d = round(mean(temp_d)), 2) %>%
+  distinct(negocio_negocio_situacao_id, .keep_all = T) %>%
+  ungroup() %>%
+  select (negocio_negocio_situacao_id, media_d)
+
+
+##Só pra ver os nomes
+ng_cad_fin <- ng_cad_fin %>%
+  mutate(Status = case_when(negocio_negocio_situacao_id == 4 ~ "Faturado",
+                            negocio_negocio_situacao_id == 5 ~ "Financ. não aprovado",
+                            negocio_negocio_situacao_id == 6 ~ "Desist. do cliente",
+                            negocio_negocio_situacao_id == 7 ~ "Perdemos para conc."))
+
+ng_cad_fin <- ng_cad_fin %>%
+  mutate (media_d = paste(as.character(media_d),"dias"))
+valuebox <- data.frame(
+  x = rep(seq(2, 9, 6.5), 2),
+  y = c(rep(6.5, 2), rep(2,2)),
+  h = rep(4.25, 4),
+  w = rep(6.25, 4),
+  value = ng_cad_fin$media_d,
+  info = ng_cad_fin$Status,
+  shape = c(fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar')),
+  font_family = c(rep("fontawesome-webfont", 4)),
+  color = factor(1:4))
+### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
+colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
+n13 <- ggplot(valuebox, aes(x=x, y=y, height = h, width = w, label = info)) +
+  geom_tile(aes(fill = color)) +
+  geom_text(color = "white", fontface = "bold", size = 18,
+            aes(label = value, x = x - 2.9, y = y + 1), hjust = 0) +
+  geom_text(color = "white", fontface = "bold", size = 12,
+            aes(label = info, x = x - 2.9, y = y - 1), hjust = 0) +
+  coord_fixed() +
+  scale_fill_manual(values = colors) +
+  geom_text(size = 30, aes(label = shape, family = font_family,
+                           x = x + 1.5, y = y + 0.5), alpha = 0.25) +
+  theme_void() +
+  guides(fill = FALSE)
+
+if (dash == F){
+  n13
+}
+
+### Gráfico n14 - Tempo de vida médio de um negócio perdido (status = desistência do cliente ou perdemos para concorrência)
+
+if (dash == F){
+  #n14
+}
+
+if (teste == F){
+  #tabelas
+  rm(ng_ij_hist_ij_ven_emp, valuebox, ng_cad_fin)
+  #variáveis
+  rm()
+}
+
+
+################################################################################################################################
 #############################################################################################################################
 ##Collect cria o df resultado da query, nesse caso, visitas_cliente
 visita_cliente <- tbl(con,'visita_cliente') %>%
@@ -1451,6 +1531,12 @@ Column {data-width=350}
 ```{r}
 ### Gráfico n7 - Negócios abertos da empresa, pizza
 n7
+```
+
+### Tempo médio para fechamento dos negócios (por status)
+```{r}
+### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
+n13
 ```
 
 Volume de visitas
