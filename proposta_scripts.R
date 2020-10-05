@@ -19,17 +19,31 @@ library(htmlwidgets)
 #Lib usada para porcentagem
 library(scales)
 
-
-
+###################################
+##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
+####Variável usada para não plotar os gráficos na dash
+dash = T
+####Variavel global c/ ano atual (para comparação)
+ano_atual = '2020-01-01'
+####Variável global para ver se tem usados Ainda não usada
+#usados = T
 
-####Variável usada para não apagar coisas na dash
-dash = F
 
 ##Variável "Global"
-#empresa = 16 #Super
-empresa = 78 #Komatsu
+emp_am = 42 # Amazonia
+emp_ar = 77 # Araguaia
+emp_ko = 78 # Komatsu
+emp_ms = 35 # Ms
+emp_si = 59 # Simex 
+emp_su = 16 # Super
+emp_ta = 60 # Taisa
+
+
+empresa = emp_su
+
+###################################
 
 #formatar dinheiro
 func_fmt_din <- function(inteiro)
@@ -655,9 +669,10 @@ if(dash == F){
 if(teste == F){
   #tabelas
   rm(p_ij_ppa, proposta, proposta_modo_forma, p_ij_ppa_count_modo, p_ij_ppa_cont_modo_ij_pmf,
-     p_ij_ppa_count_forma, p_ij_ppa_cont_forma_ij_pmf, proposta_pagamento);
+     p_ij_ppa_count_forma, p_ij_ppa_cont_forma_ij_pmf, proposta_pagamento, media_empresa_us,
+     n_empresa, n_empresa_us, total_empresa_us);
   #variáveis
-  rm(aux_3perc, media_empresa_us, n_empresa, n_empresa_us, n_outros_forma, n_total_modo, total_empresa_us);
+  if(empresa == 16){rm(aux_3perc, n_outros_forma, n_total_modo)}
 }
 if (teste == 0) {
   #rm(list=ls())
