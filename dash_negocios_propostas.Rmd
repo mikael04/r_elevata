@@ -45,7 +45,7 @@ library(emojifont)
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável para testar empresa individualmente
-teste_d = T
+teste_d = F
 ####Variável usada para não plotar os gráficos na dash
 dash = T
 ####Variavel global c/ ano atual (para comparação)
@@ -74,7 +74,8 @@ if (params$variable1 == 'Super'){
 
 ##teste
 if (teste_d == T){
-  empresa = emp_su
+  empresa = 0;
+  #empresa = emp_su
 }
 ###################################
 
@@ -515,7 +516,7 @@ ng_ij_hist_ij_ven_num <- ng_ij_hist_ij_ven_idd %>%
 ##Usado pra ordenar o gráfico
 ng_ij_hist_ij_ven_num$idade_cat = factor(ng_ij_hist_ij_ven_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
 
-n6 <- plot_ly(ng_ij_hist_ij_ven_num, type = 'bar', orientation = 'h', x=~num_negocios_idades , y=~vendedor_nome,
+n6 <- plot_ly(ng_ij_hist_ij_ven_num, type = 'bar', orientation = 'h', x=~num_negocios_idades , y=~reorder(vendedor_nome, desc(vendedor_nome)),
               color = ~idade_cat,
               colors = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"))
 n6 <- n6 %>%
@@ -780,7 +781,7 @@ ng_ij_hist_ij_ven_2020_fat <- ng_ij_hist_ij_ven_ij_np_2020 %>%
 fat_2020_mes <- ng_ij_hist_ij_ven_2020_fat %>%
   mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
   group_by (ym) %>%
-  summarize(ym_sum = sum(np_valor))
+  summarize(ym_sum = sum(np_valor), .groups = 'drop')
 
 ##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais antigas, ficar só com a última atualização no negócio
 negocio_ij_historico_ij_vendedor_total <- negocio_ij_historico_ij_vendedor_total[order(-negocio_ij_historico_ij_vendedor_total$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_total$negocio_id),]
@@ -823,14 +824,14 @@ if(anos_ant > 0) {
   fat_2019_mes <- ng_ij_hist_ij_ven_ij_np_2019_fat %>%
     mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
     group_by (ym) %>%
-    summarize(ym_sum_2019 = sum(np_valor)) %>%
+    summarize(ym_sum_2019 = sum(np_valor), .groups = 'drop') %>%
     ungroup ()
 }
 if(anos_ant > 1) {
   fat_2018_mes <- ng_ij_hist_ij_ven_ij_np_2018_fat %>%
     mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
     group_by (ym) %>%
-    summarize(ym_sum_2018 = sum(np_valor))%>%
+    summarize(ym_sum_2018 = sum(np_valor), .groups = 'drop')%>%
     ungroup ()
 }
 
@@ -917,9 +918,14 @@ if (dash == F){
 if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_ij_np_2020, fat_2020_mes, ng_ij_hist_ij_ven_total, negocio_ij_historico_ij_vendedor_total,
-     fat_2019_mes, fat_2018_mes, fat_2020_2019_2018_mes, fat_2020_mes_aux, ay, a, negocio_produto,
-     ng_ij_hist_ij_ven_2020_fat, ng_ij_hist_ij_ven_ij_np_2019_fat, ng_ij_hist_ij_ven_ij_np_2018_fat,
-     ng_ij_hist_ij_ven_ij_np_total)
+      fat_2020_2019_2018_mes, fat_2020_mes_aux, ay, a, negocio_produto,
+     ng_ij_hist_ij_ven_2020_fat, ng_ij_hist_ij_ven_ij_np_total)
+  if(anos_ant > 0){
+    rm(fat_2019_mes, ng_ij_hist_ij_ven_ij_np_2019_fat)
+    if (anos_ant > 1){
+      rm(fat_2018_mes, ng_ij_hist_ij_ven_ij_np_2018_fat)
+    }
+  }
   #variáveis
   rm(meses, n_linhas, ym, anos_ant)
 }
@@ -956,7 +962,9 @@ ng_cad_fin <- ng_cad_fin %>%
                             negocio_negocio_situacao_id == 7 ~ "Perdemos para conc."))
 
 ng_cad_fin <- ng_cad_fin %>%
-  mutate (media_d = paste(as.character(media_d),"dias"))
+  mutate (media_d = paste(as.character(media_d),"dias")) %>%
+  arrange(negocio_negocio_situacao_id)
+
 valuebox <- data.frame(
   x = rep(seq(2, 9, 6.5), 2),
   y = c(rep(6.5, 2), rep(2,2)),
@@ -1006,7 +1014,7 @@ if (teste == F){
 ###########################################################################################################
 ###########################################################################################################
 
-##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
+##-> Collect cria o dataframe resultado da query, proposta será a tabela na qual estou lendo (FROM cliente)
 ##coleta todas as propostas
 proposta <- tbl(con, "proposta") %>%
   select(proposta_id, proposta_versao, proposta_negocio_id, proposta_data_cadastro, proposta_status) %>%
@@ -1020,18 +1028,13 @@ negocio <- tbl(con, "negocio") %>%
 ##coleta todos os vendedores
 vendedor <- tbl(con, "vendedor") %>%
   select(vendedor_id, vendedor_nome, vendedor_id, vendedor_empresa_id, vendedor_ativo) %>%
-  filter(vendedor_empresa_id == empresa && vendedor_ativo == 1) %>%
   collect()
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
-
-if(empresa == 16){
-  vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "Bruno Pe.";
-  vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "Bruno Po.";
-  vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "Lucas V. I.";
-}
+##Aqui vou filtrar os ativos e já vou filtrar a empresa
+vendedor <- vendedor %>%
+  filter(vendedor_ativo == TRUE)
 
 ##junção de proposta com negócio
 prop_ij_neg <- inner_join(proposta, negocio, by=c("proposta_negocio_id" = "negocio_id")) %>%
@@ -1041,7 +1044,7 @@ prop_ij_neg <- inner_join(proposta, negocio, by=c("proposta_negocio_id" = "negoc
 #prop_ij_neg <- prop_ij_neg[!is.na(prop_ij_neg$negocio_vendedor_id),]
 
 if (teste == F){
-  rm()
+  rm(negocio)
 }
 
 prop_ij_neg_2020 <- prop_ij_neg %>%
@@ -1053,7 +1056,7 @@ prop_ij_neg_cont_2020 <- prop_ij_neg_2020 %>%
   group_by(proposta_status) %>%
   mutate(cont_status = n()) %>%
   distinct(proposta_status, .keep_all = TRUE) %>%
-  collect()
+  ungroup ()
 
 status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
@@ -1076,7 +1079,7 @@ prop_ij_neg_cont_vend_2020 <- prop_ij_neg_ij_vend_2020 %>%
   group_by(proposta_status, negocio_vendedor_id) %>%
   mutate(cont_status = n()) %>%
   distinct(negocio_vendedor_id, proposta_status, .keep_all = TRUE) %>%
-  collect()
+  ungroup ()
 
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
 prop_ij_neg_cont_vend_2020$proposta_status <- with(prop_ij_neg_cont_vend_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
@@ -1110,7 +1113,7 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(prop_ij_neg_2020, prop_ij_neg_cont_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_ij_vend_2020);
+  rm(vendedor, prop_ij_neg_2020, prop_ij_neg_cont_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_ij_vend_2020);
   #variáveis
   rm(status);
 }
@@ -1125,7 +1128,7 @@ prop_ij_neg_cont_us <- prop_ij_neg %>%
   group_by(negocio_usado) %>%
   mutate(usado = n()) %>%
   distinct(negocio_usado, .keep_all = TRUE) %>%
-  collect()
+  ungroup ()
 
 total = sum(prop_ij_neg_cont_us$usado)
 
@@ -1187,7 +1190,7 @@ p_ij_n_ij_pp_empresa <- p_ij_n_ij_v_ij_pp_n %>%
 p_ij_n_ij_pp_empresa <- p_ij_n_ij_pp_empresa %>%
   group_by(proposta_id) %>%
   mutate (valor_proposta = sum(pp_valor)) %>%
-  collect ()
+  ungroup ()
 
 ##media geral da empresa
 total_empresa <- sum(p_ij_n_ij_pp_empresa$pp_valor)
@@ -1209,7 +1212,7 @@ pr_top5_fat <- p_ij_n_ij_pp_ij_prod %>%
   mutate(fat = sum(pp_valor)) %>%
   mutate(n = n()) %>%
   distinct (produto_categoria_id, .keep_all = TRUE) %>%
-  collect ()
+  ungroup ()
 
 ##Isso aqui tudo é pra pegar o top 5 (antes top10, mas aparecia uma categoria que não queríamos), substituir os que não estão por -Outros e depois refazer a média
 top5_fat <- head.matrix(pr_top5_fat, n=5)
@@ -1228,7 +1231,6 @@ if (empresa == 16)
 Encoding(categoria$categoria_nome) <- 'latin1'
 
 top5_fat_ij_cat <- inner_join(top5_fat, categoria, by = c("produto_categoria_id"="categoria_id"))
-top5_fat_ij_cat <- top5_fat_ij_cat[, -1]
 top5_fat_ij_cat <- top5_fat_ij_cat[, -2:-4]
 top5_fat_ij_cat <- as.data.frame(top5_fat_ij_cat)
 
@@ -1259,7 +1261,7 @@ pr_top5_fat_med <- pr_top5_fat_aux %>%
   group_by(produto_categoria_id) %>%
   mutate(fat_med = fat/n) %>%
   distinct (produto_categoria_id, .keep_all = TRUE) %>%
-  collect ()
+  ungroup ()
 
 
 fat_tot_categorias <- pr_top5_fat_med
@@ -1274,70 +1276,52 @@ ax <- list(
   autotick = TRUE,
   title = "",
   showticklabels = TRUE)
+p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
+              name = 'Categorias',
+              marker = list(color = 'lightblue'),
+              text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
+              hoverinfo = "text")
 
-if(empresa == emp_su)
-{
-  p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
-                name = 'Categorias (novos)',
-                marker = list(color = 'lightblue'),
-                text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
-                hoverinfo = "text")
-  
+p3 <- p3 %>%
+  layout(barmode = 'identity', xaxis = ax, yaxis = ax)
+
+p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
+                       name = 'Empresa (geral)',
+                       x = ~categoria_nome,
+                       y = ~med_emp,
+                       line = list(color = 'red'),
+                       text = ~paste('Ticket médio<br>' , func_fmt_din(med_emp)),
+                       hoverinfo = "text",
+                       marker = list(color = 'orange'))
+
+
+if(empresa == 16){
   p3 <- p3 %>%
-    layout(barmode = 'identity', xaxis = ax, yaxis = ax)
-  
-  p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
-                         name = 'Empresa (geral, novos)',
-                         x = ~categoria_nome,
-                         y = ~med_emp,
-                         line = list(color = 'red'),
-                         text = ~paste('Ticket médio<br>' , func_fmt_din(med_emp)),
-                         hoverinfo = "text",
-                         marker = list(color = 'orange'))
+    layout(
+      autosize = F,
+      yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,700000)),
+      #range nos dois eixos iguais pra ficar na mesma proporção
+      yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,700000)),
+      ##aqui eu ajusto onde quero que apareça a legenda
+      legend = list(x=0.7, y=0.8)#)
+    )
+}else if(empresa == 78){
   p3 <- p3 %>%
-      layout(
-        autosize = F,
-        yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,700000)),
-        #range nos dois eixos iguais pra ficar na mesma proporção
-        yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,700000)),
-        ##aqui eu ajusto onde quero que apareça a legenda
-        legend = list(x=0.7, y=0.8)#)
-      )
-  if(dash == F){
-    p3
-  }
-} else{
-  if(empresa == emp_ko){
-    p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
-                name = 'Categorias',
-                marker = list(color = 'lightblue'),
-                text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
-                hoverinfo = "text")
-    p3 <- p3 %>%
-    layout(barmode = 'identity', xaxis = ax, yaxis = ax)
-    p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
-                         name = 'Empresa (geral)',
-                         x = ~categoria_nome,
-                         y = ~med_emp,
-                         line = list(color = 'red'),
-                         text = ~paste('Ticket médio<br>' , func_fmt_din(med_emp)),
-                         hoverinfo = "text",
-                         marker = list(color = 'orange'))
-    p3 <- p3 %>%
-      layout(
-        autosize = F,
-        yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,2000000)),
-        #range nos dois eixos iguais pra ficar na mesma proporção
-        yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,2000000)),
-        ##aqui eu ajusto onde quero que apareça a legenda
-        legend = list(x=0.7, y=0.8)#)
-      )
-  }
+    layout(
+      autosize = F,
+      yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,2000000)),
+      #range nos dois eixos iguais pra ficar na mesma proporção
+      yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,2000000)),
+      ##aqui eu ajusto onde quero que apareça a legenda
+      legend = list(x=0.7, y=0.8)#)
+    )
+}
+if(dash == F){
+  p3
 }
 
 ###Ticket médio por proposta (apenas usados)
-if (empresa == emp_su)
-{
+
 p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio_aux, by = c("proposta_negocio_id" = "negocio_id"))
 
 ##filtro da empresa e também propostas finalizadas, também filtrando só negócios novos e com valores acima de 10
@@ -1348,7 +1332,7 @@ p_ij_n_ij_pp_empresa_us <- p_ij_n_ij_v_ij_pp_n %>%
 p_ij_n_ij_pp_empresa_us <- p_ij_n_ij_pp_empresa_us %>%
   group_by(proposta_id) %>%
   mutate (valor_proposta = sum(pp_valor)) %>%
-  collect ()
+  ungroup ()
 
 ##media geral da empresa
 total_empresa_us <- sum(p_ij_n_ij_pp_empresa_us$pp_valor)
@@ -1375,7 +1359,7 @@ pr_top5_fat_us <- p_ij_n_ij_pp_ij_prod_us %>%
   mutate(fat = sum(pp_valor)) %>%
   mutate(n = n()) %>%
   distinct (produto_categoria_id, .keep_all = TRUE) %>%
-  collect ()
+  ungroup ()
 
 ##Vou fazer um join pra pegar os nomes de cada categoria
 categoria <- tbl(con, "categoria") %>%
@@ -1412,7 +1396,7 @@ pr_top5_fat_med_us <- pr_top5_fat_aux %>%
   group_by(produto_categoria_id) %>%
   mutate(fat_med = fat/n) %>%
   distinct (produto_categoria_id, .keep_all = TRUE) %>%
-  collect ()
+  ungroup ()
 
 
 fat_tot_categorias_us <- pr_top5_fat_med_us
@@ -1429,8 +1413,8 @@ ax <- list(
   title = "",
   showticklabels = TRUE)
 p4 <- plot_ly(fat_tot_categorias_us, type = "bar", x = ~categoria_nome, y = ~fat_med,
-              name = 'Categorias (usados)',
-              marker = list(color = '#CD853F'),
+              name = 'Categorias',
+              marker = list(color = 'lightblue'),
               text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
               hoverinfo = "text")
 
@@ -1438,7 +1422,7 @@ p4 <- p4 %>%
   layout(barmode = 'identity', xaxis = ax, yaxis = ax)
 
 p4 <- p4 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
-                       name = 'Empresa (geral, usados)',
+                       name = 'Empresa (geral)',
                        x = ~categoria_nome,
                        y = ~med_emp,
                        line = list(color = 'red'),
@@ -1463,16 +1447,14 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  if (empresa == emp_su){
   rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_n_ij_pp_empresa_us, pr_top5_fat, pr_top5_fat_aux,
      pr_top5_fat_med, produto, proposta_produto, top5_fat, top5_fat_ij_cat, p_ij_n_ij_pp_ij_prod,
-     p_ij_n_ij_v_ij_pp, p_ij_n_ij_v_ij_pp_n, negocio_produto, fat_tot_categorias_us, p_ij_n_ij_pp_ij_prod_us,
+     p_ij_n_ij_v_ij_pp, p_ij_n_ij_v_ij_pp_n, negocio_produto, negocio_aux, fat_tot_categorias_us, p_ij_n_ij_pp_ij_prod_us,
      pr_top5_fat_med_us, pr_top5_fat_us)
   #variáveis
   rm(fat_out, media_empresa, n_out, total_empresa)
-  }
 }
-}
+
 ##################################################################
 ### Faturamento de propostas em 2020 por status
 
@@ -1494,7 +1476,7 @@ p_ij_n_ij_pp_sum <- p_ij_n_ij_pp %>%
   group_by(proposta_status) %>%
   mutate (valor_proposta = sum(pp_valor)) %>%
   distinct(proposta_status, .keep_all = TRUE) %>%
-  collect()
+  ungroup ()
 
 ## Aqui agrupo as categorias
 p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum %>%
@@ -1503,7 +1485,7 @@ p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum %>%
   mutate (valor_status = sum(valor_proposta)) %>%
   distinct(proposta_status, .keep_all = TRUE) %>%
   arrange(proposta_status) %>%
-  collect()
+  ungroup ()
 
 ##Usar pra renomear os status das propostas
 status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
@@ -1594,7 +1576,7 @@ p_ij_ppa_count_forma <- p_ij_ppa %>%
   distinct(pp_forma_id, .keep_all = T)
 
 if (empresa == 16){
-  ##Aqui terei que fazer diferente, porque não existe a coluna OUTRAS, criarei uma
+  ##Aqui terei que fazer difernte, porque não existe a coluna OUTRAS, criarei uma
   p_ij_ppa_count_forma$pp_forma_id[p_ij_ppa_count_forma$cont_forma < aux_3perc] <- 2
   n_outros_forma <- sum(p_ij_ppa_count_forma$cont_forma[which(p_ij_ppa_count_forma$pp_forma_id==2)])
 }
@@ -1635,9 +1617,10 @@ if(dash == F){
 if(teste == F){
   #tabelas
   rm(p_ij_ppa, proposta, proposta_modo_forma, p_ij_ppa_count_modo, p_ij_ppa_cont_modo_ij_pmf,
-     p_ij_ppa_count_forma, p_ij_ppa_cont_forma_ij_pmf, proposta_pagamento);
+     p_ij_ppa_count_forma, p_ij_ppa_cont_forma_ij_pmf, proposta_pagamento, media_empresa_us,
+     n_empresa, n_empresa_us, total_empresa_us);
   #variáveis
-  if(empresa == 16){rm(aux_3perc, media_empresa_us, n_empresa, n_empresa_us, n_outros_forma, n_total_modo, total_empresa_us)}
+  if(empresa == 16){rm(aux_3perc, n_outros_forma, n_total_modo)}
 }
 if (teste == 0) {
   #rm(list=ls())
@@ -1681,7 +1664,7 @@ clientes_mes <- cliente %>%
   filter (cliente_data_cadastro >= ano_atual) %>%
   mutate (ym = format(cliente_data_cadastro, '%m')) %>%
   group_by (ym) %>%
-  summarize(n_cli = n()) %>%
+  summarize(n_cli = n(), .groups = 'drop') %>%
   ungroup ()
 
 ##Visita precisa juntar com visita_status ou _resultado () pra obter empresa_id ##poderia ser vendedor, mas a tabela vis_st_emp (status c/ status_empresa) já está pronta
@@ -1694,7 +1677,7 @@ visitas_mes <- vc_ij_emp %>%
   filter (vc_data_cadastro >= ano_atual) %>%
   mutate (ym = format(vc_data_cadastro, '%m')) %>%
   group_by (ym) %>%
-  summarize(n_vis = n()) %>%
+  summarize(n_vis = n(), .groups = 'drop') %>%
   ungroup ()
 
 ##Negocio precisa juntar com vendedor pra obter empresa_id ##Poderia ser cliente também, mas a tabela vendedor é menor
@@ -1707,7 +1690,7 @@ negocios_mes <- ng_ij_emp %>%
   filter (negocio_data_cadastro >= ano_atual) %>%
   mutate (ym = format(negocio_data_cadastro, '%m')) %>%
   group_by (ym) %>%
-  summarize(n_neg = n()) %>%
+  summarize(n_neg = n(), .groups = 'drop') %>%
   ungroup ()
 
 ##Juntando tudo em um só dataframe

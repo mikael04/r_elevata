@@ -38,7 +38,7 @@ emp_si = 59 # Simex
 emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
-empresa <- emp_si
+empresa <- emp_am
 ###################################
 
 ##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
@@ -166,7 +166,7 @@ if (n_m_color <3){
 
 axis_h <- list(
   title = "")
-v0 <- plot_ly(vc_ij_vse_ij_v, type = "bar", x = ~vendedor_nome, y = ~motivo_n, color = ~motivo,
+v0 <- plot_ly(vc_ij_vse_ij_v, type = "bar", orientation = 'h', x = ~motivo_n, y = ~reorder(vendedor_nome, desc(vendedor_nome)), color = ~motivo,
               colors = brbg_mot,
               name = ~motivo)
 v0 <- v0 %>%
@@ -198,14 +198,9 @@ if (n_r_color <3){
   }
 }
 
-v1 <- plot_ly(vc_ij_vre_ij_v_ag, type = "bar", x = ~vendedor_nome, y = ~resultado_n, color = ~resultado,
+v1 <- plot_ly(vc_ij_vre_ij_v_ag, type = "bar", orientation = 'h', x = ~resultado_n, y = ~reorder(vendedor_nome, desc(vendedor_nome)), color = ~resultado,
               colors = brbg_res,
               name = ~resultado)
-#marker = list(color = 'lightblue'))
-#text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
-#hoverinfo = "text")
-#v0 <- v0 %>%
-#  add_trace (y = y = ~motivo_n)
 
 v1 <- v1 %>%
   layout(barmode = 'stack',
@@ -224,7 +219,6 @@ if(teste == F){
   #variáveis
   rm(brbg_mot, brbg_res, n_r_color, n_m_color);
 }
-
 ################################################################################################
 ################################################################################################
 ### Tabelas e graficos de Clientes
@@ -284,9 +278,9 @@ vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_v
 c0 <- plot_ly(vend_cli_vis_neg, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
               name = 'Clientes (total)')
 c0 <- c0 %>%
-  add_trace(y= ~n_visitas, name = 'Visitas (2020)')
+  add_trace(y= ~n_visitas, name = 'Visitas (2020)', type = 'bar')
 c0 <- c0 %>%
-  add_trace(y= ~n_negocios, name = 'Negócios (2020)')
+  add_trace(y= ~n_negocios, name = 'Negócios (2020)', type = 'bar')
 c0 <- c0 %>%
  layout(barmode = 'grouped',
         xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
@@ -402,7 +396,7 @@ clientes_mes <- cliente %>%
   filter (cliente_data_cadastro >= ano_atual) %>%
   mutate (ym = format(cliente_data_cadastro, '%m')) %>%
   group_by (ym) %>%
-  summarize(n_cli = n()) %>%
+  summarize(n_cli = n(), .groups = 'drop') %>%
   ungroup ()
 
 ##Visita precisa juntar com visita_status ou _resultado () pra obter empresa_id ##poderia ser vendedor, mas a tabela vis_st_emp (status c/ status_empresa) já está pronta
@@ -415,7 +409,7 @@ visitas_mes <- vc_ij_emp %>%
   filter (vc_data_cadastro >= ano_atual) %>%
   mutate (ym = format(vc_data_cadastro, '%m')) %>%
   group_by (ym) %>%
-  summarize(n_vis = n()) %>%
+  summarize(n_vis = n(), .groups = 'drop') %>%
   ungroup ()
 
 ##Negocio precisa juntar com vendedor pra obter empresa_id ##Poderia ser cliente também, mas a tabela vendedor é menor
@@ -428,7 +422,7 @@ negocios_mes <- ng_ij_emp %>%
   filter (negocio_data_cadastro >= ano_atual) %>%
   mutate (ym = format(negocio_data_cadastro, '%m')) %>%
   group_by (ym) %>%
-  summarize(n_neg = n()) %>%
+  summarize(n_neg = n(), .groups = 'drop') %>%
   ungroup ()
 
 ##Juntando tudo em um só dataframe

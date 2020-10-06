@@ -107,7 +107,7 @@ prop_ij_neg_cont_2020 <- prop_ij_neg_2020 %>%
   group_by(proposta_status) %>%
   mutate(cont_status = n()) %>%
   distinct(proposta_status, .keep_all = TRUE) %>%
-  collect()
+  ungroup ()
 
 status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
@@ -130,7 +130,7 @@ prop_ij_neg_cont_vend_2020 <- prop_ij_neg_ij_vend_2020 %>%
   group_by(proposta_status, negocio_vendedor_id) %>%
   mutate(cont_status = n()) %>%
   distinct(negocio_vendedor_id, proposta_status, .keep_all = TRUE) %>%
-  collect()
+  ungroup ()
 
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
 prop_ij_neg_cont_vend_2020$proposta_status <- with(prop_ij_neg_cont_vend_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
@@ -179,7 +179,7 @@ prop_ij_neg_cont_us <- prop_ij_neg %>%
   group_by(negocio_usado) %>%
   mutate(usado = n()) %>%
   distinct(negocio_usado, .keep_all = TRUE) %>%
-  collect()
+  ungroup ()
 
 total = sum(prop_ij_neg_cont_us$usado)
 
@@ -241,7 +241,7 @@ p_ij_n_ij_pp_empresa <- p_ij_n_ij_v_ij_pp_n %>%
 p_ij_n_ij_pp_empresa <- p_ij_n_ij_pp_empresa %>%
   group_by(proposta_id) %>%
   mutate (valor_proposta = sum(pp_valor)) %>%
-  collect ()
+  ungroup ()
 
 ##media geral da empresa
 total_empresa <- sum(p_ij_n_ij_pp_empresa$pp_valor)
@@ -263,7 +263,7 @@ pr_top5_fat <- p_ij_n_ij_pp_ij_prod %>%
   mutate(fat = sum(pp_valor)) %>%
   mutate(n = n()) %>%
   distinct (produto_categoria_id, .keep_all = TRUE) %>%
-  collect ()
+  ungroup ()
 
 ##Isso aqui tudo é pra pegar o top 5 (antes top10, mas aparecia uma categoria que não queríamos), substituir os que não estão por -Outros e depois refazer a média
 top5_fat <- head.matrix(pr_top5_fat, n=5)
@@ -282,7 +282,6 @@ if (empresa == 16)
 Encoding(categoria$categoria_nome) <- 'latin1'
 
 top5_fat_ij_cat <- inner_join(top5_fat, categoria, by = c("produto_categoria_id"="categoria_id"))
-top5_fat_ij_cat <- top5_fat_ij_cat[, -1]
 top5_fat_ij_cat <- top5_fat_ij_cat[, -2:-4]
 top5_fat_ij_cat <- as.data.frame(top5_fat_ij_cat)
 
@@ -313,7 +312,7 @@ pr_top5_fat_med <- pr_top5_fat_aux %>%
   group_by(produto_categoria_id) %>%
   mutate(fat_med = fat/n) %>%
   distinct (produto_categoria_id, .keep_all = TRUE) %>%
-  collect ()
+  ungroup ()
 
 
 fat_tot_categorias <- pr_top5_fat_med
@@ -384,7 +383,7 @@ p_ij_n_ij_pp_empresa_us <- p_ij_n_ij_v_ij_pp_n %>%
 p_ij_n_ij_pp_empresa_us <- p_ij_n_ij_pp_empresa_us %>%
   group_by(proposta_id) %>%
   mutate (valor_proposta = sum(pp_valor)) %>%
-  collect ()
+  ungroup ()
 
 ##media geral da empresa
 total_empresa_us <- sum(p_ij_n_ij_pp_empresa_us$pp_valor)
@@ -411,7 +410,7 @@ pr_top5_fat_us <- p_ij_n_ij_pp_ij_prod_us %>%
   mutate(fat = sum(pp_valor)) %>%
   mutate(n = n()) %>%
   distinct (produto_categoria_id, .keep_all = TRUE) %>%
-  collect ()
+  ungroup ()
 
 ##Vou fazer um join pra pegar os nomes de cada categoria
 categoria <- tbl(con, "categoria") %>%
@@ -448,7 +447,7 @@ pr_top5_fat_med_us <- pr_top5_fat_aux %>%
   group_by(produto_categoria_id) %>%
   mutate(fat_med = fat/n) %>%
   distinct (produto_categoria_id, .keep_all = TRUE) %>%
-  collect ()
+  ungroup ()
 
 
 fat_tot_categorias_us <- pr_top5_fat_med_us
@@ -528,7 +527,7 @@ p_ij_n_ij_pp_sum <- p_ij_n_ij_pp %>%
   group_by(proposta_status) %>%
   mutate (valor_proposta = sum(pp_valor)) %>%
   distinct(proposta_status, .keep_all = TRUE) %>%
-  collect()
+  ungroup ()
 
 ## Aqui agrupo as categorias
 p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum %>%
@@ -537,7 +536,7 @@ p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum %>%
   mutate (valor_status = sum(valor_proposta)) %>%
   distinct(proposta_status, .keep_all = TRUE) %>%
   arrange(proposta_status) %>%
-  collect()
+  ungroup ()
 
 ##Usar pra renomear os status das propostas
 status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
@@ -677,3 +676,4 @@ if(teste == F){
 if (teste == 0) {
   #rm(list=ls())
 }
+

@@ -45,7 +45,7 @@ library(emojifont)
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável para testar empresa individualmente
-teste_d = T
+teste_d = F
 ####Variável usada para não plotar os gráficos na dash
 dash = T
 ####Variavel global c/ ano atual (para comparação)
@@ -83,7 +83,8 @@ if (params$variable1 == 'Amazonia'){
 
 ##teste
 if (teste_d == T){
-  empresa = emp_am
+  empresa = 0;
+  #empresa = emp_su
 }
 ###################################
 
@@ -524,7 +525,7 @@ ng_ij_hist_ij_ven_num <- ng_ij_hist_ij_ven_idd %>%
 ##Usado pra ordenar o gráfico
 ng_ij_hist_ij_ven_num$idade_cat = factor(ng_ij_hist_ij_ven_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
 
-n6 <- plot_ly(ng_ij_hist_ij_ven_num, type = 'bar', orientation = 'h', x=~num_negocios_idades , y=~vendedor_nome,
+n6 <- plot_ly(ng_ij_hist_ij_ven_num, type = 'bar', orientation = 'h', x=~num_negocios_idades , y=~reorder(vendedor_nome, desc(vendedor_nome)),
               color = ~idade_cat,
               colors = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"))
 n6 <- n6 %>%
@@ -789,7 +790,7 @@ ng_ij_hist_ij_ven_2020_fat <- ng_ij_hist_ij_ven_ij_np_2020 %>%
 fat_2020_mes <- ng_ij_hist_ij_ven_2020_fat %>%
   mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
   group_by (ym) %>%
-  summarize(ym_sum = sum(np_valor))
+  summarize(ym_sum = sum(np_valor), .groups = 'drop')
 
 ##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais antigas, ficar só com a última atualização no negócio
 negocio_ij_historico_ij_vendedor_total <- negocio_ij_historico_ij_vendedor_total[order(-negocio_ij_historico_ij_vendedor_total$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_total$negocio_id),]
@@ -832,14 +833,14 @@ if(anos_ant > 0) {
   fat_2019_mes <- ng_ij_hist_ij_ven_ij_np_2019_fat %>%
     mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
     group_by (ym) %>%
-    summarize(ym_sum_2019 = sum(np_valor)) %>%
+    summarize(ym_sum_2019 = sum(np_valor), .groups = 'drop') %>%
     ungroup ()
 }
 if(anos_ant > 1) {
   fat_2018_mes <- ng_ij_hist_ij_ven_ij_np_2018_fat %>%
     mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
     group_by (ym) %>%
-    summarize(ym_sum_2018 = sum(np_valor))%>%
+    summarize(ym_sum_2018 = sum(np_valor), .groups = 'drop')%>%
     ungroup ()
 }
 
@@ -926,9 +927,14 @@ if (dash == F){
 if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_ij_np_2020, fat_2020_mes, ng_ij_hist_ij_ven_total, negocio_ij_historico_ij_vendedor_total,
-     fat_2019_mes, fat_2018_mes, fat_2020_2019_2018_mes, fat_2020_mes_aux, ay, a, negocio_produto,
-     ng_ij_hist_ij_ven_2020_fat, ng_ij_hist_ij_ven_ij_np_2019_fat, ng_ij_hist_ij_ven_ij_np_2018_fat,
-     ng_ij_hist_ij_ven_ij_np_total)
+      fat_2020_2019_2018_mes, fat_2020_mes_aux, ay, a, negocio_produto,
+     ng_ij_hist_ij_ven_2020_fat, ng_ij_hist_ij_ven_ij_np_total)
+  if(anos_ant > 0){
+    rm(fat_2019_mes, ng_ij_hist_ij_ven_ij_np_2019_fat)
+    if (anos_ant > 1){
+      rm(fat_2018_mes, ng_ij_hist_ij_ven_ij_np_2018_fat)
+    }
+  }
   #variáveis
   rm(meses, n_linhas, ym, anos_ant)
 }
@@ -965,7 +971,9 @@ ng_cad_fin <- ng_cad_fin %>%
                             negocio_negocio_situacao_id == 7 ~ "Perdemos para conc."))
 
 ng_cad_fin <- ng_cad_fin %>%
-  mutate (media_d = paste(as.character(media_d),"dias"))
+  mutate (media_d = paste(as.character(media_d),"dias")) %>%
+  arrange(negocio_negocio_situacao_id)
+
 valuebox <- data.frame(
   x = rep(seq(2, 9, 6.5), 2),
   y = c(rep(6.5, 2), rep(2,2)),
@@ -1104,7 +1112,7 @@ if (n_m_color <3){
 
 axis_h <- list(
   title = "")
-v0 <- plot_ly(vc_ij_vse_ij_v, type = "bar", x = ~vendedor_nome, y = ~motivo_n, color = ~motivo,
+v0 <- plot_ly(vc_ij_vse_ij_v, type = "bar", orientation = 'h', x = ~motivo_n, y = ~reorder(vendedor_nome, desc(vendedor_nome)), color = ~motivo,
               colors = brbg_mot,
               name = ~motivo)
 v0 <- v0 %>%
@@ -1136,14 +1144,9 @@ if (n_r_color <3){
   }
 }
 
-v1 <- plot_ly(vc_ij_vre_ij_v_ag, type = "bar", x = ~vendedor_nome, y = ~resultado_n, color = ~resultado,
+v1 <- plot_ly(vc_ij_vre_ij_v_ag, type = "bar", orientation = 'h', x = ~resultado_n, y = ~reorder(vendedor_nome, desc(vendedor_nome)), color = ~resultado,
               colors = brbg_res,
               name = ~resultado)
-#marker = list(color = 'lightblue'))
-#text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
-#hoverinfo = "text")
-#v0 <- v0 %>%
-#  add_trace (y = y = ~motivo_n)
 
 v1 <- v1 %>%
   layout(barmode = 'stack',
@@ -1340,7 +1343,7 @@ clientes_mes <- cliente %>%
   filter (cliente_data_cadastro >= ano_atual) %>%
   mutate (ym = format(cliente_data_cadastro, '%m')) %>%
   group_by (ym) %>%
-  summarize(n_cli = n()) %>%
+  summarize(n_cli = n(), .groups = 'drop') %>%
   ungroup ()
 
 ##Visita precisa juntar com visita_status ou _resultado () pra obter empresa_id ##poderia ser vendedor, mas a tabela vis_st_emp (status c/ status_empresa) já está pronta
@@ -1353,7 +1356,7 @@ visitas_mes <- vc_ij_emp %>%
   filter (vc_data_cadastro >= ano_atual) %>%
   mutate (ym = format(vc_data_cadastro, '%m')) %>%
   group_by (ym) %>%
-  summarize(n_vis = n()) %>%
+  summarize(n_vis = n(), .groups = 'drop') %>%
   ungroup ()
 
 ##Negocio precisa juntar com vendedor pra obter empresa_id ##Poderia ser cliente também, mas a tabela vendedor é menor
@@ -1366,7 +1369,7 @@ negocios_mes <- ng_ij_emp %>%
   filter (negocio_data_cadastro >= ano_atual) %>%
   mutate (ym = format(negocio_data_cadastro, '%m')) %>%
   group_by (ym) %>%
-  summarize(n_neg = n()) %>%
+  summarize(n_neg = n(), .groups = 'drop') %>%
   ungroup ()
 
 ##Juntando tudo em um só dataframe
