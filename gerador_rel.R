@@ -53,3 +53,4 @@ pmap(params_list_1, render_report_vis)
 params_list_2 <- list(list("Amazonia","Araguaia", "MS", "Simex", "Taisa"))
 
 pmap(params_list_2, render_report_neg_vis)
+

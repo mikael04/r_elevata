@@ -95,7 +95,7 @@ prop_ij_neg <- inner_join(proposta, negocio, by=c("proposta_negocio_id" = "negoc
 #prop_ij_neg <- prop_ij_neg[!is.na(prop_ij_neg$negocio_vendedor_id),]
 
 if (teste == F){
-  rm(negocio)
+  rm()
 }
 
 prop_ij_neg_2020 <- prop_ij_neg %>%
@@ -164,7 +164,10 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(vendedor, prop_ij_neg_2020, prop_ij_neg_cont_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_ij_vend_2020);
+  if(dash = F){
+    rm(vendedor)
+  }
+  rm(prop_ij_neg_2020, prop_ij_neg_cont_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_ij_vend_2020);
   #variáveis
   rm(status);
 }

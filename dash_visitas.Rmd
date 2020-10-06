@@ -32,8 +32,8 @@ library(RColorBrewer)
 #library(waffle)
 #usada para converter números em moeda
 library(scales)
-#Lib para lidar com o tempo
-library(lubridate)
+#Lib pra mexer com as fontes
+library(extrafont)
 
 
 
@@ -49,6 +49,7 @@ dash = T
 ano_atual = '2020-01-01'
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
+
 
 
 ##Variável "Global"

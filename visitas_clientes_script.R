@@ -16,6 +16,8 @@ library(htmlwidgets)
 #library(scales)
 #Lib usada pra gerar cores aleatoriamente
 library(RColorBrewer)
+#Lib pra mexer com as fontes
+library(extrafont)
 
 ###################################
 ##Variáveis "Globais"
