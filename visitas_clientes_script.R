@@ -61,12 +61,17 @@ func_fmt_numbr <- function(inteiro)
   inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
   return(inteiro_br)
 }
-
-con <- DBI::dbConnect(odbc::odbc(),
-                      Driver = 'SQL Server',
-                      Server = 'localhost\\SQLEXPRESS01',
-                      Database = 'nhmobile_agriculture',
-                      Trusted_Connection = 'True')
+# Linux
+# con <- DBI::dbConnect(odbc::odbc(),
+#                        Driver = 'ODBC Driver 17 for SQL Server',
+#                        Server = 'localhost\\SQLEXPRESS',
+#                        Database = 'nhmobile_agriculture')
+# Windows
+ con <- DBI::dbConnect(odbc::odbc(),
+                       Driver = 'SQL Server',
+                       Server = 'localhost\\SQLEXPRESS01',
+                       Database = 'nhmobile_agriculture',
+                       Trusted_Connection = 'True')
 
 ##Collect cria o df resultado da query, nesse caso, visitas_cliente
 visita_cliente <- tbl(con,'visita_cliente') %>%
