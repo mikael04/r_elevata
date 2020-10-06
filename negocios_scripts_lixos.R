@@ -154,6 +154,26 @@ ggplotly(n0, tooltip=c("Nome", "total_fat")) %>%
 if (teste == 0) {
   rm(ng_ij_vn_ij_np_fat, corte_1)
 }
+##Grafico de faturamento por vendedor (ggplot to ggplotly)
+
+n0 <- ggplot(ng_ij_vn_ij_np_fat, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), total_fat, fill=(negocio_status),
+                                     text = paste('Valor neste status:', total_fat_t))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+  geom_col(position = "stack") +
+  ylab("Número de clientes") +
+  #ggtitle("Volume de negócios cadastrados por vendedor, ano 2020") +
+  theme (axis.text.x = element_text(hjust = 1), axis.title = element_blank())+
+  scale_fill_manual(values = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"))+
+  scale_y_continuous(labels = scales::label_number())+
+  coord_flip(expand = F)
+
+
+n0 <- ggplotly(n0, tooltip = 'text') %>% layout(legend = list(orientation = "h", x = -0.1, y = -0.15))
+
+### Gráfico n0 - Número de clientes por vendedor
+if(dash == F){
+  n0
+}
+
 
 ### Aqui começa o segundo gráfico que preciso das datas de atualização (última atualização, por isso o join com historico)
 ########################################
@@ -229,16 +249,19 @@ ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_ij_np_fec %>%
   collect ()
 
 ### Faturamento de negócios fechados em 2020
-n3 <- ggplot(ng_ij_vn_ij_np_fech_fat, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), total_fat, fill=factor(Negocio_Status), label = total_fat)) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
+n3 <- ggplot(ng_ij_vn_ij_np_fech_fat, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), total_fat, fill=factor(negocio_status),
+                                          text = paste('Valor neste status:', total_fat_t))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
   geom_col(position = "stack") +
   theme (axis.title = element_blank(), axis.text.x = element_blank())+
   scale_fill_manual(values = c("#32CD32", "orange", "#DE0D26"),)+
   #scale_y_continuous(labels = scales::label_number())+
   coord_flip(expand = F)
 
-ggplotly(n3) %>%
-  layout(legend = list(orientation = "h", x = -0.2, y = -0.05))
+n3 <- ggplotly(n3, tooltip = 'text') %>% layout(legend = list(orientation = "h", x = -0.2, y = -0.05))
 
+if(dash == F){
+  n3
+}
 
 if (teste == 0) {
   #tabelas

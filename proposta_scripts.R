@@ -22,9 +22,9 @@ library(scales)
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
-dash = T
+dash = F
 ####Variavel global c/ ano atual (para comparação)
 ano_atual = '2020-01-01'
 ####Variável global para ver se tem usados Ainda não usada
@@ -137,34 +137,37 @@ prop_ij_neg_cont_vend_2020$proposta_status <- with(prop_ij_neg_cont_vend_2020, c
                                                                                    labels = status))
 
 ### Gráfico p0 - Número propostas, por tipo, por vendedor (total)
-p0 <- ggplot(prop_ij_neg_cont_vend_2020, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), cont_status, fill=factor(proposta_status), label = cont_status,
-                                             text = paste('Número de pedidos nesta categoria:', cont_status))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
-  geom_col(position = "stack") +
-  theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank()) +
-  scale_fill_manual(values = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"))+
-  coord_flip(expand = F)
-
-p0 <- ggplotly(p0, tooltip = 'text') %>% layout(legend = list(orientation = "h", x = -0.3, y = -0.15))
-
+p0 <- plot_ly(prop_ij_neg_cont_vend_2020, type = 'bar', orientation = 'h', x = ~cont_status , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
+              color = ~proposta_status,
+              colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
+              name = ~proposta_status,
+              showlegend = TRUE
+              )
+p0 <- p0 %>%
+  layout(barmode = 'stack',
+         xaxis = list(title = ''),
+         yaxis = list(title = ''))
 if(dash == F){
   p0
 }
-
 ### Gráfico p1 - Número propostas, por tipo em 2020 (total)
-p1 <- ggplot(prop_ij_neg_cont_2020, aes(x = proposta_status, y = cont_status, fill=as.factor(proposta_status),
-                                        text = paste('Número de pedidos nesta categoria:', cont_status))) +
-  geom_col(position = "identity") +
-  theme (axis.text.x = element_text(angle = 30, hjust = 1), axis.title = element_blank()) +
-  scale_fill_manual(values = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"))
-
-p1 <- ggplotly(p1, tooltip = 'text') %>%
-  layout(showlegend = FALSE)
+p1 <- plot_ly(prop_ij_neg_cont_2020, type = 'bar', x = ~proposta_status , y = ~cont_status,
+              color = ~proposta_status,
+              colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
+              name = ~proposta_status,
+              showlegend = F
+)
+p1 <- p1 %>%
+  layout(barmode = 'stack',
+         xaxis = list(title = ''),
+         yaxis = list(title = ''))
 if(dash == F){
   p1
 }
+
 if(teste == F){
   #tabelas
-  if(dash = F){
+  if(dash == F){
     rm(vendedor)
   }
   rm(prop_ij_neg_2020, prop_ij_neg_cont_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_ij_vend_2020);

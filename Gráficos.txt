@@ -4,9 +4,9 @@
 
 ### Gráfico n11 - Pizza fechados no último mês
 
-### Gráfico n0 - Número de clientes por vendedor
+### Gráfico n0 - Faturamento de negócios em 2020 por status
 
-### Gráfico n3 - Faturamento de negócios fechados em 2020
+### Gráfico n3 - Faturamento de negócios fechados em 2020 por status
 
 ### Gráfico hc_n4 - Valor financeiro de negócios em 2020  (por categoria)
 
