@@ -150,11 +150,14 @@ ng_ij_vn_ij_np_fat <- corte_1 %>%
 ###remover status "desconsiderar (erro cadastro)"
 ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat[!(ng_ij_vn_ij_np_fat$negocio_negocio_situacao_id==9),]
 
-status = c("1 - em negociacao", "2 - montagem de cadastro", "3 - aguardando aprovacao", "5 - faturado", "6 - financiamento nao aprovado", "7 - desistencia do cliente", "8 - perdemos para concorrencia", "4 - financiamento aprovado", "0 - intencao ou prospeccao")
+status = c("Em negociação", "Montagem de cadastro", "Aguardando aprovação", "Faturado", "Financiamento não aprovado", "Desistência do cliente",
+           "Perdemos para concorrência", "Financiamento aprovado", "Intenção ou prospecção")
 ##aqui ele substitui linha a linha cada situação pelo seu respectivo em string
 ng_ij_vn_ij_np_fat$negocio_status <- with(ng_ij_vn_ij_np_fat, cut(negocio_negocio_situacao_id, breaks = c(0,1,2,3,4,5,6,7,8,10), labels = status))
 #precisa usar o factor pra colocar na ordem que quero
-ng_ij_vn_ij_np_fat$negocio_status = factor(ng_ij_vn_ij_np_fat$negocio_status, levels = c("0 - intencao ou prospeccao", "1 - em negociacao", "2 - montagem de cadastro", "3 - aguardando aprovacao", "4 - financiamento aprovado", "5 - faturado", "6 - financiamento nao aprovado", "7 - desistencia do cliente", "8 - perdemos para concorrencia"))
+ng_ij_vn_ij_np_fat$negocio_status = factor(ng_ij_vn_ij_np_fat$negocio_status, levels = c("Intenção ou prospecção", "Em negociação", "Montagem de cadastro",
+                                                                                         "Aguardando aprovação", "Financiamento aprovado", "Faturado", "Financiamento não aprovado",
+                                                                                         "Desistência do cliente", "Perdemos para concorrência"))
 
 #usando função pra criar outra coluna com número formatado (em Real, com pontos)
 ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>%
@@ -162,20 +165,20 @@ ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>%
 
 ###Gráfico n0 - Faturamento dos negócios por vendedor (2020, status atual)
 ##############################################
-n0 <- ggplot(ng_ij_vn_ij_np_fat, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), total_fat, fill=(negocio_status),
-                                     text = paste('Valor neste status:', total_fat_t))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
-  geom_col(position = "stack") +
-  ylab("Número de clientes") +
-  #ggtitle("Volume de negócios cadastrados por vendedor, ano 2020") +
-  theme (axis.text.x = element_text(hjust = 1), axis.title = element_blank())+
-  scale_fill_manual(values = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"))+
-  scale_y_continuous(labels = scales::label_number())+
-  coord_flip(expand = F)
+n0 <- plot_ly(ng_ij_vn_ij_np_fat, type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
+              color = ~negocio_status,
+              colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"),
+              name = ~negocio_status,
+              showlegend = TRUE
+              )
 
+n0 <- n0 %>%
+  layout(barmode = 'stack',
+         xaxis = list(title = ''),
+         yaxis = list(title = ''),
+         legend = list(orientation = "h",   # show entries horizontally
+                       xanchor = "center"))
 
-n0 <- ggplotly(n0, tooltip = 'text') %>% layout(legend = list(orientation = "h", x = -0.1, y = -0.15))
-
-### Gráfico n0 - Número de clientes por vendedor
 if(dash == F){
   n0
 }
@@ -217,7 +220,7 @@ ng_ij_hist_ij_ven_2020 <- ng_ij_hist_ij_ven_2020 %>%
 
 ng_ij_hist_ij_ven_ij_np_2020 <- inner_join(ng_ij_hist_ij_ven_2020, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
 
-ff <- c(4, 6, 7)
+ff <- c(4, 5, 6, 7)
 
 ng_ij_hist_ij_ven_2020_ij_np_fec <-  ng_ij_hist_ij_ven_ij_np_2020%>%
   filter(negocio_negocio_situacao_id %in% ff)
@@ -226,10 +229,10 @@ ng_ij_hist_ij_ven_2020_ij_np_fec <- ng_ij_hist_ij_ven_2020_ij_np_fec %>%
   mutate(negocio_status = negocio_negocio_situacao_id)
 
 
-status_4_6_7 = c("5 - faturado", "7 - desistencia do cliente", "8 - perdemos para concorrencia")
+status_4_5_6_7 = c("Faturado", "Financiamento não aprovado" , "Desistência do cliente", "Perdemos para concorrência")
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
-ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_status <- with(ng_ij_hist_ij_ven_2020_ij_np_fec, cut(negocio_negocio_situacao_id, breaks = c(0,4,6,7),
-                                                                                              labels = status_4_6_7))
+ng_ij_hist_ij_ven_2020_ij_np_fec$negocio_status <- with(ng_ij_hist_ij_ven_2020_ij_np_fec, cut(negocio_negocio_situacao_id, breaks = c(0,4,5,6,7),
+                                                                                              labels = status_4_5_6_7))
 
 ng_ij_hist_ij_ven_2020_ij_np_fec <- ng_ij_hist_ij_ven_2020_ij_np_fec %>%
   filter (np_ativo == TRUE)
@@ -249,26 +252,33 @@ ng_ij_vn_ij_np_fech_fat <- ng_ij_vn_ij_np_fech_fat %>%
 
 ### Gráfico n3 - Faturamento de negócios fechados em 2020
 #########################################################
-n3 <- ggplot(ng_ij_vn_ij_np_fech_fat, aes(x = reorder(vendedor_nome, desc(vendedor_nome)), total_fat, fill=factor(negocio_status),
-                                          text = paste('Valor neste status:', total_fat_t))) + #usar o fill pra criar os léveis, ele já ordena por ordem alfabética
-  geom_col(position = "stack") +
-  theme (axis.title = element_blank(), axis.text.x = element_blank())+
-  scale_fill_manual(values = c("#32CD32", "orange", "#DE0D26"),)+
-  #scale_y_continuous(labels = scales::label_number())+
-  coord_flip(expand = F)
 
-n3 <- ggplotly(n3, tooltip = 'text') %>% layout(legend = list(orientation = "h", x = -0.2, y = -0.05))
+n3 <- plot_ly(ng_ij_vn_ij_np_fech_fat, type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
+              color = ~negocio_status,
+              colors = c("#32CD32", "yellow", "orange", "#DE0D26"),
+              name = ~negocio_status,
+              showlegend = F
+)
+
+n3 <- n3 %>%
+  layout(barmode = 'stack',
+         xaxis = list(title = ''),
+         yaxis = list(title = ''),
+         legend = list(orientation = "h",
+                       xanchor = "center"))
 
 if(dash == F){
   n3
 }
+
+subplot(n0, n3, shareY = TRUE)
 
 
 if (teste == F){
   #tabelas
   rm(historico_negocio_situacao_2020, negocio_ij_vendedor, negocio_ij_historico_ij_vendedor_2020, historico_negocio_situacao, ng_ij_vn_ij_np_fech_fat, ng_ij_hist_ij_ven_2020_ij_np_fec)
   #variáveis
-  rm (ff, status_4_6_7)
+  rm (ff, status_4_5_6_7)
 }
 
 #########################################################
@@ -942,7 +952,7 @@ valuebox <- data.frame(
   value = ng_cad_fin$media_d,
   info = ng_cad_fin$Status,
   shape = c(fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar')),
-  font_family = c(rep("fontawesome-webfont", 4)),
+  font_family = c(rep("wqy-microhei", 4)),
   color = factor(1:4))
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
 colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
