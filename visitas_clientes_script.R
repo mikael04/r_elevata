@@ -34,7 +34,7 @@ emp_am = 42 # Amazonia
 emp_ar = 77 # Araguaia
 emp_ko = 78 # Komatsu
 emp_ms = 35 # Ms
-emp_si = 59 # Simex 
+emp_si = 59 # Simex
 emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
@@ -62,7 +62,7 @@ func_fmt_numbr <- function(inteiro)
   return(inteiro_br)
 }
 # Linux
-# con <- DBI::dbConnect(odbc::odbc(),
+# con  <- DBI::dbConnect(odbc::odbc(),
 #                        Driver = 'ODBC Driver 17 for SQL Server',
 #                        Server = 'localhost\\SQLEXPRESS',
 #                        Database = 'nhmobile_agriculture')
