@@ -45,7 +45,7 @@ library(emojifont)
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável para testar empresa individualmente
-teste_d = F
+teste_d = T
 ####Variável usada para não plotar os gráficos na dash
 dash = T
 ####Variavel global c/ ano atual (para comparação)
@@ -75,8 +75,8 @@ if (params$variable1 == 'Super'){
 #teste_d = T
 ##teste
 if (teste_d == T){
-  empresa = 0;
-  #empresa = emp_su
+  #empresa = 0;
+  empresa = emp_su
 }
 ###################################
 
