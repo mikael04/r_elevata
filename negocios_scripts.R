@@ -25,11 +25,12 @@ library(lubridate)
 #Lib usada para emojis/fonts/box de valores
 library(ggplot2)
 library(emojifont)
-
+##Tentar resolver problemas com fontes
+library(extrafont)
 
 
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
 dash = F
 ####Variavel global c/ ano atual (para comparação)
@@ -952,7 +953,7 @@ valuebox <- data.frame(
   value = ng_cad_fin$media_d,
   info = ng_cad_fin$Status,
   shape = c(fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar')),
-  font_family = c(rep("wqy-microhei", 4)),
+  font_family = c(rep("fontawesome-webfont", 4)),
   color = factor(1:4))
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
 colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
@@ -964,7 +965,7 @@ n13 <- ggplot(valuebox, aes(x=x, y=y, height = h, width = w, label = info)) +
             aes(label = info, x = x - 2.9, y = y - 1), hjust = 0) +
   coord_fixed() +
   scale_fill_manual(values = colors) +
-  geom_text(size = 30, aes(label = shape, family = font_family,
+  geom_text(size = 20, aes(label = shape, family = font_family,
                            x = x + 1.5, y = y + 0.5), alpha = 0.25) +
   theme_void() +
   guides(fill = FALSE)

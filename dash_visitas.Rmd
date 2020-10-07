@@ -37,6 +37,8 @@ library(extrafont)
 
 
 
+
+
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
@@ -69,6 +71,7 @@ if (params$variable1 == 'Super'){
     empresa = emp_ko
   }
 }
+#teste_d = T
 ##teste
 if (teste_d == T){
   empresa = 0;

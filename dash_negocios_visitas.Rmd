@@ -30,6 +30,8 @@ library(RColorBrewer)
 #library(treemap)
 #Lib usada pros waffles
 #library(waffle)
+#Lib para funções de tempo
+library(lubridate)
 #usada para converter números em moeda
 library(scales)
 #Lib usada para emojis/fonts/box de valores
@@ -81,10 +83,11 @@ if (params$variable1 == 'Amazonia'){
     }
   }
 
+#teste_d = T
 ##teste
 if (teste_d == T){
   empresa = 0;
-  #empresa = emp_su
+  #empresa = emp_ar
 }
 ###################################
 
@@ -296,7 +299,7 @@ n3 <- plot_ly(ng_ij_vn_ij_np_fech_fat, type = 'bar', orientation = 'h', x = ~tot
               color = ~negocio_status,
               colors = c("#32CD32", "yellow", "orange", "#DE0D26"),
               name = ~negocio_status,
-              showlegend = F
+              showlegend = T
 )
 
 n3 <- n3 %>%
@@ -980,7 +983,6 @@ ng_cad_fin <- ng_cad_fin %>%
 ng_cad_fin <- ng_cad_fin %>%
   mutate (media_d = paste(as.character(media_d),"dias")) %>%
   arrange(negocio_negocio_situacao_id)
-
 valuebox <- data.frame(
   x = rep(seq(2, 9, 6.5), 2),
   y = c(rep(6.5, 2), rep(2,2)),
@@ -989,7 +991,7 @@ valuebox <- data.frame(
   value = ng_cad_fin$media_d,
   info = ng_cad_fin$Status,
   shape = c(fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar')),
-  font_family = c(rep("wqy-microhei", 4)),
+  font_family = c(rep("fontawesome-webfont", 4)),
   color = factor(1:4))
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
 colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
@@ -1001,7 +1003,7 @@ n13 <- ggplot(valuebox, aes(x=x, y=y, height = h, width = w, label = info)) +
             aes(label = info, x = x - 2.9, y = y - 1), hjust = 0) +
   coord_fixed() +
   scale_fill_manual(values = colors) +
-  geom_text(size = 30, aes(label = shape, family = font_family,
+  geom_text(size = 20, aes(label = shape, family = font_family,
                            x = x + 1.5, y = y + 0.5), alpha = 0.25) +
   theme_void() +
   guides(fill = FALSE)
@@ -1472,7 +1474,9 @@ Column {data-width=650}
 
 ```{r}
 ### Gráfico n0 - Número de clientes por vendedor
-n0
+n0 %>%
+  layout(legend = list(orientation = "h", x = 0.5,
+                       xanchor = "center"))
 
 ```
 
@@ -1483,8 +1487,9 @@ Column {data-width=350}
 
 ```{r}
 ### Gráfico n3 - Faturamento de negócios fechados em 2020
-ggplotly(n3) %>%
-  layout(legend = list(orientation = "h", x = -0.2, y = -0.05))
+n3 %>%
+  layout(legend = list(orientation = "h", x = 0.5,
+                       xanchor = "center"))
 
 ```
 
