@@ -2,6 +2,7 @@
 #Funções
   - Formatar dinheiro (function_format_din, function_format_din_mi)
     Ambas usadas pra formatar o valor do banco em dinheiro (retorna uma string com "R$X", sendo X o valor), mi (divide por 1 milhão)
+  - Formatar  nome (Retorna primeiro nome + iniciais dos outros dois sobrenomes)
     Tabelas base (banco)
   ### negocio_scripts
       negocio <- recebe tabela de negócio do banco
@@ -26,8 +27,8 @@
   (inner na maioria pra pegar apenas onde haja linhas nas duas tabelas)
       negocio_ij_vendedor <- inner join negocio, vendedor (negocio_vendedor_id = vendedor_id)
       neg_ij_ven_ij_np <- inner join negocio_lj_vendedor, negocio_produto (negocio_id = np_negocio_id)
-      corte_1 <- filtrando empresa (setado globalmente) em vendedor_empresa_id, vendedor ativo em vendedor_ativo, data de cadastro
-              acima de 2020 em  negocio_data_cadastro, id da situacao de 1 a 10 negocio_negocio_situacao_id
+      corte_1 <- filtrado em vendedor vendedor_empresa_id, vendedor ativo em vendedor_ativo, data de cadastro
+              acima de 2020 (ano_atual) em  negocio_data_cadastro, id da situacao de 1 a 10 negocio_negocio_situacao_id
       ng_ij_vn_ij_np_2020_fat <- (contar faturamento por status e por vendedor), recebe faturamento, filtrando alguns campos (negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, vendedor_nome, negocio_vendedor_id, np_valor)
               agrupa por id da situacao e id do vendedor e cria uma nova coluna com faturamento total
               Gráfico de faturamento por vendedor por situacao id (n0)
@@ -44,8 +45,35 @@
               [usado pra filtrar status fechados]
       ng_lj_vn_in_np_2020_fech_fat <- usa a tabela ng_ij_hist_ij_ven_ij_np_fec para criar uma nova coluna com faturamento total por vendedor
               [criado o gráfico n3, Faturamento de negócios fechados em 2020]
-      ngp_ij_pd <- inner join de negocio_produto com produto (np_produto_id = produto_id)
-      n
+      ngp_ij_pd <- inner join de negocio_produto com produto (np_produto_id = produto_id)      
+      ################################################
+      #Faturamento no ano e dois anos anteriores
+      ng_ij_hist_ij_ven_2020_fat <- vem de ng_ij_hist_ij_ven_ij_np_2020 (que já filtra empresa e vendedores ativos), filtrando negocio_situacao_id == 4 (faturado)
+      fat_2020_mes <- ng_ij_hist_ij_ven_2020_fat (#X Alterar nome da var, não preciso da anterior e posso usar ano atual ao invés de 2020)
+        cria um campo ym que é igual ao mês do ano (vem de histórico, puxa só o mês)
+        depois agrupa por mês e faz uma soma dos valores de todos os negócios naquele mês (campo resultante é o ym_sum)
+      negocio_ij_historico_ij_vendedor_total <- ordena por histórico (desc) e negócio_id
+        depois remove as duplicatas para termos apenas a última atualização do negócio
+      ng_ij_hist_ij_ven_total <- vem do resultado da anterior
+         depois é filtrado (#X Não precisa filtrar mais, já vem filtrado, mas testar antes de remover) por empresa e vendedor_ativo e cortado só campos que serão utilizados (negócio_id, negócio_negocio_situacao_id, negocio_vendedor_id, vendedor_ativo, vendedor_nome, negocio_data_cadastro, historico_negocio_situacao_data)
+         ainda é filtrado os negócios com situação = 0 (negocio_negocio_situacao_id != 0) pra remover erros
+       ng_ij_hist_ij_ven_ij_np_total <- junção de ng_ij_hist_ij_ven_total com negocio_produto (pra pegar valores)
+      anos_ant = data atual - menor valor de ano de historico_negocio_situacao_data da tabela anterior (ng_ij_hist_ij_ven_ij_np_total), para calcular quantos anos anteriores existem no banco
+      Criadas tabelas dos anos anteriores (conforme anos_ant) através de ifs com anos_ant
+      ng_ij_hist_ij_ven_ij_np_2019_fat <- filtrado ano de 2019 da tabela ng_ij_hist_ij_ven_ij_np_total
+      ng_ij_hist_ij_ven_ij_np_2018_fat <- filtrado ano de 2018 da tabela ng_ij_hist_ij_ven_ij_np_total
+      criadas tabelas (similar ao fat_2020_mes) de faturamento por mês
+      fat_2019_mes <- ym = mes, ym_sum_2019 = soma dos valores do mês
+      fat_2018_mes <- ym = mes, ym_sum_2018 = soma dos valores do mês
+      ################################################
+      #Tempo médio de vida de um negócio
+      ng_cad_fin <- ng_ij_hist_ij_ven_emp e seleciona negocio_id, negocio_data_cadastro, negocio_negocio_situacao_id, historico_negocio_situacao_situacao_id e historico_negocio_situacao_data (ordena por desc(historico_negocio_situacao_data))
+      Usada para termos a última atualização (por historico_negocio_situacao_data) e a primeira (negocio_data_cadastro)
+        Já é feito o cálculo (criada uma variável temp_d) de diferença de tempo em dias e posteriormente agrupado por situacao_id para fazer o cálculo da média (media_d) em dias
+        Por fim, é criado um campo de Status pelo negocio_negocio_situacao_id para o nome do status que aparecerá no gráfico e alterado o campo de média para string com a adição de "dias" no final
+      valuebox <- criado um df com tamanho definido, os valores de média de ng_cad_fin e nome de status
+      ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
+      ################################################
   ______________________________________________________________________________________________________
   ### proposta_scripts
       prop_ij_neg <- inner join proposta, negócio (proposta_negocio_id e negocio_id) (removido negócios sem vendedor_id)
