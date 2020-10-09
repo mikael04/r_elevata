@@ -176,6 +176,14 @@ pal <- colorFactor(
 
 m1 <- leaflet(cli_in_pm_cont) %>% 
   addTiles() %>%
+  # addMarkers(lat = ~lat, lng = ~long,
+  #            popup = paste0("Nome do cliente: ", ~cliente_nome),
+  #            label = ~cliente_nome,
+  #            clusterOptions = markerClusterOptions(),
+  #            group = "Clientes"
+  #            
+  #                  )
+  # %>%
   addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
                    popup = paste0("Nome do cliente: ", ~cliente_nome),
                    label = ~marca_nome,
@@ -183,24 +191,30 @@ m1 <- leaflet(cli_in_pm_cont) %>%
                    clusterOptions = markerClusterOptions(),
                    group = "Clientes agrupados"
                    ) 
+  # %>%
+  # addLayersControl(
+  #   overlayGroups = c("Clientes", "Clientes agrupados"),
+  #   options = layersControlOptions(collapsed = FALSE)
+  # )
+ncol(cli_in_pm_cont_2)
+col_names <- colnames(cli_in_pm_cont_2)
 
-groups = unique(cli_in_pm_cont$marca_nome)
+# for (i in 1:nrow(cli_in_pm_cont_2)){
+#   for (j in 5:ncol(cli_in_pm_cont_2)){
+#     text[i] <- col_names[j] + as.character(cli_in_pm_cont_2[i][j])
+#   }
+# }
 
-m2 <- leaflet(cli_in_pm_cont) %>%
-  addTiles()
-  for (g in groups){
-    d <- cli_in_pm_cont[cli_in_pm_cont$marca_nome == g, ]
-    m2 <- m2 %>%
-      addCircleMarkers(d, lat = ~lat, lng = ~long, 
-                       color = ~pal(marca_nome),
-                       clusterOptions = markerClusterOptions(),
-                       group = g)
-  }
-m2 <- m2 %>%
-  addLayersControl(overlayGroups = groups)
-
-m3 <- leaflet(cli_in_pm_cont) %>%
+m2 <- leaflet(cli_in_pm_cont) %>% 
   addTiles() %>%
+  addMarkers(lat = ~lat, lng = ~long,
+             popup = paste0("Nome do cliente: ", ~cliente_nome),
+             label = ~cliente_nome,
+             clusterOptions = markerClusterOptions(),
+             options = markerOptions(interactive = TRUE, clickable = NULL, draggable = TRUE, riseOnHover = FALSE),
+             group = "Clientes"
+             
+                   ) %>%
   addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
                    radius = ~cont*4,
                    popup = paste0("Nome do cliente: ", ~cliente_nome),
@@ -208,7 +222,12 @@ m3 <- leaflet(cli_in_pm_cont) %>%
                    color = ~pal(marca_nome),
                    #clusterOptions = markerClusterOptions(),
                    group = "Clientes agrupados"
-                   )
+                   ) %>%
+  addLayersControl(
+    overlayGroups = c("Clientes", "Clientes agrupados"),
+    options = layersControlOptions(collapsed = FALSE)
+  )
+
 
 #######################################################################
 
@@ -220,11 +239,11 @@ Mapa de distribuição dos clientes
 
 ```{r}
 ### Gráfico m0 de distribuição dos clientes por empresa
-m1
+m0
 
 ```
 
 ```{r}
-m3
+m2
 
 ```
