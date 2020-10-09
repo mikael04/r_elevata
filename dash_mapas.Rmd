@@ -1,0 +1,234 @@
+---
+title: "Untitled"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+params:
+  variable1: ""
+---
+
+```{r setup, include=FALSE}
+rm(list = ls())
+#Lib q será futuramente usada pros painéis interativos
+#library(shiny)
+#Lib pra conexão com o banco
+library(odbc)
+library(tidyverse)
+#Libs pra trabalhar com a base (cortes e funções similares ao SQL)
+#library(dplyr) #Contido no tidyverse
+#Lib pro gráfico
+library(ggplot2)
+#lib pros gráficos mais "interativos"
+library(plotly)
+library(highcharter)
+#library(htmlwidgets)
+#Lib pra usar paletas de cores
+library(RColorBrewer)
+#library(viridis)
+#Lib usada pros treemaps
+#library(treemap)
+#Lib usada pros waffles
+#library(waffle)
+#usada para converter números em moeda
+library(scales)
+#Lib para lidar com o tempo
+library(lubridate)
+library(geobr)
+library(esquisse)
+library(leaflet)
+library(sp)
+
+###################################
+##Variáveis "Globais"
+####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
+teste = F
+####Variável para testar empresa individualmente
+teste_d = F
+####Variável usada para não plotar os gráficos na dash
+dash = T
+####Variavel global c/ ano atual (para comparação)
+ano_atual = '2020-01-01'
+####Variável global para ver se tem usados Ainda não usada
+#usados = T
+
+##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
+func_nome <- function (nome_comp)
+{
+  lista <- str_split_fixed(nome_comp, " ", 4)
+  lista <- lista[, -4]
+  lista[,3] = str_sub(lista[,3], 1, 1)
+  lista[,2] = str_sub(lista[,2], 1, 1)
+  lista[,2] = paste(lista[,2], '.', sep='')
+  lista[,3] = paste(lista[,3], '.', sep='')
+  lista[,2] <- gsub('^.$', '',lista[,2])
+  lista[,3] <- gsub('^.$', '',lista[,3])
+  lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
+  return (lista[,1])
+}
+
+emp_am = 42 # Amazonia
+emp_ar = 77 # Araguaia
+emp_ko = 78 # Komatsu
+emp_ms = 35 # Ms
+emp_si = 59 # Simex 
+emp_su = 16 # Super
+emp_ta = 60 # Taisa
+
+empresa <- emp_ta
+
+
+con <- DBI::dbConnect(odbc::odbc(),
+                      Driver = 'SQL Server',
+                      Server = 'localhost\\SQLEXPRESS01',
+                      Database = 'nhmobile_agriculture',
+                      Trusted_Connection = 'True')
+
+##Começando scripts de mapas
+#######################################################################
+
+localizacao <- tbl(con,'localizacao') %>%
+  select (localizacao_cidade_id, localizacao_latitude, localizacao_longitude) %>%
+  collect ()
+
+cliente <- tbl(con,'cliente') %>%
+  select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_empresa_id) %>%
+  collect ()
+
+#Arrumando encoding
+Encoding(cliente$cliente_nome) <- 'latin1'
+
+##Clientes da emprsa correta
+cliente_c_loc <- cliente %>%
+  filter (!is.null(cliente_latitude), !is.na(cliente_latitude), cliente_empresa_id == empresa) %>%
+  rename(lat = cliente_latitude, long = cliente_longitude) %>%
+  mutate(lat = as.numeric(lat), long = as.numeric(long))
+
+### Gráfico m0 de distribuição dos clientes por empresa
+
+m0 <- leaflet(cliente_c_loc) %>% 
+  addTiles() %>%
+  addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
+                   popup = paste0("Nome do cliente: ", ~cliente_nome),
+                   label = ~cliente_nome,
+                   clusterOptions = markerClusterOptions()
+                   )
+
+#######################################################################
+
+##Parque de máquinas 
+#######################################################################
+parque_maquina <- tbl(con, 'parque_maquina') %>%
+  select(pm_id, pm_cliente_id, pm_produto_id, pm_ano_modelo, pm_ativo) %>%
+  filter (pm_ativo == 1) %>%
+  collect()
+
+##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
+produto <- tbl(con, "produto") %>%
+  select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id) %>%
+  #filter (produto_empresa_id == empresa) %>%
+  collect()
+
+##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
+marca <- tbl(con, "marca") %>%
+  select(marca_id, marca_nome) %>%
+  #filter (produto_empresa_id == empresa) %>%
+  collect()
+
+##Parque de máquinas 
+parque_maquina <- tbl(con, 'parque_maquina') %>%
+  select(pm_id, pm_cliente_id, pm_produto_id, pm_ano_modelo, pm_ativo) %>%
+  filter (pm_ativo == 1) %>%
+  collect()
+
+cli_in_pm <- inner_join(cliente_c_loc, parque_maquina, by = c("cliente_id" = "pm_cliente_id")) %>%
+  select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id)
+
+cli_in_pm_in_p <- inner_join(cli_in_pm, produto, by = c("pm_produto_id" = "produto_id")) %>%
+  select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
+
+cli_in_pm_in_p_in_m <- inner_join(cli_in_pm_in_p, marca, by = c("produto_marca_id" = "marca_id")) %>%
+  select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id, produto_nome, produto_marca_id, marca_nome, produto_categoria_id, produto_empresa_id)
+
+cli_in_pm_cont <- cli_in_pm_in_p_in_m %>%
+  group_by(cliente_id, produto_marca_id) %>%
+  mutate(cont = n()) %>%
+  distinct (cliente_id, .keep_all = T) %>%
+  ungroup()
+
+n_color <- nrow(cli_in_pm_cont %>%
+  group_by(produto_marca_id) %>%
+  distinct(produto_marca_id) %>%
+  ungroup())
+brbg_mot <- colorRampPalette(brewer.pal(name="Dark2", n = 8)) (n_color)
+pal <- colorFactor(
+  palette = 'Paired',
+  domain = cli_in_pm_cont$produto_nome
+)
+
+
+
+m1 <- leaflet(cli_in_pm_cont) %>% 
+  addTiles() %>%
+  addMarkers(lat = ~lat, lng = ~long,
+             popup = paste0("Nome do cliente: ", ~cliente_nome),
+             label = ~cliente_nome,
+             clusterOptions = markerClusterOptions(),
+             options = markerOptions(interactive = TRUE, clickable = NULL, draggable = TRUE, riseOnHover = FALSE),
+             group = "Clientes"
+             
+                   )
+  # %>%
+  # addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
+  #                  popup = paste0("Nome do cliente: ", ~cliente_nome),
+  #                  label = ~cliente_nome,
+  #                  color = ~pal(produto_nome),
+  #                  clusterOptions = markerClusterOptions(),
+  #                  group = "Clientes agrupados"
+  #                  ) %>%
+  # addLayersControl(                                                                                                           
+  #   overlayGroups = c("Clientes", "Clientes agrupados"),
+  #   options = layersControlOptions(collapsed = FALSE)
+  # )
+
+m2 <- leaflet(cli_in_pm_cont) %>% 
+  addTiles() %>%
+  addMarkers(lat = ~lat, lng = ~long,
+             popup = paste0("Nome do cliente: ", ~cliente_nome),
+             label = ~cliente_nome,
+             clusterOptions = markerClusterOptions(),
+             options = markerOptions(interactive = TRUE, clickable = NULL, draggable = TRUE, riseOnHover = FALSE),
+             group = "Clientes"
+             
+                   ) %>%
+  addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
+                   popup = paste0("Nome do cliente: ", ~cliente_nome),
+                   label = ~cliente_nome,
+                   color = ~pal(produto_nome),
+                   clusterOptions = markerClusterOptions(),
+                   group = "Clientes agrupados"
+                   ) %>%
+  addLayersControl(
+    overlayGroups = c("Clientes", "Clientes agrupados"),
+    options = layersControlOptions(collapsed = FALSE)
+  )
+
+
+#######################################################################
+
+```
+
+Mapa de distribuição dos clientes
+=======================================================================
+
+
+```{r}
+### Gráfico m0 de distribuição dos clientes por empresa
+m0
+
+```
+
+```{r}
+m2
+
+```
