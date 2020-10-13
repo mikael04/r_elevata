@@ -1,6 +1,6 @@
 ---
 title: "Visão do gestor"
-output: 
+output:
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
@@ -58,7 +58,7 @@ emp_am = 42 # Amazonia
 emp_ar = 77 # Araguaia
 emp_ko = 78 # Komatsu
 emp_ms = 35 # Ms
-emp_si = 59 # Simex 
+emp_si = 59 # Simex
 emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
@@ -81,7 +81,7 @@ if (params$variable1 == 'Amazonia'){
         }
       }
     }
-  }
+}
 
 #teste_d = T
 ##teste
@@ -959,7 +959,7 @@ ng_cad_fin <- ng_ij_hist_ij_ven_emp %>%
 ##Aqui estou removendo duplicatas (de outra forma), que removem apenas quando negocio_id se repete
 ng_cad_fin <- subset(ng_cad_fin, !duplicated(subset(ng_cad_fin, select=c(negocio_id))))
 
-##Já estou filtrando apenas status fechados (faturado, financiamento não aprovado, desistência do cliente, perdemos para a concorrência) 
+##Já estou filtrando apenas status fechados (faturado, financiamento não aprovado, desistência do cliente, perdemos para a concorrência)
 ng_cad_fin <- ng_cad_fin %>%
   filter(negocio_negocio_situacao_id == 4 | negocio_negocio_situacao_id == 5 | negocio_negocio_situacao_id == 6 | negocio_negocio_situacao_id == 7) %>%
   mutate(temp_d = date(historico_negocio_situacao_data) - date(negocio_data_cadastro))
