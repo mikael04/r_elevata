@@ -42,7 +42,7 @@ library(leaflet)
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável para testar empresa individualmente
-teste_d = F
+teste_d = T
 ####Variável usada para não plotar os gráficos na dash
 dash = T
 ####Variavel global c/ ano atual (para comparação)
@@ -80,8 +80,7 @@ if (params$variable1 == 'Amazonia'){
 #teste_d = T
 ##teste
 if (teste_d == T){
-  empresa = 0;
-  #empresa <- emp_ta
+  empresa <- emp_ta
 }
 ###################################
 
@@ -127,7 +126,7 @@ cliente_c_loc <- cliente %>%
 m0 <- leaflet(cliente_c_loc) %>% 
   addTiles() %>%
   addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
-                   popup = paste0("Nome do cliente: ", ~cliente_nome),
+                   popup = paste0( "Nome do cliente:", cliente_c_loc$cliente_nome),
                    label = ~cliente_nome,
                    clusterOptions = markerClusterOptions()
                    )
@@ -226,7 +225,10 @@ m1 <- leaflet(cli_in_pm_cont_f) %>%
   addTiles() %>%
   addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
                    radius = ~cont*4,
-                   popup = paste0("Nome do cliente: ", ~cliente_nome),
+                   popup = paste0("Nome do cliente: ", cli_in_pm_cont_f$cliente_nome,
+                                  "<br>",
+                                  "Quantidade de máquinas ", cli_in_pm_cont_f$marca_nome,
+                                  " : ", cli_in_pm_cont_f$cont),
                    label = ~marca_nome,
                    color = ~cor,
                    #clusterOptions = markerClusterOptions(),
@@ -269,7 +271,6 @@ cli_in_pm_cont_top_d <- cli_in_pm_cont_top_d %>%
 ##Adicionando a cor, de "OUTRAS*" -> Na ordem q ela aparece
 cores <- c("#003E85", "#E64439", '#ACA593',"#39832A", "#FFC500","#808080")
 ##Preciso fazer os factores de modo automático
-#cli_in_pm_cont_top_d$marca_nome = factor(cli_in_pm_cont_top_d$marca_nome, levels = c("NEW HOLLAND", "MASSEY FERGUSON", "OUTRAS*", "JOHN DEERE", "VALTRA", 'CASE IH'))
 cli_in_pm_cont_top_d$marca_nome <- reorder(cli_in_pm_cont_top_d$marca_nome, desc(cli_in_pm_cont_top_d$sum))
 ### Gráfico m2 de distribuição das marcas (top5)
 ###################

@@ -532,7 +532,7 @@ cliente_c_loc <- cliente %>%
 m0 <- leaflet(cliente_c_loc) %>% 
   addTiles() %>%
   addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
-                   popup = paste0("Nome do cliente: ", ~cliente_nome),
+                   popup = paste0( "Nome do cliente:", cliente_c_loc$cliente_nome),
                    label = ~cliente_nome,
                    clusterOptions = markerClusterOptions()
                    )
@@ -631,7 +631,10 @@ m1 <- leaflet(cli_in_pm_cont_f) %>%
   addTiles() %>%
   addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
                    radius = ~cont*4,
-                   popup = paste0("Nome do cliente: ", ~cliente_nome),
+                   popup = paste0("Nome do cliente: ", cli_in_pm_cont_f$cliente_nome,
+                                  "<br>",
+                                  "Quantidade de máquinas ", cli_in_pm_cont_f$marca_nome,
+                                  " : ", cli_in_pm_cont_f$cont),
                    label = ~marca_nome,
                    color = ~cor,
                    #clusterOptions = markerClusterOptions(),
@@ -643,6 +646,13 @@ m1 <- leaflet(cli_in_pm_cont_f) %>%
             title = 'Marcas',
              opacity = .8)
 
+if(teste == F){
+  #tabelas
+  rm(cliente, cli_in_pm_cont_f, top5, n_color, aux, cli_in_pm_cont, cliente_c_loc,
+     parque_maquina, produto, marca);
+  #variáveis
+  rm(cores);
+}
 if(teste == F){
   #tabelas
   rm(cliente, cli_in_pm_cont_f, top5, n_color, aux, cli_in_pm_cont, cliente_c_loc,
