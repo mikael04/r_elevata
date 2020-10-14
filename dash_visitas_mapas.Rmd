@@ -519,6 +519,22 @@ cliente <- tbl(con,'cliente') %>%
   select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_empresa_id) %>%
   collect ()
 
+##coleta todos os vendedores
+vendedor <- tbl(con, "vendedor") %>%
+  select(vendedor_id, vendedor_nome, vendedor_id, vendedor_empresa_id, vendedor_ativo) %>%
+  filter(vendedor_ativo == 1, vendedor_empresa_id == empresa) %>%
+  collect()
+#Arrumando encoding
+Encoding(vendedor$vendedor_nome) <- 'latin1'
+vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+
+#Super
+if(empresa == 16){
+  vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
+  vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
+  vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
+}
+
 #Arrumando encoding
 Encoding(cliente$cliente_nome) <- 'latin1'
 
@@ -592,6 +608,7 @@ cli_in_pm_cont_top <- cli_in_pm_cont %>%
 
 
 top5 <- head.matrix(cli_in_pm_cont_top, 5)
+top10 <- head.matrix(cli_in_pm_cont_top, 10)
 aux <- top5[,1]
 
 
@@ -681,6 +698,7 @@ cli_in_pm_cont_top_d <- cli_in_pm_cont_top %>%
 cli_in_pm_cont_top_d <- cli_in_pm_cont_top_d %>%
   mutate(cor = NA)
 
+
 ##Adicionando a cor, de "OUTRAS*" -> Na ordem q ela aparece
 cores <- c("#003E85", "#E64439", '#ACA593',"#39832A", "#FFC500","#808080")
 ##Preciso fazer os factores de modo automático
@@ -703,6 +721,9 @@ m2 <- m2 %>%
 if(dash == F){
   m2
 }
+
+library(DT)
+m2_1 <- datatable(top10)
 
 if(teste == F){
   #tabelas
@@ -813,5 +834,15 @@ Column {data-width=350}
 ```{r}
 ### Gráfico m2 de distribuição das marcas
 m2
+
+```
+
+Marcas top10
+=======================================================================
+
+### Distribuição das marcas (TOP10)
+```{r}
+### Gráfico m2 de distribuição das marcas
+m2_1
 
 ```
