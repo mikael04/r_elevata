@@ -199,6 +199,31 @@ m2 <- leaflet(cli_in_pm_cont) %>%
     options = layersControlOptions(collapsed = FALSE)
   )
 
+  # m1 <- leaflet(cli_in_pm_cont_f) %>%
+#   addTiles() %>%
+#   addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
+#                    popup = paste0("Nome do cliente: ", ~cliente_nome),
+#                    label = ~marca_nome,
+#                    color = ~pal(marca_nome),
+#                    clusterOptions = markerClusterOptions(),
+#                    group = "Clientes agrupados"
+#                    )
+#
+# groups = unique(cli_in_pm_cont_f$marca_nome)
+#
+# m2 <- leaflet(cli_in_pm_cont_f) %>%
+#   addTiles()
+#   for (g in groups){
+#     d <- cli_in_pm_cont_f[cli_in_pm_cont_f$marca_nome == g, ]
+#     m2 <- m2 %>%
+#       addCircleMarkers(d, lat = ~lat, lng = ~long,
+#                        color = ~pal(marca_nome),
+#                        clusterOptions = markerClusterOptions(),
+#                        group = g)
+#   }
+# m2 <- m2 %>%
+#   addLayersControl(overlayGroups = groups)
+
 
 #######################################################################
 
