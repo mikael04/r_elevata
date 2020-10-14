@@ -227,19 +227,124 @@ m2 <- leaflet(cli_in_pm_cont) %>%
 
 #######################################################################
 
-```
+#################################################################################
+##Mapas de distribuição funcionando bem, mas sem divisão de categorias
 
-Mapa de distribuição dos clientes
-=======================================================================
+##Criando o top5 de categorias
+cli_in_pm_cont_top <- cli_in_pm_cont %>%
+  group_by(marca_nome) %>%
+  mutate(cont = n()) %>%
+  distinct(marca_nome, .keep_all = T) %>%
+  select (marca_nome, produto_marca_id, cont) %>%
+  arrange(desc(cont)) %>%
+  ungroup()
 
 
-```{r}
-### Gráfico m0 de distribuição dos clientes por empresa
-m0
+top5 <- head.matrix(cli_in_pm_cont_top, 5)
+top10 <- head.matrix(cli_in_pm_cont_top, 10)
+aux <- top5[,1]
 
-```
 
-```{r}
-m2
+cli_in_pm_cont_f <- cli_in_pm_cont %>%
+  filter (marca_nome %in% aux$marca_nome)
 
-```
+n_color <- nrow(cli_in_pm_cont_f %>%
+  group_by(produto_marca_id) %>%
+  distinct(produto_marca_id) %>%
+  ungroup())
+##aleatório
+#cores <- brewer.pal(n_color,'BrBG')
+# Selecionadas por marca (NH, MF, JD, V, CI)
+#cores <- c("#003E85","#E64439","#39832A","#FFC500","#000000")
+#NH, CI, JD, MF, V
+cores <- c("#003E85", "#808080","#39832A","#E64439","#FFC500")
+
+cli_in_pm_cont_f <- cli_in_pm_cont_f %>%
+  mutate(cor = NA)
+
+top5 <- top5 %>%
+  mutate(cor = NA)
+
+#1,5,4,11,3
+cli_in_pm_cont_f$cor <- with(cli_in_pm_cont_f, cut(as.integer(produto_marca_id), breaks = c(0,1,3,4,5,11), labels = cores))
+top5$cor <- with(top5, cut(as.integer(produto_marca_id), breaks = c(0,1,3,4,5,11), labels = cores))
+
+
+##Adicionando pequenas variações
+cli_in_pm_cont_f$lat <- jitter(cli_in_pm_cont_f$lat, factor = .1, amount = 0)
+cli_in_pm_cont_f$long <- jitter(cli_in_pm_cont_f$long, factor = .1, amount = 0)
+
+### Gráfico m1 de distribuição das marcas (top5)
+###################
+
+m1 <- leaflet(cli_in_pm_cont_f) %>%
+  addTiles() %>%
+  addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
+                   radius = ~cont*4,
+                   popup = paste0("Nome do cliente: ", cli_in_pm_cont_f$cliente_nome,
+                                  "<br>",
+                                  "Quantidade de máquinas ", cli_in_pm_cont_f$marca_nome,
+                                  " : ", cli_in_pm_cont_f$cont),
+                   label = ~marca_nome,
+                   color = ~cor,
+                   #clusterOptions = markerClusterOptions(),
+                   group = "Clientes agrupados"
+                   ) %>%
+  addLegend("topright",
+            colors = top5$cor,
+            labels = top5$marca_nome,
+            title = 'Marcas',
+             opacity = .8)
+
+if(teste == F){
+  #tabelas
+  rm(cliente, cli_in_pm_cont_f, top5, n_color, aux, cli_in_pm_cont, cliente_c_loc,
+     parque_maquina, produto, marca);
+  #variáveis
+  rm(cores);
+}
+
+###################
+##Será usado apenas caso queira plotar todas as marcas como "Outros"
+##Top5 + Outra, transformando as demais em OUTRA
+for(i in 6:nrow(cli_in_pm_cont_top)){
+  cli_in_pm_cont_top[i,1] <- 'OUTRAS*'
+  cli_in_pm_cont_top[i,2] <- '-1'
+}
+
+##Criando o top5 (+ Outra) de categorias
+cli_in_pm_cont_top_d <- cli_in_pm_cont_top %>%
+  group_by(marca_nome) %>%
+  mutate(sum = sum(cont)) %>%
+  distinct(marca_nome, .keep_all = T) %>%
+  select (marca_nome, produto_marca_id, sum) %>%
+  arrange(desc(sum)) %>%
+  ungroup()
+
+cli_in_pm_cont_top_d <- cli_in_pm_cont_top_d %>%
+  mutate(cor = NA)
+
+marcas_cores <- read.csv("marcas_cores.csv")
+##Adicionando a cor, de "OUTRAS*" -> Na ordem q ela aparece
+cores <- c("#003E85", "#E64439", '#ACA593',"#39832A", "#FFC500","#808080")
+##Preciso fazer os factores de modo automático
+cli_in_pm_cont_top_d$marca_nome <- reorder(cli_in_pm_cont_top_d$marca_nome, desc(cli_in_pm_cont_top_d$sum))
+### Gráfico m2 de distribuição das marcas (top5)
+###################
+
+m2 <- plot_ly(cli_in_pm_cont_top_d, type = 'bar', orientation = 'v',
+              x = ~marca_nome,
+              y = ~sum,
+              color = ~marca_nome,
+              colors = cores,
+              showlegend = FALSE)
+
+m2 <- m2 %>%
+  layout(xaxis = list(title = ''),
+         yaxis = list(title = ''))
+
+if(dash == F){
+  m2
+}
+
+#################################################################################

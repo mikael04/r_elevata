@@ -147,7 +147,7 @@ vcUltVis <- visita_cliente %>%
 
 
 ##Categorias de idades
-idade_vis = c("Sem visita", "Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses")
+idades_vis = c("Sem visita", "Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses")
 ##Cores das categorias
 cor_idade_vis = c("#000000", "#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
 
@@ -161,7 +161,7 @@ cli_in_ven_in_vcUltVis <- left_join(cli_in_ven, vcUltVis, by = c("cliente_id" = 
 cli_in_ven_in_vcUltVis$idade[is.na(cli_in_ven_in_vcUltVis$idade)] <- -1
 
 cli_in_ven_in_vcUltVis$idade_vis <- with(cli_in_ven_in_vcUltVis, cut(idade, breaks = c(-2,0,60, 180, 365, 730, 10000),
-                                                                   label = idade_vis))
+                                                                   label = idades_vis))
 
 pal = colorFactor(palette = cor_idade_vis, domain = cli_in_ven_in_vcUltVis$idade_vis)
 
@@ -202,7 +202,8 @@ if(teste == F){
 
 #######################################################################
 
-##Parque de máquinas 
+##Parque de máquinas
+##Mostrar distribuição de máquinas por categoria
 #######################################################################
 parque_maquina <- tbl(con, 'parque_maquina') %>%
   select(pm_id, pm_cliente_id, pm_produto_id, pm_ano_modelo, pm_ativo) %>%
@@ -218,7 +219,14 @@ produto <- tbl(con, "produto") %>%
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
 marca <- tbl(con, "marca") %>%
   select(marca_id, marca_nome) %>%
-  #filter (produto_empresa_id == empresa) %>%
+  collect()
+
+categoria <- tbl(con, "categoria") %>%
+  filter(categoria_ativo == 1) %>%
+  select (categoria_id, categoria_nome) %>%
+  collect()
+
+marca_categoria <- tbl(con, "marca_categoria") %>%
   collect()
 
 cli_in_pm <- inner_join(cliente_c_loc, parque_maquina, by = c("cliente_id" = "pm_cliente_id")) %>%
@@ -229,10 +237,13 @@ cli_in_pm_in_p <- inner_join(cli_in_pm, produto, by = c("pm_produto_id" = "produ
 
 cli_in_pm_in_p_in_m <- inner_join(cli_in_pm_in_p, marca, by = c("produto_marca_id" = "marca_id")) %>%
   select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id, produto_nome, produto_marca_id, marca_nome, produto_categoria_id, produto_empresa_id)
-
+#########################
+##Começando o top para tratores
+#########################
 ##Aqui obtenho todos os clientes e marcas, próximo passo é fazer o top5
-cli_in_pm_cont <- cli_in_pm_in_p_in_m %>%
-  select(cliente_id, cliente_nome, lat, long, produto_marca_id, marca_nome) %>%
+cli_in_pm_cont_t <- cli_in_pm_in_p_in_m %>%
+  select(cliente_id, cliente_nome, lat, long, produto_marca_id, marca_nome, produto_categoria_id) %>%
+  filter(produto_categoria_id == 1) %>% 
   group_by(cliente_id, produto_marca_id) %>%
   mutate(cont = n()) %>%
   distinct (cliente_id, .keep_all = T) %>%
@@ -240,7 +251,7 @@ cli_in_pm_cont <- cli_in_pm_in_p_in_m %>%
 
 
 ##Criando o top5 de categorias
-cli_in_pm_cont_top <- cli_in_pm_cont %>%
+cli_in_pm_cont_top_t <- cli_in_pm_cont_t %>%
   group_by(marca_nome) %>%
   mutate(cont = n()) %>%
   distinct(marca_nome, .keep_all = T) %>%
@@ -249,65 +260,116 @@ cli_in_pm_cont_top <- cli_in_pm_cont %>%
   ungroup()
 
 
-top5 <- head.matrix(cli_in_pm_cont_top, 5)
-top10 <- head.matrix(cli_in_pm_cont_top, 10)
+top5 <- head.matrix(cli_in_pm_cont_top_t, 5)
+top10 <- head.matrix(cli_in_pm_cont_top_t, 10)
 aux <- top5[,1]
 
 
-cli_in_pm_cont_f <- cli_in_pm_cont %>%
+cli_in_pm_cont_top_t_aux <- cli_in_pm_cont_t %>%
   filter (marca_nome %in% aux$marca_nome)
 
-n_color <- nrow(cli_in_pm_cont_f %>%
+n_color <- nrow(cli_in_pm_cont_top_t_aux %>%
   group_by(produto_marca_id) %>%
   distinct(produto_marca_id) %>%
   ungroup())
+
 ##aleatório
-#cores <- brewer.pal(n_color,'BrBG')
-# Selecionadas por marca (NH, MF, JD, V, CI)
-#cores <- c("#003E85","#E64439","#39832A","#FFC500","#000000")
-#NH, CI, JD, MF, V
-cores <- c("#003E85", "#808080","#39832A","#E64439","#FFC500")
+cores_t <- brewer.pal(n_color,'BrBG')
 
-cli_in_pm_cont_f <- cli_in_pm_cont_f %>%
-  mutate(cor = NA)
+#########################
+##Começando o top para colheitadeiras
+#########################
+##Aqui obtenho todos os clientes e marcas, próximo passo é fazer o top5
+cli_in_pm_cont_c <- cli_in_pm_in_p_in_m %>%
+  select(cliente_id, cliente_nome, lat, long, produto_marca_id, marca_nome, produto_categoria_id) %>%
+  filter(produto_categoria_id == 2) %>% 
+  group_by(cliente_id, produto_marca_id) %>%
+  mutate(cont = n()) %>%
+  distinct (cliente_id, .keep_all = T) %>%
+  ungroup()
 
-top5 <- top5 %>%
-  mutate(cor = NA)
+
+##Criando o top5 de categorias
+cli_in_pm_cont_top_c <- cli_in_pm_cont_c %>%
+  group_by(marca_nome) %>%
+  mutate(cont = n()) %>%
+  distinct(marca_nome, .keep_all = T) %>%
+  select (marca_nome, produto_marca_id, cont) %>%
+  arrange(desc(cont)) %>%
+  ungroup()
+
+
+top5 <- head.matrix(cli_in_pm_cont_top_c, 5)
+top10 <- head.matrix(cli_in_pm_cont_top_c, 10)
+aux <- top5[,1]
+
+
+cli_in_pm_cont_top_c_aux <- cli_in_pm_cont_c %>%
+  filter (marca_nome %in% aux$marca_nome)
+
+n_color <- nrow(cli_in_pm_cont_top_c_aux %>%
+  group_by(produto_marca_id) %>%
+  distinct(produto_marca_id) %>%
+  ungroup())
+
+##aleatório
+cores_c <- brewer.pal(n_color,'Dark2')
 
 #1,5,4,11,3
-cli_in_pm_cont_f$cor <- with(cli_in_pm_cont_f, cut(as.integer(produto_marca_id), breaks = c(0,1,3,4,5,11), labels = cores))
-top5$cor <- with(top5, cut(as.integer(produto_marca_id), breaks = c(0,1,3,4,5,11), labels = cores))
+cli_in_pm_cont_top_c_aux$marca_nome <- factor(cli_in_pm_cont_top_c_aux$marca_nome)
+
+pal_c = colorFactor(palette = cores_c, domain = cli_in_pm_cont_top_c_aux$marca_nome)
 
 
 ##Adicionando pequenas variações
-cli_in_pm_cont_f$lat <- jitter(cli_in_pm_cont_f$lat, factor = .1, amount = 0)
-cli_in_pm_cont_f$long <- jitter(cli_in_pm_cont_f$long, factor = .1, amount = 0)
+cli_in_pm_cont_top_c_aux$lat <- jitter(cli_in_pm_cont_top_c_aux$lat, factor = .1, amount = 0)
+cli_in_pm_cont_top_c_aux$long <- jitter(cli_in_pm_cont_top_c_aux$long, factor = .1, amount = 0)
 
-### Gráfico m1 de distribuição das marcas (top5)
+### Gráfico m1 de distribuição das marcas (top5) m1_t = tratores, m1_c = colheitadeiras
 ###################
 
-m1 <- leaflet(cli_in_pm_cont_f) %>%
+m1_t <- leaflet(cli_in_pm_cont_top_t_aux) %>%
   addTiles() %>%
   addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
                    radius = ~cont*4,
-                   popup = paste0("Nome do cliente: ", cli_in_pm_cont_f$cliente_nome,
+                   popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_t_aux$cliente_nome,
                                   "<br>",
-                                  "Quantidade de máquinas ", cli_in_pm_cont_f$marca_nome,
-                                  " : ", cli_in_pm_cont_f$cont),
+                                  "Quantidade de máquinas ", cli_in_pm_cont_top_t_aux$marca_nome,
+                                  " : ", cli_in_pm_cont_top_t_aux$cont),
                    label = ~marca_nome,
-                   color = ~cor,
+                   color = ~pal_c(marca_nome),
                    #clusterOptions = markerClusterOptions(),
                    group = "Clientes agrupados"
                    ) %>%
   addLegend("topright",
-            colors = top5$cor,
-            labels = top5$marca_nome,
+            value = ~marca_nome,
+            pal = pal_c,
             title = 'Marcas',
              opacity = .8)
 
+m1_c <- leaflet(cli_in_pm_cont_top_c_aux) %>%
+  addTiles() %>%
+  addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
+                   radius = ~cont*4,
+                   popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_c_aux$cliente_nome,
+                                  "<br>",
+                                  "Quantidade de máquinas ", cli_in_pm_cont_top_c_aux$marca_nome,
+                                  " : ", cli_in_pm_cont_top_c_aux$cont),
+                   label = ~marca_nome,
+                   color = ~pal_c(marca_nome),
+                   #clusterOptions = markerClusterOptions(),
+                   group = "Clientes agrupados"
+                   ) %>%
+  addLegend("topright",
+            value = ~marca_nome,
+            pal = pal_c,
+            title = 'Marcas',
+             opacity = .8)
+
+
 if(teste == F){
   #tabelas
-  rm(cliente, cli_in_pm_cont_f, top5, n_color, aux, cli_in_pm_cont, cliente_c_loc,
+  rm(cliente, cli_in_pm_cont_f, top5, n_color, aux, cli_in_pm_cont_c, cliente_c_loc,
      parque_maquina, produto, marca);
   #variáveis
   rm(cores);
@@ -316,13 +378,13 @@ if(teste == F){
 ###################
 ##Será usado apenas caso queira plotar todas as marcas como "Outros"
 ##Top5 + Outra, transformando as demais em OUTRA
-for(i in 6:nrow(cli_in_pm_cont_top)){
-  cli_in_pm_cont_top[i,1] <- 'OUTRAS*'
-  cli_in_pm_cont_top[i,2] <- '-1'
+for(i in 6:nrow(cli_in_pm_cont_top_c)){
+  cli_in_pm_cont_top_c[i,1] <- 'OUTRAS*'
+  cli_in_pm_cont_top_c[i,2] <- '-1'
 }
 
-##Criando o top5 (+ Outra) de categorias
-cli_in_pm_cont_top_d <- cli_in_pm_cont_top %>%
+##Criando o top5 (+ Outra) de categorias ##PARA COLHEITADEIRAS
+cli_in_pm_cont_top_c <- cli_in_pm_cont_top_c %>%
   group_by(marca_nome) %>%
   mutate(sum = sum(cont)) %>%
   distinct(marca_nome, .keep_all = T) %>%
@@ -330,30 +392,48 @@ cli_in_pm_cont_top_d <- cli_in_pm_cont_top %>%
   arrange(desc(sum)) %>%
   ungroup()
 
-cli_in_pm_cont_top_d <- cli_in_pm_cont_top_d %>%
+cli_in_pm_cont_top_c <- cli_in_pm_cont_top_c %>%
   mutate(cor = NA)
 
 marcas_cores <- read.csv("marcas_cores.csv")
 ##Adicionando a cor, de "OUTRAS*" -> Na ordem q ela aparece
 cores <- c("#003E85", "#E64439", '#ACA593',"#39832A", "#FFC500","#808080")
 ##Preciso fazer os factores de modo automático
-cli_in_pm_cont_top_d$marca_nome <- reorder(cli_in_pm_cont_top_d$marca_nome, desc(cli_in_pm_cont_top_d$sum))
+cli_in_pm_cont_top_c$marca_nome <- reorder(cli_in_pm_cont_top_c$marca_nome, desc(cli_in_pm_cont_top_c$sum))
 ### Gráfico m2 de distribuição das marcas (top5)
 ###################
 
-m2 <- plot_ly(cli_in_pm_cont_top_d, type = 'bar', orientation = 'v',
+m2_t <- plot_ly(cli_in_pm_cont_top_t, type = 'bar', orientation = 'v',
               x = ~marca_nome,
               y = ~sum,
               color = ~marca_nome,
               colors = cores,
               showlegend = FALSE)
 
-m2 <- m2 %>%
+m2_t <- m2_t %>%
   layout(xaxis = list(title = ''),
          yaxis = list(title = ''))
 
 if(dash == F){
-  m2
+  m2_t
+}
+
+## Gráfico m2 de distribuição das marcas (top5)
+###################
+
+m2_c <- plot_ly(cli_in_pm_cont_top_c, type = 'bar', orientation = 'v',
+              x = ~marca_nome,
+              y = ~sum,
+              color = ~marca_nome,
+              colors = cores,
+              showlegend = FALSE)
+
+m2_c <- m2_c %>%
+  layout(xaxis = list(title = ''),
+         yaxis = list(title = ''))
+
+if(dash == F){
+  m2_c
 }
 
 library(DT)
@@ -361,7 +441,7 @@ m2_1 <- datatable(top10)
 
 if(teste == F){
   #tabelas
-  rm(cli_in_pm_cont_top_d, cli_in_pm_cont_top, cli_in_pm_in_p_in_m, cli_in_pm_in_p, cli_in_pm);
+  rm(cli_in_pm_cont_top_d, cli_in_pm_cont_top_c, cli_in_pm_in_p_in_m, cli_in_pm_in_p, cli_in_pm);
   #variáveis
   rm(cores, i);
 }
@@ -380,7 +460,7 @@ m0
 
 ```
 
-Mapa de distribuição das marcas
+Mapa de distribuição das marcas (Tratores)
 =======================================================================
 
 Column {data-width=750}
@@ -389,7 +469,7 @@ Column {data-width=750}
 ### Mapa das marcas
 ```{r}
 ### Gráfico m1 de distribuição das marcas (top5)
-m1
+m1_t
 
 ```
 
@@ -399,9 +479,33 @@ Column {data-width=350}
 ### Distribuição das marcas
 ```{r}
 ### Gráfico m2 de distribuição das marcas
-m2
+m2_t
 
 ```
+
+Mapa de distribuição das marcas (Colheitadeiras)
+=======================================================================
+
+Column {data-width=750}
+-----------------------------------------------------------------------
+
+### Mapa das marcas
+```{r}
+### Gráfico m1 de distribuição das marcas (top5)
+m1_c
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Distribuição das marcas
+```{r}
+### Gráfico m2 de distribuição das marcas
+m2_c
+
+```
+
 
 Marcas top10
 =======================================================================
