@@ -57,7 +57,8 @@ render_report_map <- function(var1) {
 
 library(purrr)
 ##Gerando das que tem propostas (duas dashs separadas, a primeira negócios+propostas, segunda visitas+clientes)
-params_list_1 <- list(list("Super","Komatsu"))
+params_list_1 <- list(list("Super"))
+#params_list_1 <- list(list("Super","Komatsu")) ##testar apenas a visitas_mapa
 
 pmap(params_list_1, render_report_neg_prop)
 pmap(params_list_1, render_report_vis_map)

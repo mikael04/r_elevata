@@ -346,5 +346,28 @@ m2 <- m2 %>%
 if(dash == F){
   m2
 }
+#################################################################################
+
+### Gráfico m1_c distribuição das colheitadeiras (Funcionando com círculos de tamanho conforme cont)
+##Colheitadeiras
+m1_c <- leaflet(cli_in_pm_cont_top_c_aux) %>%
+  addTiles() %>%
+  addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
+                   radius = ~cont*4,
+                   popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_c_aux$cliente_nome,
+                                  "<br>",
+                                  "Quantidade de máquinas ", cli_in_pm_cont_top_c_aux$marca_nome,
+                                  " : ", cli_in_pm_cont_top_c_aux$cont),
+                   label = ~marca_nome,
+                   color = ~pal_c(marca_nome),
+                   #clusterOptions = markerClusterOptions(),
+                   group = "Clientes agrupados",
+                   opacity = 0.8
+                   ) %>%
+  addLegend("topright",
+            value = ~marca_nome,
+            pal = pal_c,
+            title = 'Marcas',
+            opacity = .8)
 
 #################################################################################

@@ -1,0 +1,13 @@
+marca_id_i, marca, icon_name, icon_size_x, icon_size_y
+1, NEW HOLLAND, "NH_r.png", 23, 24
+3, CASE IH, "CI_r.png", 28, 24
+4, JOHN DEERE, "JD_r.png", 26, 24
+5, MASSEY FERGUSON, "MF_r.png", 34, 24
+6, AGRALE, "agrale_r.png", 34, 24
+11, VALTRA, "valtra_r.png", 95, 24
+13, JACTO, "jacto_r.png", 24, 24
+120191031172113, PONSSE, "ponsse_r.png", 24, 24
+120130518080852, VALMET, "valmet_r.png", 26, 24
+120120724031949, IDEAL, "ideal_r.png", 19, 24
+120130802084245, SLC, "SLC_r.png", 24, 24
+120130522055326, CBT, "CBT_r.png", 78, 20
