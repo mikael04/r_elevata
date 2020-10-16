@@ -72,11 +72,11 @@ if (params$variable1 == 'Super'){
     empresa = emp_ko
   }
 }
-#teste_d = T
+teste_d = T
 ##teste
 if (teste_d == T){
   #empresa = 0;
-   #empresa = emp_su
+   empresa = emp_su
 }
 ###################################
 
@@ -685,7 +685,6 @@ if (n_color == 1){
 
 #Usando nome da marca como factor 
 cli_in_pm_cont_top_t_aux$marca_nome <- factor(cli_in_pm_cont_top_t_aux$marca_nome)
-pal_t = colorFactor(palette = cores_t, domain = cli_in_pm_cont_top_t_aux$marca_nome)
 
 ##Adicionando pequenas variações
 cli_in_pm_cont_top_t_aux$lat <- jitter(cli_in_pm_cont_top_t_aux$lat, factor = .1, amount = 0)
@@ -738,8 +737,6 @@ if (n_color == 1){
 
 #Usando nome da marca como factor 
 cli_in_pm_cont_top_c_aux$marca_nome <- factor(cli_in_pm_cont_top_c_aux$marca_nome)
-pal_c = colorFactor(palette = cores_c, domain = cli_in_pm_cont_top_c_aux$marca_nome)
-
 
 ##Adicionando pequenas variações
 cli_in_pm_cont_top_c_aux$lat <- jitter(cli_in_pm_cont_top_c_aux$lat, factor = .1, amount = 0)
@@ -747,7 +744,22 @@ cli_in_pm_cont_top_c_aux$long <- jitter(cli_in_pm_cont_top_c_aux$long, factor = 
 
 
 ##Se precisar consultar ícones, tamanho do ícone, marcas e marcas_ids
-#marcas_icones <-read.csv("Icons/marcas_icon_top6.csv")
+# marcas_ic_co <-read.csv("Icons/marcas_icon_top6.csv") %>%
+
+marcas_icon <- iconList(
+                        '1' = makeIcon("Icons/NH_r.png", 23, 24),          ##Caso precise consultar, olhar o csv
+                        '3' = makeIcon("Icons/CI_r.png", 28, 24),
+                        '4' = makeIcon("Icons/JD_r.png", 26, 24),
+                        '5' = makeIcon("Icons/MF_r.png", 34, 24),
+                        '6' = makeIcon("Icons/agrale_r.png", 34, 24),
+                        '13' = makeIcon("Icons/jacto_r.png", 24, 24),
+                        '11' = makeIcon("Icons/valtra_r.png", 95, 24),
+                        '120191031172113' = makeIcon("Icons/ponsse_r.png", 24, 24),
+                        '120130518080852' = makeIcon("Icons/valmet_r.png", 26, 24),
+                        '120120724031949' = makeIcon("Icons/ideal_r.png", 19, 24),
+                        '120130802084245' = makeIcon("Icons/SLC_r.png", 26, 24),
+                        '120130522055326' = makeIcon("Icons/CBT_r.png", 78, 20)
+                    )
 
 ### Gráfico m1 de distribuição das marcas (top5) m1_t = tratores, m1_c = colheitadeiras
 ###################
@@ -755,51 +767,23 @@ cli_in_pm_cont_top_c_aux$long <- jitter(cli_in_pm_cont_top_c_aux$long, factor = 
 
 m1_t <- leaflet(cli_in_pm_cont_top_t_aux) %>%
   addTiles() %>%
-  addMarkers(lat = ~lat, lng = ~long, icon = ~iconList(
-                                                      '1' = makeIcon("Icons/NH_r.png", 23, 24),          ##Caso precise consultar, olhar o csv
-                                                      '3' = makeIcon("Icons/CI_r.png", 28, 24),
-                                                      '4' = makeIcon("Icons/JD_r.png", 26, 24),
-                                                      '5' = makeIcon("Icons/MF_r.png", 34, 24),
-                                                      '6' = makeIcon("Icons/agrale_r.png", 34, 24),
-                                                      '13' = makeIcon("Icons/jacto_r.png", 24, 24),
-                                                      '11' = makeIcon("Icons/valtra_r.png", 95, 24),
-                                                      '120191031172113' = makeIcon("Icons/ponsse_r.png", 24, 24),
-                                                      '120130518080852' = makeIcon("Icons/valmet_r.png", 26, 24),
-                                                      '120120724031949' = makeIcon("Icons/ideal_r.png", 19, 24),
-                                                      '120130802084245' = makeIcon("Icons/SLC_r.png", 26, 24),
-                                                      '120130522055326' = makeIcon("Icons/CBT_r.png", 78, 20)
-                                                  )[produto_marca_id],
+  addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon[produto_marca_id],
                popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_t_aux$cliente_nome,
                               "<br>",
                               "Quantidade de máquinas ", cli_in_pm_cont_top_t_aux$marca_nome,
                               " : ", cli_in_pm_cont_top_t_aux$cont),
                label = ~marca_nome,
-               #color = ~pal_c(marca_nome),
                #clusterOptions = markerClusterOptions(),
                group = "Ícones")
 
 m1_c<- leaflet(cli_in_pm_cont_top_c_aux) %>%
   addTiles() %>%
-  addMarkers(lat = ~lat, lng = ~long, icon = ~iconList(
-                                                      '1' = makeIcon("E:/Mikael/OneDrive/Projetos/Scripts_R/r_elevata/Icons/NH_r.png", 23, 24),          ##Caso precise consultar, olhar o csv
-                                                      '3' = makeIcon("E:/Mikael/OneDrive/Projetos/Scripts_R/r_elevata/Icons/CI_r.png", 28, 24),
-                                                      '4' = makeIcon("E:/Mikael/OneDrive/Projetos/Scripts_R/r_elevata/Icons/JD_r.png", 26, 24),
-                                                      '5' = makeIcon("E:/Mikael/OneDrive/Projetos/Scripts_R/r_elevata/Icons/MF_r.png", 34, 24),
-                                                      '6' = makeIcon("E:/Mikael/OneDrive/Projetos/Scripts_R/r_elevata/Icons/agrale_r.png", 34, 24),
-                                                      '13' = makeIcon("E:/Mikael/OneDrive/Projetos/Scripts_R/r_elevata/Icons/jacto_r.png", 24, 24),
-                                                      '11' = makeIcon("E:/Mikael/OneDrive/Projetos/Scripts_R/r_elevata/Icons/valtra_r.png", 95, 24),
-                                                      '120191031172113' = makeIcon("E:/Mikael/OneDrive/Projetos/Scripts_R/r_elevata/Icons/ponsse_r.png", 24, 24),
-                                                      '120130518080852' = makeIcon("E:/Mikael/OneDrive/Projetos/Scripts_R/r_elevata/Icons/valmet_r.png", 26, 24),
-                                                      '120120724031949' = makeIcon("E:/Mikael/OneDrive/Projetos/Scripts_R/r_elevata/Icons/ideal_r.png", 19, 24),
-                                                      '120130802084245' = makeIcon("E:/Mikael/OneDrive/Projetos/Scripts_R/r_elevata/Icons/SLC_r.png", 26, 24),
-                                                      '120130522055326' = makeIcon("E:/Mikael/OneDrive/Projetos/Scripts_R/r_elevata/Icons/CBT_r.png", 78, 20)
-                                                  )[produto_marca_id],
+  addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon[produto_marca_id],
                popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_c_aux$cliente_nome,
                               "<br>",
                               "Quantidade de máquinas ", cli_in_pm_cont_top_c_aux$marca_nome,
                               " : ", cli_in_pm_cont_top_c_aux$cont),
                label = ~marca_nome,
-               #color = ~pal_c(marca_nome),
                #clusterOptions = markerClusterOptions(),
                group = "Ícones")
 
@@ -807,7 +791,8 @@ m1_c<- leaflet(cli_in_pm_cont_top_c_aux) %>%
 if(teste == F){
   #tabelas
   rm(top5_t, top5_c, aux_c, aux_t, n_color, cli_in_pm_cont_c, cli_in_pm_cont_t, cliente_c_loc,
-     cli_in_pm_cont_top_c_aux, cli_in_pm_cont_top_t_aux,parque_maquina, produto, marca, marca_categoria);
+     cli_in_pm_cont_top_c_aux, cli_in_pm_cont_top_t_aux,parque_maquina, produto, marca, marca_categoria,
+     marcas_icon);
   #variáveis
   rm(cores_c, cores_t);
 }
@@ -833,15 +818,23 @@ cli_in_pm_cont_top_t <- cli_in_pm_cont_top_t %>%
   arrange(desc(sum)) %>%
   ungroup()
 
-cli_in_pm_cont_top_t <- cli_in_pm_cont_top_t %>%
-  mutate(cor = NA)
+# cli_in_pm_cont_top_t <- cli_in_pm_cont_top_t %>%
+#   mutate(cor = NA)
 ## Vou usar para consultar as cores de cada marca para o m2_t e m2_c
-marcas_cores <- read.csv("marcas_cores.csv")
+#marcas_cores <- read.csv("marcas_cores.csv")
+
 ##Adicionando a cor, de "OUTRAS*" -> Na ordem q ela aparece
-cores_t <- c("#003E85", "#E64439", '#ACA593',"#39832A", "#FFC500","#808080")
+#cores_t <- c("#003E85", "#E64439", '#ACA593',"#39832A", "#FFC500","#808080")
 ##Preciso fazer os factores de modo automático
 cli_in_pm_cont_top_t$marca_nome <- reorder(cli_in_pm_cont_top_t$marca_nome, desc(cli_in_pm_cont_top_t$sum))
 
+marcas_ic_co <-read.csv("Icons/marcas_icon_top6.csv") %>%
+  select (marca_id_i, cor)
+marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
+# #cores_t 
+cli_in_pm_cont_top_t <- inner_join(cli_in_pm_cont_top_t, marcas_ic_co, by = c("produto_marca_id" = "marca_id_i"))
+cores_t <- as.vector(cli_in_pm_cont_top_t$cor)
+cores_t
 #Colheitadeiras
 if(nrow(cli_in_pm_cont_top_c) > 5)
 {
@@ -860,20 +853,26 @@ cli_in_pm_cont_top_c <- cli_in_pm_cont_top_c %>%
   arrange(desc(sum)) %>%
   ungroup()
 
-cli_in_pm_cont_top_c <- cli_in_pm_cont_top_c %>%
-  mutate(cor = NA)
-
-##Adicionando a cor, de "OUTRAS*" -> Na ordem q ela aparece
-cores_c <- c("#003E85", "#E64439", '#ACA593',"#39832A", "#FFC500","#808080")
 ##Preciso fazer os factores de modo automático
 cli_in_pm_cont_top_c$marca_nome <- reorder(cli_in_pm_cont_top_c$marca_nome, desc(cli_in_pm_cont_top_c$sum))
+# #cores_c #
+cli_in_pm_cont_top_c <- inner_join(cli_in_pm_cont_top_c, marcas_ic_co, by = c("produto_marca_id" = "marca_id_i"))
+cores_c <- as.vector(cli_in_pm_cont_top_c$cor)
+cores_t
+cores_c
+#Estou lendo apenas aqui, já que vou precisar somente agora das cores pra setar o domínio do "pal"
+# marcas_ic_co <-read.csv("Icons/marcas_icon_top6.csv") %>%
+#   select (marca, cor)
+# ##Pal pra determinar as cores e seus domínios (nome da marca)
+# marcas_ic_co$marca <- factor(marcas_ic_co$marca)
+# pal = colorFactor(palette = marcas_ic_co$cor, domain = marcas_ic_co$marca)
 ### Gráfico m2 de distribuição das marcas (top5)
 ###################
-
 m2_t <- plot_ly(cli_in_pm_cont_top_t, type = 'bar', orientation = 'v',
               x = ~marca_nome,
               y = ~sum,
-              color = ~marca_nome,
+              # color = ~pal(marca_nome), ##Pal deixou de funcionar, procurar depois
+              color = ~marca_nome,     #Se quiser setar pela tabela, com join, senáo usar o factor como é feito acima
               colors = cores_t,
               showlegend = FALSE)
 
@@ -891,7 +890,8 @@ if(dash == F){
 m2_c <- plot_ly(cli_in_pm_cont_top_c, type = 'bar', orientation = 'v',
               x = ~marca_nome,
               y = ~sum,
-              color = ~marca_nome,
+              # color = ~pal(marca_nome),
+              color = ~marca_nome,     #Se quiser setar pela tabela, com join, senáo usar o factor como é feito acima
               colors = cores_c,
               showlegend = FALSE)
 

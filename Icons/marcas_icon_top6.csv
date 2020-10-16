@@ -1,13 +1,14 @@
-marca_id_i, marca, icon_name, icon_size_x, icon_size_y
-1, NEW HOLLAND, "NH_r.png", 23, 24
-3, CASE IH, "CI_r.png", 28, 24
-4, JOHN DEERE, "JD_r.png", 26, 24
-5, MASSEY FERGUSON, "MF_r.png", 34, 24
-6, AGRALE, "agrale_r.png", 34, 24
-11, VALTRA, "valtra_r.png", 95, 24
-13, JACTO, "jacto_r.png", 24, 24
-120191031172113, PONSSE, "ponsse_r.png", 24, 24
-120130518080852, VALMET, "valmet_r.png", 26, 24
-120120724031949, IDEAL, "ideal_r.png", 19, 24
-120130802084245, SLC, "SLC_r.png", 24, 24
-120130522055326, CBT, "CBT_r.png", 78, 20
+marca_id_i, marca, icon_path, icon_size_x, icon_size_y, cor
+-1,OUTRAS*,"", 0, 0,"#984DD5"
+1,NEW HOLLAND,"NH_r.png", 23, 24,"#064485"
+3,CASE IH,"CI_r.png", 28, 24,"#808080"
+4,JOHN DEERE,"JD_r.png", 26, 24,"#39832A"
+5,MASSEY FERGUSON,"MF_r.png", 34, 24,"#E20512"
+6,AGRALE,"agrale_r.png", 34, 24,"#F20005"
+11,VALTRA,"valtra_r.png", 95, 24,"#FFD503"
+13,JACTO,"jacto_r.png", 24, 24,"#008835"
+120191031172113,PONSSE,"ponsse_r.png", 24, 24,"#FFD503"
+120130518080852,VALMET,"valmet_r.png", 26, 24,"#4EA94A"
+120120724031949,IDEAL,"ideal_r.png", 19, 24,"#00AB57"
+120130802084245,SLC,"SLC_r.png", 24, 24,"#008D4F"
+120130522055326,CBT,"CBT_r.png", 78, 20,"#7C807D"
