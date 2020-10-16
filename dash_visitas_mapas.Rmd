@@ -72,11 +72,11 @@ if (params$variable1 == 'Super'){
     empresa = emp_ko
   }
 }
-teste_d = T
+# teste_d = T
 ##teste
 if (teste_d == T){
   #empresa = 0;
-   empresa = emp_su
+   # empresa = emp_su
 }
 ###################################
 
@@ -792,9 +792,9 @@ if(teste == F){
   #tabelas
   rm(top5_t, top5_c, aux_c, aux_t, n_color, cli_in_pm_cont_c, cli_in_pm_cont_t, cliente_c_loc,
      cli_in_pm_cont_top_c_aux, cli_in_pm_cont_top_t_aux,parque_maquina, produto, marca, marca_categoria,
-     marcas_icon);
+     marcas_icon, categoria);
   #variáveis
-  rm(cores_c, cores_t);
+  rm();
 }
 
 ###################
@@ -818,23 +818,18 @@ cli_in_pm_cont_top_t <- cli_in_pm_cont_top_t %>%
   arrange(desc(sum)) %>%
   ungroup()
 
-# cli_in_pm_cont_top_t <- cli_in_pm_cont_top_t %>%
-#   mutate(cor = NA)
 ## Vou usar para consultar as cores de cada marca para o m2_t e m2_c
 #marcas_cores <- read.csv("marcas_cores.csv")
 
-##Adicionando a cor, de "OUTRAS*" -> Na ordem q ela aparece
-#cores_t <- c("#003E85", "#E64439", '#ACA593',"#39832A", "#FFC500","#808080")
-##Preciso fazer os factores de modo automático
+##Cria factor e ordena o meu gráfico
 cli_in_pm_cont_top_t$marca_nome <- reorder(cli_in_pm_cont_top_t$marca_nome, desc(cli_in_pm_cont_top_t$sum))
 
 marcas_ic_co <-read.csv("Icons/marcas_icon.csv") %>%
   select (marca_id_i, cor)
 marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
-# #cores_t
+#cores_t
 cli_in_pm_cont_top_t <- inner_join(cli_in_pm_cont_top_t, marcas_ic_co, by = c("produto_marca_id" = "marca_id_i"))
 cores_t <- as.vector(cli_in_pm_cont_top_t$cor)
-cores_t
 #Colheitadeiras
 if(nrow(cli_in_pm_cont_top_c) > 5)
 {
@@ -853,19 +848,19 @@ cli_in_pm_cont_top_c <- cli_in_pm_cont_top_c %>%
   arrange(desc(sum)) %>%
   ungroup()
 
-##Preciso fazer os factores de modo automático
+
+##Cria factor e ordena o meu gráfico
 cli_in_pm_cont_top_c$marca_nome <- reorder(cli_in_pm_cont_top_c$marca_nome, desc(cli_in_pm_cont_top_c$sum))
-# #cores_c #
+#cores_c
 cli_in_pm_cont_top_c <- inner_join(cli_in_pm_cont_top_c, marcas_ic_co, by = c("produto_marca_id" = "marca_id_i"))
 cores_c <- as.vector(cli_in_pm_cont_top_c$cor)
-cores_t
-cores_c
-#Estou lendo apenas aqui, já que vou precisar somente agora das cores pra setar o domínio do "pal"
+# #Estou lendo apenas aqui, já que vou precisar somente agora das cores pra setar o domínio do "pal"
 # marcas_ic_co <-read.csv("Icons/marcas_icon.csv") %>%
-#   select (marca, cor)
-# ##Pal pra determinar as cores e seus domínios (nome da marca)
-# marcas_ic_co$marca <- factor(marcas_ic_co$marca)
+#   select (marca_id_i, marca, cor)
+# marcas_ic_co$marca <- reorder(marcas_ic_co$marca, marcas_ic_co$marca_id_i)
+# # ##Pal pra determinar as cores e seus domínios (nome da marca)
 # pal = colorFactor(palette = marcas_ic_co$cor, domain = marcas_ic_co$marca)
+
 ### Gráfico m2 de distribuição das marcas (top5)
 ###################
 m2_t <- plot_ly(cli_in_pm_cont_top_t, type = 'bar', orientation = 'v',
@@ -909,9 +904,10 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(cli_in_pm_cont_top_t, cli_in_pm_cont_top_c, cli_in_pm_in_p_in_m, cli_in_pm_in_p, cli_in_pm);
+  rm(cli_in_pm_cont_top_t, cli_in_pm_cont_top_c, cli_in_pm_in_p_in_m, cli_in_pm_in_p, cli_in_pm, top10_c, top10_t,
+     marcas_ic_co);
   #variáveis
-  rm(i);
+  rm(i, cores_c, cores_t);
 }
 
 #######################################################################
