@@ -110,7 +110,7 @@ con <- DBI::dbConnect(odbc::odbc(),
 #########################################################################################################
 #########################################################################################################
 
-##Distribuição de clientes, mostrando no label nome do cliente, nome do vendedor e última visita 
+##Distribuição de clientes, mostrando no label nome do cliente, nome do vendedor e última visita
 cliente <- tbl(con,'cliente') %>%
   select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_vendedor_id, cliente_empresa_id) %>%
   collect ()
@@ -131,11 +131,11 @@ vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
 
 ##Clientes da empresa correta ##Clientes com valor NA, valores 0 e valores positivos de latlong (hemisf norte, leste do globo) removidos
 cliente_c_loc <- cliente %>%
-  filter (!is.null(cliente_latitude), !is.na(cliente_latitude), cliente_empresa_id == empresa, cliente_latitude < 0, cliente_longitude < 0) %>% 
+  filter (!is.null(cliente_latitude), !is.na(cliente_latitude), cliente_empresa_id == empresa, cliente_latitude < 0, cliente_longitude < 0) %>%
   rename(lat = cliente_latitude, long = cliente_longitude) %>%
   mutate(lat = as.numeric(lat), long = as.numeric(long))
 
-##Serão feitas as junções apenas com clientes que possuem 
+##Serão feitas as junções apenas com clientes que possuem
 ##Aqui já vou filtrar só por vendedores ativos, fazer pra inativos depois
 cli_in_ven <- inner_join(cliente_c_loc, vendedor, by = c('cliente_vendedor_id'='vendedor_id'))
 
@@ -144,7 +144,7 @@ vcUltVis <- visita_cliente %>%
   arrange(desc(vc_data_cadastro)) %>%
   group_by(vc_cliente_id) %>%
   distinct(vc_cliente_id, .keep_all = T) %>%
-  ungroup () 
+  ungroup ()
 
 
 ##Categorias de idades
@@ -167,7 +167,7 @@ cli_in_ven_in_vcUltVis$idade_vis <- with(cli_in_ven_in_vcUltVis, cut(idade, brea
 pal = colorFactor(palette = cor_idade_vis, domain = cli_in_ven_in_vcUltVis$idade_vis)
 
 ### Gráfico m0 de distribuição dos clientes por empresa
-m0 <- leaflet(cli_in_ven_in_vcUltVis) %>% 
+m0 <- leaflet(cli_in_ven_in_vcUltVis) %>%
   addTiles() %>%
   addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
                    popup = paste0( "Nome do cliente:", cli_in_ven_in_vcUltVis$cliente_nome,
@@ -235,7 +235,7 @@ cli_in_pm_in_p_in_m <- inner_join(cli_in_pm_in_p, marca, by = c("produto_marca_i
 ##Aqui obtenho todos os clientes e marcas, próximo passo é fazer o top5
 cli_in_pm_cont_t <- cli_in_pm_in_p_in_m %>%
   select(cliente_id, cliente_nome, lat, long, produto_marca_id, marca_nome, produto_categoria_id) %>%
-  filter(produto_categoria_id == 1) %>% 
+  filter(produto_categoria_id == 1) %>%
   group_by(cliente_id, produto_marca_id) %>%
   mutate(cont = n()) %>%
   distinct (cliente_id, .keep_all = T) %>%
@@ -274,7 +274,7 @@ if (n_color == 1){
   cores_t <- brewer.pal(n_color,'BrBG')
 }
 
-#Usando nome da marca como factor 
+#Usando nome da marca como factor
 cli_in_pm_cont_top_t_aux$marca_nome <- factor(cli_in_pm_cont_top_t_aux$marca_nome)
 
 ##Adicionando pequenas variações
@@ -287,7 +287,7 @@ cli_in_pm_cont_top_t_aux$long <- jitter(cli_in_pm_cont_top_t_aux$long, factor = 
 ##Aqui obtenho todos os clientes e marcas, próximo passo é fazer o top5
 cli_in_pm_cont_c <- cli_in_pm_in_p_in_m %>%
   select(cliente_id, cliente_nome, lat, long, produto_marca_id, marca_nome, produto_categoria_id) %>%
-  filter(produto_categoria_id == 2) %>% 
+  filter(produto_categoria_id == 2) %>%
   group_by(cliente_id, produto_marca_id) %>%
   mutate(cont = n()) %>%
   distinct (cliente_id, .keep_all = T) %>%
@@ -326,7 +326,7 @@ if (n_color == 1){
   cores_c <- brewer.pal(n_color,'BrBG')
 }
 
-#Usando nome da marca como factor 
+#Usando nome da marca como factor
 cli_in_pm_cont_top_c_aux$marca_nome <- factor(cli_in_pm_cont_top_c_aux$marca_nome)
 
 ##Adicionando pequenas variações
@@ -422,7 +422,7 @@ cli_in_pm_cont_top_t$marca_nome <- reorder(cli_in_pm_cont_top_t$marca_nome, desc
 marcas_ic_co <-read.csv("Icons/marcas_icon.csv") %>%
   select (marca_id_i, cor)
 marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
-# #cores_t 
+# #cores_t
 cli_in_pm_cont_top_t <- inner_join(cli_in_pm_cont_top_t, marcas_ic_co, by = c("produto_marca_id" = "marca_id_i"))
 cores_t <- as.vector(cli_in_pm_cont_top_t$cor)
 cores_t
