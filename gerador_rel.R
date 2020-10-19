@@ -53,6 +53,19 @@ render_report_vis_map_k <- function(var1) {
                     params = parameters)
   invisible(TRUE)
 }
+render_report_vis_map_k <- function(var1) {
+  
+  template <- "dash_visitas_mapas_k.Rmd"
+  
+  out_file <- sprintf("Dashs/Visitas_Mapas_%s", var1)
+  
+  parameters <- list(variable1 = var1)
+  
+  rmarkdown::render(template,
+                    output_file = out_file,
+                    params = parameters)
+  invisible(TRUE)
+}
 
 render_report_neg_vis <- function(var1) {
 
@@ -85,7 +98,7 @@ library(purrr)
 ##Gerando das que tem propostas (duas dashs separadas, a primeira negócios+propostas, segunda visitas+clientes)
 #params_list_1 <- list(list("Super","Komatsu"))
 params_list_1 <- list(list("Super"),list("Komatsu"))
-##params_list_1 <- list(list("Super","Komatsu")) ##testar apenas a visitas_mapa
+#params_list_1 <- list(list("Super","Komatsu")) ##testar apenas a visitas_mapa
 pmap(params_list_1, render_report_neg_prop)
 #pmap(params_list_1, render_report_vis_map)
 pmap(params_list_1[[1]], render_report_vis_map)
