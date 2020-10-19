@@ -108,6 +108,9 @@ con <- DBI::dbConnect(odbc::odbc(),
                       Database = 'nhmobile_agriculture',
                       Trusted_Connection = 'True')
 
+#################################################################################
+##Começando scripts de visitas e clientes
+#################################################################################
 ##Collect cria o df resultado da query, nesse caso, visitas_cliente
 visita_cliente <- tbl(con,'visita_cliente') %>%
   select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
@@ -638,10 +641,12 @@ cli_in_pm_in_p <- inner_join(cli_in_pm, produto, by = c("pm_produto_id" = "produ
 
 cli_in_pm_in_p_in_m <- inner_join(cli_in_pm_in_p, marca, by = c("produto_marca_id" = "marca_id")) %>%
   select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id, produto_nome, produto_marca_id, marca_nome, produto_categoria_id, produto_empresa_id)
+
 #########################
 ##Começando o top para tratores
 #########################
 ##Aqui obtenho todos os clientes e marcas, próximo passo é fazer o top5
+if(empresa == 16){
 cli_in_pm_cont_t <- cli_in_pm_in_p_in_m %>%
   select(cliente_id, cliente_nome, lat, long, produto_marca_id, marca_nome, produto_categoria_id) %>%
   filter(produto_categoria_id == 1) %>%
@@ -649,6 +654,14 @@ cli_in_pm_cont_t <- cli_in_pm_in_p_in_m %>%
   mutate(cont = n()) %>%
   distinct (cliente_id, .keep_all = T) %>%
   ungroup()
+}else{
+cli_in_pm_cont_t <- cli_in_pm_in_p_in_m %>%
+  select(cliente_id, cliente_nome, lat, long, produto_marca_id, marca_nome, produto_categoria_id) %>%
+  group_by(cliente_id, produto_marca_id) %>%
+  mutate(cont = n()) %>%
+  distinct (cliente_id, .keep_all = T) %>%
+  ungroup()
+}
 
 
 ##Criando o top5 de categorias
@@ -674,15 +687,6 @@ n_color <- nrow(cli_in_pm_cont_top_t_aux %>%
   distinct(produto_marca_id) %>%
   ungroup())
 
-##aleatório (3-8 cores)
-if (n_color == 1){
-  cores_t = c("blue")
-}else if(n_color == 2){
-  cores_t = c("blue", "red")
-}else{
-  cores_t <- brewer.pal(n_color,'BrBG')
-}
-
 #Usando nome da marca como factor
 cli_in_pm_cont_top_t_aux$marca_nome <- factor(cli_in_pm_cont_top_t_aux$marca_nome)
 
@@ -690,6 +694,7 @@ cli_in_pm_cont_top_t_aux$marca_nome <- factor(cli_in_pm_cont_top_t_aux$marca_nom
 cli_in_pm_cont_top_t_aux$lat <- jitter(cli_in_pm_cont_top_t_aux$lat, factor = .1, amount = 0)
 cli_in_pm_cont_top_t_aux$long <- jitter(cli_in_pm_cont_top_t_aux$long, factor = .1, amount = 0)
 
+if(empresa == 16){
 #########################
 ##Começando o top para colheitadeiras
 #########################
@@ -726,15 +731,6 @@ n_color <- nrow(cli_in_pm_cont_top_c_aux %>%
   distinct(produto_marca_id) %>%
   ungroup())
 
-##aleatório (3-8 cores)
-if (n_color == 1){
-  cores_c = c("blue")
-}else if(n_color == 2){
-  cores_c = c("blue", "red")
-}else{
-  cores_c <- brewer.pal(n_color,'BrBG')
-}
-
 #Usando nome da marca como factor
 cli_in_pm_cont_top_c_aux$marca_nome <- factor(cli_in_pm_cont_top_c_aux$marca_nome)
 
@@ -742,7 +738,7 @@ cli_in_pm_cont_top_c_aux$marca_nome <- factor(cli_in_pm_cont_top_c_aux$marca_nom
 cli_in_pm_cont_top_c_aux$lat <- jitter(cli_in_pm_cont_top_c_aux$lat, factor = .1, amount = 0)
 cli_in_pm_cont_top_c_aux$long <- jitter(cli_in_pm_cont_top_c_aux$long, factor = .1, amount = 0)
 
-
+}
 ##Se precisar consultar ícones, tamanho do ícone, marcas e marcas_ids
 # marcas_ic_co <-read.csv("Icons/marcas_icon.csv") %>%
 
@@ -781,6 +777,10 @@ m1_t <- leaflet(cli_in_pm_cont_top_t_aux) %>%
                #clusterOptions = markerClusterOptions(),
                group = "Ícones")
 
+if(dash == T){
+  m1_t
+}
+if(empresa == 16){
 m1_c<- leaflet(cli_in_pm_cont_top_c_aux) %>%
   addTiles() %>%
   addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon[produto_marca_id],
@@ -792,13 +792,16 @@ m1_c<- leaflet(cli_in_pm_cont_top_c_aux) %>%
                #clusterOptions = markerClusterOptions(),
                group = "Ícones")
 
-
+}
 if(teste == F){
   #tabelas
-  rm(top5_t, top5_c, aux_c, aux_t, n_color, cli_in_pm_cont_c, cli_in_pm_cont_t, cliente_c_loc,
-     cli_in_pm_cont_top_c_aux, cli_in_pm_cont_top_t_aux,parque_maquina, produto, marca, marca_categoria,
+  rm(top5_t, aux_t, n_color, cli_in_pm_cont_t, cliente_c_loc,
+     cli_in_pm_cont_top_t_aux,parque_maquina, produto, marca, marca_categoria,
      marcas_icon, categoria);
   #variáveis
+  if(empresa==16){
+    rm(top5_c, aux_c, cli_in_pm_cont_c, cli_in_pm_cont_top_c_aux)
+  }
   rm();
 }
 
@@ -835,6 +838,7 @@ marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
 #cores_t
 cli_in_pm_cont_top_t <- inner_join(cli_in_pm_cont_top_t, marcas_ic_co, by = c("produto_marca_id" = "marca_id_i"))
 cores_t <- as.vector(cli_in_pm_cont_top_t$cor)
+if(empresa == 16){
 #Colheitadeiras
 if(nrow(cli_in_pm_cont_top_c) > 5)
 {
@@ -865,7 +869,7 @@ cores_c <- as.vector(cli_in_pm_cont_top_c$cor)
 # marcas_ic_co$marca <- reorder(marcas_ic_co$marca, marcas_ic_co$marca_id_i)
 # # ##Pal pra determinar as cores e seus domínios (nome da marca)
 # pal = colorFactor(palette = marcas_ic_co$cor, domain = marcas_ic_co$marca)
-
+}
 ### Gráfico m2 de distribuição das marcas (top5)
 ###################
 m2_t <- plot_ly(cli_in_pm_cont_top_t, type = 'bar', orientation = 'v',
@@ -873,7 +877,7 @@ m2_t <- plot_ly(cli_in_pm_cont_top_t, type = 'bar', orientation = 'v',
               y = ~sum,
               # color = ~pal(marca_nome), ##Pal deixou de funcionar, procurar depois
               color = ~marca_nome,     #Se quiser setar pela tabela, com join, senáo usar o factor como é feito acima
-              colors = cores_t,
+              colors = ~cor,
               showlegend = FALSE)
 
 m2_t <- m2_t %>%
@@ -887,6 +891,7 @@ if(dash == F){
 ## Gráfico m2 de distribuição das marcas (top5)
 ###################
 
+if(empresa == 16) {
 m2_c <- plot_ly(cli_in_pm_cont_top_c, type = 'bar', orientation = 'v',
               x = ~marca_nome,
               y = ~sum,
@@ -902,6 +907,7 @@ m2_c <- m2_c %>%
 if(dash == F){
   m2_c
 }
+}
 ### Debug para ver as 10 marcas que mais aparecem (para buscar ícones)
 # library(DT)
 # m2_1_t <- datatable(top10_t)
@@ -909,10 +915,13 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(cli_in_pm_cont_top_t, cli_in_pm_cont_top_c, cli_in_pm_in_p_in_m, cli_in_pm_in_p, cli_in_pm, top10_c, top10_t,
+  rm(cli_in_pm_cont_top_t, cli_in_pm_in_p_in_m, cli_in_pm_in_p, cli_in_pm, top10_t,
      marcas_ic_co);
   #variáveis
-  rm(i, cores_c, cores_t);
+  if(empresa == 16) {
+    rm(cli_in_pm_cont_top_c, top10_c, cores_c)
+  }
+  rm(i, cores_t);
 }
 
 #######################################################################
@@ -985,7 +994,6 @@ c1
 c2
 
 ```
-
 
 
 Mapa dos clientes
