@@ -6,6 +6,7 @@ output:
     vertical_layout: fill
 params:
   variable1: "emp_par"
+  variable2: "flex_d"
 ---
 
 ```{r setup, include=FALSE}
@@ -54,7 +55,6 @@ ano_atual = '2020-01-01'
 #usados = T
 
 
-
 ##Variável "Global"
 emp_am = 42 # Amazonia
 emp_ar = 77 # Araguaia
@@ -72,13 +72,14 @@ if (params$variable1 == 'Super'){
     empresa = emp_ko
   }
 }
-# teste_d = T
+
+
+#teste_d = T
 ##teste
 if (teste_d == T){
   #empresa = 0;
-   # empresa = emp_su
+   #empresa = emp_ko
 }
-###################################
 
 ##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
 func_nome <- function (nome_comp)
@@ -1006,7 +1007,7 @@ m0
 
 ```
 
-Mapa das marcas de Tratores
+Mapa das marcas
 =======================================================================
 
 Column {data-width=750}
@@ -1014,7 +1015,7 @@ Column {data-width=750}
 
 ### Mapa das marcas
 ```{r}
-### Gráfico m1 de distribuição das marcas (top5) de tratores
+### Gráfico m1 de distribuição das marcas (top5) da komatsu
 m1_t
 
 ```
@@ -1024,30 +1025,7 @@ Column {data-width=350}
 
 ### Distribuição das marcas
 ```{r}
-### Gráfico m2 de distribuição das marcas de tratores
+### Gráfico m2 de distribuição das marcas da komatsu
 m2_t
-
-```
-
-Mapa das marcas de Colheitadeiras
-=======================================================================
-
-Column {data-width=750}
------------------------------------------------------------------------
-
-### Mapa das marcas
-```{r}
-### Gráfico m1 de distribuição das marcas (top5) de colheitadeiras
-m1_c
-
-```
-
-Column {data-width=350}
------------------------------------------------------------------------
-
-### Distribuição das marcas
-```{r}
-### Gráfico m2 de distribuição das marcas de colheitadeiras
-m2_c
 
 ```

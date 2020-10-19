@@ -40,7 +40,7 @@ library(leaflet)
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável para testar empresa individualmente
 teste_d = F
 ####Variável usada para não plotar os gráficos na dash
@@ -80,7 +80,7 @@ if (params$variable1 == 'Amazonia'){
 teste_d = T
 ##teste
 if (teste_d == T){
-  empresa <- emp_ko
+  empresa <- emp_ta
 }
 ###################################
 
