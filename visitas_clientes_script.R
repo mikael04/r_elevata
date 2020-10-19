@@ -22,7 +22,7 @@ library(extrafont)
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
 dash = F
 ####Variavel global c/ ano atual (para comparação)
@@ -280,9 +280,9 @@ vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_v
 c0 <- plot_ly(vend_cli_vis_neg, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
               name = 'Clientes (total)')
 c0 <- c0 %>%
-  add_trace(y= ~n_visitas, name = 'Visitas (2020)', type = 'bar')
+  add_trace(y= ~n_visitas, name = 'Visitas (2020)')
 c0 <- c0 %>%
-  add_trace(y= ~n_negocios, name = 'Negócios (2020)', type = 'bar')
+  add_trace(y= ~n_negocios, name = 'Negócios (2020)')
 c0 <- c0 %>%
  layout(barmode = 'grouped',
         xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
@@ -355,7 +355,7 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(cli_ij_ng, cli_2020_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_2020, n_2020_p, cliente_2020);
+  rm(cli_2020_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_2020, n_2020_p, cliente_2020);
   #variáveis
   rm(n_cli_cneg, n_cli_cneg_2020, n_clientes, n_clientes_2020, colors_pie);
 }
@@ -473,10 +473,83 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(cliente, visita_cliente, negocio, vendedor, vis_st_emp, cli_ij_vc_mes, cli_ij_vc_ij_ng_mes,
+  rm(vendedor, vis_st_emp, cli_ij_vc_mes, cli_ij_vc_ij_ng_mes,
      clientes_mes, negocios_mes, ng_ij_emp, visitas_mes, vc_ij_emp, visita_status, visita_status_empresa);
   #variáveis
   rm(meses);
+}
+####################################
+###Clientes que tiveram negócios, quantas visitas recebem (histograma) e clientes que não tiveram negócios, quantas visitas recebem
+####################################
+
+#cli_ij_ng <- já tenho, clientes que já possuem negócios
+##Clientes sem negócio
+cli_s_neg <- anti_join(cliente, negocio, by=c("cliente_id" = "negocio_cliente_id")) %>%
+  select(cliente_id) %>%
+  mutate (neg = F)
+##Clientes com negócio
+cli_c_neg <- cli_ij_ng %>%
+  select (cliente_id, negocio_id) %>%
+  ungroup() %>%
+  mutate (neg = T)
+
+cli_s_neg_ij_vis <- inner_join(cli_s_neg, visita_cliente, by = c("cliente_id" = "vc_cliente_id"))
+cli_c_neg_ij_vis <- inner_join(cli_c_neg, visita_cliente, by = c("cliente_id" = "vc_cliente_id"))
+
+##Contanto visitas por cliente, dos que não tem negócios
+cli_s_neg_ij_vis_cont <- cli_s_neg_ij_vis %>%
+  group_by(cliente_id) %>%
+  count(name = "num_visitas") %>%
+  ungroup()
+
+##Contanto visitas por cliente, dos que tem negócios
+cli_c_neg_ij_vis_cont <- cli_c_neg_ij_vis %>%
+  group_by(cliente_id, negocio_id) %>%
+  count(name = "num_visitas") %>%
+  ungroup()
+
+
+### Gráfico c4 - Histograma de distirbuição clientes por visitas, clientes com negócios
+
+c4 <- plot_ly() %>%
+  add_histogram(data =  cli_c_neg_ij_vis_cont, x = ~num_visitas, name = "Intervalo de visitas, clientes COM negócios", nbinsx = max(cli_c_neg_ij_vis_cont$num_visitas),
+                marker = list(color = "blue"), opacity = 0.6) %>%
+  layout (xaxis = list(title = 'Intervalos'),
+          yaxis = list(title = 'Número de clientes'))
+
+if(dash == F){
+  c4
+}
+
+### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios
+c5 <- plot_ly() %>%
+  
+add_histogram(data =  cli_s_neg_ij_vis_cont, x = ~num_visitas, name = "Intervalo de visitas, clientes SEM negócios", nbinsx = max(cli_c_neg_ij_vis_cont$num_visitas),
+              marker = list(color = "darkorange"), opacity = 0.6) %>%
+  layout (xaxis = list(title = 'Intervalos'),
+          yaxis = list(title = 'Número de clientes'))
+
+if(dash == F){
+  c5
+}
+
+### Gráfico c4_c5 - Ambos histogramas anteriores (c4 e c5)
+c4_c5 <- subplot(c4, c5) %>%
+  layout(legend = list(x=0.7, y=0.9),
+         title = "Clientes por intervalo",
+         xaxis = list(title = ''),
+         yaxis = list(title = 'Distribuição de clientes'))
+
+if(dash == F){
+  c4_c5
+}
+
+if(teste == F){
+  #tabelas
+  rm(visita_cliente, cliente, negocio, cli_ij_ng, cli_c_neg_ij_vis_cont, cli_s_neg_ij_vis_cont,
+     cli_c_neg_ij_vis, cli_s_neg_ij_vis, cli_c_neg, cli_s_neg);
+  #variáveis
+  rm();
 }
 
 ########################################################

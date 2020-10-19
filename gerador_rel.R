@@ -101,6 +101,7 @@ params_list_1 <- list(list("Super"),list("Komatsu"))
 #params_list_1 <- list(list("Super","Komatsu")) ##testar apenas a visitas_mapa
 pmap(params_list_1, render_report_neg_prop)
 #pmap(params_list_1, render_report_vis_map)
+##Um para cada, já que a komatsu vai mostrar apenas uma categoria enquanto a super divide em tratores e colheitadeiras
 pmap(params_list_1[[1]], render_report_vis_map)
 pmap(params_list_1[[2]], render_report_vis_map_k)
 
