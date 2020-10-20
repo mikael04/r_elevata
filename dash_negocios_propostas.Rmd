@@ -117,6 +117,13 @@ func_fmt_numbr <- function(inteiro)
   return(inteiro_br)
 }
 
+##Conexão com o banco de dados
+con <- DBI::dbConnect(odbc::odbc(),
+                      Driver = 'SQL Server',
+                      Server = 'localhost\\SQLEXPRESS01',
+                      Database = 'nhmobile_agriculture',
+                      Trusted_Connection = 'True')
+
 ###Começando scripts negocio_scripts
 ###########################################################################################################
 

@@ -29,26 +29,47 @@ library(emojifont)
 library(extrafont)
 
 
+###################################
+##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = T
+teste = F
+####Variável para testar empresa individualmente
+teste_d = F
 ####Variável usada para não plotar os gráficos na dash
-dash = F
+dash = T
 ####Variavel global c/ ano atual (para comparação)
 ano_atual = '2020-01-01'
+####Variável global para ver se tem usados Ainda não usada
+#usados = T
+
 
 ##Variável "Global"
 emp_am = 42 # Amazonia
 emp_ar = 77 # Araguaia
 emp_ko = 78 # Komatsu
 emp_ms = 35 # Ms
-emp_su = 16 # Super
 emp_si = 59 # Simex 
+emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
 ##Empresa utilizada
-empresa <- emp_ko
+if (params$variable1 == 'Super'){
+  empresa = emp_su
+} else{
+  if(params$variable1 == 'Komatsu'){
+    empresa = emp_ko
+  }
+}
 
-#Alterar o valor de inteiro para reais
+#teste_d = T
+##teste
+if (teste_d == T){
+  empresa = 0;
+  #empresa = emp_su
+}
+###################################
+
+##Alterar o valor de inteiro para reais
 func_fmt_din <- function(inteiro)
 {
   inteiro_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
@@ -82,12 +103,12 @@ func_fmt_numbr <- function(inteiro)
   return(inteiro_br)
 }
 
+##Conexão com o banco de dados
 con <- DBI::dbConnect(odbc::odbc(),
-                      Driver = "SQL Server",
-                      Server = "localhost\\SQLEXPRESS01",
-                      Database = "nhmobile_agriculture",
-                      Trusted_Connection = "True")
-
+                      Driver = 'SQL Server',
+                      Server = 'localhost\\SQLEXPRESS01',
+                      Database = 'nhmobile_agriculture',
+                      Trusted_Connection = 'True')
 
 ###Começando scripts negocio_scripts
 ###########################################################################################################
@@ -171,14 +192,12 @@ n0 <- plot_ly(ng_ij_vn_ij_np_fat, type = 'bar', orientation = 'h', x = ~total_fa
               colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"),
               name = ~negocio_status,
               showlegend = TRUE
-              )
+)
 
 n0 <- n0 %>%
   layout(barmode = 'stack',
          xaxis = list(title = ''),
-         yaxis = list(title = ''),
-         legend = list(orientation = "h",   # show entries horizontally
-                       xanchor = "center"))
+         yaxis = list(title = ''))
 
 if(dash == F){
   n0
@@ -258,7 +277,7 @@ n3 <- plot_ly(ng_ij_vn_ij_np_fech_fat, type = 'bar', orientation = 'h', x = ~tot
               color = ~negocio_status,
               colors = c("#32CD32", "yellow", "orange", "#DE0D26"),
               name = ~negocio_status,
-              showlegend = F
+              showlegend = T
 )
 
 n3 <- n3 %>%
@@ -270,16 +289,6 @@ n3 <- n3 %>%
 
 if(dash == F){
   n3
-}
-
-subplot(n0, n3, shareY = TRUE)
-
-
-if (teste == F){
-  #tabelas
-  rm(historico_negocio_situacao_2020, negocio_ij_vendedor, negocio_ij_historico_ij_vendedor_2020, historico_negocio_situacao, ng_ij_vn_ij_np_fech_fat, ng_ij_hist_ij_ven_2020_ij_np_fec)
-  #variáveis
-  rm (ff, status_4_5_6_7)
 }
 
 #########################################################
@@ -894,6 +903,7 @@ if (dash == F){
   n12
 }
 
+
 if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_ij_np_2020, fat_2020_mes, ng_ij_hist_ij_ven_total, negocio_ij_historico_ij_vendedor_total,
@@ -939,8 +949,6 @@ ng_cad_fin <- ng_cad_fin %>%
                             negocio_negocio_situacao_id == 5 ~ "Financ. não aprovado",
                             negocio_negocio_situacao_id == 6 ~ "Desist. do cliente",
                             negocio_negocio_situacao_id == 7 ~ "Perdemos para conc."))
-#ng_cad_fin <- ng_cad_fin %>%
-#  mutate(Status = as.factor(Status))
 
 ng_cad_fin <- ng_cad_fin %>%
   mutate (media_d = paste(as.character(media_d),"dias")) %>%
@@ -986,7 +994,6 @@ if (teste == F){
   #variáveis
   rm()
 }
-
 
 ################################################################################################################################
 #############################################################################################################################
@@ -1101,10 +1108,8 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(cliente, visita_cliente, negocio, vendedor, vis_st_emp, cli_ij_vc_mes, cli_ij_vc_ij_ng_mes,
-     clientes_mes, negocios_mes, ng_ij_emp, visitas_mes, vc_ij_emp, visita_status, visita_status_empresa);
+  rm(cliente, visita_cliente, negocio, vendedor, vis_st_emp, cli_ij_vc_mes, cli_ij_vc_ij_ng_mes);
   #variáveis
-  rm(meses);
+  rm();
 }
-#subplot(n12, c3, nrows = 2, shareX = T)
 ################################################################################################################################
