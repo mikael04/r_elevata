@@ -14,6 +14,9 @@ params:
 #library(shiny)
 #Lib pra conexão com o banco
 library(odbc)
+#Lib para ler (mais rapidamente) os csvs
+#library(data.table)
+#lib com uma cacetada de outras libs para manipular dados
 library(tidyverse)
 #Libs pra trabalhar com a base (cortes e funções similares ao SQL)
 #library(dplyr) #Contido no tidyverse
@@ -113,12 +116,6 @@ func_fmt_numbr <- function(inteiro)
   inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
   return(inteiro_br)
 }
-
-con <- DBI::dbConnect(odbc::odbc(),
-                      Driver = "SQL Server",
-                      Server = "localhost\\SQLEXPRESS01",
-                      Database = "nhmobile_agriculture",
-                      Trusted_Connection = "True")
 
 ###Começando scripts negocio_scripts
 ###########################################################################################################

@@ -12,8 +12,10 @@ params:
 #rm(list = ls())
 #Lib q será futuramente usada pros painéis interativos
 #library(shiny)
-#Lib pra conexão com o banco
-library(odbc)
+#library(odbc)
+#Lib para ler (mais rapidamente) os csvs
+library(data.table)
+#lib com uma cacetada de outras libs para manipular dados
 library(tidyverse)
 #Libs pra trabalhar com a base (cortes e funções similares ao SQL)
 #library(dplyr) #Contido no tidyverse
