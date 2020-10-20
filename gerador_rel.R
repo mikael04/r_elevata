@@ -132,10 +132,10 @@ render_report_map_csv <- function(var1) {
 params_list_1 <- list(list("Super"),list("Komatsu"))
 #params_list_1 <- list(list("Super","Komatsu")) ##testar apenas a visitas_mapa
 
-tic("SQL neg_prop")
+# tic("SQL neg_prop")
 pmap(params_list_1[[1]], render_report_neg_prop)
 pmap(params_list_1[[2]], render_report_neg_prop)
-sql_neg_prop <- toc()
+# sql_neg_prop <- toc()
 #pmap(params_list_1, render_report_vis_map)
 ##Um para cada, já que a komatsu vai mostrar apenas uma categoria enquanto a super divide em tratores e colheitadeiras
 pmap(params_list_1[[1]], render_report_vis_map)
@@ -145,10 +145,10 @@ pmap(params_list_1[[2]], render_report_vis_map_k)
 
 #############################################################
 ##Teste dos csvs
-tic("csv neg_prop")
+# tic("csv neg_prop")
 pmap(params_list_1[[1]], render_report_neg_prop_csv)
 pmap(params_list_1[[2]], render_report_neg_prop_csv)
-csv_neg_prop <- toc()
+# csv_neg_prop <- toc()
 # tic("csv vis_map") 
 # pmap(params_list_1[[1]], render_report_vis_map_csv)
 # pmap(params_list_1[[2]], render_report_vis_map_k_csv)
@@ -162,10 +162,15 @@ params_list_2 <- list(list("Amazonia","Araguaia", "MS", "Simex", "Taisa"))
 
 pmap(params_list_2, render_report_neg_vis)
 
-tic("SQL maps")
+# tic("SQL maps")
 pmap(params_list_2, render_report_map)
-sql_maps <- toc()
+# sql_maps <- toc()
 
-tic("csv maps")
-pmap(params_list_2, render_report_map_csv)
-csv_maps <- toc()
+#testando csvs
+# tic("csv maps")
+#pmap(params_list_2, render_report_map_csv)
+# csv_maps <- toc()
+# 
+# sql_maps
+# 
+# csv_maps

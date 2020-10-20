@@ -351,7 +351,7 @@ marcas_icon <- iconList(
 ###################
 ##Tratores
 
-typeof(cli_in_pm_cont_top_t_aux$produto_marca_id)
+typeof(cli_in_pm_cont_top_t_aux$marca_nome)
 m1_t <- leaflet(cli_in_pm_cont_top_t_aux) %>%
   addTiles() %>%
   addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon[produto_marca_id],
