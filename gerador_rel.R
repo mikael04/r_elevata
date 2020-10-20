@@ -1,3 +1,9 @@
+library(purrr)
+library(tictoc)
+
+tictoc::tic("")
+setwd("E:\\Mikael\\OneDrive\\Projetos\\Scripts_R\\r_elevata")
+Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")
 ##Usado para super e komatsu
 ##renderiza dash_negocios_propostas e dash_visitas
 render_report_neg_prop <- function(var1) {
@@ -94,12 +100,12 @@ render_report_map <- function(var1) {
   invisible(TRUE)
 }
 
-library(purrr)
 ##Gerando das que tem propostas (duas dashs separadas, a primeira negócios+propostas, segunda visitas+clientes)
 #params_list_1 <- list(list("Super","Komatsu"))
 params_list_1 <- list(list("Super"),list("Komatsu"))
 #params_list_1 <- list(list("Super","Komatsu")) ##testar apenas a visitas_mapa
-pmap(params_list_1, render_report_neg_prop)
+pmap(params_list_1[[1]], render_report_neg_prop)
+pmap(params_list_1[[2]], render_report_neg_prop)
 #pmap(params_list_1, render_report_vis_map)
 ##Um para cada, já que a komatsu vai mostrar apenas uma categoria enquanto a super divide em tratores e colheitadeiras
 pmap(params_list_1[[1]], render_report_vis_map)
@@ -110,3 +116,7 @@ params_list_2 <- list(list("Amazonia","Araguaia", "MS", "Simex", "Taisa"))
 
 pmap(params_list_2, render_report_neg_vis)
 pmap(params_list_2, render_report_map)
+
+end_time <- Sys.time()
+
+start_time - end_time
