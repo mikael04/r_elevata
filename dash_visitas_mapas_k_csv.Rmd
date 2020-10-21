@@ -551,7 +551,11 @@ if(dash == F){
 
 ### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios
 c5 <- plot_ly() %>%
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> 676ff9987118eca0bc1cbafc4693498eebd958f2
 add_histogram(data =  cli_s_neg_ij_vis_cont, x = ~num_visitas, name = "Intervalo de visitas, clientes SEM negócios", nbinsx = max(cli_c_neg_ij_vis_cont$num_visitas),
               marker = list(color = "darkorange"), opacity = 0.6) %>%
   layout (xaxis = list(title = 'Intervalos'),

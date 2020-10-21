@@ -539,7 +539,11 @@ if(dash == F){
 
 ### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios
 c5 <- plot_ly() %>%
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> 676ff9987118eca0bc1cbafc4693498eebd958f2
 add_histogram(data =  cli_s_neg_ij_vis_cont, x = ~num_visitas, name = "Intervalo de visitas, clientes SEM negócios", nbinsx = max(cli_c_neg_ij_vis_cont$num_visitas),
               marker = list(color = "darkorange"), opacity = 0.6) %>%
   layout (xaxis = list(title = 'Intervalos'),
@@ -677,7 +681,11 @@ marca <- fread("Tabelas/marca.csv", colClasses = c(marca_id = 'character')) %>%
 
 categoria <- fread("Tabelas/categoria.csv", colClasses = c(categoria_id = 'character')) %>%
   select (categoria_id, categoria_nome, categoria_ativo) %>%
+<<<<<<< HEAD
   filter(categoria_ativo == 1) %>%
+=======
+  filter(categoria_ativo == 1) %>%
+>>>>>>> 676ff9987118eca0bc1cbafc4693498eebd958f2
   select (-categoria_ativo)
 
 marca_categoria <- fread("Tabelas/marca_categoria.csv", colClasses = c(marca_categoria_marca_id = 'character',marca_categoria_categoria_id  = 'character'))
@@ -1105,4 +1113,8 @@ Column {data-width=350}
 ### Gráfico m2 de distribuição das marcas de colheitadeiras
 m2_c
 
+<<<<<<< HEAD
 ```
+=======
+```
+>>>>>>> 676ff9987118eca0bc1cbafc4693498eebd958f2
