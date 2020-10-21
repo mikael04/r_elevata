@@ -30,7 +30,7 @@ library(lubridate)
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = T
+teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = F
 ####Variavel global c/ ano atual (para comparação)
@@ -71,34 +71,26 @@ func_fmt_numbr <- function(inteiro)
   inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
   return(inteiro_br)
 }
-# Linux
-# con  <- DBI::dbConnect(odbc::odbc(),
-#                        Driver = 'ODBC Driver 17 for SQL Server',
-#                        Server = 'localhost\\SQLEXPRESS',
-#                        Database = 'nhmobile_agriculture')
-# Windows
- con <- DBI::dbConnect(odbc::odbc(),
-                       Driver = 'SQL Server',
-                       Server = 'localhost\\SQLEXPRESS01',
-                       Database = 'nhmobile_agriculture',
-                       Trusted_Connection = 'True')
 
-##Collect cria o df resultado da query, nesse caso, visitas_cliente
-visita_cliente <- tbl(con,'visita_cliente') %>%
+##Começando script visitas_clientes
+
+##Collect cria o df resultado da query, nesse caso, visitas_cliente, já filtrando apenas ano atual
+visita_cliente <- fread("Tabelas/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
   select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
-  filter (vc_data_cadastro >= ano_atual) %>%
-  collect ()
+  filter (vc_data_cadastro >= ano_atual)
+
 ##Pra pegar o nome do resultado
-visita_resultado <- tbl(con, "visita_resultado") %>%
+visita_resultado <- fread("Tabelas/visita_resultado.csv") %>%
   select(vr_id, vr_nome, vr_ativo) %>%
-  #filter(vre_ativo == 1) %>% ##Ja sao todos ativos
-  rename (resultado = vr_nome) %>%
-  collect()
+  filter(vr_ativo == 1) %>% ##Ja sao todos ativos
+  select(-vr_ativo) %>%
+  rename (resultado = vr_nome)
+
 ##Pra filtrar os resultados da empresa
-visita_resultado_empresa <- tbl(con, "visita_resultado_empresa") %>%
+visita_resultado_empresa <- fread("Tabelas/visita_resultado_empresa.csv") %>%
   select(vre_resultado_id, vre_empresa_id, vre_ativo) %>%
   filter(vre_ativo == 1, vre_empresa_id == empresa) %>% ##Ja sao todos ativos mas mantive pra manter o filtro, ja filtro a empresa
-  collect()
+  select(-vre_ativo)
 #Arrumando encoding
 Encoding(visita_resultado$resultado) <- 'latin1'
 
@@ -106,24 +98,26 @@ Encoding(visita_resultado$resultado) <- 'latin1'
 vis_res_emp <- inner_join(visita_resultado, visita_resultado_empresa, by = c('vr_id'= 'vre_resultado_id'))
 
 ##Pra pegar o nome do status
-visita_status <- tbl(con,'visita_status') %>%
+visita_status <- fread("Tabelas/visita_status.csv") %>%
   select(vs_id, vs_nome, vs_ativo) %>%
   filter(vs_ativo == 1) %>%
-  rename (motivo = vs_nome) %>%
-  collect()
+  select(-vs_ativo) %>%
+  rename (motivo = vs_nome)
+
 ##Pra filtrar os status da empresa
-visita_status_empresa <- tbl(con, "visita_status_empresa") %>%
+visita_status_empresa <- fread("Tabelas/visita_status_empresa.csv") %>%
   select(vse_status_id, vse_empresa_id, vse_ativo) %>%
   filter(vse_ativo == 1, vse_empresa_id == empresa) %>%
-  collect()
+  select(-vse_ativo)
+
 #Arrumando encoding
 Encoding(visita_status$motivo) <- 'latin1'
 
 ##coleta todos os vendedores
-vendedor <- tbl(con, "vendedor") %>%
-  select(vendedor_id, vendedor_nome, vendedor_id, vendedor_empresa_id, vendedor_ativo) %>%
-  filter(vendedor_ativo == 1, vendedor_empresa_id == empresa) %>%
-  collect()
+vendedor <- fread("Tabelas/vendedor.csv") %>%
+  select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
+  filter (vendedor_empresa_id == empresa, vendedor_ativo == 1) %>%
+  select(-vendedor_ativo)
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
 vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
@@ -224,8 +218,7 @@ if(teste == F){
   #tabelas
   rm(visita_resultado_empresa, vis_res_emp, vc_ij_vre, vc_ij_vse,
      ##vis_st_emp, vc_ij_vse_ij_v, ##vou usar a vis_st_emp para uma junção (saber qual empresa são feitas as visitas)
-     vc_ij_vre_ij_v, vc_ij_vre_ij_v_ag, visita_resultado, visita_status, visita_status_empresa,
-     axis_h);
+     vc_ij_vre_ij_v, vc_ij_vre_ij_v_ag, visita_resultado,axis_h);
   #variáveis
   rm(brbg_mot, brbg_res, n_r_color, n_m_color);
 }
@@ -233,10 +226,9 @@ if(teste == F){
 ################################################################################################
 ### Tabelas e graficos de Clientes
 
-cliente <- tbl(con,'cliente') %>%
-  select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_cidade, cliente_ultima_visita) %>%
-  filter(cliente_empresa_id == empresa) %>%
-  collect()
+cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
+  select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_ultima_visita) %>%
+  filter(cliente_empresa_id == empresa)
 
 ##Clientes cadastrados por vendedor
 cli_p_v <- cliente %>%
@@ -265,10 +257,8 @@ vend_cli_vis <- left_join(cli_p_v_ij_vend, vc_ij_vse_ij_v_count, by = c("cliente
   select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas)
 
 ##Contar quantos negócios são feitos por vendedor em 2020
-negocio <- tbl(con, "negocio") %>%
-  select(negocio_id, negocio_vendedor_id, negocio_cliente_id, negocio_data_cadastro) %>%
-  filter(negocio_data_cadastro >= ano_atual) %>%
-  collect()
+negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character", negocio_cliente_id = "character")) %>%
+  select(negocio_id, negocio_vendedor_id, negocio_cliente_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_produto_id)
 
 ##Juncao pra pegar a empresa do negócio (e vendedor)
 neg_ij_vend <- inner_join(negocio, vendedor, by = c('negocio_vendedor_id' = 'vendedor_id')) %>%
@@ -373,30 +363,14 @@ if(teste == F){
 ###Contar clientes/visitas/negocios cadastrados por mês -> vem do script visita_clientes
 ####################################
 
-cliente <- tbl(con,'cliente') %>%
-  select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_cidade, cliente_ultima_visita) %>%
-  filter(cliente_empresa_id == empresa) %>%
-  collect()
+##declarado cliente, já usado
 
-##Collect cria o df resultado da query, nesse caso, visitas_cliente, já filtrando apenas ano atual
-visita_cliente <- tbl(con,'visita_cliente') %>%
-  select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
-  filter (vc_data_cadastro >= ano_atual) %>%
-  collect ()
+##declarado visita_cliente , já usado
 
-##Pra pegar o nome do status
-visita_status <- tbl(con,'visita_status') %>%
-  select(vs_id, vs_nome, vs_ativo) %>%
-  filter(vs_ativo == 1) %>%
-  rename (motivo = vs_nome) %>%
-  collect()
-##Pra filtrar os status da empresa
-visita_status_empresa <- tbl(con, "visita_status_empresa") %>%
-  select(vse_status_id, vse_empresa_id, vse_ativo) %>%
-  filter(vse_ativo == 1, vse_empresa_id == empresa) %>%
-  collect()
-#Arrumando encoding
-Encoding(visita_status$motivo) <- 'latin1'
+##declarado visita_status, já usado
+
+##declarado visita_status_empresa, já usado
+
 
 ##junta as duas tabelas (status e status_empresa) pra pegar o id da empresa (vs_empresa_id) e o nome do status (vs_nome)
 vis_st_emp <- inner_join(visita_status, visita_status_empresa, by = c('vs_id'= 'vse_status_id'))
