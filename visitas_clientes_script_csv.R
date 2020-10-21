@@ -26,6 +26,8 @@ library(RColorBrewer)
 #library(waffle)
 #Lib para funções de tempo
 library(lubridate)
+#Lib para mapas
+library(leaflet)
 
 ###################################
 ##Variáveis "Globais"
@@ -48,7 +50,7 @@ emp_si = 59 # Simex
 emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
-empresa <- emp_am
+empresa <- emp_ms
 ###################################
 
 ##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
@@ -533,5 +535,96 @@ if(teste == F){
   #variáveis
   rm();
 }
+
+
+#########################################################################################################
+#########################################################################################################
+##Começando scripts de mapas
+#########################################################################################################
+#########################################################################################################
+
+##Distribuição de clientes, mostrando no label nome do cliente, nome do vendedor e última visita
+cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
+  select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_vendedor_id, cliente_empresa_id)
+#Arrumando encoding
+Encoding(cliente$cliente_nome) <- 'latin1'
+
+visita_cliente <- fread("Tabelas/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
+  select (vc_id, vc_vendedor_id, vc_cliente_id, vc_data_cadastro)
+
+vendedor <- fread("Tabelas/vendedor.csv") %>%
+  select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
+  filter(vendedor_ativo == 1, vendedor_empresa_id == empresa) %>%
+  select(-vendedor_ativo)
+
+#Arrumando encoding
+Encoding(vendedor$vendedor_nome) <- 'latin1'
+vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+
+##Clientes da empresa correta ##Clientes com valor NA, valores 0 e valores positivos de latlong (hemisf norte, leste do globo) removidos
+cliente_c_loc <- cliente %>%
+  filter (cliente_empresa_id == empresa, cliente_latitude < 0, cliente_longitude < 0) %>%
+  rename(lat = cliente_latitude, long = cliente_longitude) %>%
+  mutate(lat = as.numeric(lat), long = as.numeric(long)) %>%
+  filter (!is.null(lat), !is.na(lat))
+
+
+##Serão feitas as junções apenas com clientes que possuem
+##Aqui já vou filtrar só por vendedores ativos, fazer pra inativos depois
+cli_in_ven <- inner_join(cliente_c_loc, vendedor, by = c('cliente_vendedor_id'='vendedor_id'))
+
+##pegar apenas última visita por cliente
+vcUltVis <- visita_cliente %>%
+  arrange(desc(vc_data_cadastro)) %>%
+  group_by(vc_cliente_id) %>%
+  distinct(vc_cliente_id, .keep_all = T) %>%
+  ungroup ()
+
+
+##Categorias de idades
+idades_vis = c("Sem visita", "Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses")
+##Cores das categorias
+cor_idade_vis = c("#000000", "#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
+
+##left join pra manter todos, mesmo os q não tem visita
+cli_in_ven_in_vcUltVis <- left_join(cli_in_ven, vcUltVis, by = c("cliente_id" = "vc_cliente_id")) %>%
+  select(cliente_id, cliente_nome, lat, long, cliente_vendedor_id, vendedor_nome, vc_vendedor_id, vc_data_cadastro) %>%
+  mutate (idade = (as.integer(today() - as_date(vc_data_cadastro)))) %>%
+  mutate (idade_vis = "Sem Visita") %>%
+  arrange (idade)
+
+cli_in_ven_in_vcUltVis$idade[is.na(cli_in_ven_in_vcUltVis$idade)] <- -1
+
+cli_in_ven_in_vcUltVis$idade_vis <- with(cli_in_ven_in_vcUltVis, cut(idade, breaks = c(-2,0,60, 180, 365, 730, 10000),
+                                                                     label = idades_vis))
+
+pal = colorFactor(palette = cor_idade_vis, domain = cli_in_ven_in_vcUltVis$idade_vis)
+
+### Gráfico m0 de distribuição dos clientes por empresa
+m0 <- leaflet(cli_in_ven_in_vcUltVis) %>%
+  addTiles() %>%
+  addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
+                   popup = paste0( "Nome do cliente:", cli_in_ven_in_vcUltVis$cliente_nome,
+                                   "<br>",
+                                   "Vendedor: ", cli_in_ven_in_vcUltVis$vendedor_nome,
+                                   "<br>",
+                                   "Tempo desde a última visita: ", cli_in_ven_in_vcUltVis$vc_data_cadastro),
+                   label = ~cliente_nome,
+                   color = ~pal(idade_vis),
+                   #clusterOptions = markerClusterOptions()
+  ) %>%
+  addLegend("topright",
+            value = ~idade_vis,
+            pal = pal,
+            title = 'Tempo desde a última visita',
+            opacity = .8)
+
+if(teste == F){
+  #tabelas
+  rm(cliente, pal, cli_in_ven, cli_in_ven_in_vcUltVis, visita_cliente, vendedor, vcUltVis);
+  #var
+  rm(cor_idade_vis, idades_vis)
+}
+#######################################################################
 
 ########################################################

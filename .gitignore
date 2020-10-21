@@ -29,3 +29,6 @@ dash_negocios_propostas_csv.Rmd
 dash_negocios_visitas_csv.html
 dash_visitas_mapas_csv.html
 dash_visitas_mapas_k_csv.html
+dash_negocios.html
+dash_mapas_k.html
+dash_propostas.html

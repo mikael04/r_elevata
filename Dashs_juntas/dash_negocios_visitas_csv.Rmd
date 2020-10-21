@@ -84,8 +84,8 @@ if(params$variable1 == 'emp_par'){
           }
         }
       }
+    }
   }
-}
 ###################################
 
 ##Alterar o valor de inteiro para reais

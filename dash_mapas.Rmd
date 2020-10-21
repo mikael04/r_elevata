@@ -59,8 +59,9 @@ emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
 #Teste se o parâmetro foi setado ou não
+#Teste se o parâmetro foi setado ou não
 if(params$variable1 == 'emp_par'){
-  empresa <- emp_ta 
+  empresa <- emp_su
 } else{
 ##Empresa utilizada
   if (params$variable1 == 'Amazonia'){
@@ -77,12 +78,16 @@ if(params$variable1 == 'emp_par'){
           }else{
             if(params$variable1 == 'Taisa'){
               empresa = emp_ta
+              }else{
+                if (params$variable1 == 'Super'){
+                  empresa = emp_su
+                }
+              }
             }
           }
         }
       }
   }
-}
 
 ###################################
 
@@ -125,9 +130,10 @@ vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
 
 ##Clientes da empresa correta ##Clientes com valor NA, valores 0 e valores positivos de latlong (hemisf norte, leste do globo) removidos
 cliente_c_loc <- cliente %>%
-  filter (!is.null(cliente_latitude), !is.na(cliente_latitude), cliente_empresa_id == empresa, cliente_latitude < 0, cliente_longitude < 0) %>%
+  filter (cliente_empresa_id == empresa, cliente_latitude < 0, cliente_longitude < 0) %>%
   rename(lat = cliente_latitude, long = cliente_longitude) %>%
-  mutate(lat = as.numeric(lat), long = as.numeric(long))
+  mutate(lat = as.numeric(lat), long = as.numeric(long)) %>%
+  filter (!is.null(lat), !is.na(lat))
 
 ##Serão feitas as junções apenas com clientes que possuem
 ##Aqui já vou filtrar só por vendedores ativos, fazer pra inativos depois
