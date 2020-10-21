@@ -1,0 +1,51 @@
+Tabelas já usadas:
+
+- cliente (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_ultima_visita)
+filtra empresa_id
+converter cliente_id
+
+- categoria (categoria_id, categoria_nome)
+converter categoria_id
+
+- historico_negocio_situacao (historico_negocio_situacao_data, historico_negocio_situacao_negocio_id,
+                          historico_negocio_situacao_situacao_id)
+converter historico_negocio_situacao_negocio_id
+
+- negocio (negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro,
+          negocio_usado, negocio_produto_id)
+converter negocio_id, negocio_produto_id
+
+- negocio_produto (np_id, np_negocio_id, np_produto_id, np_quantidade, np_ativo, np_valor)
+converter np_id, np_negocio_id,
+
+- produto (produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
+converter produto_id
+
+- proposta (proposta_id, proposta_versao, proposta_negocio_id, proposta_data_cadastro, proposta_status)
+converter proposta_id, proposta_negocio_id
+
+- proposta_modo_forma (pmf_id, pmf_nome, (-)pmf_ativo, (-)PMF_EMPRESA_ID)
+
+- proposta_pagamento (pp_id, pp_proposta_id, pp_modo_id, pp_forma_id, pp_valor, (-)pp_ativo, pp_usado_id)
+converter pp_id, pp_proposta_id
+
+- proposta_produto (pp_id, pp_proposta_id, pp_produto_id, pp_quantidade, pp_valor, pp_ativo)
+converter pp_id, pp_proposta_id, pp_produto_id)
+
+- vendedor (vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo)
+filtra empresa_id, vendedor_ativo
+
+- visita_cliente (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro)
+converter vc_id, vc_cliente_id
+data_cadastro >= ano_atual
+
+- visita_status (vs_id, vs_nome, (-)vs_ativo)
+  rename (motivo = vs_nome)
+
+- visita_status_empresa (vse_status_id, vse_empresa_id, (-)vse_ativo)
+
+(-) significa q eu removi depois de filtrar (normalmente pra filtros de _ativo ou _empresa_id)
+
+, colClasses = c( = "character",  = "character",  = "character",  = "character")
+, colClasses = c( = "character",  = "character")
+, colClasses = c( = "character")

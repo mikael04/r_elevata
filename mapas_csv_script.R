@@ -36,7 +36,7 @@ teste = T
 ####Variável para testar empresa individualmente
 teste_d = F
 ####Variável usada para não plotar os gráficos na dash
-dash = T
+dash = F
 ####Variavel global c/ ano atual (para comparação)
 ano_atual = '2020-01-01'
 
@@ -49,31 +49,8 @@ emp_si = 59 # Simex
 emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
-##Empresa utilizada
-if (params$variable1 == 'Amazonia'){
-  empresa = emp_am
-}else{
-  if(params$variable1 == 'Araguaia'){
-    empresa = emp_ar
-  }else{
-    if(params$variable1 == 'MS'){
-      empresa = emp_ms
-    }else{
-      if(params$variable1 == 'Simex'){
-        empresa = emp_si
-      }else{
-        if(params$variable1 == 'Taisa'){
-          empresa = emp_ta
-        }
-      }
-    }
-  }
-}
-teste_d = T
-##teste
-if (teste_d == T){
-  empresa <- emp_ta
-}
+##Teste, nos Rmd é setado via parâmetro
+empresa <- emp_ta
 ###################################
 
 ##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
@@ -97,20 +74,17 @@ func_nome <- function (nome_comp)
 #########################################################################################################
 
 ##Distribuição de clientes, mostrando no label nome do cliente, nome do vendedor e última visita
-cliente <- fread("Tabelas/cliente.csv") %>%
-  select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_vendedor_id, cliente_empresa_id) %>%
-  mutate(cliente_id = as.character(cliente_id), cliente_vendedor_id = as.character(cliente_vendedor_id), cliente_empresa_id = as.character(cliente_empresa_id))
+cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
+  select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_vendedor_id, cliente_empresa_id)
 #Arrumando encoding
 Encoding(cliente$cliente_nome) <- 'latin1'
 
-visita_cliente <- fread("Tabelas/visita_cliente.csv") %>%
-  select (vc_id, vc_vendedor_id, vc_cliente_id, vc_data_cadastro) %>%
-  mutate (vc_id = as.character(vc_id), vc_cliente_id = as.character(vc_cliente_id))
+visita_cliente <- fread("Tabelas/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
+  select (vc_id, vc_vendedor_id, vc_cliente_id, vc_data_cadastro)
 
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter(vendedor_ativo == 1, vendedor_empresa_id == empresa) %>%
-  mutate(vendedor_id = as.character(vendedor_id), vendedor_empresa_id = as.character(vendedor_empresa_id))
+  filter(vendedor_ativo == 1, vendedor_empresa_id == empresa)
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
@@ -124,7 +98,6 @@ cliente_c_loc <- cliente %>%
 
 ##Serão feitas as junções apenas com clientes que possuem
 ##Aqui já vou filtrar só por vendedores ativos, fazer pra inativos depois
-typeof(cliente_c_loc$cliente_vendedor_id)
 cli_in_ven <- inner_join(cliente_c_loc, vendedor, by = c('cliente_vendedor_id'='vendedor_id'))
 
 ##pegar apenas última visita por cliente
@@ -185,29 +158,24 @@ if(teste == F){
 ##Parque de máquinas
 ##Mostrar distribuição de máquinas por categoria
 #######################################################################
-parque_maquina <- fread("Tabelas/parque_maquina.csv") %>%
+parque_maquina <- fread("Tabelas/parque_maquina.csv", colClasses = c(pm_id = 'character', pm_cliente_id = 'character', pm_produto_id = 'character')) %>%
   select(pm_id, pm_cliente_id, pm_produto_id, pm_ano_modelo, pm_ativo) %>%
-  filter (pm_ativo == 1) %>%
-  mutate(pm_id = as.character(pm_id), pm_cliente_id = as.character(pm_cliente_id), pm_produto_id = as.character(pm_produto_id))
+  filter (pm_ativo == 1)
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
-produto <- fread("Tabelas/produto.csv") %>%
-  select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id) %>%
-  mutate(produto_id = as.character(produto_id), produto_marca_id = as.character(produto_marca_id),
-         produto_categoria_id = as.character(produto_categoria_id), produto_empresa_id = as.character(produto_empresa_id))
+produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = 'character', produto_marca_id = 'character', produto_categoria_id = 'character')) %>%
+  select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
-marca <- fread("Tabelas/marca.csv") %>%
-  select(marca_id, marca_nome) %>%
-  mutate(marca_id = as.character(marca_id))
+marca <- fread("Tabelas/marca.csv", colClasses = c(marca_id = 'character')) %>%
+  select(marca_id, marca_nome)
 
-categoria <- fread("Tabelas/categoria.csv") %>%
-  filter(categoria_ativo == 1) %>%
-  select (categoria_id, categoria_nome) %>%
-  mutate(categoria_id = as.character(categoria_id))
+categoria <- fread("Tabelas/categoria.csv", colClasses = c(categoria_id = 'character')) %>%
+  select (categoria_id, categoria_nome, categoria_ativo) %>%
+  filter(categoria_ativo == 1) %>% 
+  select (-categoria_ativo)
 
-marca_categoria <- fread("Tabelas/marca_categoria.csv") %>%
-  mutate(marca_categoria_marca_id = as.character(marca_categoria_marca_id), marca_categoria_categoria_id = as.character(marca_categoria_categoria_id))
+marca_categoria <- fread("Tabelas/marca_categoria.csv", colClasses = c(marca_categoria_marca_id = 'character',marca_categoria_categoria_id  = 'character'))
 
 cli_in_pm <- inner_join(cliente_c_loc, parque_maquina, by = c("cliente_id" = "pm_cliente_id")) %>%
   select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id)

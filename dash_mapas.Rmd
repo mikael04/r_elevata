@@ -57,30 +57,30 @@ emp_si = 59 # Simex
 emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
+#Teste se o parâmetro foi setado ou não
+if(params$variable1 == 'emp_par'){
+  empresa <- emp_ta 
+} else{
 ##Empresa utilizada
-if (params$variable1 == 'Amazonia'){
-  empresa = emp_am
-}else{
-    if(params$variable1 == 'Araguaia'){
-      empresa = emp_ar
-    }else{
-      if(params$variable1 == 'MS'){
-        empresa = emp_ms
+  if (params$variable1 == 'Amazonia'){
+    empresa = emp_am
+  }else{
+      if(params$variable1 == 'Araguaia'){
+        empresa = emp_ar
       }else{
-        if(params$variable1 == 'Simex'){
-          empresa = emp_si
+        if(params$variable1 == 'MS'){
+          empresa = emp_ms
         }else{
-          if(params$variable1 == 'Taisa'){
-            empresa = emp_ta
+          if(params$variable1 == 'Simex'){
+            empresa = emp_si
+          }else{
+            if(params$variable1 == 'Taisa'){
+              empresa = emp_ta
+            }
           }
         }
       }
-    }
-}
-teste_d = T
-##teste
-if (teste_d == T){
-  empresa <- emp_ta
+  }
 }
 ###################################
 

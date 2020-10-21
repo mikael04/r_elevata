@@ -66,20 +66,19 @@ emp_si = 59 # Simex
 emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
-##Empresa utilizada
-if (params$variable1 == 'Super'){
-  empresa = emp_su
-} else{
-  if(params$variable1 == 'Komatsu'){
-    empresa = emp_ko
-  }
-}
 
-#teste_d = T
-##teste
-if (teste_d == T){
-  empresa = 0;
-  #empresa = emp_su
+#Teste se o parâmetro foi setado ou não
+if(params$variable1 == 'emp_par'){
+  empresa <- emp_su
+} else{
+  ##Empresa utilizada
+  if (params$variable1 == 'Super'){
+    empresa = emp_su
+  } else{
+    if(params$variable1 == 'Komatsu'){
+      empresa = emp_ko
+    }
+  }
 }
 ###################################
 
