@@ -1,5 +1,9 @@
 Tabelas já usadas:
 
+Negócios  e propostas
+################################################################################################################
+
+
 - cliente (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_ultima_visita)
 filtra empresa_id
 converter cliente_id
@@ -44,8 +48,6 @@ data_cadastro >= ano_atual
 
 - visita_status_empresa (vse_status_id, vse_empresa_id, (-)vse_ativo)
 
-(-) significa q eu removi depois de filtrar (normalmente pra filtros de _ativo ou _empresa_id)
+################################################################################################################
 
-, colClasses = c( = "character",  = "character",  = "character",  = "character")
-, colClasses = c( = "character",  = "character")
-, colClasses = c( = "character")
+(-) significa q eu removi depois de filtrar (normalmente pra filtros de _ativo ou _empresa_id)

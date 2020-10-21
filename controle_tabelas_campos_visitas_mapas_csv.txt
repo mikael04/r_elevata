@@ -1,0 +1,76 @@
+Tabelas já usadas:
+visitas
+################################################################################################################
+
+- cliente (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_ultima_visita)
+filtra empresa_id
+converter cliente_id
+
+- negocio (negocio_id, negocio, cliente_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro,
+          negocio_usado, negocio_produto_id)
+converter negocio_id, negocio_produto_id, negocio_cliente_id
+
+- vendedor (vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo)
+filtra empresa_id, vendedor_ativo
+
+- visita_cliente (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro)
+converter vc_id, vc_cliente_id
+data_cadastro >= ano_atual
+
+- visita_resultado (vr_id, vr_nome, (-)vr_ativo)
+  rename (resultado = vr_nome)
+
+- visita_resultado_empresa (vre_resultado_id, vre_empresa_id, (-)vre_ativo)
+
+- visita_status (vs_id, vs_nome, (-)vs_ativo)
+  rename (motivo = vs_nome)
+
+- visita_status_empresa (vse_status_id, vse_empresa_id, (-)vse_ativo)
+
+################################################################################################################
+
+Mapas
+################################################################################################################
+
+- categoria (categoria_id, categoria_nome)
+converter categoria_id
+
+- cliente (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_vendedor_id, cliente_empresa_id)
+filtra empresa_id
+converter cliente_id
+
+- marca (marca_id, marca_nome)
+converter marca_id
+
+- marca_categoria (tudo)
+converter marca_categoria_marca_id, marca_categoria_marca_id
+
+- negocio (negocio_id, negocio, cliente_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro,
+          negocio_usado, negocio_produto_id)
+converter negocio_id, negocio_produto_id, negocio_cliente_id
+
+- parque_maquina (pm_id, pm_cliente_id, pm_produto_id, pm_ano_modelo, (-)pm_ativo)
+
+- produto (produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
+converter produto_id
+
+- vendedor (vendedor_id, vendedor_nome, vendedor_empresa_id, (-)vendedor_ativo)
+filtra empresa_id, vendedor_ativo
+
+- visita_cliente (vc_id, vc_vendedor_id, vc_cliente_id, vc_data_cadastro)
+converter vc_id, vc_cliente_id
+data_cadastro >= ano_atual
+
+- visita_resultado (vr_id, vr_nome, (-)vr_ativo)
+  rename (resultado = vr_nome)
+
+- visita_resultado_empresa (vre_resultado_id, vre_empresa_id, (-)vre_ativo)
+
+- visita_status (vs_id, vs_nome, (-)vs_ativo)
+  rename (motivo = vs_nome)
+
+- visita_status_empresa (vse_status_id, vse_empresa_id, (-)vse_ativo)
+
+################################################################################################################
+
+(-) significa q eu removi depois de filtrar (normalmente pra filtros de _ativo ou _empresa_id)
