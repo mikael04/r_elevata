@@ -66,7 +66,3 @@ data_cadastro >= ano_atual
 ################################################################################################################
 
 (-) significa q eu removi depois de filtrar (normalmente pra filtros de _ativo ou _empresa_id)
-
-, colClasses = c( = "character",  = "character",  = "character",  = "character")
-, colClasses = c( = "character",  = "character")
-, colClasses = c( = "character")
