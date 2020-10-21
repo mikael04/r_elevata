@@ -14,10 +14,14 @@ params:
 #Lib q será futuramente usada pros painéis interativos
 #library(shiny)
 #Lib pra conexão com o banco
+<<<<<<< HEAD
 #library(odbc)
 #Lib para ler (mais rapidamente) os csvs
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
+=======
+library(odbc)
+>>>>>>> 676ff9987118eca0bc1cbafc4693498eebd958f2
 library(tidyverse)
 #Libs pra trabalhar com a base (cortes e funções similares ao SQL)
 #library(dplyr) #Contido no tidyverse
@@ -48,6 +52,11 @@ library(leaflet)
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
+<<<<<<< HEAD
+=======
+####Variável para testar empresa individualmente
+teste_d = F
+>>>>>>> 676ff9987118eca0bc1cbafc4693498eebd958f2
 ####Variável usada para não plotar os gráficos na dash
 dash = T
 ####Variavel global c/ ano atual (para comparação)
@@ -101,6 +110,15 @@ func_fmt_numbr <- function(inteiro)
   return(inteiro_br)
 }
 
+<<<<<<< HEAD
+=======
+con <- DBI::dbConnect(odbc::odbc(),
+                      Driver = 'SQL Server',
+                      Server = 'localhost\\SQLEXPRESS01',
+                      Database = 'nhmobile_agriculture',
+                      Trusted_Connection = 'True')
+
+>>>>>>> 676ff9987118eca0bc1cbafc4693498eebd958f2
 #################################################################################
 ##Começando scripts de visitas e clientes
 #################################################################################
@@ -551,7 +569,11 @@ if(dash == F){
 
 ### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios
 c5 <- plot_ly() %>%
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> 676ff9987118eca0bc1cbafc4693498eebd958f2
 add_histogram(data =  cli_s_neg_ij_vis_cont, x = ~num_visitas, name = "Intervalo de visitas, clientes SEM negócios", nbinsx = max(cli_c_neg_ij_vis_cont$num_visitas),
               marker = list(color = "darkorange"), opacity = 0.6) %>%
   layout (xaxis = list(title = 'Intervalos'),
