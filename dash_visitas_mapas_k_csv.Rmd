@@ -53,7 +53,6 @@ dash = T
 ####Variavel global c/ ano atual (para comparação)
 ano_atual = '2020-01-01'
 
-
 ##Variável "Global"
 emp_am = 42 # Amazonia
 emp_ar = 77 # Araguaia
