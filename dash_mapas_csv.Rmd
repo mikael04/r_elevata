@@ -60,31 +60,32 @@ emp_si = 59 # Simex
 emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
+#Teste se o parâmetro foi setado ou não
+if(params$variable1 == 'emp_par'){
+  empresa <- emp_ta 
+} else{
 ##Empresa utilizada
-if (params$variable1 == 'Amazonia'){
-  empresa = emp_am
-}else{
-    if(params$variable1 == 'Araguaia'){
-      empresa = emp_ar
-    }else{
-      if(params$variable1 == 'MS'){
-        empresa = emp_ms
+  if (params$variable1 == 'Amazonia'){
+    empresa = emp_am
+  }else{
+      if(params$variable1 == 'Araguaia'){
+        empresa = emp_ar
       }else{
-        if(params$variable1 == 'Simex'){
-          empresa = emp_si
+        if(params$variable1 == 'MS'){
+          empresa = emp_ms
         }else{
-          if(params$variable1 == 'Taisa'){
-            empresa = emp_ta
+          if(params$variable1 == 'Simex'){
+            empresa = emp_si
+          }else{
+            if(params$variable1 == 'Taisa'){
+              empresa = emp_ta
+            }
           }
         }
       }
-    }
+  }
 }
-teste_d = T
-##teste
-if (teste_d == T){
-  empresa <- emp_ta
-}
+
 ###################################
 
 ##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
@@ -108,20 +109,17 @@ func_nome <- function (nome_comp)
 #########################################################################################################
 
 ##Distribuição de clientes, mostrando no label nome do cliente, nome do vendedor e última visita
-cliente <- fread("Tabelas/cliente.csv") %>%
-  select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_vendedor_id, cliente_empresa_id) %>%
-  mutate(cliente_id = as.character(cliente_id), cliente_vendedor_id = as.character(cliente_vendedor_id), cliente_empresa_id = as.character(cliente_empresa_id))
+cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
+  select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_vendedor_id, cliente_empresa_id)
 #Arrumando encoding
 Encoding(cliente$cliente_nome) <- 'latin1'
 
-visita_cliente <- fread("Tabelas/visita_cliente.csv") %>%
-  select (vc_id, vc_vendedor_id, vc_cliente_id, vc_data_cadastro) %>%
-  mutate (vc_id = as.character(vc_id), vc_cliente_id = as.character(vc_cliente_id))
+visita_cliente <- fread("Tabelas/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
+  select (vc_id, vc_vendedor_id, vc_cliente_id, vc_data_cadastro)
 
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter(vendedor_ativo == 1, vendedor_empresa_id == empresa) %>%
-  mutate(vendedor_id = as.character(vendedor_id), vendedor_empresa_id = as.character(vendedor_empresa_id))
+  filter(vendedor_ativo == 1, vendedor_empresa_id == empresa)
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
@@ -135,7 +133,6 @@ cliente_c_loc <- cliente %>%
 
 ##Serão feitas as junções apenas com clientes que possuem
 ##Aqui já vou filtrar só por vendedores ativos, fazer pra inativos depois
-typeof(cliente_c_loc$cliente_vendedor_id)
 cli_in_ven <- inner_join(cliente_c_loc, vendedor, by = c('cliente_vendedor_id'='vendedor_id'))
 
 ##pegar apenas última visita por cliente
@@ -161,7 +158,7 @@ cli_in_ven_in_vcUltVis <- left_join(cli_in_ven, vcUltVis, by = c("cliente_id" = 
 cli_in_ven_in_vcUltVis$idade[is.na(cli_in_ven_in_vcUltVis$idade)] <- -1
 
 cli_in_ven_in_vcUltVis$idade_vis <- with(cli_in_ven_in_vcUltVis, cut(idade, breaks = c(-2,0,60, 180, 365, 730, 10000),
-                                                                   label = idades_vis))
+                                                                     label = idades_vis))
 
 pal = colorFactor(palette = cor_idade_vis, domain = cli_in_ven_in_vcUltVis$idade_vis)
 
@@ -171,18 +168,18 @@ m0 <- leaflet(cli_in_ven_in_vcUltVis) %>%
   addCircleMarkers(lat = ~lat, lng = ~long, weight = 1,
                    popup = paste0( "Nome do cliente:", cli_in_ven_in_vcUltVis$cliente_nome,
                                    "<br>",
-                                  "Vendedor: ", cli_in_ven_in_vcUltVis$vendedor_nome,
-                                  "<br>",
-                                  "Tempo desde a última visita: ", cli_in_ven_in_vcUltVis$vc_data_cadastro),
+                                   "Vendedor: ", cli_in_ven_in_vcUltVis$vendedor_nome,
+                                   "<br>",
+                                   "Tempo desde a última visita: ", cli_in_ven_in_vcUltVis$vc_data_cadastro),
                    label = ~cliente_nome,
                    color = ~pal(idade_vis),
                    #clusterOptions = markerClusterOptions()
-                   ) %>%
-    addLegend("topright",
-          value = ~idade_vis,
-          pal = pal,
-          title = 'Tempo desde a última visita',
-          opacity = .8)
+  ) %>%
+  addLegend("topright",
+            value = ~idade_vis,
+            pal = pal,
+            title = 'Tempo desde a última visita',
+            opacity = .8)
 
 if(teste == F){
   #tabelas
@@ -196,29 +193,24 @@ if(teste == F){
 ##Parque de máquinas
 ##Mostrar distribuição de máquinas por categoria
 #######################################################################
-parque_maquina <- fread("Tabelas/parque_maquina.csv") %>%
+parque_maquina <- fread("Tabelas/parque_maquina.csv", colClasses = c(pm_id = 'character', pm_cliente_id = 'character', pm_produto_id = 'character')) %>%
   select(pm_id, pm_cliente_id, pm_produto_id, pm_ano_modelo, pm_ativo) %>%
-  filter (pm_ativo == 1) %>%
-  mutate(pm_id = as.character(pm_id), pm_cliente_id = as.character(pm_cliente_id), pm_produto_id = as.character(pm_produto_id))
+  filter (pm_ativo == 1)
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
-produto <- fread("Tabelas/produto.csv") %>%
-  select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id) %>%
-  mutate(produto_id = as.character(produto_id), produto_marca_id = as.character(produto_marca_id),
-         produto_categoria_id = as.character(produto_categoria_id), produto_empresa_id = as.character(produto_empresa_id))
+produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = 'character', produto_marca_id = 'character', produto_categoria_id = 'character')) %>%
+  select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
-marca <- fread("Tabelas/marca.csv") %>%
-  select(marca_id, marca_nome) %>%
-  mutate(marca_id = as.character(marca_id))
+marca <- fread("Tabelas/marca.csv", colClasses = c(marca_id = 'character')) %>%
+  select(marca_id, marca_nome)
 
-categoria <- fread("Tabelas/categoria.csv") %>%
-  filter(categoria_ativo == 1) %>%
-  select (categoria_id, categoria_nome) %>%
-  mutate(categoria_id = as.character(categoria_id))
+categoria <- fread("Tabelas/categoria.csv", colClasses = c(categoria_id = 'character')) %>%
+  select (categoria_id, categoria_nome, categoria_ativo) %>%
+  filter(categoria_ativo == 1) %>% 
+  select (-categoria_ativo)
 
-marca_categoria <- fread("Tabelas/marca_categoria.csv") %>%
-  mutate(marca_categoria_marca_id = as.character(marca_categoria_marca_id), marca_categoria_categoria_id = as.character(marca_categoria_categoria_id))
+marca_categoria <- fread("Tabelas/marca_categoria.csv", colClasses = c(marca_categoria_marca_id = 'character',marca_categoria_categoria_id  = 'character'))
 
 cli_in_pm <- inner_join(cliente_c_loc, parque_maquina, by = c("cliente_id" = "pm_cliente_id")) %>%
   select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id)
@@ -260,9 +252,9 @@ cli_in_pm_cont_top_t_aux <- cli_in_pm_cont_t %>%
   filter (marca_nome %in% aux_t$marca_nome)
 
 n_color <- nrow(cli_in_pm_cont_top_t_aux %>%
-  group_by(produto_marca_id) %>%
-  distinct(produto_marca_id) %>%
-  ungroup())
+                  group_by(produto_marca_id) %>%
+                  distinct(produto_marca_id) %>%
+                  ungroup())
 
 # ##aleatório (3-8 cores)
 # if (n_color == 1){
@@ -312,9 +304,9 @@ cli_in_pm_cont_top_c_aux <- cli_in_pm_cont_c %>%
   filter (marca_nome %in% aux_c$marca_nome)
 
 n_color <- nrow(cli_in_pm_cont_top_c_aux %>%
-  group_by(produto_marca_id) %>%
-  distinct(produto_marca_id) %>%
-  ungroup())
+                  group_by(produto_marca_id) %>%
+                  distinct(produto_marca_id) %>%
+                  ungroup())
 
 # ##aleatório (3-8 cores)
 # if (n_color == 1){
@@ -337,25 +329,25 @@ cli_in_pm_cont_top_c_aux$long <- jitter(cli_in_pm_cont_top_c_aux$long, factor = 
 # marcas_ic_co <-read.csv("Icons/marcas_icon.csv") %>%
 
 marcas_icon <- iconList(
-                        '1' = makeIcon("Icons/NH_r.png", 23, 24),          ##Caso precise consultar, olhar o csv
-                        '3' = makeIcon("Icons/CI_r.png", 28, 24),
-                        '4' = makeIcon("Icons/JD_r.png", 26, 24),
-                        '5' = makeIcon("Icons/MF_r.png", 34, 24),
-                        '6' = makeIcon("Icons/agrale_r.png", 34, 24),
-                        '13' = makeIcon("Icons/jacto_r.png", 24, 24),
-                        '11' = makeIcon("Icons/valtra_r.png", 95, 24),
-                        '120191031172113' = makeIcon("Icons/ponsse_r.png", 24, 24),
-                        '120130518080852' = makeIcon("Icons/valmet_r.png", 26, 24),
-                        '120120724031949' = makeIcon("Icons/ideal_r.png", 19, 24),
-                        '120130802084245' = makeIcon("Icons/SLC_r.png", 26, 24),
-                        '120130522055326' = makeIcon("Icons/CBT_r.png", 78, 20),
-                        '120191031162533' = makeIcon("Icons/komatsu_r.png", 180, 24),
-                        '120191031171837' = makeIcon("Icons/JD_r.png", 26, 20),
-                        '120191031171708' = makeIcon("Icons/caterpillar_r.png", 38, 20),
-                        '120191031171942' = makeIcon("Icons/logmax_r.png", 29, 20),
-                        '120191031172239' = makeIcon("Icons/volvo_r.png", 24, 20),
-                        '120191031171807' = makeIcon("Icons/hyundai_r.png", 126, 20)
-                    )
+  '1' = makeIcon("Icons/NH_r.png", 23, 24),          ##Caso precise consultar, olhar o csv
+  '3' = makeIcon("Icons/CI_r.png", 28, 24),
+  '4' = makeIcon("Icons/JD_r.png", 26, 24),
+  '5' = makeIcon("Icons/MF_r.png", 34, 24),
+  '6' = makeIcon("Icons/agrale_r.png", 34, 24),
+  '13' = makeIcon("Icons/jacto_r.png", 24, 24),
+  '11' = makeIcon("Icons/valtra_r.png", 95, 24),
+  '120191031172113' = makeIcon("Icons/ponsse_r.png", 24, 24),
+  '120130518080852' = makeIcon("Icons/valmet_r.png", 26, 24),
+  '120120724031949' = makeIcon("Icons/ideal_r.png", 19, 24),
+  '120130802084245' = makeIcon("Icons/SLC_r.png", 26, 24),
+  '120130522055326' = makeIcon("Icons/CBT_r.png", 78, 20),
+  '120191031162533' = makeIcon("Icons/komatsu_r.png", 180, 24),
+  '120191031171837' = makeIcon("Icons/JD_r.png", 26, 20),
+  '120191031171708' = makeIcon("Icons/caterpillar_r.png", 38, 20),
+  '120191031171942' = makeIcon("Icons/logmax_r.png", 29, 20),
+  '120191031172239' = makeIcon("Icons/volvo_r.png", 24, 20),
+  '120191031171807' = makeIcon("Icons/hyundai_r.png", 126, 20)
+)
 
 ### Gráfico m1 de distribuição das marcas (top5) m1_t = tratores, m1_c = colheitadeiras
 ###################
@@ -363,24 +355,24 @@ marcas_icon <- iconList(
 m1_t <- leaflet(cli_in_pm_cont_top_t_aux) %>%
   addTiles() %>%
   addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon[produto_marca_id],
-               popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_c_aux$cliente_nome,
-                              "<br>",
-                              "Quantidade de máquinas ", cli_in_pm_cont_top_c_aux$marca_nome,
-                              " : ", cli_in_pm_cont_top_c_aux$cont),
-               label = ~marca_nome,
-               #clusterOptions = markerClusterOptions(),
-               group = "Ícones")
+             popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_c_aux$cliente_nome,
+                            "<br>",
+                            "Quantidade de máquinas ", cli_in_pm_cont_top_c_aux$marca_nome,
+                            " : ", cli_in_pm_cont_top_c_aux$cont),
+             label = ~marca_nome,
+             #clusterOptions = markerClusterOptions(),
+             group = "Ícones")
 
 m1_c<- leaflet(cli_in_pm_cont_top_c_aux) %>%
   addTiles() %>%
   addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon[produto_marca_id],
-               popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_c_aux$cliente_nome,
-                              "<br>",
-                              "Quantidade de máquinas ", cli_in_pm_cont_top_c_aux$marca_nome,
-                              " : ", cli_in_pm_cont_top_c_aux$cont),
-               label = ~marca_nome,
-               #clusterOptions = markerClusterOptions(),
-               group = "Ícones")
+             popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_c_aux$cliente_nome,
+                            "<br>",
+                            "Quantidade de máquinas ", cli_in_pm_cont_top_c_aux$marca_nome,
+                            " : ", cli_in_pm_cont_top_c_aux$cont),
+             label = ~marca_nome,
+             #clusterOptions = markerClusterOptions(),
+             group = "Ícones")
 
 
 if(teste == F){
@@ -425,7 +417,6 @@ marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
 #cores_t
 cli_in_pm_cont_top_t <- inner_join(cli_in_pm_cont_top_t, marcas_ic_co, by = c("produto_marca_id" = "marca_id_i"))
 cores_t <- as.vector(cli_in_pm_cont_top_t$cor)
-
 #Colheitadeiras
 if(nrow(cli_in_pm_cont_top_c) > 5)
 {
@@ -460,12 +451,12 @@ cores_c <- as.vector(cli_in_pm_cont_top_c$cor)
 ### Gráfico m2 de distribuição das marcas (top5)
 ###################
 m2_t <- plot_ly(cli_in_pm_cont_top_t, type = 'bar', orientation = 'v',
-              x = ~marca_nome,
-              y = ~sum,
-              # color = ~pal(marca_nome), ##Pal deixou de funcionar, procurar depois
-              color = ~marca_nome,     #Se quiser setar pela tabela, com join, senáo usar o factor como é feito acima
-              colors = cores_t,
-              showlegend = FALSE)
+                x = ~marca_nome,
+                y = ~sum,
+                # color = ~pal(marca_nome), ##Pal deixou de funcionar, procurar depois
+                color = ~marca_nome,     #Se quiser setar pela tabela, com join, senáo usar o factor como é feito acima
+                colors = cores_t,
+                showlegend = FALSE)
 
 m2_t <- m2_t %>%
   layout(xaxis = list(title = ''),
@@ -479,12 +470,12 @@ if(dash == F){
 ###################
 
 m2_c <- plot_ly(cli_in_pm_cont_top_c, type = 'bar', orientation = 'v',
-              x = ~marca_nome,
-              y = ~sum,
-              # color = ~pal(marca_nome),
-              color = ~marca_nome,     #Se quiser setar pela tabela, com join, senáo usar o factor como é feito acima
-              colors = cores_c,
-              showlegend = FALSE)
+                x = ~marca_nome,
+                y = ~sum,
+                # color = ~pal(marca_nome),
+                color = ~marca_nome,     #Se quiser setar pela tabela, com join, senáo usar o factor como é feito acima
+                colors = cores_c,
+                showlegend = FALSE)
 
 m2_c <- m2_c %>%
   layout(xaxis = list(title = ''),
