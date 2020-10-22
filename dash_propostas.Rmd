@@ -34,7 +34,7 @@ library(RColorBrewer)
 #Lib usada pros waffles
 #library(waffle)
 #usada para converter números em moeda
-library(scales)
+#library(scales)
 #Lib para lidar com o tempo
 library(lubridate)
 #Lib usada para emojis/fonts/box de valores
