@@ -226,7 +226,7 @@ if(dash == F){
 
 ##vou manter ng_ij_vn_ij_np_fat pra fazer o join mais pro final
 if (teste == F) {
-  rm(ng_ij_vn_ij_np_fat, corte_1, status)
+  rm(ng_ij_vn_ij_np_fat, status)
 }
 ##############################################
 ##Faturamento de negócios fechados em anat
