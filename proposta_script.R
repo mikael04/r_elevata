@@ -23,11 +23,12 @@ library(RColorBrewer)
 #Lib usada pros waffles
 #library(waffle)
 #usada para converter números em moeda
-library(scales)
+#library(scales)
 #Lib para lidar com o tempo
 library(lubridate)
 #Lib usada para emojis/fonts/box de valores
 library(ggplot2)
+#Lib usada para os quadros
 library(emojifont)
 
 
@@ -37,7 +38,7 @@ library(emojifont)
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável usada para não plotar os gráficos na dash
-dash = T
+dash = F
 ####Variavel global c/ ano atual (para comparação)
 ano_atual = '2020-01-01'
 ####Variável global para ver se tem usados Ainda não usada
@@ -53,8 +54,7 @@ emp_si = 59 # Simex
 emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
-empresa = emp_su
-
+  empresa <- emp_su
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -383,7 +383,6 @@ p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_me
 
 p3 <- p3 %>%
   layout(barmode = 'identity', xaxis = ax, yaxis = ax)
-
 p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
                        name = 'Empresa (geral)',
                        x = ~categoria_nome,
@@ -393,11 +392,10 @@ p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
                        hoverinfo = "text",
                        marker = list(color = 'orange'))
 
-
 if(empresa == 16){
   p3 <- p3 %>%
     layout(
-      autosize = F,
+      autosize = T,
       yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,700000)),
       #range nos dois eixos iguais pra ficar na mesma proporção
       yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,700000)),
@@ -407,7 +405,7 @@ if(empresa == 16){
 }else if(empresa == 78){
   p3 <- p3 %>%
     layout(
-      autosize = F,
+      autosize = T,
       yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,2000000)),
       #range nos dois eixos iguais pra ficar na mesma proporção
       yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,2000000)),
@@ -532,7 +530,7 @@ p4 <- p4 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
 
 p4 <- p4 %>%
   layout(
-    autosize = F,
+    autosize = T,
     yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,170000)),
     #range nos dois eixos iguais pra ficar na mesma proporção
     yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,170000)),
@@ -542,14 +540,10 @@ p4 <- p4 %>%
 if(dash == F){
   p4
 }
-
 if (empresa == 16){
   subplot(p3, p4, shareX = T, shareY = T)
-} else{
-  if(empresa == 78){
-    p3
-  }
-}
+} 
+
 
 if(teste == F){
   #tabelas
