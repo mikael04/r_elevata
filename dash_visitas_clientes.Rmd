@@ -317,39 +317,11 @@ negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character",
 neg_ij_vend <- inner_join(negocio, vendedor, by = c('negocio_vendedor_id' = 'vendedor_id')) %>%
   select(negocio_id, negocio_vendedor_id)
 
-neg_ij_vend_count <- neg_ij_vend %>%
-  select(negocio_vendedor_id) %>%
-  group_by(negocio_vendedor_id) %>%
-  mutate(n_negocios = n()) %>%
-  distinct(negocio_vendedor_id, .keep_all = T) %>%
-  ungroup()
 
-vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_vendedor_id" = "negocio_vendedor_id")) %>%
-  select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas, n_negocios)
+####################################
+###Clientes que tiveram negócios, quantas visitas recebem (histograma) e clientes que não tiveram negócios, quantas visitas recebem
+####################################
 
-### Grafico c0 - Distribuicao de clientes (total), visitas (2020) e negocios (2020) cadastrados por vendedor
-c0 <- plot_ly(vend_cli_vis_neg, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
-              name = 'Clientes (total)')
-c0 <- c0 %>%
-  add_trace(y= ~n_visitas, name = 'Visitas (2020)')
-c0 <- c0 %>%
-  add_trace(y= ~n_negocios, name = 'Negócios (2020)')
-c0 <- c0 %>%
- layout(barmode = 'grouped',
-        xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
-        yaxis = list(title = ''))
-
-if(dash == F){
-  c0
-}
-
-if(teste == F){
-  #tabelas
-  rm(cli_p_v, vend_cli_vis, vend_cli_vis_neg, neg_ij_vend, neg_ij_vend_count, vc_ij_vse_ij_v,
-     vc_ij_vse_ij_v_count, cli_p_v_ij_vend);
-  #variáveis
-  rm();
-}
 ### Gráficos de pizza de clientes com e sem negócio
 ##Contando número de clientes geral e em 2020
 n_clientes <- nrow(cliente)
@@ -361,161 +333,6 @@ n_clientes_2020 <- nrow(cliente_2020)
 ##Contar quantos clientes aparecem em negócio
 cli_ij_ng <- inner_join(cliente, negocio, by=c("cliente_id" = "negocio_cliente_id")) %>%
   select(cliente_id, negocio_id)
-cli_2020_ij_ng <- inner_join(cliente_2020, negocio, by=c("cliente_id" = "negocio_cliente_id"))%>%
-  select(cliente_id, negocio_id)
-##Variáveis usadas
-n_cli_cneg <- nrow(cli_ij_ng)
-n_cli_cneg_2020 <- nrow(cli_2020_ij_ng)
-
-Clientes <- c("Clientes com negócios", "Clientes sem negócio")
-
-n_total <- c(n_cli_cneg, n_clientes-nrow(cli_ij_ng))
-n_total_p <- c(round((n_cli_cneg/n_clientes), 2), round(((n_clientes-n_cli_cneg)/n_clientes), 2))
-
-n_2020 <- c(n_cli_cneg_2020, n_clientes_2020-n_cli_cneg_2020)
-n_2020_p <- c(round((n_cli_cneg_2020/n_clientes_2020), 2), round(((n_clientes_2020-n_cli_cneg_2020)/n_clientes_2020), 2))
-
-cli_c_s_ng <- data.frame(Clientes, n_total, n_total_p, n_2020, n_2020_p)
-
-
-### Grafico c1 - Clientes cadastrados que possuem negocio (pizza)
-colors_pie<- c("#32CD32", "#FFA500")
-c1 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_total, type = 'pie', sort = F,
-              text = func_fmt_numbr(n_total),
-              texttemplate = "%{text} (%{percent})",
-              hovertemplate = paste ("%{label} <br>",
-                                     "Equivalente a %{percent}",
-                                     "<extra></extra>"),
-              marker = list(colors = colors_pie))
-
-if(dash == F){
-  c1
-}
-
-### Grafico c2 - Clientes cadastrados em 2020 que possuem negocio (pizza)
-c2 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_2020, type = 'pie', sort = F,
-              text = func_fmt_numbr(n_2020),
-              texttemplate = "%{text} (%{percent})",
-              hovertemplate = paste ("%{label} <br>",
-                                     "Equivalente a %{percent}",
-                                     "<extra></extra>"),
-              marker = list(colors = colors_pie))
-
-if(dash == F){
-  c2
-}
-if(teste == F){
-  #tabelas
-  rm(cli_2020_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_2020, n_2020_p, cliente_2020);
-  #variáveis
-  rm(n_cli_cneg, n_cli_cneg_2020, n_clientes, n_clientes_2020, colors_pie);
-}
-####################################
-
-
-###Contar clientes/visitas/negocios cadastrados por mês -> vem do script visita_clientes
-####################################
-
-##declarado cliente, já usado
-
-##declarado visita_cliente , já usado
-
-##declarado visita_status, já usado
-
-##declarado visita_status_empresa, já usado
-
-
-##junta as duas tabelas (status e status_empresa) pra pegar o id da empresa (vs_empresa_id) e o nome do status (vs_nome)
-vis_st_emp <- inner_join(visita_status, visita_status_empresa, by = c('vs_id'= 'vse_status_id'))
-
-##Já filtrado apenas empresa (variavel global)
-clientes_mes <- cliente %>%
-  filter (cliente_data_cadastro >= ano_atual) %>%
-  mutate (ym = format(cliente_data_cadastro, '%m')) %>%
-  group_by (ym) %>%
-  summarize(n_cli = n(), .groups = 'drop') %>%
-  ungroup ()
-
-##Visita precisa juntar com visita_status ou _resultado () pra obter empresa_id ##poderia ser vendedor, mas a tabela vis_st_emp (status c/ status_empresa) já está pronta
-##vis_st_emp já vem filtrada pela empresa (var global)
-vc_ij_emp <- inner_join(visita_cliente, vis_st_emp, by = c("vc_status_id" = "vs_id")) %>%
-  #select(vc_id, vc_status_id, vc_data_cadastro) ##Sem empresa_id
-  select(vc_id, vc_status_id, vc_data_cadastro, vse_empresa_id)
-
-visitas_mes <- vc_ij_emp %>%
-  filter (vc_data_cadastro >= ano_atual) %>%
-  mutate (ym = format(vc_data_cadastro, '%m')) %>%
-  group_by (ym) %>%
-  summarize(n_vis = n(), .groups = 'drop') %>%
-  ungroup ()
-
-##Negocio precisa juntar com vendedor pra obter empresa_id ##Poderia ser cliente também, mas a tabela vendedor é menor
-##vendedor já vem filtrado pela empresa (var global)
-ng_ij_emp <- inner_join(negocio, vendedor, by = c("negocio_vendedor_id" = "vendedor_id")) %>%
-  #select(negocio_id, negocio_vendedor_id, negocio_data_cadastro)%>% ##Sem empresa_id
-  select(negocio_id, negocio_vendedor_id, negocio_data_cadastro, vendedor_empresa_id)
-
-negocios_mes <- ng_ij_emp %>%
-  filter (negocio_data_cadastro >= ano_atual) %>%
-  mutate (ym = format(negocio_data_cadastro, '%m')) %>%
-  group_by (ym) %>%
-  summarize(n_neg = n(), .groups = 'drop') %>%
-  ungroup ()
-
-##Juntando tudo em um só dataframe
-cli_ij_vc_mes <- inner_join(clientes_mes, visitas_mes, by = c("ym"))
-cli_ij_vc_ij_ng_mes <- inner_join(cli_ij_vc_mes, negocios_mes, by = c("ym"))
-
-
-##Criando nomes de colunas
-meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
-## alterando pra números pra poder fazer da mesma forma
-cli_ij_vc_ij_ng_mes$ym <- as.integer(cli_ij_vc_ij_ng_mes$ym)
-
-##Vou usar dessa forma, ao invés de transformar, irei apenas criar uma nova coluna (poderia ser feito com um join também)
-cli_ij_vc_ij_ng_mes <- cli_ij_vc_ij_ng_mes %>%
-  mutate(mes = cut(ym,breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
-                   labels = meses))
-###Não farei dessa forma pois quero manter a coluna
-#cli_ij_vc_ij_ng_mes$ym <- with(cli_ij_vc_ij_ng_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
-#                                                        labels = meses))
-
-### Gráfico c3 - Cadastro de clientes, visitas e negócios no ano de 2020
-c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
-              name = 'Clientes',
-              text = ~paste(func_fmt_numbr(n_cli), 'clientes'),
-              hoverinfo = "text",
-              color = I('#7B68EE'))
-c3 <- c3 %>%
-  add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_vis,
-             name = 'Visitas',
-             text = ~paste(func_fmt_numbr(n_vis), 'visitas'),
-             hoverinfo = "text",
-             color = I('#DAA520'))
-c3 <- c3 %>%
-  add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_neg,
-             name = 'Negócios',
-             text = ~paste(func_fmt_numbr(n_neg), 'negócios'),
-             hoverinfo = "text",
-             color = I('green'))
-
-c3 <- c3 %>%
-  layout(xaxis = list(title = '', range = c(min(0), max(12))), ##Dessa forma pego os 12 meses do ano
-         yaxis = list(title = ''))
-if(dash == F){
-  c3
-}
-
-if(teste == F){
-  #tabelas
-  rm(vendedor, vis_st_emp, cli_ij_vc_mes, cli_ij_vc_ij_ng_mes,
-     clientes_mes, negocios_mes, ng_ij_emp, visitas_mes, vc_ij_emp, visita_status, visita_status_empresa);
-  #variáveis
-  rm(meses);
-}
-####################################
-###Clientes que tiveram negócios, quantas visitas recebem (histograma) e clientes que não tiveram negócios, quantas visitas recebem
-####################################
 
 #cli_ij_ng <- já tenho, clientes que já possuem negócios
 ##Clientes sem negócio
@@ -705,44 +522,6 @@ v1
 
 ```
 
-
-Oportunidades
-=======================================================================
-
-Column {data-width=700}
------------------------------------------------------------------------
-
-### Distribuição do cadastro de clientes (total), visitas (2020), e negócios (2020) por vendedor
-
-```{r}
-
-### Grafico c0 - Distribuicao de clientes (total), visitas (2020) e negocios (2020) cadastrados por vendedor
-c0
-
-```
-
-Column {data-width=400}
------------------------------------------------------------------------
-
-### Distribuição de clientes com ou sem negócios
-
-```{r}
-
-### Grafico c1 - Clientes cadastrados que possuem negocio (pizza)
-c1
-
-```
-
-
-
-### Distribuição de clientes cadastrados em 2020 com ou sem negócios
-
-```{r}
-
-### Grafico c2 - Clientes cadastrados em 2020 que possuem negocio (pizza)
-c2
-
-```
 
 Clientes
 =======================================================================
