@@ -59,11 +59,9 @@ emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
 #Teste se o parâmetro foi setado ou não
-#Teste se o parâmetro foi setado ou não
 if(params$variable1 == 'emp_par'){
   empresa <- emp_su
 } else{
-##Empresa utilizada
   if (params$variable1 == 'Amazonia'){
     empresa = emp_am
   }else{

@@ -1,0 +1,157 @@
+---
+title: "Visão do gestor"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+params:
+  variable1: "emp_par"
+---
+
+```{r setup, include=FALSE}
+#rm(list = ls())
+#Lib q será futuramente usada pros painéis interativos
+#library(shiny)
+#Lib pra conexão com o banco
+#library(odbc)
+#Lib para ler (mais rapidamente) os csvs
+library(data.table)
+#lib com uma cacetada de outras libs para manipular dados
+library(tidyverse)
+#Libs pra trabalhar com a base (cortes e funções similares ao SQL)
+#library(dplyr) #Contido no tidyverse
+#Lib pro gráfico
+library(ggplot2)
+#lib pros gráficos mais "interativos"
+library(plotly)
+library(highcharter)
+#library(htmlwidgets)
+#Lib pra usar paletas de cores
+library(RColorBrewer)
+#library(viridis)
+#Lib usada pros treemaps
+#library(treemap)
+#Lib usada pros waffles
+#library(waffle)
+#usada para converter números em moeda
+#library(scales)
+#Lib para lidar com o tempo
+library(lubridate)
+#Lib usada para emojis/fonts/box de valores
+library(ggplot2)
+#Lib usada para os quadros
+#library(emojifont)
+
+
+
+###################################
+##Variáveis "Globais"
+####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
+teste = F
+####Variável usada para não plotar os gráficos na dash
+dash = T
+####Variavel global c/ ano atual (para comparação)
+ano_atual = '2020-01-01'
+####Variável global para ver se tem usados Ainda não usada
+#usados = T
+
+
+##Variável "Global"
+emp_am = 42 # Amazonia
+emp_ar = 77 # Araguaia
+emp_ko = 78 # Komatsu
+emp_ms = 35 # Ms
+emp_si = 59 # Simex
+emp_su = 16 # Super
+emp_ta = 60 # Taisa
+
+#Teste se o parâmetro foi setado ou não
+if(params$variable1 == 'emp_par'){
+  empresa <- emp_su
+} else{
+  if (params$variable1 == 'Amazonia'){
+    empresa = emp_am
+  }else{
+      if(params$variable1 == 'Araguaia'){
+        empresa = emp_ar
+      }else{
+        if(params$variable1 == 'MS'){
+          empresa = emp_ms
+        }else{
+          if(params$variable1 == 'Simex'){
+            empresa = emp_si
+          }else{
+            if(params$variable1 == 'Taisa'){
+              empresa = emp_ta
+              }else{
+                if (params$variable1 == 'Super'){
+                  empresa = emp_su
+                }else{
+                  if (params$variable1 == 'Komatsu'){
+                    empresa = emp_ko
+                  }
+                }
+              }
+          }
+        }
+      }
+    }
+  }
+}
+###################################
+
+##Alterar o valor de inteiro para reais
+func_fmt_din <- function(inteiro)
+{
+  inteiro_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
+  return(inteiro_em_reais)
+}
+##Alterar o valor de inteiro para reais convertendo para milhões (78000000 = R$78,0) -> posteriormente adicionar o "mi"
+func_fmt_din_mi <- function(inteiro)
+{
+  inteiro <- round(inteiro/1000000, digits = 1)
+  inteiro_mi_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 1))
+  return(inteiro_mi_em_reais)
+}
+##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
+func_nome <- function (nome_comp)
+{
+  lista <- str_split_fixed(nome_comp, " ", 4)
+  lista <- lista[, -4]
+  lista[,3] = str_sub(lista[,3], 1, 1)
+  lista[,2] = str_sub(lista[,2], 1, 1)
+  lista[,2] = paste(lista[,2], '.', sep='')
+  lista[,3] = paste(lista[,3], '.', sep='')
+  lista[,2] <- gsub('^.$', '',lista[,2])
+  lista[,3] <- gsub('^.$', '',lista[,3])
+  lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
+  return (lista[,1])
+}
+##Alterar o número apresentado na forma americana (com vírgula) para a forma brasileira (com ponto), através da transformação em string
+func_fmt_numbr <- function(inteiro)
+{
+  inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
+  return(inteiro_br)
+}
+
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
