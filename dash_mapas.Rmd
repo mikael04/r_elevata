@@ -35,7 +35,7 @@ library(RColorBrewer)
 #library(waffle)
 #Lib para funções de tempo
 library(lubridate)
-#usada para converter números em moeda
+#Lib de mapas
 library(leaflet)
 
 
