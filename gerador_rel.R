@@ -188,6 +188,7 @@ pmap(params_list[[4]], render_report_vis_cli)
 pmap(params_list[[5]], render_report_vis_cli)
 pmap(params_list[[6]], render_report_vis_cli)
 pmap(params_list[[7]], render_report_vis_cli)
+#pmap(params_list[[7]], render_report_vis_cli)
 
 
 #############################################################
