@@ -721,7 +721,7 @@ if (empresa == 16){
 p6 <- plot_ly()
 p6 <- p6 %>%
   add_pie(data = p_ij_ppa_cont_modo_ij_pmf, values = ~cont_modo, labels = ~Modo,
-          name = 'Modo de pagamento'
+          name = 'Instituição financeira'
   )
 if(dash == F){
   p6
