@@ -775,7 +775,7 @@ if (empresa == 16){
 
 Column {data-width=450}
 -----------------------------------------------------------------------
-### Modo de pagamento
+### Instituição financeira
 
 ```{r}
 ### Gráfico p6 - Modos de pagamento
