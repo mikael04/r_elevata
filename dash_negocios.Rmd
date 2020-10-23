@@ -64,7 +64,7 @@ emp_ta = 60 # Taisa
 
 #Teste se o parâmetro foi setado ou não
 if(params$variable1 == 'emp_par'){
-  empresa <- emp_ta
+  empresa <- emp_su
 } else{
 ##Empresa utilizada
   if (params$variable1 == 'Amazonia'){
@@ -312,163 +312,6 @@ if(dash == F){
 
 #########################################################
 
-### Negócios por categoria
-###########################################################################################################################################
-###Aqui começa o gráfico de Tipos de máquina faturadas por categoria, em anat
-#################################################
-##Já utilizadas anteriormente
-# negocio_produto <- fread("Tabelas/negocio_produto.csv") %>%
-#   select(np_id, np_negocio_id, np_produto_id, np_quantidade,np_ativo, np_valor)
-
-##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
-# produto <- fread("Tabelas/produto.csv") %>%
-#   select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
-
-
-## Inner join pra não pegar os np_produto_id = 0
-ngp_ij_pd <- inner_join(negocio_produto, produto, by=c("np_produto_id"="produto_id"))%>%
-  filter (np_ativo == TRUE) %>%
-  select (np_negocio_id, np_produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id, np_quantidade, np_valor)
-
-if (teste == F) {
-  rm()
-}
-
-##tabela usada pra termos negócios, data de atualização (hist), nome do vendedor (vend) e produtos (negocio produto e produto)
-##Aqui temos já com alguns cortes (np_ativo)
-ng_ij_hist_ij_ven_ij_ngp_ij_pd <- inner_join(ng_ij_hist_ij_ven_anat, ngp_ij_pd, by = c("negocio_id" = "np_negocio_id"))
-## Removendo os inativos (np_ativo == 0)
-
-
-##Vou fazer um join pra pegar os nomes de cada categoria
-categoria <- fread("Tabelas/categoria.csv", colClasses = c(categoria_id = "character")) %>%
-  select(categoria_id, categoria_nome)
-
-
-Encoding(categoria$categoria_nome) <- 'latin1'
-
-
-## Primeira vez pra verificar quais são os top10
-ng_top10 <- ng_ij_hist_ij_ven_ij_ngp_ij_pd %>%
-  select(produto_categoria_id, np_valor) %>%
-  group_by(produto_categoria_id) %>%
-  mutate(faturamento = sum(np_valor)) %>%
-  distinct (produto_categoria_id, .keep_all = TRUE) %>%
-  arrange(desc(faturamento)) %>%
-  collect ()
-
-##pega só os top10
-top10 <- head.matrix(ng_top10, n=10)
-
-top10_ij <- inner_join(top10, categoria, by = c("produto_categoria_id"="categoria_id"))
-#Removendo a contagem que ele fez de faturamento (usado pra gerar o top10)
-top10_ij <- top10_ij[, -2:-3]
-top10_ij <- as.data.frame(top10_ij)
-
-## Transformando tudo em "OUTRA" -1
-ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat <- left_join(ng_ij_hist_ij_ven_ij_ngp_ij_pd, top10_ij, by=c("produto_categoria_id" = "produto_categoria_id"))
-ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat$produto_categoria_id[is.na(ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat$categoria_nome)] <- "-1"
-ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat$categoria_nome[is.na(ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat$categoria_nome)] <- "OUTRA"
-
-## Removendo os NA (três negócios cadastrados errados)
-ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat <- ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat[!is.na(ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat$np_produto_id),]
-
-
-## Agora pra agrupar todos (já trocado os anteriores pra categoria "OUTRA")
-ng_top10_ag <- ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat %>%
-  select(produto_categoria_id, np_valor) %>%
-  group_by(produto_categoria_id) %>%
-  mutate(faturamento = sum(np_valor)) %>%
-  distinct (produto_categoria_id, .keep_all = TRUE) %>%
-  arrange(desc(faturamento)) %>%
-  collect ()
-
-##pega só os top10
-top10 <- head.matrix(ng_top10_ag, n=10)
-
-
-top10_ij <- inner_join(top10, categoria, by = c("produto_categoria_id"="categoria_id"))
-#Removendo a contagem que ele fez de faturamento (usado pra gerar o top10)
-top10_ij <- top10_ij[, -2]
-top10_ij <- top10_ij[, -2]
-top10_ij <- as.data.frame(top10_ij)
-
-ng_top_ag <- inner_join(ng_top10_ag, top10_ij, by=c("produto_categoria_id" = "produto_categoria_id"))
-
-#conversão de faturamento para texto
-ng_top_ag <- ng_top_ag %>%
-  mutate(fat_t = func_fmt_din(faturamento))
-
-##Chart gerado para o treemap de categorias por faturamento em anat
-chart_ng_top_ag <- ng_top_ag
-
-### Gráfico hc_n4 - Valor financeiro de negócios em anat  (por categoria)
-#################################################
-
-hc_n4 <- chart_ng_top_ag %>%
-  hchart (
-    type = "treemap",
-    hcaes(x=categoria_nome, value=faturamento, color = faturamento, name = categoria_nome)) %>%
-  hc_tooltip(formatter = JS("function () { return '<b>' + this.point.categoria_nome + '</b><br /> ' + ' <br />' + this.point.fat_t;}")) %>%
-  hc_colorAxis(minColor = "#ADD8E6", maxColor = "#3182FF")
-
-if(dash == F){
-  hc_n4
-}
-
-#################################################
-
-### Aqui começa o gráfico de Tipos de máquina faturadas por categoria, em anat
-#################################################
-
-
-ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat_fat <-  ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat %>%
-  filter(negocio_negocio_situacao_id == 4)
-
-## Agora pra agrupar todos (já trocado os anteriores pra categoria "OUTRA")
-ng_top10_ag_fat <- ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat_fat %>%
-  select(produto_categoria_id, np_valor) %>%
-  group_by(produto_categoria_id) %>%
-  mutate(faturamento = sum(np_valor)) %>%
-  distinct (produto_categoria_id, .keep_all = TRUE) %>%
-  arrange(desc(faturamento)) %>%
-  collect ()
-
-
-ng_top_ag_fat <- inner_join(ng_top10_ag_fat, top10_ij, by=c("produto_categoria_id" = "produto_categoria_id"))
-ng_top_ag_fat <- ng_top_ag_fat %>%
-  select (produto_categoria_id, categoria_nome, faturamento)
-
-#Removendo tabelas não mais usadas
-if (teste == F) {
-  #tabelas
-  rm(ng_top10, ng_top10_ag, top10, top10_ij, ng_ij_hist_ij_ven_ij_ngp_ij_pd, ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat, ngp_ij_pd)
-}
-
-#conversão de faturamento para texto
-ng_top_ag_fat <- ng_top_ag_fat %>%
-  mutate(fat_t = func_fmt_din(faturamento))
-
-##Chart gerado para o treemap de categorias por faturamento em anat
-chart_ng_top_ag_fat <- ng_top_ag_fat
-
-### Gráfico hc_n5 - Máquinas faturadas em anat (por categoria)
-hc_n5 <- chart_ng_top_ag_fat %>%
-  hchart (
-    "treemap",
-    hcaes(x=categoria_nome, value=faturamento, color = faturamento)) %>%
-  hc_tooltip(formatter = JS("function () { return '<b>' + this.point.categoria_nome + '</b><br /> ' + ' <br />' + this.point.fat_t;}")) %>%
-  hc_colorAxis(minColor = "#90EE90", maxColor = "#32CD32")
-
-if(dash == F){
-  hc_n5
-}
-
-if (teste == F) {
-  rm(ng_top_ag, ng_top_ag_fat, ng_ij_hist_ij_ven_ij_ngp_ij_pd_ij_cat_fat, chart_ng_top_ag, chart_ng_top_ag_fat, ng_top10_ag_fat, ng_ij_hist_ij_ven_anat)
-}
-#################################################
-
 ### Idade dos negócios
 ###################################################################################################################################
 ##Filtrar vendedores ativos e empresa
@@ -698,28 +541,6 @@ n3 %>%
 
 ```
 
-Top 10 Categorias
-=======================================================================
-
-Column {data-width=350}
------------------------------------------------------------------------
-###  Valor Financeiro de Negócios Cadastrados, por categoria em 2020
-
-```{r}
-### Gráfico hc_n4 - Valor financeiro de negócios em 2020  (por categoria)
-hc_n4
-
-```
-
-Column {data-width=350}
------------------------------------------------------------------------
-### Valor Financeiro de Negócios Faturados, por categoria em 2020
-
-```{r}
-### Gráfico hc_n5 - Máquinas faturadas em 2020 (por categoria)
-hc_n5
-
-```
 
 Idade dos negócios
 =======================================================================
