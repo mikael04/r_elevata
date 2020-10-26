@@ -1,24 +1,59 @@
+Dash Geral (Funil, Faturamento ano a ano e Oportunidades)
+---------------------------------------------------------------
+
 ### Gráfico n9 - Funil agrupado por faturamento
 
 ### Gráfico n10 - Pizza fechados do ano
 
 ### Gráfico n11 - Pizza fechados no último mês
 
-### Gráfico n0 - Faturamento de negócios em 2020 por status
+### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + visitas, clientes e negócios cadastrados
 
-### Gráfico n3 - Faturamento de negócios fechados em 2020 por status
+### Grafico c0 - Distribuicao de clientes (total), visitas (2020) e negocios (2020) cadastrados por vendedor
+
+### Grafico c1 - Clientes cadastrados que possuem negocio (pizza)
+
+### Grafico c2 - Clientes cadastrados em 2020 que possuem negocio (pizza)
+---------------------------------------------------------------
+
+Dash Marcas (Top 10 categorias, Marcas (tratores){mapa}, Marcas (colheitadeiras){mapa})
+---------------------------------------------------------------
 
 ### Gráfico hc_n4 - Valor financeiro de negócios em 2020  (por categoria)
 
 ### Gráfico hc_n5 - Máquinas faturadas em 2020 (por categoria)
 
+### Gráfico m1_t de distribuição das marcas (top5) (mapa)
+
+### Gráfico m2_t de distribuição das marcas (barra)
+
+### Gráfico m1_c de distribuição das marcas (top5) (mapa)
+
+### Gráfico m2_c de distribuição das marcas (barra)
+---------------------------------------------------------------\
+Dash Marcas_k (Top 10 categorias, Marcas {mapa})
+- Mesmo que anterior, porém apenas um mapa e um gráfico de distribuição (
+---------------------------------------------------------------
+
+Dash Negócios (Faturamento de negócios e Idade dos negócios)
+---------------------------------------------------------------
+
+### Gráfico n0 - Faturamento de negócios em 2020 por status
+
+### Gráfico n3 - Faturamento de negócios fechados em 2020 por status
+
 ### Gráfico n6 - Idade dos negócios abertos, por vendedor, por idade do negocio
 
 ### Gráfico n7 - Negócios abertos da empresa, pizza
 
-### Gráfico p3 - Ticket médio novos
+### Gráfico n13 - Tempo de vida médio de um negócio fechado
+---------------------------------------------------------------
 
-### Gráfico p4 - Ticket médio usados
+Dash Propostas (Faturamento de propostas e Volume de Propostas)
+---------------------------------------------------------------
+
+### Gráfico p3_p4 - Ticket médio novos + usados (super)
+### Gráfico p3 - Ticket médio novos (komatsu)
 
 ### Gráfico p6 - Modos de pagamento
 
@@ -29,13 +64,17 @@
 ### Gráfico p1 - Número propostas, por tipo em 2020 (total)
 
 ### Gráfico p2 - Proporção de usados (pizza)
+---------------------------------------------------------------
 
-### Gráfico p5 - Faturamento de propostas por status (não usado)
 
-### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
+Dash Visitas_clientes (Volume de visitas, Clientes, Mapa dos Clientes)
+---------------------------------------------------------------
 
 ### Gráfico v0 - Motivo das visitas (status) por vendedor em 2020
 
 ### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
 
-### Gráfico n13 - Tempo de vida médio de um negócio fechado
+### Gráfico c4_c5 - Ambos histogramas anteriores (c4 e c5)
+
+### Gráfico m0 - de distribuição dos clientes
+---------------------------------------------------------------
