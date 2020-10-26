@@ -37,8 +37,6 @@ library(RColorBrewer)
 #library(scales)
 #Lib para lidar com o tempo
 library(lubridate)
-#Lib usada para emojis/fonts/box de valores
-library(ggplot2)
 #Lib usada para os quadros
 #library(emojifont)
 
