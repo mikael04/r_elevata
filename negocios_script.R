@@ -1,15 +1,4 @@
----
-title: "Visão do gestor"
-output:
-  flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
-params:
-  variable1: "emp_par"
----
-
-```{r setup, include=FALSE}
-#rm(list = ls())
+rm(list = ls())
 #Lib q será futuramente usada pros painéis interativos
 #library(shiny)
 #Lib pra conexão com o banco
@@ -66,35 +55,35 @@ emp_ta = 60 # Taisa
 if(params$variable1 == 'emp_par'){
   empresa <- emp_su
 } else{
-##Empresa utilizada
+  ##Empresa utilizada
   if (params$variable1 == 'Amazonia'){
     empresa = emp_am
   }else{
-      if(params$variable1 == 'Araguaia'){
-        empresa = emp_ar
+    if(params$variable1 == 'Araguaia'){
+      empresa = emp_ar
+    }else{
+      if(params$variable1 == 'MS'){
+        empresa = emp_ms
       }else{
-        if(params$variable1 == 'MS'){
-          empresa = emp_ms
+        if(params$variable1 == 'Simex'){
+          empresa = emp_si
         }else{
-          if(params$variable1 == 'Simex'){
-            empresa = emp_si
+          if(params$variable1 == 'Taisa'){
+            empresa = emp_ta
           }else{
-            if(params$variable1 == 'Taisa'){
-              empresa = emp_ta
-              }else{
-                if (params$variable1 == 'Super'){
-                  empresa = emp_su
-                } else{
-                  if(params$variable1 == 'Komatsu'){
-                    empresa = emp_ko
-                  }
-                }
+            if (params$variable1 == 'Super'){
+              empresa = emp_su
+            } else{
+              if(params$variable1 == 'Komatsu'){
+                empresa = emp_ko
               }
             }
           }
         }
       }
+    }
   }
+}
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -213,7 +202,7 @@ n0 <- plot_ly(ng_ij_vn_ij_np_fat, type = 'bar', orientation = 'h', x = ~total_fa
               colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"),
               name = ~negocio_status,
               showlegend = TRUE
-              )
+)
 
 n0 <- n0 %>%
   layout(barmode = 'stack',
@@ -509,61 +498,3 @@ if (teste == F){
   #variáveis
   rm()
 }
-
-```
-
-Faturamento de negócios
-=======================================================================
-
-Column {data-width=650}
------------------------------------------------------------------------
-
-### Faturamento dos negócios cadastrados por vendedor, ano 2020 (Status atual)
-
-```{r}
-### Gráfico n0 - Número de clientes por vendedor
-n0 %>%
-  layout(legend = list(orientation = "h", x = 0.5,
-                       xanchor = "center"))
-
-```
-
-Column {data-width=350}
------------------------------------------------------------------------
-
-### Faturamento de negócios fechados em 2020
-
-```{r}
-### Gráfico n3 - Faturamento de negócios fechados em 2020
-n3 %>%
-  layout(legend = list(orientation = "h", x = 0.5,
-                       xanchor = "center"))
-
-```
-
-
-Idade dos negócios
-=======================================================================
-
-Column {data-width=450}
------------------------------------------------------------------------
-### Idade dos negócios abertos, por vendedor
-```{r}
-### Gráfico n6 - Idade dos negócios abertos, por vendedor, por idade do negocio
-n6
-```
-
-
-Column {data-width=350}
------------------------------------------------------------------------
-### Negócios abertos da empresa
-```{r}
-### Gráfico n7 - Negócios abertos da empresa, pizza
-n7
-```
-
-### Tempo médio para fechamento dos negócios (por status)
-```{r}
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-n13
-```
