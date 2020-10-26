@@ -16,7 +16,7 @@ converter categoria_id
 converter historico_negocio_situacao_negocio_id
 
 - negocio (negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro,
-          negocio_usado, negocio_produto_id)
+          negocio_usado, negocio_produto_id, negocio_probabilidade)
 converter negocio_id, negocio_produto_id
 
 - negocio_produto (np_id, np_negocio_id, np_produto_id, np_quantidade, np_ativo, np_valor)
