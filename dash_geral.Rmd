@@ -8,8 +8,8 @@ params:
   variable1: "emp_par"
 ---
 
-```{r setup, include=FALSE}
-#rm(list = ls())
+```{r setup, include=FALSE, error= TRUE}
+#rm(list=setdiff(ls(), c("params")))
 #Lib q será futuramente usada pros painéis interativos
 #library(shiny)
 #Lib pra conexão com o banco
@@ -49,48 +49,9 @@ ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
-
-##Variável "Global"
-emp_am = 42 # Amazonia
-emp_ar = 77 # Araguaia
-emp_ko = 78 # Komatsu
-emp_ms = 35 # Ms
-emp_si = 59 # Simex
-emp_su = 16 # Super
-emp_ta = 60 # Taisa
-
-#Teste se o parâmetro foi setado ou não
-if(params$variable1 == 'emp_par'){
-  empresa <- emp_su
-} else{
-  if (params$variable1 == 'Amazonia'){
-    empresa = emp_am
-  }else{
-      if(params$variable1 == 'Araguaia'){
-        empresa = emp_ar
-      }else{
-        if(params$variable1 == 'MS'){
-          empresa = emp_ms
-        }else{
-          if(params$variable1 == 'Simex'){
-            empresa = emp_si
-          }else{
-            if(params$variable1 == 'Taisa'){
-              empresa = emp_ta
-              }else{
-                if (params$variable1 == 'Super'){
-                  empresa = emp_su
-                }else{
-                  if (params$variable1 == 'Komatsu'){
-                    empresa = emp_ko
-                  }
-                }
-              }
-          }
-        }
-      }
-    }
-  }
+empresa = as.integer(params$variable1)
+#teste
+ empresa = 77
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -374,10 +335,15 @@ if (teste == F){
 ng_ij_hist_ij_ven_anat_fat <- ng_ij_hist_ij_ven_ij_np_anat %>%
   filter(negocio_negocio_situacao_id == 4)
 
+ym = c('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12')
+fat_anat_mes_aux <-data.frame(ym)
 fat_anat_mes <- ng_ij_hist_ij_ven_anat_fat %>%
   mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
   group_by (ym) %>%
   summarize(ym_sum = sum(np_valor), .groups = 'drop')
+
+fat_anat_mes <- left_join(fat_anat_mes_aux, fat_anat_mes, by = c('ym'))
+fat_anat_mes$ym_sum[is.na(fat_anat_mes$ym_sum)] <- 0
 
 ##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais antigas, ficar só com a última atualização no negócio
 negocio_ij_historico_ij_vendedor_total <- negocio_ij_historico_ij_vendedor_total[order(-negocio_ij_historico_ij_vendedor_total$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_total$negocio_id),]
@@ -439,7 +405,6 @@ if(anos_ant > 1) {
 ###Na super temos 2ant, na komatsu tem q verificar se possui 2ant e 1ant
 #######################################################################
 n_linhas <- nrow(fat_anat_mes)
-ym <- c("01","02","03","04","05","06","07","08","09","10","11","12")
 fat_anat_mes_aux <- data.frame(ym)
 fat_anat_mes_aux$ym_sum <- NA
 fat_anat_mes_aux$ym_sum[1:n_linhas] <- fat_anat_mes$ym_sum
@@ -459,6 +424,12 @@ fat_anat_1ant_2ant_mes$ym <- as.integer(fat_anat_1ant_2ant_mes$ym)
 fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%
   mutate(mes = cut(ym,breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
                    labels = meses))
+if(anos_ant > 0) {
+  fat_anat_1ant_2ant_mes$ym_sum_1ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_1ant)] <- 0
+}
+if(anos_ant > 1) {
+  fat_anat_1ant_2ant_mes$ym_sum_2ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_2ant)] <- 0
+}
 ##Forma antiga, agora a nova mantém a coluna "identificadora"
 #fat_anat_1ant_2ant_mes$ym <- with(fat_anat_1ant_2ant_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
 #                                                              labels = meses))

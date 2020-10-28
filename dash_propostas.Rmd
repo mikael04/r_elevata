@@ -63,19 +63,9 @@ emp_si = 59 # Simex
 emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
-#Teste se o parâmetro foi setado ou não
-if(params$variable1 == 'emp_par'){
-  empresa <- emp_su
-} else{
-  ##Empresa utilizada
-  if (params$variable1 == 'Super'){
-    empresa = emp_su
-  } else{
-      if(params$variable1 == 'Komatsu'){
-        empresa = emp_ko
-      }
-    }
-  }
+empresa = params$variable1
+#teste
+#empresa = 70
 ###################################
 
 ##Alterar o valor de inteiro para reais
