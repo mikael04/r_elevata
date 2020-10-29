@@ -1,15 +1,15 @@
 rm(list = ls())
-#Lib q ser· futuramente usada pros painÈis interativos
+#Lib q ser? futuramente usada pros pain?is interativos
 #library(shiny)
-#Lib pra conex„o com o banco
+#Lib pra conex?o com o banco
 #library(odbc)
 #Lib para ler (mais rapidamente) os csvs
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
 library(tidyverse)
-#Libs pra trabalhar com a base (cortes e funÁıes similares ao SQL)
+#Libs pra trabalhar com a base (cortes e fun??es similares ao SQL)
 #library(dplyr) #Contido no tidyverse
-#lib pros gr·ficos mais "interativos"
+#lib pros gr?ficos mais "interativos"
 library(plotly)
 library(highcharter)
 #library(htmlwidgets)
@@ -20,7 +20,7 @@ library(RColorBrewer)
 #library(treemap)
 #Lib usada pros waffles
 #library(waffle)
-#usada para converter n˙meros em moeda
+#usada para converter n?meros em moeda
 #library(scales)
 #Lib para lidar com o tempo
 library(lubridate)
@@ -28,19 +28,24 @@ library(lubridate)
 
 
 ###################################
-##Vari·veis "Globais"
-####Variavel de teste para n„o remover e imprimir valores de teste, 1 para teste, 0 para n„o estou testando, rodando
-teste = F
-####Vari·vel usada para n„o plotar os gr·ficos na dash
+##Vari√°veis "Globais"
+####Variavel de teste para n?o remover e imprimir valores de teste, 1 para teste, 0 para n?o estou testando, rodando
+teste = T
+####Vari?vel usada para n?o plotar os gr?ficos na dash
 dash = F
-####Variavel global c/ ano atual (para comparaÁ„o)
+####Variavel global c/ ano atual (para compara??o)
 ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
-####Vari·vel global para ver se tem usados Ainda n„o usada
+####Variavel global c/ m√™s atual (para compara√ß√£o)
+mes_atual = month(today())
+if(mes_atual == 1){
+  mes_atual <- 13
+}
+####Vari?vel global para ver se tem usados Ainda n?o usada
 #usados = T
 
 #empresa = params$variable1
 #teste
-empresa = 77
+empresa = 65
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -49,7 +54,7 @@ func_fmt_din <- function(inteiro)
   inteiro_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
   return(inteiro_em_reais)
 }
-##Alterar o valor de inteiro para reais convertendo para milhıes (78000000 = R$78,0) -> posteriormente adicionar o "mi"
+##Alterar o valor de inteiro para reais convertendo para milh?es (78000000 = R$78,0) -> posteriormente adicionar o "mi"
 func_fmt_din_mi <- function(inteiro)
 {
   inteiro <- round(inteiro/1000000, digits = 1)
@@ -70,7 +75,7 @@ func_nome <- function (nome_comp)
   lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
   return (lista[,1])
 }
-##Alterar o n˙mero apresentado na forma americana (com vÌrgula) para a forma brasileira (com ponto), atravÈs da transformaÁ„o em string
+##Alterar o n√∫mero apresentado na forma americana (com v√≠rgula) para a forma brasileira (com ponto), atrav√©s da transforma√ß√£o em string
 func_fmt_numbr <- function(inteiro)
 {
   inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
@@ -78,7 +83,7 @@ func_fmt_numbr <- function(inteiro)
 }
 
 #################################################################################
-## Gr·ficos do funil de vendas
+## Gr√°ficos do funil de vendas
 
 ### Funil de vendas (vendas abertas)
 ########################################################################
@@ -90,8 +95,7 @@ negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character",
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa, vendedor_ativo == 1) %>%
-  select(-vendedor_ativo)
+  filter (vendedor_empresa_id == empresa)
 
 
 #Arrumando encoding
@@ -104,7 +108,10 @@ if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
 }
 
-##negocio_produto para pegar os valores de cada negÛcio
+vendedor_a <- vendedor %>%
+  filter(vendedor_ativo == T)
+
+##negocio_produto para pegar os valores de cada neg√≥cio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
   select(np_id, np_negocio_id, np_produto_id, np_quantidade, np_ativo, np_valor)
 
@@ -112,12 +119,12 @@ negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "
 negocio_ij_vendedor <- inner_join(negocio, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
 
 ########## Para o funil e para agrupar por faturamento
-#### Vou alterar o agrupamento de n˙mero de negÛcios para faturamento, portanto precisarei da tabela negocio_produto
+#### Vou alterar o agrupamento de n√∫mero de neg√≥cios para faturamento, portanto precisarei da tabela negocio_produto
 neg_ij_ven_ij_np <- inner_join(negocio_ij_vendedor, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
 
 ##Status aberto
 st_a = c(1,2,3,8,10)
-##vou tentar remover apenas os que tem status fechado (4 - faturado, 5 - financiamento n„o aprovado, 6 - desistÍncia do cliente, 7 - perdemos para a concorrÍncia)
+##vou tentar remover apenas os que tem status fechado (4 - faturado, 5 - financiamento n√£o aprovado, 6 - desist√™ncia do cliente, 7 - perdemos para a concorr√™ncia)
 ##Tempo: Total
 ##status abertos apenas
 ng_ij_hist_ij_ven_funil_ab <- neg_ij_ven_ij_np %>%
@@ -127,16 +134,16 @@ ng_ij_hist_ij_ven_funil_ab <- neg_ij_ven_ij_np %>%
 ng_ij_hist_ij_ven_funil_ab <- ng_ij_hist_ij_ven_funil_ab %>%
   filter(vendedor_empresa_id == empresa)
 
-status = c("Em negociaÁ„o", "Montagem de cadastro", "Aguardando aprovaÁ„o", "Financiamento aprovado", "IntenÁ„o ou prospecÁ„o")
-#Criando nova coluna para n„o perder o id status (ao mudar pra string)
+status = c("Em negocia√ß√£o", "Montagem de cadastro", "Aguardando aprova√ß√£o", "Financiamento aprovado", "Inten√ß√£o ou prospec√ß√£o")
+#Criando nova coluna para n√£o perder o id status (ao mudar pra string)
 ng_ij_hist_ij_ven_funil_ab <- ng_ij_hist_ij_ven_funil_ab %>%
   mutate(negocio_status = negocio_negocio_situacao_id)
 
-##aqui ele substitui linha a linha cada situaÁ„o pelo seu respectivo em string
+##aqui ele substitui linha a linha cada situa√ß√£o pelo seu respectivo em string
 ng_ij_hist_ij_ven_funil_ab$negocio_status <- with(ng_ij_hist_ij_ven_funil_ab, cut(negocio_negocio_situacao_id, breaks = c(0,1,2,3,8,10),
                                                                                   labels = status))
 
-##Agora ser· agrupado por pedidos em aberto e faturamento total
+##Agora ser√° agrupado por pedidos em aberto e faturamento total
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_ab %>%
   select (negocio_status, np_valor, negocio_negocio_situacao_id) %>%
   group_by(negocio_status) %>%
@@ -147,51 +154,60 @@ ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_ab %>%
 
 
 
-##convers„o de faturamento para texto
+##convers√£o de faturamento para texto
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
   mutate(tot_fat_t = func_fmt_din(total_faturado))
 
-##ComeÁando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
+##Come√ßando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
   mutate(nome_cat_valor_fat = paste(negocio_status, "\n", tot_fat_t))
 
-##Vou converter o id de situaÁ„o pra 0, pra poder ordenar (intenÁ„o seria o status 0, È o primeiro)
+##Vou converter o id de situa√ß√£o pra 0, pra poder ordenar (inten√ß√£o seria o status 0, √© o primeiro)
 ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id == 10] <- 0
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
   arrange(negocio_negocio_situacao_id)
 
-### Gr·fico n9 - Funil agrupado por faturamento
-n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat) %>%
-  add_trace(
-    type ="funnelarea",
-    values = ng_ij_hist_ij_ven_funil_fat$total_faturado,
-    text = ng_ij_hist_ij_ven_funil_fat$nome_cat_valor_fat,
-    textinfo = "text",
-    hovertemplate = paste ("%{text} <br>",
-                           "Equivalente a %{percent}",
-                           "<extra></extra>"),
-    marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")),
-    showlegend = FALSE
-  )
-#n9 <- n9 %>%
-#  layout(uniformtext=list(minsize=10, mode='show'))
+##plotando texto sem informa√ß√µes
+text <- paste("N√£o h√° informa√ß√µes para o per√≠odo")
+s_dados <- ggplot() +
+  annotate("text", x = 1, y = 6, size = 8, label = text) +
+  theme_void()
+
+### Gr√°fico n9 - Funil agrupado por faturamento
+if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
+  n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat) %>%
+    add_trace(
+      type ="funnelarea",
+      values = ng_ij_hist_ij_ven_funil_fat$total_faturado,
+      text = ng_ij_hist_ij_ven_funil_fat$nome_cat_valor_fat,
+      textinfo = "text",
+      hovertemplate = paste ("%{text} <br>",
+                             "Equivalente a %{percent}",
+                             "<extra></extra>"),
+      marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")),
+      showlegend = FALSE
+    )
+}else {
+  n9 <- s_dados
+}
 if(dash == F){
   n9
 }
 
 
+
 if (teste == F){
   #tabelas
   rm(neg_ij_ven_ij_np, ng_ij_hist_ij_ven_funil_ab, ng_ij_hist_ij_ven_funil_fat)
-  #vari·veis
+  #vari√°veis
   rm(st_a, status)
 }
 #############################################################
 
-##Fechados do mÍs
+##Fechados do m√™s
 ##Status fechado
 st_f = c(4,5,6,7)
-status_f = c("Faturado", "Financiamento n„o aprovado", "Desistencia do cliente", "Perdemos para concorrÍncia")
+status_f = c("Faturado", "Financiamento n√£o aprovado", "Desistencia do cliente", "Perdemos para concorr√™ncia")
 
 historico_negocio_situacao <- fread("Tabelas/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_situacao_id = "character")) %>%
   select(historico_negocio_situacao_data, historico_negocio_situacao_negocio_id, historico_negocio_situacao_situacao_id)
@@ -203,30 +219,30 @@ historico_negocio_situacao_anat <- historico_negocio_situacao %>%
 negocio_ij_historico_ij_vendedor_anat <- inner_join(negocio_ij_vendedor, historico_negocio_situacao_anat, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
 negocio_ij_historico_ij_vendedor_total <- inner_join(negocio_ij_vendedor, historico_negocio_situacao, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
 
-##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualizaÁıes mais antigas, ficar sÛ com a ˙ltima atualizaÁ„o no negÛcio
+##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualiza√ß√µes mais antigas, ficar s√≥ com a √∫ltima atualiza√ß√£o no neg√≥cio
 negocio_ij_historico_ij_vendedor_anat <- negocio_ij_historico_ij_vendedor_anat[order(-negocio_ij_historico_ij_vendedor_anat$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_anat$negocio_id),]
 ng_ij_hist_ij_ven_anat <- negocio_ij_historico_ij_vendedor_anat[!duplicated(negocio_ij_historico_ij_vendedor_anat$negocio_id),]
 
 ng_ij_hist_ij_ven_ij_np_anat <- inner_join(ng_ij_hist_ij_ven_anat, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
 
-##vou tentar remover apenas os que tem status fechado (4 - faturado, 5 - financiamento n„o aprovado, 6 - desistÍncia do cliente, 7 - perdemos para a concorrÍncia)
+##vou tentar remover apenas os que tem status fechado (4 - faturado, 5 - financiamento n√£o aprovado, 6 - desist√™ncia do cliente, 7 - perdemos para a concorr√™ncia)
 ##Tempo: Total
 ##status abertos
-#ng_rj j· havia feito o corte apenas em fechados apÛs anat
+#ng_rj j√° havia feito o corte apenas em fechados ap√≥s anat
 ng_ij_hist_ij_ven_fec_anat <- ng_ij_hist_ij_ven_ij_np_anat %>%
   filter(negocio_negocio_situacao_id %in% st_f)
 
-##Funil j· filtrou (na verdade ng_ij_hist_ij_ven_anat j· filtrou) vendedor ativo e empresa = 16
+##Funil j√° filtrou (na verdade ng_ij_hist_ij_ven_anat j√° filtrou) vendedor ativo e empresa = 16
 
-#Criando nova coluna para n„o perder o id status (ao mudar pra string)
+#Criando nova coluna para n√£o perder o id status (ao mudar pra string)
 ng_ij_hist_ij_ven_fec_anat <- ng_ij_hist_ij_ven_fec_anat %>%
   mutate(negocio_status = negocio_negocio_situacao_id)
 
-##aqui ele substitui linha a linha cada situaÁ„o pelo seu respectivo em string
+##aqui ele substitui linha a linha cada situa√ß√£o pelo seu respectivo em string
 ng_ij_hist_ij_ven_fec_anat$negocio_status <- with(ng_ij_hist_ij_ven_fec_anat, cut(negocio_status, breaks = c(0,4,5,6,7),
                                                                                   labels = status_f))
 
-##Agora ser· agrupado por pedidos em aberto e faturamento total
+##Agora ser√° agrupado por pedidos em aberto e faturamento total
 ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_fec_anat %>%
   select (negocio_status, np_valor) %>%
   group_by(negocio_status) %>%
@@ -236,7 +252,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_fec_anat %>%
   collect()
 
 
-##Coluna nova criada para facilitar compreens„o (diminui as casas para exibir em milhıes)
+##Coluna nova criada para facilitar compreens√£o (diminui as casas para exibir em milh√µes)
 ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %>%
   select (negocio_status, total_faturado) %>%
   mutate(tot_fat_m = as.integer(total_faturado/1000000))
@@ -245,24 +261,28 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %
 ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%
   mutate(total_fat_t = func_fmt_din_mi(total_faturado))
 
-### Gr·fico n10 - Pizza fechados do ano
+### Gr√°fico n10 - Pizza fechados do ano
 ##############################################
 colors_pie <- c("#32CD32", "yellow" , "orange" , "#DE0D26")
-n10 <- plot_ly(ng_ij_hist_ij_ven_funil_fat_fec_anat, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
-               text = ~total_fat_t,
-               texttemplate = "%{text}mi (%{percent})",
-               hovertemplate = paste ("%{label} <br>",
-                                      "%{text}mi <br>",
-                                      "Equivalente a %{percent}",
-                                      "<extra></extra>"),
-               marker = list(colors = colors_pie))
+if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){
+  n10 <- plot_ly(ng_ij_hist_ij_ven_funil_fat_fec_anat, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
+                 text = ~total_fat_t,
+                 texttemplate = "%{text}mi (%{percent})",
+                 hovertemplate = paste ("%{label} <br>",
+                                        "%{text}mi <br>",
+                                        "Equivalente a %{percent}",
+                                        "<extra></extra>"),
+                 marker = list(colors = colors_pie))
+}else {
+  n10 <- s_dados
+}
 
 if(dash == F){
   n10
 }
 
 ##############################################
-##Criando nova tabela com dados apenas do mÍs anterior
+##Criando nova tabela com dados apenas do m√™s anterior
 ##Auxiliares para meses
 this_month <- today()
 day(this_month) <- 1
@@ -271,11 +291,11 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_fec_anat %>%
   filter(last_month <= historico_negocio_situacao_data,  historico_negocio_situacao_data < this_month) %>%
   mutate(negocio_status = negocio_negocio_situacao_id)
 
-##aqui ele substitui linha a linha cada situaÁ„o pelo seu respectivo em string
+##aqui ele substitui linha a linha cada situa√ß√£o pelo seu respectivo em string
 ng_ij_hist_ij_ven_funil_fat_fec_anat_mes$negocio_status <- with(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes, cut(negocio_negocio_situacao_id, breaks = c(0,4,5,6,7),
                                                                                                               labels = status_f))
 
-##Agora ser· agrupado por pedidos em aberto e faturamento total
+##Agora ser√° agrupado por pedidos em aberto e faturamento total
 ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat_mes %>%
   select (negocio_status, np_valor) %>%
   group_by(negocio_status) %>%
@@ -285,28 +305,34 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat
   collect()
 
 
-##Coluna nova criada para facilitar compreens„o (diminui as casas para exibir em milhıes)
+##Coluna nova criada para facilitar compreens√£o (diminui as casas para exibir em milh√µes)
 ng_ij_hist_ij_ven_funil_fat_fec_anat_mes  <- ng_ij_hist_ij_ven_funil_fat_fec_anat_mes  %>%
   select (negocio_status, total_faturado) %>%
   mutate(tot_fat_m = as.integer(total_faturado/1000000))
 
 
-#criando uma coluna nova para usar como texto dentro do gr·fico
+#criando uma coluna nova para usar como texto dentro do gr√°fico
 ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat_mes %>%
   mutate(total_fat_t = func_fmt_din_mi(total_faturado))
 
-### Gr·fico n11 - Pizza fechados no ˙ltimo mÍs
+### Gr√°fico n11 - Pizza fechados no √∫ltimo m√™s
 ##############################################
 
 colors_pie <- c("#32CD32", "yellow" , "orange" , "#DE0D26")
-n11 <- plot_ly(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
-               text = ~total_fat_t,
-               texttemplate = "%{text}mi (%{percent})",
-               hovertemplate = paste ("%{label} <br>",
-                                      "%{text}mi <br>",
-                                      "Equivalente a %{percent}",
-                                      "<extra></extra>"),
-               marker = list(colors = colors_pie))
+
+if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes) > 0){
+  n11 <- plot_ly(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
+                 text = ~total_fat_t,
+                 texttemplate = "%{text}mi (%{percent})",
+                 hovertemplate = paste ("%{label} <br>",
+                                        "%{text}mi <br>",
+                                        "Equivalente a %{percent}",
+                                        "<extra></extra>"),
+                 marker = list(colors = colors_pie))
+}else {
+  n11 <- s_dados
+}
+
 
 if(dash == F){
   n11
@@ -315,7 +341,7 @@ if(dash == F){
 if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_funil_fat_fec_anat, ng_ij_hist_ij_ven_funil_fat_fec_anat_mes, ng_ij_hist_ij_ven_fec_anat)
-  #vari·veis
+  #vari√°veis
   rm(colors_pie, st_f, status_f, this_month, last_month)
 }
 
@@ -323,17 +349,22 @@ if (teste == F){
 ng_ij_hist_ij_ven_anat_fat <- ng_ij_hist_ij_ven_ij_np_anat %>%
   filter(negocio_negocio_situacao_id == 4)
 
-ym = c('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12')
+##J√° filtrado apenas empresa (variavel global)
+ym_aux <- seq(1, mes_atual-1, 1)
+ym <- as.character(ym_aux)
+
 fat_anat_mes_aux <-data.frame(ym)
 fat_anat_mes <- ng_ij_hist_ij_ven_anat_fat %>%
-  mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
+  mutate (ym = as.integer(format(historico_negocio_situacao_data, '%m'))) %>%
   group_by (ym) %>%
-  summarize(ym_sum = sum(np_valor), .groups = 'drop')
+  summarize(ym_sum = sum(np_valor), .groups = 'drop') %>%
+  mutate (ym = as.character(ym)) %>%
+  ungroup()
 
 fat_anat_mes <- left_join(fat_anat_mes_aux, fat_anat_mes, by = c('ym'))
 fat_anat_mes$ym_sum[is.na(fat_anat_mes$ym_sum)] <- 0
 
-##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualizaÁıes mais antigas, ficar sÛ com a ˙ltima atualizaÁ„o no negÛcio
+##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualiza√ß√µes mais antigas, ficar s√≥ com a √∫ltima atualiza√ß√£o no neg√≥cio
 negocio_ij_historico_ij_vendedor_total <- negocio_ij_historico_ij_vendedor_total[order(-negocio_ij_historico_ij_vendedor_total$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_total$negocio_id),]
 ng_ij_hist_ij_ven_total <- negocio_ij_historico_ij_vendedor_total[!duplicated(negocio_ij_historico_ij_vendedor_total$negocio_id),]
 
@@ -343,7 +374,7 @@ ng_ij_hist_ij_ven_total <- ng_ij_hist_ij_ven_total %>%
   filter(vendedor_empresa_id == empresa) %>%
   select(negocio_id, negocio_negocio_situacao_id, negocio_vendedor_id, vendedor_nome, negocio_data_cadastro, historico_negocio_situacao_data)
 
-##filtrando dois negÛcios que tem seu status 0 (possivel erro)
+##filtrando dois neg√≥cios que tem seu status 0 (possivel erro)
 ng_ij_hist_ij_ven_total <- ng_ij_hist_ij_ven_total %>%
   filter(negocio_negocio_situacao_id != 0)
 
@@ -351,7 +382,7 @@ ng_ij_hist_ij_ven_total <- ng_ij_hist_ij_ven_total %>%
 ng_ij_hist_ij_ven_ij_np_total <- inner_join(ng_ij_hist_ij_ven_total, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
 
 
-##ComeÁando o c·lculo do faturamento mÈdio dos trÍs anos anteriores
+##Come√ßando o c√°lculo do faturamento m√©dio dos tr√™s anos anteriores
 
 anos_ant = year(today()) - min(year(ng_ij_hist_ij_ven_ij_np_total$historico_negocio_situacao_data))
 
@@ -368,47 +399,70 @@ if(anos_ant > 1) {
     filter (historico_negocio_situacao_data < ano_1ant & historico_negocio_situacao_data >= ano_2ant & negocio_negocio_situacao_id == 4)
 }
 
-##Usando sÛ os dois anos anteriores
+##Usando s√≥ os dois anos anteriores
 #ng_ij_hist_ij_ven_ij_np_2017_fat <- ng_ij_hist_ij_ven_ij_np_total %>%
 #  filter (historico_negocio_situacao_data < '2ant-01-01' & historico_negocio_situacao_data > '2016-12-31' & negocio_negocio_situacao_id == 4)
-
-#Aqui vou fazer a mesma soma dos valores dos trÍs anos anteriores, dividindo por mÍs
-if(anos_ant > 0) {
-  fat_1ant_mes <- ng_ij_hist_ij_ven_ij_np_1ant_fat %>%
-    mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
-    group_by (ym) %>%
-    summarize(ym_sum_1ant = sum(np_valor), .groups = 'drop') %>%
-    ungroup ()
+ym <- c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12")
+#Aqui vou fazer a mesma soma dos valores dos tr√™s anos anteriores, dividindo por m√™s
+if(anos_ant > 1){
+  if(nrow(ng_ij_hist_ij_ven_ij_np_1ant_fat) > 0){
+    fat_2ant_mes <- ng_ij_hist_ij_ven_ij_np_2ant_fat %>%
+      mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
+      group_by (ym) %>%
+      summarize(ym_sum_2ant = sum(np_valor), .groups = 'drop')%>%
+      ungroup ()
+    
+    fat_1ant_mes <- ng_ij_hist_ij_ven_ij_np_1ant_fat %>%
+      mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
+      group_by (ym) %>%
+      summarize(ym_sum_1ant = sum(np_valor), .groups = 'drop') %>%
+      ungroup ()
+  }else{
+    ym_sum_2ant <- rep(NA, 12)
+    fat_2ant_mes <- data.frame(ym, ym_sum_2ant)
+    anos_ant = 1
+  }
+}else{
+  if(anos_ant > 0) {
+    if(nrow(ng_ij_hist_ij_ven_ij_np_1ant_fat) > 0){
+    fat_1ant_mes <- ng_ij_hist_ij_ven_ij_np_1ant_fat %>%
+      mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
+      group_by (ym) %>%
+      summarize(ym_sum_1ant = sum(np_valor), .groups = 'drop') %>%
+      ungroup ()
+    }else{
+      ym_sum_1ant <- rep(NA, 12)
+      fat_1ant_mes <- data.frame(ym, ym_sum_1ant)
+      anos_ant = 0
+    }
+  }else{
+    anos_ant = 0
+  }
 }
-if(anos_ant > 1) {
-  fat_2ant_mes <- ng_ij_hist_ij_ven_ij_np_2ant_fat %>%
-    mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
-    group_by (ym) %>%
-    summarize(ym_sum_2ant = sum(np_valor), .groups = 'drop')%>%
-    ungroup ()
-}
 
-
-###Fazer o gr·fico de linhas com faturamento anual (substituindo com NA linhas faltantes)
+###Fazer o gr√°fico de linhas com faturamento anual (substituindo com NA linhas faltantes)
 ###Na super temos 2ant, na komatsu tem q verificar se possui 2ant e 1ant
 #######################################################################
 n_linhas <- nrow(fat_anat_mes)
 fat_anat_mes_aux <- data.frame(ym)
 fat_anat_mes_aux$ym_sum <- NA
 fat_anat_mes_aux$ym_sum[1:n_linhas] <- fat_anat_mes$ym_sum
+fat_anat_1ant_2ant_mes <- data.frame(ym)
+fat_anat_1ant_2ant_mes <- left_join(fat_anat_1ant_2ant_mes, fat_anat_mes, by = c("ym"))
 
-fat_anat_1ant_2ant_mes <- fat_anat_mes_aux
-if(anos_ant > 0) {
+if(anos_ant > 1){
   fat_anat_1ant_2ant_mes <- left_join(fat_anat_1ant_2ant_mes, fat_1ant_mes, by = c("ym"))
-}
-if(anos_ant > 1) {
   fat_anat_1ant_2ant_mes <- left_join(fat_anat_1ant_2ant_mes, fat_2ant_mes, by = c("ym"))
+}else{
+  if(anos_ant > 0) {
+    fat_anat_1ant_2ant_mes <- left_join(fat_anat_1ant_2ant_mes, fat_1ant_mes, by = c("ym"))
+  }
 }
 
-meses = c('Janeiro', 'Fevereiro', 'MarÁo', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
-## alterando pra n˙meros pra poder fazer da mesma forma
+meses = c('Janeiro', 'Fevereiro', 'Mar√ßo', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
+## alterando pra n√∫meros pra poder fazer da mesma forma
 fat_anat_1ant_2ant_mes$ym <- as.integer(fat_anat_1ant_2ant_mes$ym)
-##Vou usar dessa forma, ao invÈs de transformar, irei apenas criar uma nova coluna (poderia ser feito com um join tambÈm)
+##Vou usar dessa forma, ao inv√©s de transformar, irei apenas criar uma nova coluna (poderia ser feito com um join tamb√©m)
 fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%
   mutate(mes = cut(ym,breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
                    labels = meses))
@@ -418,14 +472,14 @@ if(anos_ant > 0) {
 if(anos_ant > 1) {
   fat_anat_1ant_2ant_mes$ym_sum_2ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_2ant)] <- 0
 }
-##Forma antiga, agora a nova mantÈm a coluna "identificadora"
+##Forma antiga, agora a nova mant√©m a coluna "identificadora"
 #fat_anat_1ant_2ant_mes$ym <- with(fat_anat_1ant_2ant_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
 #                                                              labels = meses))
 
 
 #######################################################################
 
-##ComeÁando o gr·fico
+##Come√ßando o gr√°fico
 a <- list(
   title = '',
   showticklabels = T
@@ -437,12 +491,12 @@ ay <- list(
 )
 
 ###Assim estarei mostrando anat, 1ant e 2ant
-### Gr·fico n12 - Faturamento anual (ano atual + dois anteriores)
+### Gr√°fico n12 - Faturamento anual (ano atual + dois anteriores)
 n12 <- plot_ly(fat_anat_1ant_2ant_mes)
 n12 <- n12 %>%
   add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum,
             name = 'Faturamento de 2020',
-            text = ~paste(func_fmt_din_mi(ym_sum),'milhıes'),
+            text = ~paste(func_fmt_din_mi(ym_sum),'milh√µes'),
             hoverinfo = "text",
             color = I("green")
   )
@@ -450,7 +504,7 @@ if(anos_ant > 0) {
   n12 <- n12 %>%
     add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_1ant, yaxis = ay,
               name = 'Faturamento de 2019',
-              text = ~paste(func_fmt_din_mi(ym_sum_1ant),'milhıes'),
+              text = ~paste(func_fmt_din_mi(ym_sum_1ant),'milh√µes'),
               hoverinfo = "text",
               color = I("#1E90FF"))
 }
@@ -458,14 +512,14 @@ if(anos_ant > 1) {
   n12 <- n12 %>%
     add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_2ant, yaxis = ay,
               name = 'Faturamento de 2018',
-              text = ~paste(func_fmt_din_mi(ym_sum_2ant),'milhıes'),
+              text = ~paste(func_fmt_din_mi(ym_sum_2ant),'milh√µes'),
               hoverinfo = "text",
               color = I("#4682B4"))
 }
 
 n12 <- n12 %>%
   layout(xaxis = list(title = ''), yaxis = list(title = ''),
-         #aqui eu ajusto onde quero que apareÁa a legenda
+         #aqui eu ajusto onde quero que apare√ßa a legenda
          legend = list(x=0.8, y=0.9)#)
   )
 if (dash == F){
@@ -484,11 +538,11 @@ if (teste == F){
       rm(fat_2ant_mes, ng_ij_hist_ij_ven_ij_np_2ant_fat)
     }
   }
-  #vari·veis
+  #vari√°veis
   rm(meses, n_linhas, ym, anos_ant)
 }
 
-###Contar clientes/visitas/negocios cadastrados por mÍs -> vem do script visita_clientes
+###Contar clientes/visitas/negocios cadastrados por m√™s -> vem do script visita_clientes
 ####################################
 
 cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
@@ -496,7 +550,7 @@ cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")
   filter(cliente_empresa_id == empresa)
 
 
-##Collect cria o df resultado da query, nesse caso, visitas_cliente, j· filtrando apenas ano atual
+##Collect cria o df resultado da query, nesse caso, visitas_cliente, j√° filtrando apenas ano atual
 visita_cliente <- fread("Tabelas/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
   select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
   filter (vc_data_cadastro >= ano_atual)
@@ -520,74 +574,78 @@ Encoding(visita_status$motivo) <- 'latin1'
 ##junta as duas tabelas (status e status_empresa) pra pegar o id da empresa (vs_empresa_id) e o nome do status (vs_nome)
 vis_st_emp <- inner_join(visita_status, visita_status_empresa, by = c('vs_id'= 'vse_status_id'))
 
-##J· filtrado apenas empresa (variavel global)
-ym <- c("01","02","03","04","05","06","07","08","09","10","11","12")
+##J√° filtrado apenas empresa (variavel global)
+
+ym_aux <- seq(1, mes_atual-1, 1)
+ym <- as.character(ym_aux)
+
 clientes_mes_aux <- data.frame(ym)
 clientes_mes <- cliente %>%
   filter (cliente_data_cadastro >= ano_atual) %>%
-  mutate (ym = format(cliente_data_cadastro, '%m')) %>%
+  mutate (ym = as.integer(format(cliente_data_cadastro, '%m'))) %>%
   group_by (ym) %>%
   summarize(n_cli = n(), .groups = 'drop') %>%
+  mutate(ym = as.character(ym)) %>%
   ungroup ()
 
 clientes_mes <- left_join(clientes_mes_aux, clientes_mes, by = c("ym"))
+
 clientes_mes$n_cli[is.na(clientes_mes$n_cli)] <- 0
 
-##Visita precisa juntar com visita_status ou _resultado () pra obter empresa_id ##poderia ser vendedor, mas a tabela vis_st_emp (status c/ status_empresa) j· est· pronta
-##vis_st_emp j· vem filtrada pela empresa (var global)
+##Visita precisa juntar com visita_status ou _resultado () pra obter empresa_id ##poderia ser vendedor, mas a tabela vis_st_emp (status c/ status_empresa) j√° est√° pronta
+##vis_st_emp j√° vem filtrada pela empresa (var global)
 vc_ij_emp <- inner_join(visita_cliente, vis_st_emp, by = c("vc_status_id" = "vs_id")) %>%
   #select(vc_id, vc_status_id, vc_data_cadastro) ##Sem empresa_id
   select(vc_id, vc_status_id, vc_data_cadastro, vse_empresa_id)
 
-ym <- c("01","02","03","04","05","06","07","08","09","10","11","12")
 visitas_mes_aux <- data.frame(ym)
 visitas_mes <- vc_ij_emp %>%
   filter (vc_data_cadastro >= ano_atual) %>%
-  mutate (ym = format(vc_data_cadastro, '%m')) %>%
+  mutate (ym = as.integer(format(vc_data_cadastro, '%m'))) %>%
   group_by (ym) %>%
   summarize(n_vis = n(), .groups = 'drop') %>%
+  mutate(ym = as.character(ym)) %>%
   ungroup ()
 
 visitas_mes <- left_join(visitas_mes_aux, visitas_mes, by = c("ym"))
 visitas_mes$n_vis[is.na(visitas_mes$n_vis)] <- 0
 
-##Negocio precisa juntar com vendedor pra obter empresa_id ##Poderia ser cliente tambÈm, mas a tabela vendedor È menor
-##vendedor j· vem filtrado pela empresa (var global)
+##Negocio precisa juntar com vendedor pra obter empresa_id ##Poderia ser cliente tamb√©m, mas a tabela vendedor √© menor
+##vendedor j√° vem filtrado pela empresa (var global)
 ng_ij_emp <- inner_join(negocio, vendedor, by = c("negocio_vendedor_id" = "vendedor_id")) %>%
   #select(negocio_id, negocio_vendedor_id, negocio_data_cadastro)%>% ##Sem empresa_id
   select(negocio_id, negocio_vendedor_id, negocio_data_cadastro, vendedor_empresa_id)
 
-ym <- c("01","02","03","04","05","06","07","08","09","10","11","12")
 negocios_mes_aux <- data.frame(ym)
 negocios_mes <- ng_ij_emp %>%
   filter (negocio_data_cadastro >= ano_atual) %>%
-  mutate (ym = format(negocio_data_cadastro, '%m')) %>%
+  mutate (ym = as.integer(format(negocio_data_cadastro, '%m'))) %>%
   group_by (ym) %>%
   summarize(n_neg = n(), .groups = 'drop') %>%
+  mutate(ym = as.character(ym)) %>%
   ungroup ()
 
 negocios_mes <- left_join(negocios_mes_aux, negocios_mes, by = c("ym"))
 negocios_mes$n_neg[is.na(negocios_mes$n_neg)] <- 0
-
-##Juntando tudo em um sÛ dataframe
+##Juntando tudo em um s√≥ dataframe
 cli_ij_vc_mes <- inner_join(clientes_mes, visitas_mes, by = c("ym"))
 cli_ij_vc_ij_ng_mes <- inner_join(cli_ij_vc_mes, negocios_mes, by = c("ym"))
 
 
 ##Criando nomes de colunas
-meses = c('Janeiro', 'Fevereiro', 'MarÁo', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
-## alterando pra n˙meros pra poder fazer da mesma forma
+meses = c('Janeiro', 'Fevereiro', 'Mar√ßo', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
+## alterando pra n√∫meros pra poder fazer da mesma forma
 cli_ij_vc_ij_ng_mes$ym <- as.integer(cli_ij_vc_ij_ng_mes$ym)
 
-##Vou usar dessa forma, ao invÈs de transformar, irei apenas criar uma nova coluna (poderia ser feito com um join tambÈm)
+##Vou usar dessa forma, ao inv√©s de transformar, irei apenas criar uma nova coluna (poderia ser feito com um join tamb√©m)
 cli_ij_vc_ij_ng_mes <- cli_ij_vc_ij_ng_mes %>%
   mutate(mes = cut(ym,breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
                    labels = meses))
-###N„o farei dessa forma pois quero manter a coluna
+###N√£o farei dessa forma pois quero manter a coluna
 #cli_ij_vc_ij_ng_mes$ym <- with(cli_ij_vc_ij_ng_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
 #                                                        labels = meses))
 
-### Gr·fico c3 - Cadastro de clientes, visitas e negÛcios no ano de 2020
+### Gr√°fico c3 - Cadastro de clientes, visitas e neg√≥cios no ano de 2020
 c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
               name = 'Clientes',
               text = ~paste(func_fmt_numbr(n_cli), 'clientes'),
@@ -601,8 +659,8 @@ c3 <- c3 %>%
              color = I('#DAA520'))
 c3 <- c3 %>%
   add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_neg,
-             name = 'NegÛcios',
-             text = ~paste(func_fmt_numbr(n_neg), 'negÛcios'),
+             name = 'Neg√≥cios',
+             text = ~paste(func_fmt_numbr(n_neg), 'neg√≥cios'),
              hoverinfo = "text",
              color = I('green'))
 
@@ -616,9 +674,14 @@ if(dash == F){
 if(teste == F){
   #tabelas
   rm(cli_ij_vc_mes, cli_ij_vc_ij_ng_mes);
-  #vari·veis
+  #vari√°veis
   rm();
 }
+
+### Gr√°fico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribui√ß√£o de cadastro dos clientes, visitas e neg√≥cios em 2020
+subplot(n12, c3, nrows = 2, shareX = T) %>%
+  layout(legend = list(y=0.3))
+
 ################################################################################################################################
 
 ################################################################################################
@@ -629,7 +692,7 @@ vc_ij_vse <- inner_join(visita_cliente, vis_st_emp, by = c('vc_status_id' = 'vs_
   select (vc_id, vc_vendedor_id, vc_status_id, motivo)
 
 ##juntando com vendedor pra separar por vendedor
-vc_ij_vse_ij_v <- inner_join(vc_ij_vse, vendedor, by = c('vc_vendedor_id' = 'vendedor_id')) %>%
+vc_ij_vse_ij_v <- inner_join(vc_ij_vse, vendedor_a, by = c('vc_vendedor_id' = 'vendedor_id')) %>%
   select (vc_id, vc_vendedor_id, vendedor_nome, vc_status_id, motivo)
 
 ##Agrupando por vendedor e por motivo (vc_status_id, depois mostrar so motivo)
@@ -648,37 +711,44 @@ cli_p_v <- cliente %>%
   arrange(cliente_vendedor_id) %>%
   ungroup()
 
+cli_p_v$n_clientes[is.na(cli_p_v$n_clientes)] <- 0
+
 ##Juncao pra pegar nome do vendedor
-cli_p_v_ij_vend <- inner_join(cli_p_v, vendedor, by = c('cliente_vendedor_id' = 'vendedor_id')) %>%
+cli_p_v_ij_vend <- inner_join(cli_p_v, vendedor_a, by = c('cliente_vendedor_id' = 'vendedor_id')) %>%
   select(cliente_vendedor_id, vendedor_nome, n_clientes)
 
 
-##J· È filtrado em anat (filtra na tabela de visitas_cliente)
+##J√° √© filtrado em anat (filtra na tabela de visitas_cliente)
 vc_ij_vse_ij_v_count <- vc_ij_vse_ij_v %>%
-  select (vc_vendedor_id, motivo_n) %>% ##N„o vou salvar o nome pq vou fazer uma junÁ„o com a outra tabela, ent„o sÛ preciso do id
+  select (vc_vendedor_id, motivo_n) %>% ##N√£o vou salvar o nome pq vou fazer uma jun√ß√£o com a outra tabela, ent√£o s√≥ preciso do id
   group_by(vc_vendedor_id) %>%
   mutate(n_visitas = sum(motivo_n)) %>%
   distinct(vc_vendedor_id, .keep_all = T) %>%
   ungroup ()
 
-##DistribuiÁ„o de clientes total, visita e negÛcios em anat por vendedor
+vc_ij_vse_ij_v_count$n_visitas[is.na(vc_ij_vse_ij_v_count$n_visitas)] <- 0
+
+##Distribui√ß√£o de clientes total, visita e neg√≥cios em anat por vendedor
 vend_cli_vis <- left_join(cli_p_v_ij_vend, vc_ij_vse_ij_v_count, by = c("cliente_vendedor_id" = "vc_vendedor_id")) %>%
   select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas)
 
-##Contar quantos negÛcios s„o feitos por vendedor em anat
+##Contar quantos neg√≥cios s√£o feitos por vendedor em anat
 negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character", negocio_cliente_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_cliente_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_produto_id)
 
-##Juncao pra pegar a empresa do negÛcio (e vendedor)
-neg_ij_vend <- inner_join(negocio, vendedor, by = c('negocio_vendedor_id' = 'vendedor_id')) %>%
-  select(negocio_id, negocio_vendedor_id)
+##Juncao pra pegar a empresa do neg√≥cio (e vendedor)
+neg_ij_vend <- inner_join(negocio, vendedor_a, by = c('negocio_vendedor_id' = 'vendedor_id')) %>%
+  select(negocio_id, negocio_vendedor_id, negocio_data_cadastro)
 
 neg_ij_vend_count <- neg_ij_vend %>%
+  filter (negocio_data_cadastro >= ano_atual) %>%
   select(negocio_vendedor_id) %>%
   group_by(negocio_vendedor_id) %>%
   mutate(n_negocios = n()) %>%
   distinct(negocio_vendedor_id, .keep_all = T) %>%
   ungroup()
+
+neg_ij_vend_count$n_negocios[is.na(neg_ij_vend_count$n_negocios)] <- 0
 
 vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_vendedor_id" = "negocio_vendedor_id")) %>%
   select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas, n_negocios)
@@ -689,7 +759,7 @@ c0 <- plot_ly(vend_cli_vis_neg, x = ~vendedor_nome, y= ~n_clientes, type = 'bar'
 c0 <- c0 %>%
   add_trace(y= ~n_visitas, name = 'Visitas (2020)')
 c0 <- c0 %>%
-  add_trace(y= ~n_negocios, name = 'NegÛcios (2020)')
+  add_trace(y= ~n_negocios, name = 'Neg√≥cios (2020)')
 c0 <- c0 %>%
   layout(barmode = 'grouped',
          xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
@@ -703,27 +773,27 @@ if(teste == F){
   #tabelas
   rm(cli_p_v, vend_cli_vis, vend_cli_vis_neg, neg_ij_vend, neg_ij_vend_count, vc_ij_vse_ij_v,
      vc_ij_vse_ij_v_count, cli_p_v_ij_vend);
-  #vari·veis
+  #vari√°veis
   rm();
 }
-### Gr·ficos de pizza de clientes com e sem negÛcio
-##Contando n˙mero de clientes geral e em anat
+### Gr√°ficos de pizza de clientes com e sem neg√≥cio
+##Contando n√∫mero de clientes geral e em anat
 n_clientes <- nrow(cliente)
 ##Clientes cadastrados em anat por vendedor
 cliente_anat <- cliente %>%
   filter(cliente_data_cadastro >= ano_atual)
 n_clientes_anat <- nrow(cliente_anat)
 
-##Contar quantos clientes aparecem em negÛcio
+##Contar quantos clientes aparecem em neg√≥cio
 cli_ij_ng <- inner_join(cliente, negocio, by=c("cliente_id" = "negocio_cliente_id")) %>%
   select(cliente_id, negocio_id)
 cli_anat_ij_ng <- inner_join(cliente_anat, negocio, by=c("cliente_id" = "negocio_cliente_id"))%>%
   select(cliente_id, negocio_id)
-##Vari·veis usadas
+##Vari√°veis usadas
 n_cli_cneg <- nrow(cli_ij_ng)
 n_cli_cneg_anat <- nrow(cli_anat_ij_ng)
 
-Clientes <- c("Clientes com negÛcios", "Clientes sem negÛcio")
+Clientes <- c("Clientes com neg√≥cios", "Clientes sem neg√≥cio")
 
 n_total <- c(n_cli_cneg, n_clientes-nrow(cli_ij_ng))
 n_total_p <- c(round((n_cli_cneg/n_clientes), 2), round(((n_clientes-n_cli_cneg)/n_clientes), 2))
@@ -749,22 +819,24 @@ if(dash == F){
 }
 
 ### Grafico c2 - Clientes cadastrados em anat que possuem negocio (pizza)
-c2 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_anat, type = 'pie', sort = F,
-              text = func_fmt_numbr(n_anat),
-              texttemplate = "%{text} (%{percent})",
-              hovertemplate = paste ("%{label} <br>",
-                                     "Equivalente a %{percent}",
-                                     "<extra></extra>"),
-              marker = list(colors = colors_pie))
-
+if (sum(cli_c_s_ng$n_anat) > 0){
+  c2 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_anat, type = 'pie', sort = F,
+                text = func_fmt_numbr(n_anat),
+                texttemplate = "%{text} (%{percent})",
+                hovertemplate = paste ("%{label}: %{text}<br>",
+                                       "Equivalente a %{percent}",
+                                       "<extra></extra>"),
+                marker = list(colors = colors_pie))
+}else {
+  c2 <- s_dados
+}
 if(dash == F){
   c2
 }
 if(teste == F){
   #tabelas
   rm(cli_anat_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_anat, n_anat_p, cliente_anat);
-  #vari·veis
+  #vari√°veis
   rm(n_cli_cneg, n_cli_cneg_anat, n_clientes, n_clientes_anat, colors_pie);
 }
 ####################################
-

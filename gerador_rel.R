@@ -120,7 +120,7 @@ x <- length(params_list)
 ##Gerando dashs geral
 for(i in (1:x)){
   #limpando R
-  if(params_list[i]!= 46){
+  if(params_list[i]!= 46 & params_list[i]!= 65){
   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
   template <- "dash_geral.Rmd"
   #Teste (nome da empresa, mais fácil de analisar)
