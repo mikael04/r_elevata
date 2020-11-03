@@ -45,7 +45,7 @@ if(mes_atual == 1){
 
 #empresa = params$variable1
 #teste
-empresa = 65
+empresa = 29
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -63,6 +63,20 @@ func_fmt_din_mi <- function(inteiro)
 }
 ##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
 func_nome <- function (nome_comp)
+{
+  lista <- str_split_fixed(nome_comp, " ", 4)
+  lista <- lista[, -4]
+  lista[,3] = str_sub(lista[,3], 1, 1)
+  lista[,2] = str_sub(lista[,2], 1, 1)
+  lista[,2] = paste(lista[,2], '.', sep='')
+  lista[,3] = paste(lista[,3], '.', sep='')
+  lista[,2] <- gsub('^.$', '',lista[,2])
+  lista[,3] <- gsub('^.$', '',lista[,3])
+  lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
+  return (lista[,1])
+}
+
+func_nome_29 <- function (nome_comp)
 {
   lista <- str_split_fixed(nome_comp, " ", 4)
   lista <- lista[, -4]
@@ -100,7 +114,21 @@ vendedor <- fread("Tabelas/vendedor.csv") %>%
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+##if por causa do nome dos vendedores da empresa 29
+if(empresa == 29){
+  lista <- str_split_fixed(vendedor$vendedor_nome, " ", 4)
+  lista <- lista[, -4]
+  lista <- lista[, -1]
+  lista[,2] = str_sub(lista[,2], 1, 1)
+  #lista[,1] = str_sub(lista[,1], 1, 1)
+  #lista[,1] = paste(lista[,1], '.', sep='')
+  lista[,2] = paste(lista[,2], '.', sep='')
+  #lista[,1] <- gsub('^.$', '',lista[,1])
+  lista[,2] <- gsub('^.$', '',lista[,2])
+  lista[,1] <- paste(lista[,1], lista[,2], sep=' ')
+} else{
+  vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+}
 
 if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
