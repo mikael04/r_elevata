@@ -54,7 +54,7 @@ mes_atual = month(today())
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 71
+  empresa = 63
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -112,7 +112,21 @@ vendedor <- fread("Tabelas/vendedor.csv") %>%
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+##if por causa do nome dos vendedores da empresa 29
+if(empresa == 29){
+  lista <- str_split_fixed(vendedor$vendedor_nome, " ", 4)
+  lista <- lista[, -4]
+  lista <- lista[, -1]
+  lista[,2] = str_sub(lista[,2], 1, 1)
+  #lista[,1] = str_sub(lista[,1], 1, 1)
+  #lista[,1] = paste(lista[,1], '.', sep='')
+  lista[,2] = paste(lista[,2], '.', sep='')
+  #lista[,1] <- gsub('^.$', '',lista[,1])
+  lista[,2] <- gsub('^.$', '',lista[,2])
+  lista[,1] <- paste(lista[,1], lista[,2], sep=' ')
+} else{
+  vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+}
 
 if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
@@ -122,6 +136,12 @@ if(empresa == 16){
 
 vendedor_a <- vendedor %>%
   filter(vendedor_ativo == T)
+
+##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
+text <- paste("Não há informações para o período")
+s_dados <- ggplot() +
+  annotate("text", x = 1, y = 6, size = 8, label = text) +
+  theme_void()
 
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
@@ -179,11 +199,6 @@ ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_funil_
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
   arrange(negocio_negocio_situacao_id)
 
-##plotando texto sem informações
-text <- paste("Não há informações para o período")
-s_dados <- ggplot() +
-  annotate("text", x = 1, y = 6, size = 8, label = text) +
-  theme_void()
 
 ### Gráfico n9 - Funil agrupado por faturamento
 if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
@@ -205,8 +220,6 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
 if(dash == F){
   n9
 }
-
-
 
 if (teste == F){
   #tabelas

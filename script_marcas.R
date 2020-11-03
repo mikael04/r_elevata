@@ -1,15 +1,4 @@
----
-title: "Visão do gestor"
-output:
-  flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
-params:
-  variable1: "emp_par"
----
-
-```{r setup, include=FALSE}
-#rm(list = ls())
+rm(list = ls())
 #Lib q será futuramente usada pros painéis interativos
 #library(shiny)
 #Lib pra conexão com o banco
@@ -49,7 +38,7 @@ library(leaflet)
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável usada para não plotar os gráficos na dash
-dash = T
+dash = F
 ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
 ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
 ####Variavel global c/ mês atual (para comparação)
@@ -58,12 +47,8 @@ mes_atual = month(today())
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
-##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
-if(params$variable1 == 'emp_par'){
-  empresa = 80
-}else{
-  empresa = as.integer(params$variable1)
-}
+##Teste script
+empresa = 80
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -464,11 +449,6 @@ marcas_icon <- iconList(
 
 ### Gráfico m1 de distribuição das marcas (top5) m1_t = tratores, m1_c = colheitadeiras
 ###################
-##Caso não haja informações para plotar o mapa (texto informando que não há informações)
-  text <- paste("Não há informações para gerar o mapa")
-  s_dados_m <- ggplot() +
-    annotate("text", x = 1, y = 6, size = 8, label = text) +
-    theme_void()
 ##Tratores
 if (nrow(cli_in_pm_cont_top_t_aux) > 0){
   m1_t <- leaflet(cli_in_pm_cont_top_t_aux) %>%
@@ -482,8 +462,8 @@ if (nrow(cli_in_pm_cont_top_t_aux) > 0){
                #clusterOptions = markerClusterOptions(),
                group = "Ícones")
 }else {
-  ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
-  m1_t <- s_dados_m
+  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
+  m1_t <- s_dados
 }
 
 if (nrow(cli_in_pm_cont_top_c_aux) > 0){
@@ -498,8 +478,8 @@ if (nrow(cli_in_pm_cont_top_c_aux) > 0){
                #clusterOptions = markerClusterOptions(),
                group = "Ícones")
 }else {
-  ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
-  m1_c <- s_dados_m
+  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
+  m1_c <- s_dados
 }
 
 if(teste == F){
@@ -568,12 +548,7 @@ cli_in_pm_cont_top_c$marca_nome <- reorder(cli_in_pm_cont_top_c$marca_nome, desc
 #cores_c
 cli_in_pm_cont_top_c <- inner_join(cli_in_pm_cont_top_c, marcas_ic_co, by = c("produto_marca_id" = "marca_id_i"))
 cores_c <- as.vector(cli_in_pm_cont_top_c$cor)
-#############################################################################################
-##Caso não haja informações para plotar o gráfico(texto informando que não há informações p/ o período)
-text <- paste("Não há informações para gerar o gráfico")
-s_dados_g <- ggplot() +
-  annotate("text", x = 1, y = 6, size = 8, label = text) +
-  theme_void()
+
 ### Gráfico m2 de distribuição das marcas (top5)
 ###################
 if (nrow(cli_in_pm_cont_top_t) > 0){
@@ -589,8 +564,8 @@ if (nrow(cli_in_pm_cont_top_t) > 0){
     layout(xaxis = list(title = ''),
            yaxis = list(title = ''))
 }else {
-  ##Caso não haja informações para plotar o gráfico(texto informando que não há informações p/ o período)
-  m2_t <- s_dados_g
+  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
+  m2_t <- s_dados
 }
 if(dash == F){
   m2_t
@@ -611,13 +586,17 @@ if (nrow(cli_in_pm_cont_top_c) > 0){
     layout(xaxis = list(title = ''),
            yaxis = list(title = ''))
 }else {
-  ##Caso não haja informações para plotar o gráfico(texto informando que não há informações p/ o período)
-  m2_c <- s_dados_g
-  
+  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
+  m2_c <- s_dados
 }
 if(dash == F){
   m2_c
 }
+### Debug para ver as 10 marcas que mais aparecem (para buscar ícones)
+# library(DT)
+# m2_1_t <- datatable(top10_t)
+# m2_1_c <- datatable(top10_c)
+
 if(teste == F){
   #tabelas
   rm(cli_in_pm_cont_top_t, cli_in_pm_cont_top_c, cli_in_pm_in_p_in_m, cli_in_pm_in_p, cli_in_pm, top10_c, top10_t,
@@ -625,75 +604,3 @@ if(teste == F){
   #variáveis
   rm(cores_c, cores_t);
 }
-
-```
-
-
-Top 10 Categorias
-=======================================================================
-
-Column {data-width=350}
------------------------------------------------------------------------
-###  Valor Financeiro de Negócios Cadastrados, por categoria em 2020
-
-```{r}
-### Gráfico hc_n4 - Valor financeiro de negócios em 2020  (por categoria)
-hc_n4
-
-```
-
-Column {data-width=350}
------------------------------------------------------------------------
-### Valor Financeiro de Negócios Faturados, por categoria em 2020
-
-```{r}
-### Gráfico hc_n5 - Máquinas faturadas em 2020 (por categoria)
-hc_n5
-
-```
-
-Marcas (Tratores)
-=======================================================================
-
-Column {data-width=750}
------------------------------------------------------------------------
-
-### Mapa das marcas
-```{r}
-### Gráfico m1 de distribuição das marcas (top5)
-m1_t
-
-```
-
-Column {data-width=350}
------------------------------------------------------------------------
-
-### Distribuição das marcas
-```{r}
-### Gráfico m2 de distribuição das marcas
-m2_t
-
-```
-
-Marcas (Colheitadeiras)
-=======================================================================
-
-Column {data-width=750}
------------------------------------------------------------------------
-
-### Mapa das marcas
-```{r}
-### Gráfico m1 de distribuição das marcas (top5)
-m1_c
-
-```
-
-Column {data-width=350}
------------------------------------------------------------------------
-
-### Distribuição das marcas
-```{r}
-### Gráfico m2 de distribuição das marcas
-m2_c
-
-```
