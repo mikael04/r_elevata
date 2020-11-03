@@ -610,7 +610,7 @@ if (nrow(cli_in_pm_cont_top_c) > 0){
   m2_c <- m2_c %>%
     layout(xaxis = list(title = ''),
            yaxis = list(title = ''))
-}else {
+}else{
   ##Caso não haja informações para plotar o gráfico(texto informando que não há informações p/ o período)
   m2_c <- s_dados_g
   
