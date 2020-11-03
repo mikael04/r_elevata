@@ -50,21 +50,20 @@ library(leaflet)
 teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = T
-####Variavel global c/ ano atual (para comparação)
+####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
 ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
+####Variavel global c/ mês atual (para comparação)
 
-##Variável "Global"
-emp_am = 42 # Amazonia
-emp_ar = 77 # Araguaia
-emp_ko = 78 # Komatsu
-emp_ms = 35 # Ms
-emp_si = 59 # Simex
-emp_su = 16 # Super
-emp_ta = 60 # Taisa
+mes_atual = month(today())
+####Variável global para ver se tem usados Ainda não usada
+#usados = T
 
-empresa = params$variable1
-#teste
-#empresa = 70
+##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
+if(params$variable1 == 'emp_par'){
+  empresa = 71
+}else{
+  empresa = as.integer(params$variable1)
+}
 ###################################
 
 ##Alterar o valor de inteiro para reais
