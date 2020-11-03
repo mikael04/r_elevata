@@ -119,17 +119,16 @@ x <- length(params_list)
 
 ########################################################
 ###Teste
-params_test <- list(65)
-template <- "dash_geral.Rmd"
-out_file <- sprintf("Dashs/Geral_%s", params_test[1])
-parameters <- list(variable1 = params_list[i])
-
-rmarkdown::render(template,
-                  output_file = out_file,
-                  params = parameters)
+# params_test <- list(78)
+# template <- "dash_marcas_k.Rmd"
+# out_file <- sprintf("Dashs/Marcas_%s", params_test[1])
+# parameters <- list(variable1 = params_list[i])
+# 
+# rmarkdown::render(template,
+#                   output_file = out_file,
+#                   params = parameters)
 
 ########################################################
-
 
 ##Gerando dashs geral ##Funcionando, apenas comentada pra facilitar teste das marcas
 for(i in (1:x)){
@@ -153,38 +152,34 @@ for(i in (1:x)){
 }
 ##Gerando dashs marcas
 for(i in (1:x)){
-  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'empresas_ativas')))
-  template <- "dash_marcas.Rmd"
-  #Teste (nome da empresa, mais fácil de analisar)
-  # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
-  if(teste){
-    print(i)
-    print(params_list[i])
-    print(params_list[[i]])
-    print(as.list(params_list[[i]]))
-  }
-  out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
-  parameters <- list(variable1 = params_list[i])
-  
-  rmarkdown::render(template,
-                    output_file = out_file,
-                    params = parameters)
-  invisible(TRUE)
-}
-
-## Gerando dash marcas_k
-for(i in params_list){
-  if(i == 78) {
-    template <- "dash_marcas_k.Rmd"
+  if (params_list[32] != 78)
+  {
+    rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'empresas_ativas')))
+    template <- "dash_marcas.Rmd"
     #Teste (nome da empresa, mais fácil de analisar)
-    # out_file <- sprintf("Dashs/Mapas_%s", var1)
-    out_file <- sprintf("Dashs/Marcas_%s", i)
-    
-    parameters <- list(variable1 = as.list(params_list[i]))
+    # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
+    if(teste){
+      print(i)
+      print(params_list[i])
+      print(params_list[[i]])
+      print(as.list(params_list[[i]]))
+    }
+    out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
+    parameters <- list(variable1 = params_list[i])
     
     rmarkdown::render(template,
                       output_file = out_file,
                       params = parameters)
+    invisible(TRUE)
+  }else{ ##########Caso seja a komatsu, marcas diferentes
+    template <- "dash_marcas_k.Rmd"
+    out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
+    parameters <- list(variable1 = params_list[i])
+    
+    rmarkdown::render(template,
+                      output_file = out_file,
+                      params = parameters)
+    invisible(TRUE)
     invisible(TRUE)
   }
 }

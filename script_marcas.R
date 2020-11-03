@@ -48,7 +48,7 @@ mes_atual = month(today())
 #usados = T
 
 ##Teste script
-empresa = 80
+empresa = 30
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -355,7 +355,7 @@ cli_in_pm_cont_top_t <- cli_in_pm_cont_t %>%
   mutate(cont = n()) %>%
   distinct(marca_nome, .keep_all = T) %>%
   select (marca_nome, produto_marca_id, cont) %>%
-  arrange(desc(cont)) %>%
+  arrange(desc(cont), marca_nome) %>%
   ungroup()
 
 
@@ -398,7 +398,7 @@ cli_in_pm_cont_top_c <- cli_in_pm_cont_c %>%
   mutate(cont = n()) %>%
   distinct(marca_nome, .keep_all = T) %>%
   select (marca_nome, produto_marca_id, cont) %>%
-  arrange(desc(cont)) %>%
+  arrange(desc(cont), marca_nome) %>%
   ungroup()
 
 
@@ -424,7 +424,7 @@ cli_in_pm_cont_top_c_aux$long <- jitter(cli_in_pm_cont_top_c_aux$long, factor = 
 
 
 ##Se precisar consultar ícones, tamanho do ícone, marcas e marcas_ids
-# marcas_ic_co <-read.csv("Icons/marcas_icon.csv") %>%
+# marcas_ic_co <-read.csv("Icons/marcas_icon_csv.csv") %>%
 
 marcas_icon <- iconList(
   '1' = makeIcon("Icons/NH_r.png", 23, 24),          ##Caso precise consultar, olhar o csv
@@ -433,22 +433,27 @@ marcas_icon <- iconList(
   '5' = makeIcon("Icons/MF_r.png", 34, 24),
   '6' = makeIcon("Icons/agrale_r.png", 34, 24),
   '13' = makeIcon("Icons/jacto_r.png", 24, 24),
-  '11' = makeIcon("Icons/valtra_r.png", 95, 24),
+  '11' = makeIcon("Icons/valtra_r.png", 26, 24),
   '120191031172113' = makeIcon("Icons/ponsse_r.png", 24, 24),
   '120130518080852' = makeIcon("Icons/valmet_r.png", 26, 24),
   '120120724031949' = makeIcon("Icons/ideal_r.png", 19, 24),
   '120130802084245' = makeIcon("Icons/SLC_r.png", 26, 24),
-  '120130522055326' = makeIcon("Icons/CBT_r.png", 78, 20),
-  '120191031162533' = makeIcon("Icons/komatsu_r.png", 180, 24),
+  '120130522055326' = makeIcon("Icons/CBT_r.png", 28, 28),
+  '120191031162533' = makeIcon("Icons/komatsu_r.png", 26, 24),
   '120191031171837' = makeIcon("Icons/JD_r.png", 26, 20),
   '120191031171708' = makeIcon("Icons/caterpillar_r.png", 38, 20),
   '120191031171942' = makeIcon("Icons/logmax_r.png", 29, 20),
   '120191031172239' = makeIcon("Icons/volvo_r.png", 24, 20),
-  '120191031171807' = makeIcon("Icons/hyundai_r.png", 126, 20)
+  '120191031171807' = makeIcon("Icons/hyundai_r.png", 45, 20)
 )
 
 ### Gráfico m1 de distribuição das marcas (top5) m1_t = tratores, m1_c = colheitadeiras
 ###################
+##Caso não haja informações para plotar o mapa (texto informando que não há informações)
+text <- paste("Não há informações para gerar o mapa")
+s_dados_m <- ggplot() +
+  annotate("text", x = 1, y = 6, size = 8, label = text) +
+  theme_void()
 ##Tratores
 if (nrow(cli_in_pm_cont_top_t_aux) > 0){
   m1_t <- leaflet(cli_in_pm_cont_top_t_aux) %>%
@@ -462,8 +467,8 @@ if (nrow(cli_in_pm_cont_top_t_aux) > 0){
                #clusterOptions = markerClusterOptions(),
                group = "Ícones")
 }else {
-  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  m1_t <- s_dados
+  ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
+  m1_t <- s_dados_m
 }
 
 if (nrow(cli_in_pm_cont_top_c_aux) > 0){
@@ -478,8 +483,8 @@ if (nrow(cli_in_pm_cont_top_c_aux) > 0){
                #clusterOptions = markerClusterOptions(),
                group = "Ícones")
 }else {
-  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  m1_c <- s_dados
+  ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
+  m1_c <- s_dados_m
 }
 
 if(teste == F){
@@ -509,7 +514,7 @@ cli_in_pm_cont_top_t <- cli_in_pm_cont_top_t %>%
   mutate(sum = sum(cont)) %>%
   distinct(marca_nome, .keep_all = T) %>%
   select (marca_nome, produto_marca_id, sum) %>%
-  arrange(desc(sum)) %>%
+  arrange(desc(sum), marca_nome) %>%
   ungroup()
 
 ## Vou usar para consultar as cores de cada marca para o m2_t e m2_c
@@ -539,7 +544,7 @@ cli_in_pm_cont_top_c <- cli_in_pm_cont_top_c %>%
   mutate(sum = sum(cont)) %>%
   distinct(marca_nome, .keep_all = T) %>%
   select (marca_nome, produto_marca_id, sum) %>%
-  arrange(desc(sum)) %>%
+  arrange(desc(sum), marca_nome) %>%
   ungroup()
 
 
@@ -548,7 +553,12 @@ cli_in_pm_cont_top_c$marca_nome <- reorder(cli_in_pm_cont_top_c$marca_nome, desc
 #cores_c
 cli_in_pm_cont_top_c <- inner_join(cli_in_pm_cont_top_c, marcas_ic_co, by = c("produto_marca_id" = "marca_id_i"))
 cores_c <- as.vector(cli_in_pm_cont_top_c$cor)
-
+#############################################################################################
+##Caso não haja informações para plotar o gráfico(texto informando que não há informações p/ o período)
+text <- paste("Não há informações para gerar o gráfico")
+s_dados_g <- ggplot() +
+  annotate("text", x = 1, y = 6, size = 8, label = text) +
+  theme_void()
 ### Gráfico m2 de distribuição das marcas (top5)
 ###################
 if (nrow(cli_in_pm_cont_top_t) > 0){
@@ -564,8 +574,8 @@ if (nrow(cli_in_pm_cont_top_t) > 0){
     layout(xaxis = list(title = ''),
            yaxis = list(title = ''))
 }else {
-  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  m2_t <- s_dados
+  ##Caso não haja informações para plotar o gráfico(texto informando que não há informações p/ o período)
+  m2_t <- s_dados_g
 }
 if(dash == F){
   m2_t
@@ -585,18 +595,14 @@ if (nrow(cli_in_pm_cont_top_c) > 0){
   m2_c <- m2_c %>%
     layout(xaxis = list(title = ''),
            yaxis = list(title = ''))
-}else {
-  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  m2_c <- s_dados
+}else{
+  ##Caso não haja informações para plotar o gráfico(texto informando que não há informações p/ o período)
+  m2_c <- s_dados_g
+  
 }
 if(dash == F){
   m2_c
 }
-### Debug para ver as 10 marcas que mais aparecem (para buscar ícones)
-# library(DT)
-# m2_1_t <- datatable(top10_t)
-# m2_1_c <- datatable(top10_c)
-
 if(teste == F){
   #tabelas
   rm(cli_in_pm_cont_top_t, cli_in_pm_cont_top_c, cli_in_pm_in_p_in_m, cli_in_pm_in_p, cli_in_pm, top10_c, top10_t,
