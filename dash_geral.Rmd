@@ -54,7 +54,7 @@ mes_atual = month(today())
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 63
+  empresa = 65
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -434,20 +434,17 @@ if(anos_ant > 1){
     fat_2ant_mes <- data.frame(ym, ym_sum_2ant)
     anos_ant = 1
   }
-}else{
-  if(anos_ant > 0) {
-    if(nrow(ng_ij_hist_ij_ven_ij_np_1ant_fat) > 0){
-    fat_1ant_mes <- ng_ij_hist_ij_ven_ij_np_1ant_fat %>%
-      mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
-      group_by (ym) %>%
-      summarize(ym_sum_1ant = sum(np_valor), .groups = 'drop') %>%
-      ungroup ()
-    }else{
-      ym_sum_1ant <- rep(NA, 12)
-      fat_1ant_mes <- data.frame(ym, ym_sum_1ant)
-      anos_ant = 0
-    }
+}
+if(anos_ant > 0) {
+  if(nrow(ng_ij_hist_ij_ven_ij_np_1ant_fat) > 0){
+  fat_1ant_mes <- ng_ij_hist_ij_ven_ij_np_1ant_fat %>%
+    mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
+    group_by (ym) %>%
+    summarize(ym_sum_1ant = sum(np_valor), .groups = 'drop') %>%
+    ungroup ()
   }else{
+    ym_sum_1ant <- rep(NA, 12)
+    fat_1ant_mes <- data.frame(ym, ym_sum_1ant)
     anos_ant = 0
   }
 }
@@ -757,17 +754,20 @@ vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_v
   select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas, n_negocios)
 
 ### Grafico c0 - Distribuicao de clientes (total), visitas (anat) e negocios (anat) cadastrados por vendedor
-c0 <- plot_ly(vend_cli_vis_neg, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
-              name = 'Clientes (total)')
-c0 <- c0 %>%
-  add_trace(y= ~n_visitas, name = 'Visitas (2020)')
-c0 <- c0 %>%
-  add_trace(y= ~n_negocios, name = 'Negócios (2020)')
-c0 <- c0 %>%
- layout(barmode = 'grouped',
-        xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
-        yaxis = list(title = ''))
-
+if (nrow(vend_cli_vis_neg) > 0){
+  c0 <- plot_ly(vend_cli_vis_neg, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
+                name = 'Clientes (total)')
+  c0 <- c0 %>%
+    add_trace(y= ~n_visitas, name = 'Visitas (2020)')
+  c0 <- c0 %>%
+    add_trace(y= ~n_negocios, name = 'Negócios (2020)')
+  c0 <- c0 %>%
+    layout(barmode = 'grouped',
+           xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
+           yaxis = list(title = ''))
+}else {
+  c0 <- s_dados
+}
 if(dash == F){
   c0
 }

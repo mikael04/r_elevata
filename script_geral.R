@@ -45,7 +45,7 @@ if(mes_atual == 1){
 
 #empresa = params$variable1
 #teste
-empresa = 29
+empresa = 65
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -420,7 +420,7 @@ if(anos_ant > 1) {
 ym <- c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12")
 #Aqui vou fazer a mesma soma dos valores dos três anos anteriores, dividindo por mês
 if(anos_ant > 1){
-  if(nrow(ng_ij_hist_ij_ven_ij_np_1ant_fat) > 0){
+  if(nrow(ng_ij_hist_ij_ven_ij_np_2ant_fat) > 0){
     fat_2ant_mes <- ng_ij_hist_ij_ven_ij_np_2ant_fat %>%
       mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
       group_by (ym) %>%
@@ -437,23 +437,21 @@ if(anos_ant > 1){
     fat_2ant_mes <- data.frame(ym, ym_sum_2ant)
     anos_ant = 1
   }
-}else{
-  if(anos_ant > 0) {
-    if(nrow(ng_ij_hist_ij_ven_ij_np_1ant_fat) > 0){
-    fat_1ant_mes <- ng_ij_hist_ij_ven_ij_np_1ant_fat %>%
-      mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
-      group_by (ym) %>%
-      summarize(ym_sum_1ant = sum(np_valor), .groups = 'drop') %>%
-      ungroup ()
-    }else{
-      ym_sum_1ant <- rep(NA, 12)
-      fat_1ant_mes <- data.frame(ym, ym_sum_1ant)
-      anos_ant = 0
-    }
+}
+if(anos_ant > 0) {
+  if(nrow(ng_ij_hist_ij_ven_ij_np_1ant_fat) > 0){
+  fat_1ant_mes <- ng_ij_hist_ij_ven_ij_np_1ant_fat %>%
+    mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
+    group_by (ym) %>%
+    summarize(ym_sum_1ant = sum(np_valor), .groups = 'drop') %>%
+    ungroup ()
   }else{
+    ym_sum_1ant <- rep(NA, 12)
+    fat_1ant_mes <- data.frame(ym, ym_sum_1ant)
     anos_ant = 0
   }
 }
+
 
 ###Fazer o gráfico de linhas com faturamento anual (substituindo com NA linhas faltantes)
 ###Na super temos 2ant, na komatsu tem q verificar se possui 2ant e 1ant
@@ -769,17 +767,20 @@ vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_v
   select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas, n_negocios)
 
 ### Grafico c0 - Distribuicao de clientes (total), visitas (anat) e negocios (anat) cadastrados por vendedor
-c0 <- plot_ly(vend_cli_vis_neg, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
-              name = 'Clientes (total)')
-c0 <- c0 %>%
-  add_trace(y= ~n_visitas, name = 'Visitas (2020)')
-c0 <- c0 %>%
-  add_trace(y= ~n_negocios, name = 'Negócios (2020)')
-c0 <- c0 %>%
-  layout(barmode = 'grouped',
-         xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
-         yaxis = list(title = ''))
-
+if (nrow(vend_cli_vis_neg) > 0){
+  c0 <- plot_ly(vend_cli_vis_neg, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
+                name = 'Clientes (total)')
+  c0 <- c0 %>%
+    add_trace(y= ~n_visitas, name = 'Visitas (2020)')
+  c0 <- c0 %>%
+    add_trace(y= ~n_negocios, name = 'Negócios (2020)')
+  c0 <- c0 %>%
+    layout(barmode = 'grouped',
+           xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
+           yaxis = list(title = ''))
+}else {
+  c0 <- s_dados
+}
 if(dash == F){
   c0
 }
