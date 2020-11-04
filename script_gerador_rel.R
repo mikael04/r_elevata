@@ -111,7 +111,7 @@ x <- length(params_list)
 # }
 ## Gerando dash propostas
 for(i in (1:x)){
-  if(params_list[i] == 16 | params_list[i] == 50 | params_list[i] == 78){
+  if(params_list[i] == 16 | params_list[i] == 59 | params_list[i] == 78){
       
     rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
     template <- "dash_propostas.Rmd"

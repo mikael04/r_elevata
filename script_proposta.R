@@ -38,9 +38,12 @@ library(emojifont)
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável usada para não plotar os gráficos na dash
-dash = F
-####Variavel global c/ ano atual (para comparação)
-ano_atual = '2020-01-01'
+dash = T
+####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
+####Variavel global c/ mês atual (para comparação)
+
+mes_atual = month(today())
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
@@ -54,7 +57,7 @@ emp_si = 59 # Simex
 emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
-  empresa <- 49
+  empresa <- 59
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -110,9 +113,10 @@ negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character",
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa, vendedor_ativo == 1) %>%
-  select(-vendedor_ativo)
+  filter (vendedor_empresa_id == empresa)
 
+vendedor_a <- vendedor %>%
+  filter (vendedor_ativo == T)
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
@@ -143,11 +147,16 @@ if (teste == F){
   rm()
 }
 
-prop_ij_neg_2020 <- prop_ij_neg %>%
-  filter(proposta_data_cadastro >= '2020-01-01')
+##Juntando com vendedor pra obter o nome do vendedor
+prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
+
+##Filtrando a empresa
+prop_ij_neg_ij_vend_anat <- prop_ij_neg_ij_vend %>%
+  filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= ano_atual)
+
 
 ##Aqui tenho a contagem de status da empresa
-prop_ij_neg_cont_2020 <- prop_ij_neg_2020 %>%
+prop_ij_neg_ij_vend_cont_anat <- prop_ij_neg_ij_vend_anat %>%
   select (proposta_status) %>%
   group_by(proposta_status) %>%
   mutate(cont_status = n()) %>%
@@ -156,21 +165,14 @@ prop_ij_neg_cont_2020 <- prop_ij_neg_2020 %>%
 
 status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
-prop_ij_neg_cont_2020$proposta_status <- with(prop_ij_neg_cont_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
+prop_ij_neg_ij_vend_cont_anat$proposta_status <- with(prop_ij_neg_ij_vend_cont_anat, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
                                                                          labels = status))
 
-##Juntando com vendedor pra obter o nome do vendedor
-prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
-
-##Filtrando a empresa
-prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend %>%
-  filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= '2020-01-01')
-
 ##removendo os campos onde um ID de proposta não corresponde a um ID de negócio (erro no banco?) /Acho que era erro na junção (inner parece ter resolvido)
-#prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend_2020[!is.na(prop_ij_neg_ij_vend_2020$negocio_vendedor_id),]
+#prop_ij_neg_ij_vend_anat <- prop_ij_neg_ij_vend_anat[!is.na(prop_ij_neg_ij_vend_anat$negocio_vendedor_id),]
 
 ##Aqui tenho a contagem de status por vendedor
-prop_ij_neg_cont_vend_2020 <- prop_ij_neg_ij_vend_2020 %>%
+prop_ij_neg_cont_vend_anat <- prop_ij_neg_ij_vend_anat %>%
   select (negocio_vendedor_id, negocio_vendedor_id, vendedor_nome, proposta_status) %>%
   group_by(proposta_status, negocio_vendedor_id) %>%
   mutate(cont_status = n()) %>%
@@ -178,12 +180,12 @@ prop_ij_neg_cont_vend_2020 <- prop_ij_neg_ij_vend_2020 %>%
   ungroup ()
 
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
-prop_ij_neg_cont_vend_2020$proposta_status <- with(prop_ij_neg_cont_vend_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
+prop_ij_neg_cont_vend_anat$proposta_status <- with(prop_ij_neg_cont_vend_anat, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
                                                                                    labels = status))
 
 ### Gráfico p0 - Número propostas, por tipo, por vendedor (total)
-if(nrow(prop_ij_neg_cont_vend_2020) > 0){
-  p0 <- plot_ly(prop_ij_neg_cont_vend_2020, type = 'bar', orientation = 'h', x = ~cont_status , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
+if(nrow(prop_ij_neg_cont_vend_anat) > 0){
+  p0 <- plot_ly(prop_ij_neg_cont_vend_anat, type = 'bar', orientation = 'h', x = ~cont_status , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
                 color = ~proposta_status,
                 colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
                 name = ~proposta_status,
@@ -201,9 +203,9 @@ if(nrow(prop_ij_neg_cont_vend_2020) > 0){
 if(dash == F){
   p0
 }
-### Gráfico p1 - Número propostas, por tipo em 2020 (total)
-if(nrow(prop_ij_neg_cont_2020) > 0){
-  p1 <- plot_ly(prop_ij_neg_cont_2020, type = 'bar', x = ~proposta_status , y = ~cont_status,
+### Gráfico p1 - Número propostas, por tipo em anat (total)
+if(nrow(prop_ij_neg_cont_vend_anat) > 0){
+  p1 <- plot_ly(prop_ij_neg_cont_vend_anat, type = 'bar', x = ~proposta_status , y = ~cont_status,
                 color = ~proposta_status,
                 colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
                 name = ~proposta_status,
@@ -228,7 +230,7 @@ if(teste == F){
   if(dash == F){
     rm()
   }
-  rm(prop_ij_neg_2020, prop_ij_neg_cont_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_ij_vend_2020);
+  rm(prop_ij_neg_cont_vend_anat, prop_ij_neg_cont_vend_anat, prop_ij_neg_ij_vend_anat);
   #variáveis
   rm(status);
 }
@@ -238,24 +240,24 @@ if(teste == F){
 ##Propostas por categoria (usado)
 ##############################################
 ##Aqui tenho a contagem de usados em propostasda empresa
-prop_ij_neg_cont_us <- prop_ij_neg %>%
+prop_ij_neg_ij_vend_cont_us <- prop_ij_neg_ij_vend %>%
   select (negocio_usado) %>%
   group_by(negocio_usado) %>%
   mutate(usado = n()) %>%
   distinct(negocio_usado, .keep_all = TRUE) %>%
   ungroup ()
 
-total = sum(prop_ij_neg_cont_us$usado)
+total = sum(prop_ij_neg_ij_vend_cont_us$usado)
 
-prop_ij_neg_cont_us <- prop_ij_neg_cont_us %>% ###########################################################################################################
+prop_ij_neg_ij_vend_cont_us <- prop_ij_neg_ij_vend_cont_us %>% ###########################################################################################################
 mutate(total = total)
 
-prop_ij_neg_cont_us$negocio_usado[prop_ij_neg_cont_us$negocio_usado == TRUE] <- "Proposta com usado"
-prop_ij_neg_cont_us$negocio_usado[prop_ij_neg_cont_us$negocio_usado == FALSE] <- "Proposta sem usado"
+prop_ij_neg_ij_vend_cont_us$negocio_usado[prop_ij_neg_ij_vend_cont_us$negocio_usado == TRUE] <- "Proposta com usado"
+prop_ij_neg_ij_vend_cont_us$negocio_usado[prop_ij_neg_ij_vend_cont_us$negocio_usado == FALSE] <- "Proposta sem usado"
 
 ### Gráfico p2 - Proporção de usados (pizza)
-if(nrow(prop_ij_neg_cont_us) > 0){
-  p2 <- plot_ly(prop_ij_neg_cont_us, labels = ~negocio_usado, values = ~usado, type = 'pie', sort = F,
+if(nrow(prop_ij_neg_ij_vend_cont_us) > 0){
+  p2 <- plot_ly(prop_ij_neg_ij_vend_cont_us, labels = ~negocio_usado, values = ~usado, type = 'pie', sort = F,
                 texttemplate = "%{value} (%{percent})",
                 hovertemplate = paste ("%{label} <br>",
                                        "%{value} <br>",
@@ -270,7 +272,7 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(prop_ij_neg_cont_us, prop_ij_neg);
+  rm(prop_ij_neg_ij_vend_cont_us, prop_ij_neg);
   #variáveis
   rm(total);
 }
@@ -591,7 +593,7 @@ if(teste == F){
 }
 
 ##################################################################
-### Faturamento de propostas em 2020 por status
+### Faturamento de propostas em anat por status
 
 ##coleta todos proposta_pagamenmto
 proposta_pagamento <- fread("Tabelas/proposta_pagamento.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character")) %>%

@@ -60,7 +60,7 @@ mes_atual = month(today())
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 78
+  empresa = 59
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -119,9 +119,10 @@ negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character",
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa, vendedor_ativo == 1) %>%
-  select(-vendedor_ativo)
+  filter (vendedor_empresa_id == empresa)
 
+vendedor_a <- vendedor %>%
+  filter (vendedor_ativo == T)
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
@@ -155,8 +156,16 @@ if (teste == F){
 prop_ij_neg_2020 <- prop_ij_neg %>%
   filter(proposta_data_cadastro >= '2020-01-01')
 
+##Juntando com vendedor pra obter o nome do vendedor
+prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
+
+##Filtrando a empresa
+prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend %>%
+  filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= '2020-01-01')
+
+
 ##Aqui tenho a contagem de status da empresa
-prop_ij_neg_cont_2020 <- prop_ij_neg_2020 %>%
+prop_ij_neg_ij_vend_cont_2020 <- prop_ij_neg_ij_vend_2020 %>%
   select (proposta_status) %>%
   group_by(proposta_status) %>%
   mutate(cont_status = n()) %>%
@@ -165,15 +174,8 @@ prop_ij_neg_cont_2020 <- prop_ij_neg_2020 %>%
 
 status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
-prop_ij_neg_cont_2020$proposta_status <- with(prop_ij_neg_cont_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
+prop_ij_neg_ij_vend_cont_2020$proposta_status <- with(prop_ij_neg_ij_vend_cont_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
                                                                          labels = status))
-
-##Juntando com vendedor pra obter o nome do vendedor
-prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
-
-##Filtrando a empresa
-prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend %>%
-  filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= '2020-01-01')
 
 ##removendo os campos onde um ID de proposta não corresponde a um ID de negócio (erro no banco?) /Acho que era erro na junção (inner parece ter resolvido)
 #prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend_2020[!is.na(prop_ij_neg_ij_vend_2020$negocio_vendedor_id),]
@@ -197,7 +199,7 @@ if(nrow(prop_ij_neg_cont_vend_2020) > 0){
                 colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
                 name = ~proposta_status,
                 showlegend = TRUE
-                )
+  )
   p0 <- p0 %>%
     layout(barmode = 'stack',
            xaxis = list(title = ''),
@@ -211,13 +213,13 @@ if(dash == F){
   p0
 }
 ### Gráfico p1 - Número propostas, por tipo em 2020 (total)
-if(nrow(prop_ij_neg_cont_2020) > 0){
-  p1 <- plot_ly(prop_ij_neg_cont_2020, type = 'bar', x = ~proposta_status , y = ~cont_status,
-              color = ~proposta_status,
-              colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
-              name = ~proposta_status,
-              showlegend = F
-              )
+if(nrow(prop_ij_neg_cont_vend_2020) > 0){
+  p1 <- plot_ly(prop_ij_neg_cont_vend_2020, type = 'bar', x = ~proposta_status , y = ~cont_status,
+                color = ~proposta_status,
+                colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
+                name = ~proposta_status,
+                showlegend = F
+  )
   p1 <- p1 %>%
     layout(barmode = 'stack',
            xaxis = list(title = ''),
@@ -237,7 +239,7 @@ if(teste == F){
   if(dash == F){
     rm()
   }
-  rm(prop_ij_neg_2020, prop_ij_neg_cont_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_ij_vend_2020);
+  rm(prop_ij_neg_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_ij_vend_2020);
   #variáveis
   rm(status);
 }
@@ -247,29 +249,29 @@ if(teste == F){
 ##Propostas por categoria (usado)
 ##############################################
 ##Aqui tenho a contagem de usados em propostasda empresa
-prop_ij_neg_cont_us <- prop_ij_neg %>%
+prop_ij_neg_ij_vend_cont_us <- prop_ij_neg_ij_vend %>%
   select (negocio_usado) %>%
   group_by(negocio_usado) %>%
   mutate(usado = n()) %>%
   distinct(negocio_usado, .keep_all = TRUE) %>%
   ungroup ()
 
-total = sum(prop_ij_neg_cont_us$usado)
+total = sum(prop_ij_neg_ij_vend_cont_us$usado)
 
-prop_ij_neg_cont_us <- prop_ij_neg_cont_us %>% ###########################################################################################################
-  mutate(total = total)
+prop_ij_neg_ij_vend_cont_us <- prop_ij_neg_ij_vend_cont_us %>% ###########################################################################################################
+mutate(total = total)
 
-prop_ij_neg_cont_us$negocio_usado[prop_ij_neg_cont_us$negocio_usado == TRUE] <- "Proposta com usado"
-prop_ij_neg_cont_us$negocio_usado[prop_ij_neg_cont_us$negocio_usado == FALSE] <- "Proposta sem usado"
+prop_ij_neg_ij_vend_cont_us$negocio_usado[prop_ij_neg_ij_vend_cont_us$negocio_usado == TRUE] <- "Proposta com usado"
+prop_ij_neg_ij_vend_cont_us$negocio_usado[prop_ij_neg_ij_vend_cont_us$negocio_usado == FALSE] <- "Proposta sem usado"
 
 ### Gráfico p2 - Proporção de usados (pizza)
-if(nrow(prop_ij_neg_cont_us) > 0){
-  p2 <- plot_ly(prop_ij_neg_cont_us, labels = ~negocio_usado, values = ~usado, type = 'pie', sort = F,
-              texttemplate = "%{value} (%{percent})",
-              hovertemplate = paste ("%{label} <br>",
-                                     "%{value} <br>",
-                                     "Equivalente a %{percent} do total",
-                                     "<extra></extra>"))
+if(nrow(prop_ij_neg_ij_vend_cont_us) > 0){
+  p2 <- plot_ly(prop_ij_neg_ij_vend_cont_us, labels = ~negocio_usado, values = ~usado, type = 'pie', sort = F,
+                texttemplate = "%{value} (%{percent})",
+                hovertemplate = paste ("%{label} <br>",
+                                       "%{value} <br>",
+                                       "Equivalente a %{percent} do total",
+                                       "<extra></extra>"))
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   p2 <- s_dados
@@ -279,7 +281,7 @@ if(dash == F){
 }
 if(teste == F){
   #tabelas
-  rm(prop_ij_neg_cont_us, prop_ij_neg);
+  rm(prop_ij_neg_ij_vend_cont_us, prop_ij_neg);
   #variáveis
   rm(total);
 }
@@ -404,9 +406,9 @@ fat_tot_categorias <- fat_tot_categorias %>%
 ### Gráfico p3 - Ticket médio novos
 if(nrow(fat_tot_categorias) > 0){
   ax <- list(
-  autotick = TRUE,
-  title = "",
-  showticklabels = TRUE)
+    autotick = TRUE,
+    title = "",
+    showticklabels = TRUE)
   p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
                 name = 'Categorias',
                 marker = list(color = 'lightblue'),
@@ -546,9 +548,9 @@ fat_tot_categorias_us <- fat_tot_categorias_us %>%
 ### Gráfico p4 - Ticket médio usados
 if(nrow(fat_tot_categorias_us) > 0){
   ax <- list(
-  autotick = TRUE,
-  title = "",
-  showticklabels = TRUE)
+    autotick = TRUE,
+    title = "",
+    showticklabels = TRUE)
   p4 <- plot_ly(fat_tot_categorias_us, type = "bar", x = ~categoria_nome, y = ~fat_med,
                 name = 'Categorias',
                 marker = list(color = 'lightblue'),
@@ -638,9 +640,9 @@ p_ij_n_ij_pp_sum_cat$proposta_status <- with(p_ij_n_ij_pp_sum_cat, cut(proposta_
 ###Gráfico p5 - Faturamento de propostas por status (não usado)
 if(nrow(p_ij_n_ij_pp_sum_cat) > 0){
   ax <- list(
-  autotick = TRUE,
-  title = "",
-  showticklabels = TRUE)
+    autotick = TRUE,
+    title = "",
+    showticklabels = TRUE)
   p5 <- plot_ly(p_ij_n_ij_pp_sum_cat, x = ~proposta_status, y = ~valor_status, type = 'bar',
                 name = 'Faturamento por status',
                 marker = list(color = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32")),
@@ -778,7 +780,6 @@ if(teste == F){
 if (teste == 0) {
   #rm(list=ls())
 }
-
 ```
 
 
