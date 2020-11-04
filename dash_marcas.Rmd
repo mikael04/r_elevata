@@ -336,6 +336,10 @@ marca <- fread("Tabelas/marca.csv", colClasses = c(marca_id = 'character')) %>%
 
 marca_categoria <- fread("Tabelas/marca_categoria.csv", colClasses = c(marca_categoria_marca_id = 'character',marca_categoria_categoria_id  = 'character'))
 
+##Alterando os que não possuem latitude/longitude para 0 (que será filtrado depois)
+cliente$cliente_latitude[cliente$cliente_latitude == ''] <- '0'
+cliente$cliente_longitude[cliente$cliente_longitude == ''] <- '0'
+
 ##Clientes da empresa correta ##Clientes com valor NA, valores 0 e valores positivos de latlong (hemisf norte, leste do globo) removidos
 cliente_c_loc <- cliente %>%
   filter (cliente_empresa_id == empresa, cliente_latitude < 0, cliente_longitude < 0) %>%

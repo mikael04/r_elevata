@@ -50,21 +50,20 @@ library(emojifont)
 teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = T
-####Variavel global c/ ano atual (para comparação)
+####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
 ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
+####Variavel global c/ mês atual (para comparação)
 
-##Variável "Global"
-emp_am = 42 # Amazonia
-emp_ar = 77 # Araguaia
-emp_ko = 78 # Komatsu
-emp_ms = 35 # Ms
-emp_si = 59 # Simex
-emp_su = 16 # Super
-emp_ta = 60 # Taisa
+mes_atual = month(today())
+####Variável global para ver se tem usados Ainda não usada
+#usados = T
 
-empresa = params$variable1
-#teste
-#empresa = 70
+##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
+if(params$variable1 == 'emp_par'){
+  empresa = 1
+}else{
+  empresa = as.integer(params$variable1)
+}
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -130,6 +129,12 @@ if(empresa == 16){
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
   select(np_id, np_negocio_id, np_produto_id, np_quantidade,np_ativo, np_valor)
 
+##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
+text <- paste("Não há informações para o período")
+s_dados <- ggplot() +
+  annotate("text", x = 1, y = 6, size = 8, label = text) +
+  theme_void()
+
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
 produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
@@ -178,18 +183,23 @@ ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>%
 
 ###Gráfico n0 - Faturamento dos negócios por vendedor (anat, status atual)
 ##############################################
-n0 <- plot_ly(ng_ij_vn_ij_np_fat, type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
+### Gráfico n9 - Funil agrupado por faturamento
+if (nrow(ng_ij_vn_ij_np_fat) > 0){
+  n0 <- plot_ly(ng_ij_vn_ij_np_fat, type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
               color = ~negocio_status,
               colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"),
               name = ~negocio_status,
               showlegend = TRUE
               )
-
-n0 <- n0 %>%
+  n0 <- n0 %>%
   layout(barmode = 'stack',
          xaxis = list(title = ''),
-         yaxis = list(title = ''))
-
+         yaxis = list(title = ''),
+         legend = list(orientation = "h", x = 0.5,
+                       xanchor = "center"))
+}else {
+  n0 <- s_dados
+}
 if(dash == F){
   n0
 }
@@ -261,20 +271,23 @@ ng_ij_vn_ij_np_fech_fat <- ng_ij_vn_ij_np_fech_fat %>%
 
 ### Gráfico n3 - Faturamento de negócios fechados em anat
 #########################################################
-
-n3 <- plot_ly(ng_ij_vn_ij_np_fech_fat, type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
+if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
+  n3 <- plot_ly(ng_ij_vn_ij_np_fech_fat, type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
               color = ~negocio_status,
               colors = c("#32CD32", "yellow", "orange", "#DE0D26"),
               name = ~negocio_status,
               showlegend = T
-)
-
-n3 <- n3 %>%
-  layout(barmode = 'stack',
-         xaxis = list(title = ''),
-         yaxis = list(title = ''),
-         legend = list(orientation = "h",
+              )
+  
+  n3 <- n3 %>%
+    layout(barmode = 'stack',
+           xaxis = list(title = ''),
+           yaxis = list(title = ''),
+           legend = list(orientation = "h", x = 0.5,
                        xanchor = "center"))
+}else {
+  n3 <- s_dados
+}
 
 if(dash == F){
   n3
@@ -336,20 +349,21 @@ ng_ij_hist_ij_ven_num <- ng_ij_hist_ij_ven_idd %>%
 ##Usado pra ordenar o gráfico
 ng_ij_hist_ij_ven_num$idade_cat = factor(ng_ij_hist_ij_ven_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
 
-n6 <- plot_ly(ng_ij_hist_ij_ven_num, type = 'bar', orientation = 'h', x=~num_negocios_idades , y=~reorder(vendedor_nome, desc(vendedor_nome)),
+if (nrow(ng_ij_hist_ij_ven_num) > 0){
+  n6 <- plot_ly(ng_ij_hist_ij_ven_num, type = 'bar', orientation = 'h', x=~num_negocios_idades , y=~reorder(vendedor_nome, desc(vendedor_nome)),
               color = ~idade_cat,
               colors = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"))
-n6 <- n6 %>%
-  layout(barmode = 'stack',
-         xaxis = list(title = ''),
-         yaxis = list(title = ''))
-n6
-
+  
+  n6 <- n6 %>%
+    layout(barmode = 'stack',
+           xaxis = list(title = ''),
+           yaxis = list(title = ''))
+}else {
+  n6 <- s_dados
+}
 if(dash == F){
   n6
 }
-
-
 if (teste == F) {
   #tabelas
   rm(ng_ij_hist_ij_ven_num, ng_ij_hist_ij_ven_ab)
@@ -383,15 +397,17 @@ ng_ij_hist_ij_emp_num <- ng_ij_hist_ij_emp_num %>%
 ng_ij_hist_ij_emp_num$idade_cat = factor(ng_ij_hist_ij_emp_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
 
 ### Gráfico n7 - Negócios abertos da empresa, pizza
-
 colors_pie <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
-n7 <- plot_ly(ng_ij_hist_ij_emp_num, labels = ~idade_cat, values = ~num_negocios_idades, type = 'pie', sort = F,
-              texttemplate = "%{value} (%{percent})",
-              hovertemplate = paste ("%{label} <br>",
-                                     "Equivalente a %{percent}",
-                                     "<extra></extra>"),
-              marker = list(colors = colors_pie))
-
+if (nrow(ng_ij_hist_ij_emp_num) > 0){
+  n7 <- plot_ly(ng_ij_hist_ij_emp_num, labels = ~idade_cat, values = ~num_negocios_idades, type = 'pie', sort = F,
+                texttemplate = "%{value} (%{percent})",
+                hovertemplate = paste ("%{label} <br>",
+                                       "Equivalente a %{percent}",
+                                       "<extra></extra>"),
+                marker = list(colors = colors_pie))
+}else {
+  n7 <- s_dados
+}
 if(dash == F){
   n7
 }
@@ -435,22 +451,36 @@ ng_cad_fin <- ng_cad_fin %>%
                             negocio_negocio_situacao_id == 6 ~ "Desist. do cliente",
                             negocio_negocio_situacao_id == 7 ~ "Perdemos para conc."))
 
+if(nrow(ng_cad_fin) != 4){
+  situacao_id_ <- c(4, 5, 6, 7)
+  Status_ <- c("Faturado", "Financ. não aprovado", "Desist. do cliente", "Perdemos para conc.")
+  df_ng_cad_fin <- data.frame(situacao_id_, Status_)
+  df_ng_cad_fin <- left_join(df_ng_cad_fin, ng_cad_fin, by=c('situacao_id_' = 'negocio_negocio_situacao_id'))
+  df_ng_cad_fin <- df_ng_cad_fin %>%
+    select (-Status) %>%
+    rename (Status = Status_, negocio_negocio_situacao_id = situacao_id_)
+  df_ng_cad_fin$media_d[is.na(df_ng_cad_fin$media_d)] <- '0'
+  ng_cad_fin <- df_ng_cad_fin
+}
+
 ng_cad_fin <- ng_cad_fin %>%
   mutate (media_d = paste(as.character(media_d),"dias")) %>%
   arrange(negocio_negocio_situacao_id)
+
 valuebox <- data.frame(
-  x = rep(seq(2, 9, 6.5), 2),
-  y = c(rep(6.5, 2), rep(2,2)),
-  h = rep(4.25, 4),
-  w = rep(6.25, 4),
-  value = ng_cad_fin$media_d,
-  info = ng_cad_fin$Status,
-  shape = c(fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar')),
-  font_family = c(rep("fontawesome-webfont", 4)),
-  color = factor(1:4))
+      x = rep(seq(2, 9, 6.5), 2),
+      y = c(rep(6.5, 2), rep(2,2)),
+      h = rep(4.25, 4),
+      w = rep(6.25, 4),
+      value = ng_cad_fin$media_d,
+      info = ng_cad_fin$Status,
+      shape = c(fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar')),
+      font_family = c(rep("fontawesome-webfont", 4)),
+      color = factor(1:4))
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
 colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
-n13 <- ggplot(valuebox, aes(x=x, y=y, height = h, width = w, label = info)) +
+if (nrow(valuebox) > 0){
+  n13 <- ggplot(valuebox, aes(x=x, y=y, height = h, width = w, label = info)) +
   geom_tile(aes(fill = color)) +
   geom_text(color = "white", fontface = "bold", size = 18,
             aes(label = value, x = x - 2.9, y = y + 1), hjust = 0) +
@@ -462,6 +492,9 @@ n13 <- ggplot(valuebox, aes(x=x, y=y, height = h, width = w, label = info)) +
                            x = x + 1.5, y = y + 0.5), alpha = 0.25) +
   theme_void() +
   guides(fill = FALSE)
+}else {
+  n13 <- s_dados
+}
 
 if (dash == F){
   n13
@@ -492,9 +525,7 @@ Column {data-width=650}
 
 ```{r}
 ### Gráfico n0 - Número de clientes por vendedor
-n0 %>%
-  layout(legend = list(orientation = "h", x = 0.5,
-                       xanchor = "center"))
+n0
 
 ```
 
@@ -505,9 +536,7 @@ Column {data-width=350}
 
 ```{r}
 ### Gráfico n3 - Faturamento de negócios fechados em 2020
-n3 %>%
-  layout(legend = list(orientation = "h", x = 0.5,
-                       xanchor = "center"))
+n3
 
 ```
 
