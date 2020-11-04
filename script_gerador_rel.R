@@ -111,8 +111,6 @@ x <- length(params_list)
 # }
 ## Gerando dash propostas
 for(i in (1:x)){
-  if(params_list[i] == 16 | params_list[i] == 59 | params_list[i] == 78){
-      
     rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
     template <- "dash_propostas.Rmd"
     #Teste (nome da empresa, mais fácil de analisar)
@@ -130,7 +128,6 @@ for(i in (1:x)){
                       output_file = out_file,
                       params = parameters)
     invisible(TRUE)
-  }
 }
 ## Gerando dash visitas_clientes
 for(i in params_list){

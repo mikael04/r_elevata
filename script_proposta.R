@@ -47,16 +47,6 @@ mes_atual = month(today())
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
-
-##Variável "Global"
-emp_am = 42 # Amazonia
-emp_ar = 77 # Araguaia
-emp_ko = 78 # Komatsu
-emp_ms = 35 # Ms
-emp_si = 59 # Simex
-emp_su = 16 # Super
-emp_ta = 60 # Taisa
-
   empresa <- 59
 ###################################
 
@@ -147,16 +137,19 @@ if (teste == F){
   rm()
 }
 
+prop_ij_neg_2020 <- prop_ij_neg %>%
+  filter(proposta_data_cadastro >= '2020-01-01')
+
 ##Juntando com vendedor pra obter o nome do vendedor
 prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
 
 ##Filtrando a empresa
-prop_ij_neg_ij_vend_anat <- prop_ij_neg_ij_vend %>%
-  filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= ano_atual)
+prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend %>%
+  filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= '2020-01-01')
 
 
 ##Aqui tenho a contagem de status da empresa
-prop_ij_neg_ij_vend_cont_anat <- prop_ij_neg_ij_vend_anat %>%
+prop_ij_neg_ij_vend_cont_2020 <- prop_ij_neg_ij_vend_2020 %>%
   select (proposta_status) %>%
   group_by(proposta_status) %>%
   mutate(cont_status = n()) %>%
@@ -165,14 +158,14 @@ prop_ij_neg_ij_vend_cont_anat <- prop_ij_neg_ij_vend_anat %>%
 
 status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
-prop_ij_neg_ij_vend_cont_anat$proposta_status <- with(prop_ij_neg_ij_vend_cont_anat, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
-                                                                         labels = status))
+prop_ij_neg_ij_vend_cont_2020$proposta_status <- with(prop_ij_neg_ij_vend_cont_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
+                                                                                         labels = status))
 
 ##removendo os campos onde um ID de proposta não corresponde a um ID de negócio (erro no banco?) /Acho que era erro na junção (inner parece ter resolvido)
-#prop_ij_neg_ij_vend_anat <- prop_ij_neg_ij_vend_anat[!is.na(prop_ij_neg_ij_vend_anat$negocio_vendedor_id),]
+#prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend_2020[!is.na(prop_ij_neg_ij_vend_2020$negocio_vendedor_id),]
 
 ##Aqui tenho a contagem de status por vendedor
-prop_ij_neg_cont_vend_anat <- prop_ij_neg_ij_vend_anat %>%
+prop_ij_neg_cont_vend_2020 <- prop_ij_neg_ij_vend_2020 %>%
   select (negocio_vendedor_id, negocio_vendedor_id, vendedor_nome, proposta_status) %>%
   group_by(proposta_status, negocio_vendedor_id) %>%
   mutate(cont_status = n()) %>%
@@ -180,12 +173,12 @@ prop_ij_neg_cont_vend_anat <- prop_ij_neg_ij_vend_anat %>%
   ungroup ()
 
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
-prop_ij_neg_cont_vend_anat$proposta_status <- with(prop_ij_neg_cont_vend_anat, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
+prop_ij_neg_cont_vend_2020$proposta_status <- with(prop_ij_neg_cont_vend_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
                                                                                    labels = status))
 
 ### Gráfico p0 - Número propostas, por tipo, por vendedor (total)
-if(nrow(prop_ij_neg_cont_vend_anat) > 0){
-  p0 <- plot_ly(prop_ij_neg_cont_vend_anat, type = 'bar', orientation = 'h', x = ~cont_status , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
+if(nrow(prop_ij_neg_cont_vend_2020) > 0){
+  p0 <- plot_ly(prop_ij_neg_cont_vend_2020, type = 'bar', orientation = 'h', x = ~cont_status , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
                 color = ~proposta_status,
                 colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
                 name = ~proposta_status,
@@ -203,9 +196,9 @@ if(nrow(prop_ij_neg_cont_vend_anat) > 0){
 if(dash == F){
   p0
 }
-### Gráfico p1 - Número propostas, por tipo em anat (total)
-if(nrow(prop_ij_neg_cont_vend_anat) > 0){
-  p1 <- plot_ly(prop_ij_neg_cont_vend_anat, type = 'bar', x = ~proposta_status , y = ~cont_status,
+### Gráfico p1 - Número propostas, por tipo em 2020 (total)
+if(nrow(prop_ij_neg_cont_vend_2020) > 0){
+  p1 <- plot_ly(prop_ij_neg_cont_vend_2020, type = 'bar', x = ~proposta_status , y = ~cont_status,
                 color = ~proposta_status,
                 colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
                 name = ~proposta_status,
@@ -230,7 +223,7 @@ if(teste == F){
   if(dash == F){
     rm()
   }
-  rm(prop_ij_neg_cont_vend_anat, prop_ij_neg_cont_vend_anat, prop_ij_neg_ij_vend_anat);
+  rm(prop_ij_neg_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_ij_vend_2020);
   #variáveis
   rm(status);
 }
@@ -418,28 +411,14 @@ if(nrow(fat_tot_categorias) > 0){
                          hoverinfo = "text",
                          marker = list(color = 'orange'))
   
-  
-  if(empresa == 16){
-    p3 <- p3 %>%
-      layout(
-        autosize = T,
-        yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,700000)),
-        #range nos dois eixos iguais pra ficar na mesma proporção
-        yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,700000)),
-        ##aqui eu ajusto onde quero que apareça a legenda
-        legend = list(x=0.7, y=0.8)#)
-      )
-  }else if(empresa == 78){
-    p3 <- p3 %>%
-      layout(
-        autosize = T,
-        yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,2000000)),
-        #range nos dois eixos iguais pra ficar na mesma proporção
-        yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,2000000)),
-        ##aqui eu ajusto onde quero que apareça a legenda
-        legend = list(x=0.7, y=0.8)#)
-      )
-  }
+  p3 <- p3 %>%
+    layout(
+      autosize = T,
+      yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = ''),
+      #range nos dois eixos iguais pra ficar na mesma proporção
+      yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F),
+      ##aqui eu ajusto onde quero que apareça a legenda
+      legend = list(x=0.7, y=0.8))
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   p3 <- s_dados
@@ -593,7 +572,7 @@ if(teste == F){
 }
 
 ##################################################################
-### Faturamento de propostas em anat por status
+### Faturamento de propostas em 2020 por status
 
 ##coleta todos proposta_pagamenmto
 proposta_pagamento <- fread("Tabelas/proposta_pagamento.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character")) %>%

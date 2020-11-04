@@ -427,28 +427,14 @@ if(nrow(fat_tot_categorias) > 0){
                          hoverinfo = "text",
                          marker = list(color = 'orange'))
   
-  
-  if(empresa == 16){
-    p3 <- p3 %>%
+  p3 <- p3 %>%
       layout(
         autosize = T,
-        yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,700000)),
+        yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = ''),
         #range nos dois eixos iguais pra ficar na mesma proporção
-        yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,700000)),
+        yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F),
         ##aqui eu ajusto onde quero que apareça a legenda
-        legend = list(x=0.7, y=0.8)#)
-      )
-  }else if(empresa == 78){
-    p3 <- p3 %>%
-      layout(
-        autosize = T,
-        yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,2000000)),
-        #range nos dois eixos iguais pra ficar na mesma proporção
-        yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,2000000)),
-        ##aqui eu ajusto onde quero que apareça a legenda
-        legend = list(x=0.7, y=0.8)#)
-      )
-  }
+        legend = list(x=0.7, y=0.8))
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   p3 <- s_dados
@@ -796,9 +782,7 @@ Column {data-width=650}
 if (empresa == 16){
   subplot(p3, p4, shareX = T, shareY = T)
 } else{
-  if(empresa == 78){
     p3
-  }
 }
 
 ```
