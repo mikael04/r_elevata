@@ -1,15 +1,4 @@
----
-title: "Visão do gestor"
-output:
-  flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
-params:
-  variable1: "emp_par"
----
-
-```{r setup, include=FALSE}
-#rm(list = ls())
+rm(list = ls())
 #Lib q será futuramente usada pros painéis interativos
 #library(shiny)
 #Lib pra conexão com o banco
@@ -46,7 +35,7 @@ library(leaflet)
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável usada para não plotar os gráficos na dash
-dash = T
+dash = F
 ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
 ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
 ####Variavel global c/ mês atual (para comparação)
@@ -55,12 +44,9 @@ mes_atual = month(today())
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
-##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
-if(params$variable1 == 'emp_par'){
-  empresa = 80
-}else{
-  empresa = as.integer(params$variable1)
-}
+##Teste
+  empresa = 27
+
 ###################################
 
 ##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
@@ -495,57 +481,3 @@ if(nrow(cli_in_ven_in_vcUltVis) > 0){
   m0 <- s_dados
 }
 #######################################################################
-
-
-
-```
-
-Volume de visitas
-=======================================================================
-
-Column {data-width=550}
------------------------------------------------------------------------
-
-### Distribuição dos motivos das visitas por vendedor em 2020
-
-```{r}
-
-### Gráfico v0 - Motivo das visitas (status) por vendedor em 2020
-v0
-
-```
-
-Column {data-width=550}
------------------------------------------------------------------------
-
-### Distribuição de resultado das visitas por vendedor em 2020
-
-```{r}
-### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
-v1
-
-```
-
-
-Clientes
-=======================================================================
-Column {data-width=350}
------------------------------------------------------------------------
-
-### Distribuição de clientes por número de visitas
-```{r}
-### Gráfico c4_c5 - Ambos histogramas anteriores (c4 e c5)
-c4_c5
-
-```
-
-
-Mapa dos clientes
-=======================================================================
-
-
-```{r}
-### Gráfico m0 de distribuição dos clientes
-m0
-
-```

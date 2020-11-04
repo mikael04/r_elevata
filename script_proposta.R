@@ -47,7 +47,7 @@ mes_atual = month(today())
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
-  empresa <- 59
+  empresa <- 27
 ###################################
 
 ##Alterar o valor de inteiro para reais

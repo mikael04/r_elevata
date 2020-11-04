@@ -110,34 +110,39 @@ x <- length(params_list)
 #   invisible(TRUE)
 # }
 ## Gerando dash propostas
-for(i in (1:x)){
-    rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
-    template <- "dash_propostas.Rmd"
-    #Teste (nome da empresa, mais fácil de analisar)
-    # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
-    if(teste){
-      print(i)
-      print(params_list[i])
-      print(params_list[[i]])
-      print(as.list(params_list[[i]]))
-    }
-    out_file <- sprintf("Dashs/Propostas_%s", params_list[i])
-    parameters <- list(variable1 = params_list[i])
-    
-    rmarkdown::render(template,
-                      output_file = out_file,
-                      params = parameters)
-    invisible(TRUE)
-}
+# for(i in (1:x)){
+#     rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
+#     template <- "dash_propostas.Rmd"
+#     #Teste (nome da empresa, mais fácil de analisar)
+#     # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
+#     if(teste){
+#       print(i)
+#       print(params_list[i])
+#       print(params_list[[i]])
+#       print(as.list(params_list[[i]]))
+#     }
+#     out_file <- sprintf("Dashs/Propostas_%s", params_list[i])
+#     parameters <- list(variable1 = params_list[i])
+#     
+#     rmarkdown::render(template,
+#                       output_file = out_file,
+#                       params = parameters)
+#     invisible(TRUE)
+# }
 ## Gerando dash visitas_clientes
-for(i in params_list){
+for(i in (1:x)){
+  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
   template <- "dash_visitas_clientes.Rmd"
-  
   #Teste (nome da empresa, mais fácil de analisar)
-  # out_file <- sprintf("Dashs/Negocios_Visitas_%s", var1)
-  out_file <- sprintf("Dashs/Visitas_Clientes_%s", i)
-  
-  parameters <- list(variable1 = as.list(params_list[i]))
+  # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
+  if(teste){
+    print(i)
+    print(params_list[i])
+    print(params_list[[i]])
+    print(as.list(params_list[[i]]))
+  }
+  out_file <- sprintf("Dashs/Visitas_Clientes_%s", params_list[i])
+  parameters <- list(variable1 = params_list[i])
   
   rmarkdown::render(template,
                     output_file = out_file,
