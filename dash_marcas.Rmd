@@ -37,8 +37,6 @@ library(RColorBrewer)
 library(lubridate)
 #usada para converter números em moeda
 #library(scales)
-#Lib usada para emojis/fonts/box de valores
-library(ggplot2)
 #Lib usada para os mapas
 library(leaflet)
 

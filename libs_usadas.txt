@@ -1,0 +1,38 @@
+#Lib pra conexão com o banco
+#library(odbc)
+#Lib para ler (mais rapidamente) os csvs
+library(data.table)
+#lib com uma cacetada de outras libs para manipular dados
+library(tidyverse)
+#Libs pra trabalhar com a base (cortes e funções similares ao SQL)
+#library(dplyr) #Contido no tidyverse
+##Geral
+#lib pros gráficos mais "interativos"
+library(plotly)
+library(highcharter)
+#library(htmlwidgets)
+#Lib pra usar paletas de cores
+library(RColorBrewer)
+#library(viridis)
+#Lib usada pros treemaps
+#library(treemap)
+#Lib usada pros waffles
+#library(waffle)
+#usada para converter números em moeda
+#library(scales)
+#Lib para lidar com o tempo
+library(lubridate)
+
+###marcas
+#Lib usada para os mapas
+library(leaflet)
+
+###negócios
+#Lib usada para emojis/fonts/box de valores
+library(ggplot2)
+#Lib usada para os quadros
+library(emojifont)
+
+###propostas
+#Para não ter problema com números
+library(bit64)

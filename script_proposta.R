@@ -54,7 +54,7 @@ emp_si = 59 # Simex
 emp_su = 16 # Super
 emp_ta = 60 # Taisa
 
-  empresa <- emp_su
+  empresa <- 49
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -124,6 +124,12 @@ if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
 }
 
+##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
+text <- paste("Não há informações para o período")
+s_dados <- ggplot() +
+  annotate("text", x = 1, y = 6, size = 8, label = text) +
+  theme_void()
+
 ###################################
 
 ##junção de proposta com negócio
@@ -176,30 +182,43 @@ prop_ij_neg_cont_vend_2020$proposta_status <- with(prop_ij_neg_cont_vend_2020, c
                                                                                    labels = status))
 
 ### Gráfico p0 - Número propostas, por tipo, por vendedor (total)
-p0 <- plot_ly(prop_ij_neg_cont_vend_2020, type = 'bar', orientation = 'h', x = ~cont_status , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
-              color = ~proposta_status,
-              colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
-              name = ~proposta_status,
-              showlegend = TRUE
-)
-p0 <- p0 %>%
-  layout(barmode = 'stack',
-         xaxis = list(title = ''),
-         yaxis = list(title = ''))
+if(nrow(prop_ij_neg_cont_vend_2020) > 0){
+  p0 <- plot_ly(prop_ij_neg_cont_vend_2020, type = 'bar', orientation = 'h', x = ~cont_status , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
+                color = ~proposta_status,
+                colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
+                name = ~proposta_status,
+                showlegend = TRUE
+  )
+  p0 <- p0 %>%
+    layout(barmode = 'stack',
+           xaxis = list(title = ''),
+           yaxis = list(title = ''))
+  
+}else {
+  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
+  p0 <- s_dados
+}
 if(dash == F){
   p0
 }
 ### Gráfico p1 - Número propostas, por tipo em 2020 (total)
-p1 <- plot_ly(prop_ij_neg_cont_2020, type = 'bar', x = ~proposta_status , y = ~cont_status,
-              color = ~proposta_status,
-              colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
-              name = ~proposta_status,
-              showlegend = F
-)
-p1 <- p1 %>%
-  layout(barmode = 'stack',
-         xaxis = list(title = ''),
-         yaxis = list(title = ''))
+if(nrow(prop_ij_neg_cont_2020) > 0){
+  p1 <- plot_ly(prop_ij_neg_cont_2020, type = 'bar', x = ~proposta_status , y = ~cont_status,
+                color = ~proposta_status,
+                colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
+                name = ~proposta_status,
+                showlegend = F
+  )
+  p1 <- p1 %>%
+    layout(barmode = 'stack',
+           xaxis = list(title = ''),
+           yaxis = list(title = ''))
+  
+}else {
+  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
+  p1 <- s_dados
+}
+
 if(dash == F){
   p1
 }
@@ -235,17 +254,20 @@ prop_ij_neg_cont_us$negocio_usado[prop_ij_neg_cont_us$negocio_usado == TRUE] <- 
 prop_ij_neg_cont_us$negocio_usado[prop_ij_neg_cont_us$negocio_usado == FALSE] <- "Proposta sem usado"
 
 ### Gráfico p2 - Proporção de usados (pizza)
-p2 <- plot_ly(prop_ij_neg_cont_us, labels = ~negocio_usado, values = ~usado, type = 'pie', sort = F,
-              texttemplate = "%{value} (%{percent})",
-              hovertemplate = paste ("%{label} <br>",
-                                     "%{value} <br>",
-                                     "Equivalente a %{percent} do total",
-                                     "<extra></extra>"))
-
+if(nrow(prop_ij_neg_cont_us) > 0){
+  p2 <- plot_ly(prop_ij_neg_cont_us, labels = ~negocio_usado, values = ~usado, type = 'pie', sort = F,
+                texttemplate = "%{value} (%{percent})",
+                hovertemplate = paste ("%{label} <br>",
+                                       "%{value} <br>",
+                                       "Equivalente a %{percent} do total",
+                                       "<extra></extra>"))
+}else {
+  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
+  p2 <- s_dados
+}
 if(dash == F){
   p2
 }
-
 if(teste == F){
   #tabelas
   rm(prop_ij_neg_cont_us, prop_ij_neg);
@@ -371,47 +393,54 @@ fat_tot_categorias <- fat_tot_categorias %>%
 
 
 ### Gráfico p3 - Ticket médio novos
-ax <- list(
-  autotick = TRUE,
-  title = "",
-  showticklabels = TRUE)
-p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
-              name = 'Categorias',
-              marker = list(color = 'lightblue'),
-              text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
-              hoverinfo = "text")
-
-p3 <- p3 %>%
-  layout(barmode = 'identity', xaxis = ax, yaxis = ax)
-p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
-                       name = 'Empresa (geral)',
-                       x = ~categoria_nome,
-                       y = ~med_emp,
-                       line = list(color = 'red'),
-                       text = ~paste('Ticket médio<br>' , func_fmt_din(med_emp)),
-                       hoverinfo = "text",
-                       marker = list(color = 'orange'))
-
-if(empresa == 16){
+if(nrow(fat_tot_categorias) > 0){
+  ax <- list(
+    autotick = TRUE,
+    title = "",
+    showticklabels = TRUE)
+  p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
+                name = 'Categorias',
+                marker = list(color = 'lightblue'),
+                text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
+                hoverinfo = "text")
+  
   p3 <- p3 %>%
-    layout(
-      autosize = T,
-      yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,700000)),
-      #range nos dois eixos iguais pra ficar na mesma proporção
-      yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,700000)),
-      ##aqui eu ajusto onde quero que apareça a legenda
-      legend = list(x=0.7, y=0.8)#)
-    )
-}else if(empresa == 78){
-  p3 <- p3 %>%
-    layout(
-      autosize = T,
-      yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,2000000)),
-      #range nos dois eixos iguais pra ficar na mesma proporção
-      yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,2000000)),
-      ##aqui eu ajusto onde quero que apareça a legenda
-      legend = list(x=0.7, y=0.8)#)
-    )
+    layout(barmode = 'identity', xaxis = ax, yaxis = ax)
+  
+  p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
+                         name = 'Empresa (geral)',
+                         x = ~categoria_nome,
+                         y = ~med_emp,
+                         line = list(color = 'red'),
+                         text = ~paste('Ticket médio<br>' , func_fmt_din(med_emp)),
+                         hoverinfo = "text",
+                         marker = list(color = 'orange'))
+  
+  
+  if(empresa == 16){
+    p3 <- p3 %>%
+      layout(
+        autosize = T,
+        yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,700000)),
+        #range nos dois eixos iguais pra ficar na mesma proporção
+        yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,700000)),
+        ##aqui eu ajusto onde quero que apareça a legenda
+        legend = list(x=0.7, y=0.8)#)
+      )
+  }else if(empresa == 78){
+    p3 <- p3 %>%
+      layout(
+        autosize = T,
+        yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,2000000)),
+        #range nos dois eixos iguais pra ficar na mesma proporção
+        yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,2000000)),
+        ##aqui eu ajusto onde quero que apareça a legenda
+        legend = list(x=0.7, y=0.8)#)
+      )
+  }
+}else {
+  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
+  p3 <- s_dados
 }
 if(dash == F){
   p3
@@ -506,44 +535,50 @@ fat_tot_categorias_us <- fat_tot_categorias_us %>%
 
 
 ### Gráfico p4 - Ticket médio usados
-ax <- list(
-  autotick = TRUE,
-  title = "",
-  showticklabels = TRUE)
-p4 <- plot_ly(fat_tot_categorias_us, type = "bar", x = ~categoria_nome, y = ~fat_med,
-              name = 'Categorias',
-              marker = list(color = 'lightblue'),
-              text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
-              hoverinfo = "text")
+if(nrow(fat_tot_categorias_us) > 0){
+  ax <- list(
+    autotick = TRUE,
+    title = "",
+    showticklabels = TRUE)
+  p4 <- plot_ly(fat_tot_categorias_us, type = "bar", x = ~categoria_nome, y = ~fat_med,
+                name = 'Categorias',
+                marker = list(color = 'lightblue'),
+                text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
+                hoverinfo = "text")
+  
+  p4 <- p4 %>%
+    layout(barmode = 'identity', xaxis = ax, yaxis = ax)
+  
+  p4 <- p4 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
+                         name = 'Empresa (geral)',
+                         x = ~categoria_nome,
+                         y = ~med_emp,
+                         line = list(color = 'red'),
+                         text = ~paste('Ticket médio<br>' , func_fmt_din(med_emp)),
+                         hoverinfo = "text",
+                         marker = list(color = 'orange'))
+  
+  p4 <- p4 %>%
+    layout(
+      autosize = T,
+      yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,170000)),
+      #range nos dois eixos iguais pra ficar na mesma proporção
+      yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,170000)),
+      ##aqui eu ajusto onde quero que apareça a legenda
+      legend = list(x=0.7, y=0.8)#)
+    )
+}else {
+  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
+  p4 <- s_dados
+}
 
-p4 <- p4 %>%
-  layout(barmode = 'identity', xaxis = ax, yaxis = ax)
-
-p4 <- p4 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
-                       name = 'Empresa (geral)',
-                       x = ~categoria_nome,
-                       y = ~med_emp,
-                       line = list(color = 'red'),
-                       text = ~paste('Ticket médio<br>' , func_fmt_din(med_emp)),
-                       hoverinfo = "text",
-                       marker = list(color = 'orange'))
-
-p4 <- p4 %>%
-  layout(
-    autosize = T,
-    yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = '', range = c(0,170000)),
-    #range nos dois eixos iguais pra ficar na mesma proporção
-    yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F, range = c(0,170000)),
-    ##aqui eu ajusto onde quero que apareça a legenda
-    legend = list(x=0.7, y=0.8)#)
-  )
 if(dash == F){
   p4
 }
+
 if (empresa == 16){
   subplot(p3, p4, shareX = T, shareY = T)
-} 
-
+}
 
 if(teste == F){
   #tabelas
@@ -592,18 +627,23 @@ p_ij_n_ij_pp_sum_cat$proposta_status <- with(p_ij_n_ij_pp_sum_cat, cut(proposta_
                                                                        labels = status))
 
 ###Gráfico p5 - Faturamento de propostas por status (não usado)
-ax <- list(
-  autotick = TRUE,
-  title = "",
-  showticklabels = TRUE)
-p5 <- plot_ly(p_ij_n_ij_pp_sum_cat, x = ~proposta_status, y = ~valor_status, type = 'bar',
-              name = 'Faturamento por status',
-              marker = list(color = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32")),
-              text = ~paste(proposta_status,'<br>' , func_fmt_din(valor_status)),
-              hoverinfo = "text")
+if(nrow(p_ij_n_ij_pp_sum_cat) > 0){
+  ax <- list(
+    autotick = TRUE,
+    title = "",
+    showticklabels = TRUE)
+  p5 <- plot_ly(p_ij_n_ij_pp_sum_cat, x = ~proposta_status, y = ~valor_status, type = 'bar',
+                name = 'Faturamento por status',
+                marker = list(color = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32")),
+                text = ~paste(proposta_status,'<br>' , func_fmt_din(valor_status)),
+                hoverinfo = "text")
+  
+  p5 <- p5 %>%
+    layout(barmode = 'identity', xaxis = ax, yaxis = ax)
+}else {
+  p5 <- s_dados
+}
 
-p5 <- p5 %>%
-  layout(barmode = 'identity', xaxis = ax, yaxis = ax)
 
 if(dash == F){
   p5
@@ -692,23 +732,28 @@ if (empresa == 16){
 }
 
 ### Gráfico p6 - Modos de pagamento
-
-p6 <- plot_ly()
-p6 <- p6 %>%
-  add_pie(data = p_ij_ppa_cont_modo_ij_pmf, values = ~cont_modo, labels = ~Modo,
-          name = 'Modo de pagamento'
-  )
+if(nrow(p_ij_ppa_cont_modo_ij_pmf) > 0){
+  p6 <- plot_ly()
+  p6 <- p6 %>%
+    add_pie(data = p_ij_ppa_cont_modo_ij_pmf, values = ~cont_modo, labels = ~Modo,
+            name = 'Instituição financeira')
+}else {
+  p6 <- s_dados
+}
 if(dash == F){
   p6
 }
 
 ### Gráfico p7 - Formas de pagamento
+if(nrow(p_ij_ppa_cont_forma_ij_pmf) > 0){
+  p7 <- plot_ly()
+  p7 <- p7 %>%
+    add_pie(data = p_ij_ppa_cont_forma_ij_pmf, values = ~cont_forma, labels = ~Forma,
+            name = 'Forma de pagamento')
+}else {
+  p7 <- s_dados
+}
 
-p7 <- plot_ly()
-p7 <- p7 %>%
-  add_pie(data = p_ij_ppa_cont_forma_ij_pmf, values = ~cont_forma, labels = ~Forma,
-          name = 'Forma de pagamento'
-  )
 if(dash == F){
   p7
 }

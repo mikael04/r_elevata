@@ -20,8 +20,6 @@ library(data.table)
 library(tidyverse)
 #Libs pra trabalhar com a base (cortes e funções similares ao SQL)
 #library(dplyr) #Contido no tidyverse
-#Lib pro gráfico
-library(ggplot2)
 #lib pros gráficos mais "interativos"
 library(plotly)
 library(highcharter)
