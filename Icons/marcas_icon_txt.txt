@@ -19,3 +19,6 @@ marca_id_i, marca, icon_path, icon_size_x, icon_size_y, cor
 120191031171942,LOGMAX,logmax_r.png,29,24,#BB2043
 120191031172239,VOLVO (F),volvo_r.png,24,24,#4D4E4B
 120191031171807,HYUNDAI,hyundai_r.png,45,20,#BB2043
+201912131603430251,MAN,man_r.png,37,24,#C8C9CB
+120190311052038,VW,vw_r.png,26,26,#274379
+
