@@ -361,7 +361,6 @@ cli_in_pm_cont_top_t <- cli_in_pm_cont_t %>%
   select (marca_nome, produto_marca_id, cont) %>%
   arrange(desc(cont), marca_nome) %>%
   ungroup()
-1
 
 top5_t <- head.matrix(cli_in_pm_cont_top_t, 5)
 top10_t <- head.matrix(cli_in_pm_cont_top_t, 10)
