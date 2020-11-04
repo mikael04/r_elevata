@@ -1,15 +1,4 @@
----
-title: "Visão do gestor"
-output:
-  flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
-params:
-  variable1: "emp_par"
----
-
-```{r setup, include=FALSE}
-#rm(list = ls())
+rm(list = ls())
 #Lib q será futuramente usada pros painéis interativos
 #library(shiny)
 #Lib pra conexão com o banco
@@ -58,12 +47,9 @@ mes_atual = month(today())
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
-##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
-if(params$variable1 == 'emp_par'){
+##Teste
   empresa = 79
-}else{
-  empresa = as.integer(params$variable1)
-}
+
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -350,7 +336,7 @@ cli_in_pm_in_p <- inner_join(cli_in_pm, produto, by = c("pm_produto_id" = "produ
   select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
 cli_in_pm_in_p_in_m <- inner_join(cli_in_pm_in_p, marca, by = c("produto_marca_id" = "marca_id")) %>%
-select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id, produto_nome, produto_marca_id, marca_nome, produto_categoria_id, produto_empresa_id)
+  select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id, produto_nome, produto_marca_id, marca_nome, produto_categoria_id, produto_empresa_id)
 #########################
 ##Começando o top para tratores
 #########################
@@ -393,7 +379,7 @@ cli_in_pm_cont_top_t_aux$marca_nome <- factor(cli_in_pm_cont_top_t_aux$marca_nom
 cli_in_pm_cont_top_t_aux$lat <- jitter(cli_in_pm_cont_top_t_aux$lat, factor = .1, amount = 0)
 cli_in_pm_cont_top_t_aux$long <- jitter(cli_in_pm_cont_top_t_aux$long, factor = .1, amount = 0)
 
-  ##Se precisar consultar ícones, tamanho do ícone, marcas e marcas_ids
+##Se precisar consultar ícones, tamanho do ícone, marcas e marcas_ids
 # marcas_ic_co <-read.csv("Icons/marcas_icon_csv.csv") %>%
 
 marcas_icon <- iconList(
@@ -416,17 +402,17 @@ marcas_icon <- iconList(
   '120191031171942' = makeIcon("Icons/logmax_r.png", 29, 20),
   '120191031172239' = makeIcon("Icons/volvo_r.png", 24, 20),
   '120191031171807' = makeIcon("Icons/hyundai_r.png", 45, 20),
-  '201912131603430251' = makeIcon("Icons/man_r.png", 37, 24),
-  '120190311052038' = makeIcon("Icons/vw_r.png", 26, 26)
+  '201912131603430251' = makeIcon("Icons/man_r.png", 45, 20),
+  '120190311052038' = makeIcon("Icons/vw_r.png", 45, 20)
 )
 
 ### Gráfico m1 de distribuição das marcas (top5) m1_t = tratores, m1_c = colheitadeiras
 ###################
 ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
-  text <- paste("Não há informações para gerar o mapa")
-  s_dados_m <- ggplot() +
-    annotate("text", x = 1, y = 6, size = 8, label = text) +
-    theme_void()
+text <- paste("Não há informações para gerar o mapa")
+s_dados_m <- ggplot() +
+  annotate("text", x = 1, y = 6, size = 8, label = text) +
+  theme_void()
 ##Tratores
 if (nrow(cli_in_pm_cont_top_t_aux) > 0){
   m1_t <- leaflet(cli_in_pm_cont_top_t_aux) %>%
@@ -478,10 +464,6 @@ cli_in_pm_cont_top_t <- cli_in_pm_cont_top_t %>%
 ##Cria factor e ordena o meu gráfico
 cli_in_pm_cont_top_t$marca_nome <- reorder(cli_in_pm_cont_top_t$marca_nome, desc(cli_in_pm_cont_top_t$sum))
 
-# marcas_ic_co <-read.csv("Icons/marcas_icon_csv.csv") %>%
-#   select (marca_id_i, cor)
-# marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
-##Alterei para txt por causa do tamanho da coluna (número muito grande, era convertido para científico)
 marcas_ic_co <-read.csv("Icons/marcas_icon_txt.txt", colClasses = c(marca_id_i = "character")) %>%
   select (marca_id_i, cor)
 marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
@@ -505,7 +487,7 @@ if (nrow(cli_in_pm_cont_top_t) > 0){
                   color = ~marca_nome,     #Se quiser setar pela tabela, com join, senáo usar o factor como é feito acima
                   colors = cores_t,
                   showlegend = FALSE)
-
+  
   m2_t <- m2_t %>%
     layout(xaxis = list(title = ''),
            yaxis = list(title = ''))
@@ -525,52 +507,3 @@ if(teste == F){
 }
 
 #######################################################################
-
-```
-
-
-Top 10 Categorias
-=======================================================================
-
-Column {data-width=350}
------------------------------------------------------------------------
-###  Valor Financeiro de Negócios Cadastrados, por categoria em 2020
-
-```{r}
-### Gráfico hc_n4 - Valor financeiro de negócios em 2020  (por categoria)
-hc_n4
-
-```
-
-Column {data-width=350}
------------------------------------------------------------------------
-### Valor Financeiro de Negócios Faturados, por categoria em 2020
-
-```{r}
-### Gráfico hc_n5 - Máquinas faturadas em 2020 (por categoria)
-hc_n5
-
-```
-
-Mapa das marcas
-=======================================================================
-
-Column {data-width=750}
------------------------------------------------------------------------
-
-### Mapa das marcas
-```{r}
-### Gráfico m1 de distribuição das marcas (top5) da komatsu
-m1_t
-
-```
-
-Column {data-width=350}
------------------------------------------------------------------------
-
-### Distribuição das marcas
-```{r}
-### Gráfico m2 de distribuição das marcas da komatsu
-m2_t
-
-```

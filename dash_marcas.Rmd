@@ -371,7 +371,7 @@ cli_in_pm_cont_t <- cli_in_pm_in_p_in_m %>%
 ##Criando o top5 de categorias
 cli_in_pm_cont_top_t <- cli_in_pm_cont_t %>%
   group_by(marca_nome) %>%
-  mutate(cont = n()) %>%
+  mutate(cont = sum(cont)) %>%
   distinct(marca_nome, .keep_all = T) %>%
   select (marca_nome, produto_marca_id, cont) %>%
   arrange(desc(cont), marca_nome) %>%
@@ -414,7 +414,7 @@ cli_in_pm_cont_c <- cli_in_pm_in_p_in_m %>%
 ##Criando o top5 de categorias
 cli_in_pm_cont_top_c <- cli_in_pm_cont_c %>%
   group_by(marca_nome) %>%
-  mutate(cont = n()) %>%
+  mutate(cont = sum(cont)) %>%
   distinct(marca_nome, .keep_all = T) %>%
   select (marca_nome, produto_marca_id, cont) %>%
   arrange(desc(cont), marca_nome) %>%
@@ -464,7 +464,9 @@ marcas_icon <- iconList(
   '120191031171708' = makeIcon("Icons/caterpillar_r.png", 38, 20),
   '120191031171942' = makeIcon("Icons/logmax_r.png", 29, 20),
   '120191031172239' = makeIcon("Icons/volvo_r.png", 24, 20),
-  '120191031171807' = makeIcon("Icons/hyundai_r.png", 45, 20)
+  '120191031171807' = makeIcon("Icons/hyundai_r.png", 45, 20),
+  '201912131603430251' = makeIcon("Icons/man_r.png", 41, 24),
+  '120190311052038' = makeIcon("Icons/vw_r.png", 32, 32)
 )
 
 ### Gráfico m1 de distribuição das marcas (top5) m1_t = tratores, m1_c = colheitadeiras
@@ -479,10 +481,10 @@ if (nrow(cli_in_pm_cont_top_t_aux) > 0){
   m1_t <- leaflet(cli_in_pm_cont_top_t_aux) %>%
     addTiles() %>%
     addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon[produto_marca_id],
-               popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_c_aux$cliente_nome,
+               popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_t_aux$cliente_nome,
                               "<br>",
-                              "Quantidade de máquinas ", cli_in_pm_cont_top_c_aux$marca_nome,
-                              " : ", cli_in_pm_cont_top_c_aux$cont),
+                              "Quantidade de máquinas ", cli_in_pm_cont_top_t_aux$marca_nome,
+                              " : ", cli_in_pm_cont_top_t_aux$cont),
                label = ~marca_nome,
                #clusterOptions = markerClusterOptions(),
                group = "Ícones")
@@ -543,7 +545,11 @@ cli_in_pm_cont_top_t <- cli_in_pm_cont_top_t %>%
 ##Cria factor e ordena o meu gráfico
 cli_in_pm_cont_top_t$marca_nome <- reorder(cli_in_pm_cont_top_t$marca_nome, desc(cli_in_pm_cont_top_t$sum))
 
-marcas_ic_co <-read.csv("Icons/marcas_icon_csv.csv") %>%
+# marcas_ic_co <-read.csv("Icons/marcas_icon_csv.csv") %>%
+#   select (marca_id_i, cor)
+# marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
+##Alterei para txt por causa do tamanho da coluna (número muito grande, era convertido para científico)
+marcas_ic_co <-read.csv("Icons/marcas_icon_txt.txt", colClasses = c(marca_id_i = "character")) %>%
   select (marca_id_i, cor)
 marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
 #cores_t
