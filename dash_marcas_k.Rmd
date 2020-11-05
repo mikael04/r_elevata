@@ -241,7 +241,7 @@ chart_ng_top_ag <- ng_top_ag
 ### Gráfico hc_n4 - Valor financeiro de negócios em anat  (por categoria)
 #################################################
 
-if (nrow(chart_ng_top_ag) > 0){
+if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > ){
   hc_n4 <- chart_ng_top_ag %>%
     hchart (
       type = "treemap",
@@ -295,7 +295,7 @@ ng_top_ag_fat <- ng_top_ag_fat %>%
 chart_ng_top_ag_fat <- ng_top_ag_fat
 
 ### Gráfico hc_n5 - Máquinas faturadas em anat (por categoria)
-if (nrow(chart_ng_top_ag_fat) > 0){
+if (nrow(chart_ng_top_ag_fat) > 0 & sum(chart_ng_top_ag_fat$faturamento) > 0){
   hc_n5 <- chart_ng_top_ag_fat %>%
     hchart (
       "treemap",

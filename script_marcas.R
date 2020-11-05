@@ -48,7 +48,7 @@ mes_atual = month(today())
 #usados = T
 
 ##Teste script
-empresa = 30
+empresa = 43
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -96,9 +96,10 @@ negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character",
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa, vendedor_ativo == 1) %>%
-  select(-vendedor_ativo)
+  filter (vendedor_empresa_id == empresa)
 
+vendedor_a <- vendedor %>%
+  filter(vendedor_ativo == T)
 
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
@@ -223,8 +224,8 @@ chart_ng_top_ag <- ng_top_ag
 
 ### Gráfico hc_n4 - Valor financeiro de negócios em anat  (por categoria)
 #################################################
-
-if (nrow(chart_ng_top_ag) > 0){
+nrow(chart_ng_top_ag)
+if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
   hc_n4 <- chart_ng_top_ag %>%
     hchart (
       type = "treemap",
@@ -324,10 +325,12 @@ marca_categoria <- fread("Tabelas/marca_categoria.csv", colClasses = c(marca_cat
 ##Alterando os que não possuem latitude/longitude para 0 (que será filtrado depois)
 cliente$cliente_latitude[cliente$cliente_latitude == ''] <- '0'
 cliente$cliente_longitude[cliente$cliente_longitude == ''] <- '0'
+cliente$cliente_latitude[cliente$cliente_latitude == '-'] <- '0'
+cliente$cliente_longitude[cliente$cliente_longitude == '-'] <- '0'
 
 ##Clientes da empresa correta ##Clientes com valor NA, valores 0 e valores positivos de latlong (hemisf norte, leste do globo) removidos
 cliente_c_loc <- cliente %>%
-  filter (cliente_empresa_id == empresa, cliente_latitude < 0, cliente_longitude < 0, cliente_latitude) %>%
+  filter (cliente_empresa_id == empresa, cliente_latitude < 0, cliente_longitude < 0) %>%
   rename(lat = cliente_latitude, long = cliente_longitude) %>%
   mutate(lat = as.numeric(lat), long = as.numeric(long)) %>%
   filter (!is.null(lat), !is.na(lat))
@@ -356,7 +359,7 @@ cli_in_pm_cont_t <- cli_in_pm_in_p_in_m %>%
 ##Criando o top5 de categorias
 cli_in_pm_cont_top_t <- cli_in_pm_cont_t %>%
   group_by(marca_nome) %>%
-  mutate(cont = n()) %>%
+  mutate(cont = sum(cont)) %>%
   distinct(marca_nome, .keep_all = T) %>%
   select (marca_nome, produto_marca_id, cont) %>%
   arrange(desc(cont), marca_nome) %>%
@@ -399,7 +402,7 @@ cli_in_pm_cont_c <- cli_in_pm_in_p_in_m %>%
 ##Criando o top5 de categorias
 cli_in_pm_cont_top_c <- cli_in_pm_cont_c %>%
   group_by(marca_nome) %>%
-  mutate(cont = n()) %>%
+  mutate(cont = sum(cont)) %>%
   distinct(marca_nome, .keep_all = T) %>%
   select (marca_nome, produto_marca_id, cont) %>%
   arrange(desc(cont), marca_nome) %>%
@@ -436,8 +439,9 @@ marcas_icon <- iconList(
   '4' = makeIcon("Icons/JD_r.png", 26, 24),
   '5' = makeIcon("Icons/MF_r.png", 34, 24),
   '6' = makeIcon("Icons/agrale_r.png", 34, 24),
-  '13' = makeIcon("Icons/jacto_r.png", 24, 24),
   '11' = makeIcon("Icons/valtra_r.png", 26, 24),
+  '12' = makeIcon("Icons/yanmar_r.png", 44, 24),
+  '13' = makeIcon("Icons/jacto_r.png", 24, 24),
   '120191031172113' = makeIcon("Icons/ponsse_r.png", 24, 24),
   '120130518080852' = makeIcon("Icons/valmet_r.png", 26, 24),
   '120120724031949' = makeIcon("Icons/ideal_r.png", 19, 24),
@@ -448,7 +452,9 @@ marcas_icon <- iconList(
   '120191031171708' = makeIcon("Icons/caterpillar_r.png", 38, 20),
   '120191031171942' = makeIcon("Icons/logmax_r.png", 29, 20),
   '120191031172239' = makeIcon("Icons/volvo_r.png", 24, 20),
-  '120191031171807' = makeIcon("Icons/hyundai_r.png", 45, 20)
+  '120191031171807' = makeIcon("Icons/hyundai_r.png", 45, 20),
+  '201912131603430251' = makeIcon("Icons/man_r.png", 41, 24),
+  '120190311052038' = makeIcon("Icons/vw_r.png", 32, 32)
 )
 
 ### Gráfico m1 de distribuição das marcas (top5) m1_t = tratores, m1_c = colheitadeiras
@@ -463,10 +469,10 @@ if (nrow(cli_in_pm_cont_top_t_aux) > 0){
   m1_t <- leaflet(cli_in_pm_cont_top_t_aux) %>%
     addTiles() %>%
     addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon[produto_marca_id],
-               popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_c_aux$cliente_nome,
+               popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_t_aux$cliente_nome,
                               "<br>",
-                              "Quantidade de máquinas ", cli_in_pm_cont_top_c_aux$marca_nome,
-                              " : ", cli_in_pm_cont_top_c_aux$cont),
+                              "Quantidade de máquinas ", cli_in_pm_cont_top_t_aux$marca_nome,
+                              " : ", cli_in_pm_cont_top_t_aux$cont),
                label = ~marca_nome,
                #clusterOptions = markerClusterOptions(),
                group = "Ícones")
@@ -527,7 +533,11 @@ cli_in_pm_cont_top_t <- cli_in_pm_cont_top_t %>%
 ##Cria factor e ordena o meu gráfico
 cli_in_pm_cont_top_t$marca_nome <- reorder(cli_in_pm_cont_top_t$marca_nome, desc(cli_in_pm_cont_top_t$sum))
 
-marcas_ic_co <-read.csv("Icons/marcas_icon_csv.csv") %>%
+# marcas_ic_co <-read.csv("Icons/marcas_icon_csv.csv") %>%
+#   select (marca_id_i, cor)
+# marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
+##Alterei para txt por causa do tamanho da coluna (número muito grande, era convertido para científico)
+marcas_ic_co <-read.csv("Icons/marcas_icon_txt.txt", colClasses = c(marca_id_i = "character")) %>%
   select (marca_id_i, cor)
 marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
 #cores_t

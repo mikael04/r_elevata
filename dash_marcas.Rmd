@@ -58,7 +58,7 @@ mes_atual = month(today())
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 30
+  empresa = 43
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -237,8 +237,8 @@ chart_ng_top_ag <- ng_top_ag
 
 ### Gráfico hc_n4 - Valor financeiro de negócios em anat  (por categoria)
 #################################################
-
-if (nrow(chart_ng_top_ag) > 0){
+nrow(chart_ng_top_ag)
+if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
   hc_n4 <- chart_ng_top_ag %>%
     hchart (
       type = "treemap",
@@ -292,7 +292,7 @@ ng_top_ag_fat <- ng_top_ag_fat %>%
 chart_ng_top_ag_fat <- ng_top_ag_fat
 
 ### Gráfico hc_n5 - Máquinas faturadas em anat (por categoria)
-if (nrow(chart_ng_top_ag_fat) > 0){
+if (nrow(chart_ng_top_ag_fat) > 0 & sum(chart_ng_top_ag_fat$faturamento) > 0){
   hc_n5 <- chart_ng_top_ag_fat %>%
     hchart (
       "treemap",

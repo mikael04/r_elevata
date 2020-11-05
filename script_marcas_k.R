@@ -97,8 +97,10 @@ negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character",
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa, vendedor_ativo == 1) %>%
-  select(-vendedor_ativo)
+  filter (vendedor_empresa_id == empresa)
+
+vendedor_a <- vendedor %>%
+  filter(vendedor_ativo == T)
 
 
 ##negocio_produto para pegar os valores de cada negócio
@@ -225,7 +227,7 @@ chart_ng_top_ag <- ng_top_ag
 ### Gráfico hc_n4 - Valor financeiro de negócios em anat  (por categoria)
 #################################################
 
-if (nrow(chart_ng_top_ag) > 0){
+if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > ){
   hc_n4 <- chart_ng_top_ag %>%
     hchart (
       type = "treemap",
@@ -279,7 +281,7 @@ ng_top_ag_fat <- ng_top_ag_fat %>%
 chart_ng_top_ag_fat <- ng_top_ag_fat
 
 ### Gráfico hc_n5 - Máquinas faturadas em anat (por categoria)
-if (nrow(chart_ng_top_ag_fat) > 0){
+if (nrow(chart_ng_top_ag_fat) > 0 & sum(chart_ng_top_ag_fat$faturamento) > 0){
   hc_n5 <- chart_ng_top_ag_fat %>%
     hchart (
       "treemap",
@@ -325,6 +327,8 @@ marca_categoria <- fread("Tabelas/marca_categoria.csv", colClasses = c(marca_cat
 ##Alterando os que não possuem latitude/longitude para 0 (que será filtrado depois)
 cliente$cliente_latitude[cliente$cliente_latitude == ''] <- '0'
 cliente$cliente_longitude[cliente$cliente_longitude == ''] <- '0'
+cliente$cliente_latitude[cliente$cliente_latitude == '-'] <- '0'
+cliente$cliente_longitude[cliente$cliente_longitude == '-'] <- '0'
 
 ##Clientes da empresa correta ##Clientes com valor NA, valores 0 e valores positivos de latlong (hemisf norte, leste do globo) removidos
 cliente_c_loc <- cliente %>%
@@ -361,6 +365,7 @@ cli_in_pm_cont_top_t <- cli_in_pm_cont_t %>%
   select (marca_nome, produto_marca_id, cont) %>%
   arrange(desc(cont), marca_nome) %>%
   ungroup()
+
 
 top5_t <- head.matrix(cli_in_pm_cont_top_t, 5)
 top10_t <- head.matrix(cli_in_pm_cont_top_t, 10)
