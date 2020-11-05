@@ -59,7 +59,7 @@ for(i in (1:x)){
 }
 ##Gerando dashs marcas
 for(i in (1:x)){
-  if (params_list[i] != 78 | params_list[i] != 79)
+  if (params_list[i] != 78 & params_list[i] != 79)
   {
     rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'empresas_ativas')))
     template <- "dash_marcas.Rmd"

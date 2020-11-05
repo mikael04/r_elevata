@@ -521,7 +521,7 @@ Faturamento de negócios
 Column {data-width=650}
 -----------------------------------------------------------------------
 
-### Faturamento dos negócios cadastrados por vendedor, ano 2020 (Status atual)
+### Faturamento dos negócios cadastrados no ano 2020, por vendedor  (Status atual)
 
 ```{r}
 ### Gráfico n0 - Número de clientes por vendedor
@@ -532,7 +532,7 @@ n0
 Column {data-width=350}
 -----------------------------------------------------------------------
 
-### Faturamento de negócios fechados em 2020
+### Faturamento de todos os negócios que foram fechados em 2020
 
 ```{r}
 ### Gráfico n3 - Faturamento de negócios fechados em 2020

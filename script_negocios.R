@@ -91,8 +91,7 @@ negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character",
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa, vendedor_ativo == 1) %>%
-  select(-vendedor_ativo)
+  filter (vendedor_empresa_id == empresa)
 
 
 #Arrumando encoding
@@ -104,6 +103,9 @@ if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
   vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
 }
+
+vendedor_a <- vendedor %>%
+  filter(vendedor_ativo == T)
 
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
@@ -121,7 +123,7 @@ produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character",
   select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
 ##join de negocios e vendedores
-negocio_ij_vendedor <- inner_join(negocio, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
+negocio_ij_vendedor <- inner_join(negocio, vendedor_a, by=c("negocio_vendedor_id" = "vendedor_id"))
 
 ########## Para o funil e para agrupar por faturamento
 #### Vou alterar o agrupamento de número de negócios para faturamento, portanto precisarei da tabela negocio_produto
@@ -136,7 +138,7 @@ if (teste == F) {
   rm() #vou precisar dele pro funil mais pra baixo negocio_ij_historico_ij_vendedor_anat)
 }
 
-##agrupamento de negocios por vendedor, contando faturamento por status e por vendedor
+##agrupamento de negocios por vendedor_a, contando faturamento por status e por vendedor
 ##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
 ng_ij_vn_ij_np_fat <- neg_ij_ven_ij_np_anat %>%
   select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, vendedor_nome, negocio_vendedor_id, np_valor) %>%
@@ -161,7 +163,7 @@ ng_ij_vn_ij_np_fat$negocio_status = factor(ng_ij_vn_ij_np_fat$negocio_status, le
 ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>%
   mutate(total_fat_t = func_fmt_din(total_fat))
 
-###Gráfico n0 - Faturamento dos negócios por vendedor (anat, status atual)
+###Gráfico n0 - Faturamento dos negócios por vendedor_a (anat, status atual)
 ##############################################
 ### Gráfico n9 - Funil agrupado por faturamento
 if (nrow(ng_ij_vn_ij_np_fat) > 0){
@@ -174,7 +176,9 @@ if (nrow(ng_ij_vn_ij_np_fat) > 0){
   n0 <- n0 %>%
     layout(barmode = 'stack',
            xaxis = list(title = ''),
-           yaxis = list(title = ''))
+           yaxis = list(title = ''),
+           legend = list(orientation = "h", x = 0.5,
+                         xanchor = "center"))
 }else {
   n0 <- s_dados
 }
@@ -234,7 +238,7 @@ ng_ij_hist_ij_ven_anat_ij_np_fec$negocio_status <- with(ng_ij_hist_ij_ven_anat_i
 ng_ij_hist_ij_ven_anat_ij_np_fec <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
   filter (np_ativo == TRUE)
 
-##agrupamento de negocios por vendedor, contando número de negócios por status e por vendedor
+##agrupamento de negocios por vendedor_a, contando número de negócios por status e por vendedor
 ##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
 ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
   select(negocio_id, negocio_vendedor_id, negocio_status, vendedor_nome, negocio_vendedor_id, np_valor) %>%
@@ -261,9 +265,8 @@ if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
     layout(barmode = 'stack',
            xaxis = list(title = ''),
            yaxis = list(title = ''),
-           legend = list(orientation = "h",
+           legend = list(orientation = "h", x = 0.5,
                          xanchor = "center"))
-  
 }else {
   n3 <- s_dados
 }
@@ -376,8 +379,8 @@ ng_ij_hist_ij_emp_num <- ng_ij_hist_ij_emp_num %>%
 ng_ij_hist_ij_emp_num$idade_cat = factor(ng_ij_hist_ij_emp_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
 
 ### Gráfico n7 - Negócios abertos da empresa, pizza
+colors_pie <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
 if (nrow(ng_ij_hist_ij_emp_num) > 0){
-  colors_pie <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
   n7 <- plot_ly(ng_ij_hist_ij_emp_num, labels = ~idade_cat, values = ~num_negocios_idades, type = 'pie', sort = F,
                 texttemplate = "%{value} (%{percent})",
                 hovertemplate = paste ("%{label} <br>",
@@ -447,32 +450,15 @@ ng_cad_fin <- ng_cad_fin %>%
   arrange(negocio_negocio_situacao_id)
 
 valuebox <- data.frame(
-      x = rep(seq(2, 9, 6.5), 2),
-      y = c(rep(6.5, 2), rep(2,2)),
-      h = rep(4.25, 4),
-      w = rep(6.25, 4),
-      value = ng_cad_fin$media_d,
-      info = ng_cad_fin$Status,
-      shape = c(fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar')),
-      font_family = c(rep("fontawesome-webfont", 4)),
-      color = factor(1:4))
-
-# if(nrow(ng_cad_fin) > 0){
-#   if(nrow(ng_cad_fin) == 4){
-#     valuebox <- data.frame(
-#     x = rep(seq(2, 9, 6.5), 2),
-#     y = c(rep(6.5, 2), rep(2,2)),
-#     h = rep(4.25, 4),
-#     w = rep(6.25, 4),
-#     value = ng_cad_fin$media_d,
-#     info = ng_cad_fin$Status,
-#     shape = c(fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar')),
-#     font_family = c(rep("fontawesome-webfont", 4)),
-#     color = factor(1:4))
-#   }
-# }else{
-#   valuebox <- ng_ij_hist_ij_ven_emp
-# }
+  x = rep(seq(2, 9, 6.5), 2),
+  y = c(rep(6.5, 2), rep(2,2)),
+  h = rep(4.25, 4),
+  w = rep(6.25, 4),
+  value = ng_cad_fin$media_d,
+  info = ng_cad_fin$Status,
+  shape = c(fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar')),
+  font_family = c(rep("fontawesome-webfont", 4)),
+  color = factor(1:4))
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
 colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
 if (nrow(valuebox) > 0){
