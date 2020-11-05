@@ -132,8 +132,7 @@ Encoding(visita_status$motivo) <- 'latin1'
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa, vendedor_ativo == 1) %>%
-  select(-vendedor_ativo)
+  filter (vendedor_empresa_id == empresa)
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
 vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
@@ -143,6 +142,9 @@ if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
   vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
 }
+
+vendedor_a <- vendedor %>%
+  filter(vendedor_ativo == T)
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 text <- paste("Não há informações para o período")

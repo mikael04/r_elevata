@@ -60,7 +60,7 @@ mes_atual = month(today())
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 59
+  empresa = 16
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -182,19 +182,22 @@ prop_ij_neg_ij_vend_cont_2020$proposta_status <- with(prop_ij_neg_ij_vend_cont_2
 
 ##Aqui tenho a contagem de status por vendedor
 prop_ij_neg_cont_vend_2020 <- prop_ij_neg_ij_vend_2020 %>%
-  select (negocio_vendedor_id, negocio_vendedor_id, vendedor_nome, proposta_status) %>%
+  select (negocio_vendedor_id, negocio_vendedor_id, vendedor_nome, proposta_status, vendedor_ativo) %>%
   group_by(proposta_status, negocio_vendedor_id) %>%
   mutate(cont_status = n()) %>%
   distinct(negocio_vendedor_id, proposta_status, .keep_all = TRUE) %>%
   ungroup ()
 
+
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
 prop_ij_neg_cont_vend_2020$proposta_status <- with(prop_ij_neg_cont_vend_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
                                                                                    labels = status))
+prop_ij_neg_cont_vend_a_2020 <- prop_ij_neg_cont_vend_2020 %>%
+  filter(vendedor_ativo == T)
 
 ### Gráfico p0 - Número propostas, por tipo, por vendedor (total)
-if(nrow(prop_ij_neg_cont_vend_2020) > 0){
-  p0 <- plot_ly(prop_ij_neg_cont_vend_2020, type = 'bar', orientation = 'h', x = ~cont_status , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
+if(nrow(prop_ij_neg_cont_vend_a_2020) > 0){
+  p0 <- plot_ly(prop_ij_neg_cont_vend_a_2020, type = 'bar', orientation = 'h', x = ~cont_status , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
                 color = ~proposta_status,
                 colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
                 name = ~proposta_status,

@@ -109,8 +109,7 @@ negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character",
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa, vendedor_ativo == 1) %>%
-  select(-vendedor_ativo)
+  filter (vendedor_empresa_id == empresa)
 
 
 #Arrumando encoding
@@ -122,6 +121,9 @@ if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
   vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
 }
+
+vendedor_a <- vendedor %>%
+  filter(vendedor_ativo == T)
 
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
@@ -139,7 +141,7 @@ produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character",
   select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
 ##join de negocios e vendedores
-negocio_ij_vendedor <- inner_join(negocio, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
+negocio_ij_vendedor <- inner_join(negocio, vendedor_a, by=c("negocio_vendedor_id" = "vendedor_id"))
 
 ########## Para o funil e para agrupar por faturamento
 #### Vou alterar o agrupamento de número de negócios para faturamento, portanto precisarei da tabela negocio_produto
@@ -154,7 +156,7 @@ if (teste == F) {
   rm() #vou precisar dele pro funil mais pra baixo negocio_ij_historico_ij_vendedor_anat)
 }
 
-##agrupamento de negocios por vendedor, contando faturamento por status e por vendedor
+##agrupamento de negocios por vendedor_a, contando faturamento por status e por vendedor
 ##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
 ng_ij_vn_ij_np_fat <- neg_ij_ven_ij_np_anat %>%
   select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, vendedor_nome, negocio_vendedor_id, np_valor) %>%
@@ -179,7 +181,7 @@ ng_ij_vn_ij_np_fat$negocio_status = factor(ng_ij_vn_ij_np_fat$negocio_status, le
 ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>%
   mutate(total_fat_t = func_fmt_din(total_fat))
 
-###Gráfico n0 - Faturamento dos negócios por vendedor (anat, status atual)
+###Gráfico n0 - Faturamento dos negócios por vendedor_a (anat, status atual)
 ##############################################
 ### Gráfico n9 - Funil agrupado por faturamento
 if (nrow(ng_ij_vn_ij_np_fat) > 0){
@@ -254,7 +256,7 @@ ng_ij_hist_ij_ven_anat_ij_np_fec$negocio_status <- with(ng_ij_hist_ij_ven_anat_i
 ng_ij_hist_ij_ven_anat_ij_np_fec <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
   filter (np_ativo == TRUE)
 
-##agrupamento de negocios por vendedor, contando número de negócios por status e por vendedor
+##agrupamento de negocios por vendedor_a, contando número de negócios por status e por vendedor
 ##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
 ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
   select(negocio_id, negocio_vendedor_id, negocio_status, vendedor_nome, negocio_vendedor_id, np_valor) %>%

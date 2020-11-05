@@ -109,9 +109,10 @@ negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character",
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa, vendedor_ativo == 1) %>%
-  select(-vendedor_ativo)
+  filter (vendedor_empresa_id == empresa)
 
+vendedor_a <- vendedor %>%
+  filter(vendedor_ativo == T)
 
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
