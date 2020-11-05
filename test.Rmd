@@ -2,8 +2,8 @@
 title: "Visão do gestor"
 output:
   flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
+    orientation: rows
+    vertical_layout: scroll
 params:
   variable1: "emp_par"
 ---
@@ -12,6 +12,8 @@ params:
 #rm(list = ls())
 #Lib q será futuramente usada pros painéis interativos
 #library(shiny)
+#lib para valuebox
+library(flexdashboard)
 #Lib pra conexão com o banco
 #library(odbc)
 #Lib para ler (mais rapidamente) os csvs
@@ -58,7 +60,7 @@ mes_atual = month(today())
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 1
+  empresa = 16
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -487,7 +489,6 @@ valuebox <- data.frame(
   value = ng_cad_fin$Media,
   info = ng_cad_fin$Status,
   color = factor(1:4))
-
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
 colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
 if (nrow(valuebox) > 0){
@@ -519,18 +520,18 @@ if (dash == F){
 
 if (teste == F){
   #tabelas
-  rm(ng_ij_hist_ij_ven_emp, valuebox, ng_cad_fin)
+  rm(ng_ij_hist_ij_ven_emp, valuebox)
   #variáveis
   rm()
 }
+
 
 ```
 
 Faturamento de negócios
 =======================================================================
 
-Column {data-width=650}
------------------------------------------------------------------------
+## Row 1 {data-height = 1500}
 
 ### Faturamento dos negócios cadastrados no ano 2020, por vendedor  (Status atual)
 
@@ -539,9 +540,6 @@ Column {data-width=650}
 n0
 
 ```
-
-Column {data-width=350}
------------------------------------------------------------------------
 
 ### Faturamento de todos os negócios que foram fechados em 2020
 
@@ -555,6 +553,41 @@ n3
 Idade dos negócios
 =======================================================================
 
+####                           Tempo médio para fechamento dos negócios (por status)
+
+## Row 1
+
+### Faturado
+```{r}
+colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
+
+### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
+valueBox(ng_cad_fin[1,1], icon = "fa-calendar", color="#32CD32")
+```
+
+
+### Fin. não aprovado
+```{r}
+### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
+valueBox(ng_cad_fin[2,1], icon = "fa-calendar", color="#FFD700")
+
+```
+
+
+### Des. do cliente
+```{r}
+### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
+valueBox(ng_cad_fin[3,1], icon = "fa-calendar", color="#FFA500")
+
+```
+
+### Perd. p/ concorrência
+```{r}
+### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
+valueBox(ng_cad_fin[4,1], icon = "fa-calendar", color="#DE0D26")
+
+```
+
 Column {data-width=450}
 -----------------------------------------------------------------------
 ### Idade dos negócios abertos, por vendedor
@@ -564,16 +597,9 @@ n6
 ```
 
 
-Column {data-width=350}
------------------------------------------------------------------------
 ### Negócios abertos da empresa
 ```{r}
 ### Gráfico n7 - Negócios abertos da empresa, pizza
 n7
 ```
 
-### Tempo médio para fechamento dos negócios (por status)
-```{r}
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-n13
-```

@@ -449,16 +449,62 @@ ng_cad_fin <- ng_cad_fin %>%
   mutate (media_d = paste(as.character(media_d),"dias")) %>%
   arrange(negocio_negocio_situacao_id)
 
+
+
+
+
+
+##Teste plotly
+
+ggplot()
+
+ng_cad_fin <- ng_cad_fin[-1]
+ng_cad_fin <- ng_cad_fin %>%
+  rename(Media = media_d)
+library(gt)
+n_13_t <- ng_cad_fin %>%
+  gt()
+n_13_t0 <- plot_ly(type = 'table',
+                  header = list(
+                    values = list(Status_[1], Status_[2]),
+                    align = c("center", "center"),
+                    line = list(width = 1, color = 'black'),
+                    fill = list(color = c("#32CD32", "#FFD700")),
+                    font = list(family = "Arial", size = 14, color = "white")
+                  ),
+                  cells = list(
+                    values = list(ng_cad_fin$media_d[1], ng_cad_fin$media_d[2]),
+                    align = c("center", "center"),
+                    line = list(color = "black", width = 1),
+                    fill = list(color = c("#32CD32", "#FFD700")),
+                    font = list(family = "Arial", size = 12, color = c("black"))))
+n_13_t0
+n_13_t1 <- plot_ly(type = 'table',
+                   header = list(
+                     values = list(Status_[3], Status_[4]),
+                     align = c("center", "center"),
+                     line = list(width = 1, color = 'black'),
+                     fill = list(color = c("#32CD32", "#FFD700")),
+                     font = list(family = "Arial", size = 14, color = "white")
+                   ),
+                   cells = list(
+                     values = list(ng_cad_fin$media_d[3], ng_cad_fin$media_d[4]),
+                     align = c("center", "center"),
+                     line = list(color = "black", width = 1),
+                     fill = list(color = c("orange" , "#DE0D26")),
+                     font = list(family = "Arial", size = 12, color = c("black"))))
+
+gridExtra::grid.arrange(n_13_t0, n_13_t1, nrows = 2)
+
 valuebox <- data.frame(
   x = rep(seq(2, 9, 6.5), 2),
   y = c(rep(6.5, 2), rep(2,2)),
   h = rep(4.25, 4),
   w = rep(6.25, 4),
-  value = ng_cad_fin$media_d,
+  value = ng_cad_fin$Media,
   info = ng_cad_fin$Status,
-  shape = c(fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar'), fontawesome('fa-calendar')),
-  font_family = c(rep("fontawesome-webfont", 4)),
   color = factor(1:4))
+
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
 colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
 if (nrow(valuebox) > 0){
@@ -470,8 +516,8 @@ if (nrow(valuebox) > 0){
               aes(label = info, x = x - 2.9, y = y - 1), hjust = 0) +
     coord_fixed() +
     scale_fill_manual(values = colors) +
-    geom_text(size = 20, aes(label = shape, family = font_family,
-                             x = x + 1.5, y = y + 0.5), alpha = 0.25) +
+    # geom_text(size = 20, aes(label = shape, family = font_family,
+    #                          x = x + 1.5, y = y + 0.5), alpha = 0.25) +
     theme_void() +
     guides(fill = FALSE)
 }else {
