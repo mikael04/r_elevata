@@ -460,8 +460,9 @@ if(nrow(ng_cad_fin) != 4){
   df_ng_cad_fin <- data.frame(situacao_id_, Status_)
   df_ng_cad_fin <- left_join(df_ng_cad_fin, ng_cad_fin, by=c('situacao_id_' = 'negocio_negocio_situacao_id'))
   df_ng_cad_fin <- df_ng_cad_fin %>%
-    select (-Status, media_d, situacao_id_) %>%
-    rename (negocio_negocio_situacao_id = situacao_id_, Status = Status_)
+    select (-Status) %>%
+    rename (negocio_negocio_situacao_id = situacao_id_, Status = Status_) %>%
+    select (negocio_negocio_situacao_id, media_d, Status)
   df_ng_cad_fin$media_d[is.na(df_ng_cad_fin$media_d)] <- '0'
   ng_cad_fin <- df_ng_cad_fin
 }
