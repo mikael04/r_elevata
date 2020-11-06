@@ -1,5 +1,5 @@
 ---
-title: "Visão do gestor"
+title: "Painel de Negócios"
 output:
   flexdashboard::flex_dashboard:
     orientation: rows

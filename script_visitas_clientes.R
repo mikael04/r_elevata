@@ -72,8 +72,6 @@ func_fmt_numbr <- function(inteiro)
 }
 
 #################################################################################
-##Começando scripts de visitas e clientes
-#################################################################################
 ##Começando script visitas_clientes
 
 ##Collect cria o df resultado da query, nesse caso, visitas_cliente, já filtrando apenas ano atual
@@ -118,8 +116,7 @@ Encoding(visita_status$motivo) <- 'latin1'
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa, vendedor_ativo == 1) %>%
-  select(-vendedor_ativo)
+  filter (vendedor_empresa_id == empresa)
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
 vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
@@ -129,6 +126,9 @@ if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
   vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
 }
+
+vendedor_a <- vendedor %>%
+  filter(vendedor_ativo == T)
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 text <- paste("Não há informações para o período")
@@ -293,14 +293,6 @@ neg_ij_vend <- inner_join(negocio, vendedor, by = c('negocio_vendedor_id' = 'ven
 ###Clientes que tiveram negócios, quantas visitas recebem (histograma) e clientes que não tiveram negócios, quantas visitas recebem
 ####################################
 
-### Gráficos de pizza de clientes com e sem negócio
-##Contando número de clientes geral e em 2020
-n_clientes <- nrow(cliente)
-##Clientes cadastrados em 2020 por vendedor
-cliente_2020 <- cliente %>%
-  filter(cliente_data_cadastro >= ano_atual)
-n_clientes_2020 <- nrow(cliente_2020)
-
 ##Contar quantos clientes aparecem em negócio
 cli_ij_ng <- inner_join(cliente, negocio, by=c("cliente_id" = "negocio_cliente_id")) %>%
   select(cliente_id, negocio_id)
@@ -309,10 +301,13 @@ cli_ij_ng <- inner_join(cliente, negocio, by=c("cliente_id" = "negocio_cliente_i
 ##Clientes sem negócio
 cli_s_neg <- anti_join(cliente, negocio, by=c("cliente_id" = "negocio_cliente_id")) %>%
   select(cliente_id) %>%
+  group_by(cliente_id) %>%
+  ungroup() %>%
   mutate (neg = F)
 ##Clientes com negócio
 cli_c_neg <- cli_ij_ng %>%
-  select (cliente_id, negocio_id) %>%
+  select (cliente_id) %>%
+  group_by(cliente_id) %>%
   ungroup() %>%
   mutate (neg = T)
 
@@ -327,12 +322,12 @@ cli_s_neg_ij_vis_cont <- cli_s_neg_ij_vis %>%
 
 ##Contanto visitas por cliente, dos que tem negócios
 cli_c_neg_ij_vis_cont <- cli_c_neg_ij_vis %>%
-  group_by(cliente_id, negocio_id) %>%
+  group_by(cliente_id) %>%
   count(name = "num_visitas") %>%
   ungroup()
 
 
-### Gráfico c4 - Histograma de distirbuição clientes por visitas, clientes com negócios
+### Gráfico c4 - Histograma de distirbuição clientes por visitas, clientes com negócios (clientes com visitas em 2020)
 if(nrow(cli_c_neg_ij_vis_cont > 0)){
   c4 <- plot_ly() %>%
     add_histogram(data =  cli_c_neg_ij_vis_cont, x = ~num_visitas, name = "Intervalo de visitas, clientes COM negócios", nbinsx = max(cli_c_neg_ij_vis_cont$num_visitas),
@@ -344,7 +339,7 @@ if(nrow(cli_c_neg_ij_vis_cont > 0)){
     c4
   }
   
-  ### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios
+  ### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios (clientes com visitas em 2020)
   c5 <- plot_ly() %>%
     add_histogram(data =  cli_s_neg_ij_vis_cont, x = ~num_visitas, name = "Intervalo de visitas, clientes SEM negócios", nbinsx = max(cli_c_neg_ij_vis_cont$num_visitas),
                   marker = list(color = "darkorange"), opacity = 0.6) %>%
