@@ -2,8 +2,8 @@
 title: "Visão do gestor"
 output:
   flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
+    orientation: rows
+    vertical_layout: scroll
 params:
   variable1: "emp_par"
 ---
@@ -12,6 +12,8 @@ params:
 #rm(list = ls())
 #Lib q será futuramente usada pros painéis interativos
 #library(shiny)
+#lib para valuebox
+library(flexdashboard)
 #Lib pra conexão com o banco
 #library(odbc)
 #Lib para ler (mais rapidamente) os csvs
@@ -58,7 +60,7 @@ mes_atual = month(today())
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 1
+  empresa = 16
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -185,11 +187,12 @@ ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>%
 ##############################################
 ### Gráfico n9 - Funil agrupado por faturamento
 if (nrow(ng_ij_vn_ij_np_fat) > 0){
-  n0 <- plot_ly(ng_ij_vn_ij_np_fat, type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
-              color = ~negocio_status,
-              colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"),
-              name = ~negocio_status,
-              showlegend = TRUE
+  n0 <- plot_ly(ng_ij_vn_ij_np_fat,
+                type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
+                color = ~negocio_status,
+                colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"),
+                name = ~negocio_status,
+                showlegend = TRUE
               )
   n0 <- n0 %>%
   layout(barmode = 'stack',
@@ -457,8 +460,8 @@ if(nrow(ng_cad_fin) != 4){
   df_ng_cad_fin <- data.frame(situacao_id_, Status_)
   df_ng_cad_fin <- left_join(df_ng_cad_fin, ng_cad_fin, by=c('situacao_id_' = 'negocio_negocio_situacao_id'))
   df_ng_cad_fin <- df_ng_cad_fin %>%
-    select (-Status) %>%
-    rename (Status = Status_, negocio_negocio_situacao_id = situacao_id_)
+    select (-Status, media_d, situacao_id_) %>%
+    rename (negocio_negocio_situacao_id = situacao_id_, Status = Status_)
   df_ng_cad_fin$media_d[is.na(df_ng_cad_fin$media_d)] <- '0'
   ng_cad_fin <- df_ng_cad_fin
 }
@@ -487,7 +490,6 @@ valuebox <- data.frame(
   value = ng_cad_fin$Media,
   info = ng_cad_fin$Status,
   color = factor(1:4))
-
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
 colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
 if (nrow(valuebox) > 0){
@@ -519,33 +521,31 @@ if (dash == F){
 
 if (teste == F){
   #tabelas
-  rm(ng_ij_hist_ij_ven_emp, valuebox, ng_cad_fin)
+  rm(ng_ij_hist_ij_ven_emp, valuebox)
   #variáveis
   rm()
 }
+
 
 ```
 
 Faturamento de negócios
 =======================================================================
 
-Column {data-width=650}
+Column 
 -----------------------------------------------------------------------
+### Faturamento dos negócios cadastrados no ano 2020, por vendedor  (Status atual) 
 
-### Faturamento dos negócios cadastrados no ano 2020, por vendedor  (Status atual)
-
-```{r}
+```{r, fig.height=7, fig.width=6}
 ### Gráfico n0 - Número de clientes por vendedor
 n0
 
 ```
 
-Column {data-width=350}
------------------------------------------------------------------------
 
 ### Faturamento de todos os negócios que foram fechados em 2020
 
-```{r}
+```{r, fig.height=7, fig.width=6}
 ### Gráfico n3 - Faturamento de negócios fechados em 2020
 n3
 
@@ -555,25 +555,54 @@ n3
 Idade dos negócios
 =======================================================================
 
-Column {data-width=450}
------------------------------------------------------------------------
-### Idade dos negócios abertos, por vendedor
-```{r}
+Column {.sidebar data-width=750 data-padding=10}
+-------------------------------------
+```{r, fig.height=7, fig.width=7.5}
 ### Gráfico n6 - Idade dos negócios abertos, por vendedor, por idade do negocio
 n6
 ```
 
+Row {data-height=150}
+------------------------------------
 
-Column {data-width=350}
------------------------------------------------------------------------
-### Negócios abertos da empresa
-```{r}
-### Gráfico n7 - Negócios abertos da empresa, pizza
-n7
+### Faturado
+```{r, fig.height=2, fig.width=4}
+colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
+
+### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
+valueBox(ng_cad_fin[1,1], icon = "fa-calendar", color="#32CD32")
 ```
 
-### Tempo médio para fechamento dos negócios (por status)
-```{r}
+
+### Fin. não aprovado
+```{r, fig.height=2, fig.width=4}
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-n13
+valueBox(ng_cad_fin[2,1], icon = "fa-calendar", color="#FFD700")
+
+```
+
+Row {data-height=150}
+------------------------------------
+
+### Des. do cliente
+```{r, fig.height=2, fig.width=4}
+### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
+valueBox(ng_cad_fin[3,1], icon = "fa-calendar", color="#FFA500")
+
+```
+
+### Perd. p/ concorrência
+```{r, fig.height=2, fig.width=4}
+### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
+valueBox(ng_cad_fin[4,1], icon = "fa-calendar", color="#DE0D26")
+
+```
+
+Row {data-height=300}
+------------------------------------
+
+### Negócios abertos da empresa
+```{r, fig.height=4, fig.width=4}
+### Gráfico n7 - Negócios abertos da empresa, pizza
+n7
 ```

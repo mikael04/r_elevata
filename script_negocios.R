@@ -43,7 +43,7 @@ dash = F
 ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
 
 ##Variável "Global"
-empresa = 61
+empresa = 16
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -167,7 +167,8 @@ ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>%
 ##############################################
 ### Gráfico n9 - Funil agrupado por faturamento
 if (nrow(ng_ij_vn_ij_np_fat) > 0){
-  n0 <- plot_ly(ng_ij_vn_ij_np_fat, type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
+  n0 <- plot_ly(ng_ij_vn_ij_np_fat,
+                type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
                 color = ~negocio_status,
                 colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"),
                 name = ~negocio_status,
@@ -429,18 +430,18 @@ ng_cad_fin <- ng_cad_fin %>%
 ##Só pra ver os nomes
 ng_cad_fin <- ng_cad_fin %>%
   mutate(Status = case_when(negocio_negocio_situacao_id == 4 ~ "Faturado",
-                            negocio_negocio_situacao_id == 5 ~ "Financ. não aprovado",
-                            negocio_negocio_situacao_id == 6 ~ "Desist. do cliente",
-                            negocio_negocio_situacao_id == 7 ~ "Perdemos para conc."))
+                            negocio_negocio_situacao_id == 5 ~ "Fin. não aprovado",
+                            negocio_negocio_situacao_id == 6 ~ "Des. do cliente",
+                            negocio_negocio_situacao_id == 7 ~ "Perd. para conc."))
 
 if(nrow(ng_cad_fin) != 4){
   situacao_id_ <- c(4, 5, 6, 7)
-  Status_ <- c("Faturado", "Financ. não aprovado", "Desist. do cliente", "Perdemos para conc.")
+  Status_ <- c("Faturado", "Fin. não aprovado", "Des. do cliente", "Perd. para conc.")
   df_ng_cad_fin <- data.frame(situacao_id_, Status_)
   df_ng_cad_fin <- left_join(df_ng_cad_fin, ng_cad_fin, by=c('situacao_id_' = 'negocio_negocio_situacao_id'))
   df_ng_cad_fin <- df_ng_cad_fin %>%
-    select (-Status) %>%
-    rename (Status = Status_, negocio_negocio_situacao_id = situacao_id_)
+    select (-Status, media_d, situacao_id_) %>%
+    rename (negocio_negocio_situacao_id = situacao_id_, Status = Status_)
   df_ng_cad_fin$media_d[is.na(df_ng_cad_fin$media_d)] <- '0'
   ng_cad_fin <- df_ng_cad_fin
 }
@@ -449,14 +450,10 @@ ng_cad_fin <- ng_cad_fin %>%
   mutate (media_d = paste(as.character(media_d),"dias")) %>%
   arrange(negocio_negocio_situacao_id)
 
-
-
-
-
-
-##Teste plotly
-
-ggplot()
+# seq(2,10,7.5)
+# rep(seq(2, 9, 6.5), 2)
+# rep(6.5, 2)
+# rep(2,2)
 
 ng_cad_fin <- ng_cad_fin[-1]
 ng_cad_fin <- ng_cad_fin %>%
@@ -464,37 +461,6 @@ ng_cad_fin <- ng_cad_fin %>%
 library(gt)
 n_13_t <- ng_cad_fin %>%
   gt()
-n_13_t0 <- plot_ly(type = 'table',
-                  header = list(
-                    values = list(Status_[1], Status_[2]),
-                    align = c("center", "center"),
-                    line = list(width = 1, color = 'black'),
-                    fill = list(color = c("#32CD32", "#FFD700")),
-                    font = list(family = "Arial", size = 14, color = "white")
-                  ),
-                  cells = list(
-                    values = list(ng_cad_fin$media_d[1], ng_cad_fin$media_d[2]),
-                    align = c("center", "center"),
-                    line = list(color = "black", width = 1),
-                    fill = list(color = c("#32CD32", "#FFD700")),
-                    font = list(family = "Arial", size = 12, color = c("black"))))
-n_13_t0
-n_13_t1 <- plot_ly(type = 'table',
-                   header = list(
-                     values = list(Status_[3], Status_[4]),
-                     align = c("center", "center"),
-                     line = list(width = 1, color = 'black'),
-                     fill = list(color = c("#32CD32", "#FFD700")),
-                     font = list(family = "Arial", size = 14, color = "white")
-                   ),
-                   cells = list(
-                     values = list(ng_cad_fin$media_d[3], ng_cad_fin$media_d[4]),
-                     align = c("center", "center"),
-                     line = list(color = "black", width = 1),
-                     fill = list(color = c("orange" , "#DE0D26")),
-                     font = list(family = "Arial", size = 12, color = c("black"))))
-
-gridExtra::grid.arrange(n_13_t0, n_13_t1, nrows = 2)
 
 valuebox <- data.frame(
   x = rep(seq(2, 9, 6.5), 2),
@@ -504,7 +470,6 @@ valuebox <- data.frame(
   value = ng_cad_fin$Media,
   info = ng_cad_fin$Status,
   color = factor(1:4))
-
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
 colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
 if (nrow(valuebox) > 0){
@@ -536,7 +501,7 @@ if (dash == F){
 
 if (teste == F){
   #tabelas
-  rm(ng_ij_hist_ij_ven_emp, valuebox, ng_cad_fin)
+  rm(ng_ij_hist_ij_ven_emp, valuebox)
   #variáveis
   rm()
 }
