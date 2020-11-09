@@ -404,7 +404,7 @@ if(nrow(fat_tot_categorias) > 0){
     title = "",
     showticklabels = TRUE)
   p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
-                name = 'Categorias',
+                name = 'Categorias novos',
                 marker = list(color = 'lightblue'),
                 text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
                 hoverinfo = "text")
@@ -413,7 +413,7 @@ if(nrow(fat_tot_categorias) > 0){
     layout(barmode = 'identity', xaxis = ax, yaxis = ax)
   
   p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
-                         name = 'Empresa (geral)',
+                         name = 'Novos (média)',
                          x = ~categoria_nome,
                          y = ~med_emp,
                          line = list(color = 'red'),
@@ -448,10 +448,10 @@ p_ij_n_ij_pp_empresa_us <- p_ij_n_ij_v_ij_pp_n %>%
 if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
 {
   p_ij_n_ij_pp_empresa_us <- p_ij_n_ij_pp_empresa_us %>%
-  group_by(proposta_id) %>%
-  mutate (valor_proposta = sum(pp_valor)) %>%
-  ungroup ()
-
+    group_by(proposta_id) %>%
+    mutate (valor_proposta = sum(pp_valor)) %>%
+    ungroup ()
+  
   ##media geral da empresa
   total_empresa_us <- sum(p_ij_n_ij_pp_empresa_us$pp_valor)
   n_empresa_us <- nrow(p_ij_n_ij_pp_empresa_us)
@@ -525,8 +525,8 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
       title = "",
       showticklabels = TRUE)
     p4 <- plot_ly(fat_tot_categorias_us, type = "bar", x = ~categoria_nome, y = ~fat_med,
-                  name = 'Categorias',
-                  marker = list(color = 'lightblue'),
+                  name = 'Categorias usados',
+                  marker = list(color = '#DAA520'),
                   text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
                   hoverinfo = "text")
     
@@ -534,7 +534,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
       layout(barmode = 'identity', xaxis = ax, yaxis = ax)
     
     p4 <- p4 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
-                           name = 'Empresa (geral)',
+                           name = 'Usados (média)',
                            x = ~categoria_nome,
                            y = ~med_emp,
                            line = list(color = 'red'),
