@@ -114,8 +114,7 @@ vendedor <- fread("Tabelas/vendedor.csv") %>%
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
-##if por causa do nome dos vendedores da empresa 29
-vendedor_nome <- func_nome(vendedor$vendedor_nome)
+vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
 
 if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
@@ -173,7 +172,7 @@ ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_ab %>%
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
   mutate(tot_fat_t = func_fmt_din(total_faturado))
 
-##Começando a gambiarra (criar nova coluna com nome da categoria + valor da categoria)
+##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
   mutate(nome_cat_valor_fat = paste(negocio_status, "\n", tot_fat_t))
 
@@ -182,11 +181,6 @@ ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_funil_
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
   arrange(negocio_negocio_situacao_id)
 
-##plotando texto sem informações
-text <- paste("Não há informações para o período")
-s_dados <- ggplot() +
-  annotate("text", x = 1, y = 6, size = 8, label = text) +
-  theme_void()
 
 ### Gráfico n9 - Funil agrupado por faturamento
 if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
@@ -203,13 +197,11 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
       showlegend = FALSE
     )
 }else {
-  n9 <- s_dados
+  n9 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   n9
 }
-
-
 
 if (teste == F){
   #tabelas
@@ -289,7 +281,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){
                                         "<extra></extra>"),
                  marker = list(colors = colors_pie))
 }else {
-  n10 <- s_dados
+  n10 <- knitr::include_graphics(s_dados_path)
 }
 
 if(dash == F){
@@ -345,7 +337,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes) > 0){
                                         "<extra></extra>"),
                  marker = list(colors = colors_pie))
 }else {
-  n11 <- s_dados
+  n11 <- knitr::include_graphics(s_dados_path)
 }
 
 
@@ -417,6 +409,7 @@ if(anos_ant > 1) {
 ##Usando só os dois anos anteriores
 #ng_ij_hist_ij_ven_ij_np_2017_fat <- ng_ij_hist_ij_ven_ij_np_total %>%
 #  filter (historico_negocio_situacao_data < '2ant-01-01' & historico_negocio_situacao_data > '2016-12-31' & negocio_negocio_situacao_id == 4)
+
 ym <- c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12")
 #Aqui vou fazer a mesma soma dos valores dos três anos anteriores, dividindo por mês
 if(anos_ant > 1){
@@ -440,18 +433,17 @@ if(anos_ant > 1){
 }
 if(anos_ant > 0) {
   if(nrow(ng_ij_hist_ij_ven_ij_np_1ant_fat) > 0){
-  fat_1ant_mes <- ng_ij_hist_ij_ven_ij_np_1ant_fat %>%
-    mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
-    group_by (ym) %>%
-    summarize(ym_sum_1ant = sum(np_valor), .groups = 'drop') %>%
-    ungroup ()
+    fat_1ant_mes <- ng_ij_hist_ij_ven_ij_np_1ant_fat %>%
+      mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
+      group_by (ym) %>%
+      summarize(ym_sum_1ant = sum(np_valor), .groups = 'drop') %>%
+      ungroup ()
   }else{
     ym_sum_1ant <- rep(NA, 12)
     fat_1ant_mes <- data.frame(ym, ym_sum_1ant)
     anos_ant = 0
   }
 }
-
 
 ###Fazer o gráfico de linhas com faturamento anual (substituindo com NA linhas faltantes)
 ###Na super temos 2ant, na komatsu tem q verificar se possui 2ant e 1ant
@@ -472,6 +464,7 @@ if(anos_ant > 1){
   }
 }
 
+
 meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
 ## alterando pra números pra poder fazer da mesma forma
 fat_anat_1ant_2ant_mes$ym <- as.integer(fat_anat_1ant_2ant_mes$ym)
@@ -485,10 +478,6 @@ if(anos_ant > 0) {
 if(anos_ant > 1) {
   fat_anat_1ant_2ant_mes$ym_sum_2ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_2ant)] <- 0
 }
-##Forma antiga, agora a nova mantém a coluna "identificadora"
-#fat_anat_1ant_2ant_mes$ym <- with(fat_anat_1ant_2ant_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
-#                                                              labels = meses))
-
 
 #######################################################################
 
@@ -588,7 +577,6 @@ Encoding(visita_status$motivo) <- 'latin1'
 vis_st_emp <- inner_join(visita_status, visita_status_empresa, by = c('vs_id'= 'vse_status_id'))
 
 ##Já filtrado apenas empresa (variavel global)
-
 ym_aux <- seq(1, mes_atual-1, 1)
 ym <- as.character(ym_aux)
 
@@ -690,11 +678,6 @@ if(teste == F){
   #variáveis
   rm();
 }
-
-### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em 2020
-subplot(n12, c3, nrows = 2, shareX = T) %>%
-  layout(legend = list(y=0.3))
-
 ################################################################################################################################
 
 ################################################################################################
@@ -779,7 +762,7 @@ if (nrow(vend_cli_vis_neg) > 0){
            xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
            yaxis = list(title = ''))
 }else {
-  c0 <- s_dados
+  c0 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   c0
@@ -825,7 +808,7 @@ colors_pie<- c("#32CD32", "#FFA500")
 c1 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_total, type = 'pie', sort = F,
               text = func_fmt_numbr(n_total),
               texttemplate = "%{text} (%{percent})",
-              hovertemplate = paste ("%{label} <br>",
+              hovertemplate = paste ("%{label}: %{text}<br>",
                                      "Equivalente a %{percent}",
                                      "<extra></extra>"),
               marker = list(colors = colors_pie))
@@ -844,7 +827,7 @@ if (sum(cli_c_s_ng$n_anat) > 0){
                                        "<extra></extra>"),
                 marker = list(colors = colors_pie))
 }else {
-  c2 <- s_dados
+  c2 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   c2

@@ -52,9 +52,13 @@ mes_atual = month(today())
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
+##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
+#caminho para imagem de sem dados
+s_dados_path <- "s_dados.png"
+
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 65
+  empresa = 43
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -122,12 +126,6 @@ if(empresa == 16){
 
 vendedor_a <- vendedor %>%
   filter(vendedor_ativo == T)
-
-##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
-text <- paste("Não há informações para o período")
-s_dados <- ggplot() +
-  annotate("text", x = 1, y = 6, size = 8, label = text) +
-  theme_void()
 
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
@@ -201,7 +199,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
       showlegend = FALSE
     )
 }else {
-  n9 <- s_dados
+  n9 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   n9
@@ -285,7 +283,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){
                                         "<extra></extra>"),
                  marker = list(colors = colors_pie))
 }else {
-  n10 <- s_dados
+  n10 <- knitr::include_graphics(s_dados_path)
 }
 
 if(dash == F){
@@ -341,7 +339,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes) > 0){
                                         "<extra></extra>"),
                  marker = list(colors = colors_pie))
 }else {
-  n11 <- s_dados
+  n11 <- knitr::include_graphics(s_dados_path)
 }
 
 
@@ -766,7 +764,7 @@ if (nrow(vend_cli_vis_neg) > 0){
            xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
            yaxis = list(title = ''))
 }else {
-  c0 <- s_dados
+  c0 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   c0
@@ -831,7 +829,7 @@ if (sum(cli_c_s_ng$n_anat) > 0){
                                      "<extra></extra>"),
               marker = list(colors = colors_pie))
 }else {
-  c2 <- s_dados
+  c2 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   c2
