@@ -35,6 +35,8 @@ library(RColorBrewer)
 #library(scales)
 #Lib para lidar com o tempo
 library(lubridate)
+#lib para plotar a imagem (s_dados)
+library(knitr)
 
 
 

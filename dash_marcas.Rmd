@@ -39,7 +39,8 @@ library(lubridate)
 #library(scales)
 #Lib usada para os mapas
 library(leaflet)
-
+#lib para plotar a imagem (s_dados)
+library(knitr)
 
 
 ###################################
@@ -56,9 +57,13 @@ mes_atual = month(today())
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
+##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
+#caminho para imagem de sem dados
+s_dados_path <- "s_dados.png"
+
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 16
+  empresa = 43
 }else{
   empresa = as.integer(params$variable1)
 }

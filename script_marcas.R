@@ -30,7 +30,8 @@ library(lubridate)
 library(ggplot2)
 #Lib usada para os mapas
 library(leaflet)
-
+#lib para plotar a imagem (s_dados)
+library(knitr)
 
 
 ###################################
@@ -46,6 +47,10 @@ ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
 mes_atual = month(today())
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
+
+##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
+#caminho para imagem de sem dados
+s_dados_path <- "s_dados.png"
 
 ##Teste script
 empresa = 16

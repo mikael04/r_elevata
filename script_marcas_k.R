@@ -30,7 +30,8 @@ library(lubridate)
 library(ggplot2)
 #Lib usada para os mapas
 library(leaflet)
-
+#lib para plotar a imagem (s_dados)
+library(knitr)
 
 
 ###################################
@@ -46,6 +47,12 @@ ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
 mes_atual = month(today())
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
+
+##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
+#caminho para imagem de sem dados
+s_dados_path <- "s_dados.png"
+s_dados_path_m <- "s_dados_m.png"
+
 
 ##Teste
   empresa = 79
@@ -111,12 +118,6 @@ negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
 produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
   select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
-
-##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
-text <- paste("Não há informações para o período")
-s_dados <- ggplot() +
-  annotate("text", x = 1, y = 6, size = 8, label = text) +
-  theme_void()
 
 ##join de negocios e vendedores
 negocio_ij_vendedor <- inner_join(negocio, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
@@ -227,7 +228,7 @@ chart_ng_top_ag <- ng_top_ag
 ### Gráfico hc_n4 - Valor financeiro de negócios em anat  (por categoria)
 #################################################
 
-if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > ){
+if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
   hc_n4 <- chart_ng_top_ag %>%
     hchart (
       type = "treemap",
@@ -236,7 +237,7 @@ if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > ){
     hc_colorAxis(minColor = "#ADD8E6", maxColor = "#3182FF")
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  hc_n4 <- s_dados
+  hc_n4 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   hc_n4
@@ -290,7 +291,7 @@ if (nrow(chart_ng_top_ag_fat) > 0 & sum(chart_ng_top_ag_fat$faturamento) > 0){
     hc_colorAxis(minColor = "#90EE90", maxColor = "#32CD32")
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  hc_n5 <- s_dados
+  hc_n5 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   hc_n5
@@ -416,11 +417,6 @@ marcas_icon <- iconList(
 
 ### Gráfico m1 de distribuição das marcas (top5) m1_t = tratores, m1_c = colheitadeiras
 ###################
-##Caso não haja informações para plotar o mapa (texto informando que não há informações)
-text <- paste("Não há informações para gerar o mapa")
-s_dados_m <- ggplot() +
-  annotate("text", x = 1, y = 6, size = 8, label = text) +
-  theme_void()
 ##Tratores
 if (nrow(cli_in_pm_cont_top_t_aux) > 0){
   m1_t <- leaflet(cli_in_pm_cont_top_t_aux) %>%
@@ -435,7 +431,7 @@ if (nrow(cli_in_pm_cont_top_t_aux) > 0){
                group = "Ícones")
 }else {
   ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
-  m1_t <- s_dados_m
+  m1_t <- include_graphics(s_dados_path_m)
 }
 if(teste == F){
   #tabelas
@@ -484,11 +480,6 @@ cli_in_pm_cont_top_t <- inner_join(cli_in_pm_cont_top_t, marcas_ic_co, by = c("p
 cores_t <- as.vector(cli_in_pm_cont_top_t$cor)
 
 #############################################################################################
-##Caso não haja informações para plotar o gráfico(texto informando que não há informações p/ o período)
-text <- paste("Não há informações para gerar o gráfico")
-s_dados_g <- ggplot() +
-  annotate("text", x = 1, y = 6, size = 8, label = text) +
-  theme_void()
 ### Gráfico m2 de distribuição das marcas (top5)
 ###################
 if (nrow(cli_in_pm_cont_top_t) > 0){
@@ -505,7 +496,7 @@ if (nrow(cli_in_pm_cont_top_t) > 0){
            yaxis = list(title = ''))
 }else {
   ##Caso não haja informações para plotar o gráfico(texto informando que não há informações p/ o período)
-  m2_t <- s_dados_g
+  m2_t <- include_graphics(s_dados_path)
 }
 if(dash == F){
   m2_t
