@@ -327,27 +327,40 @@ cli_c_neg_ij_vis_cont <- cli_c_neg_ij_vis %>%
   ungroup()
 
 
-### Gráfico c4 - Histograma de distirbuição clientes por visitas, clientes com negócios (clientes com visitas em 2020)
+### Histogramas
 if(nrow(cli_c_neg_ij_vis_cont > 0)){
-  c4 <- plot_ly() %>%
-    add_histogram(data =  cli_c_neg_ij_vis_cont, x = ~num_visitas, name = "Intervalo de visitas, clientes COM negócios", nbinsx = max(cli_c_neg_ij_vis_cont$num_visitas),
-                  marker = list(color = "blue"), opacity = 0.6) %>%
-    layout (xaxis = list(title = 'Intervalos'),
-            yaxis = list(title = 'Número de clientes'))
-  
-  if(dash == F){
-    c4
-  }
   
   ### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios (clientes com visitas em 2020)
   c5 <- plot_ly() %>%
-    add_histogram(data =  cli_s_neg_ij_vis_cont, x = ~num_visitas, name = "Intervalo de visitas, clientes SEM negócios", nbinsx = max(cli_c_neg_ij_vis_cont$num_visitas),
-                  marker = list(color = "darkorange"), opacity = 0.6) %>%
+    add_histogram(data =  cli_s_neg_ij_vis_cont,
+                  x = ~num_visitas,
+                  name = "",
+                  nbinsx = max(cli_s_neg_ij_vis_cont$num_visitas),
+                  hovertemplate = paste ("Existem %{y} clientes com %{x} visitas <br>",
+                                         "<br>"),
+                  marker = list(color = "darkorange"),
+                  opacity = 0.6) %>%
     layout (xaxis = list(title = 'Intervalos'),
             yaxis = list(title = 'Número de clientes'))
   
   if(dash == F){
     c5
+  }
+  ### Gráfico c4 - Histograma de distirbuição clientes por visitas, clientes com negócios (clientes com visitas em 2020)
+  c4 <- plot_ly() %>%
+    add_histogram(data =  cli_c_neg_ij_vis_cont,
+                  x = ~num_visitas,
+                  name = "",
+                  nbinsx = max(cli_c_neg_ij_vis_cont$num_visitas),
+                  hovertemplate = paste ("Existem %{y} clientes com %{x} visitas <br>",
+                                         "<br>"),
+                  marker = list(color = "blue"),
+                  opacity = 0.6) %>%
+    layout (xaxis = list(title = 'Intervalos'),
+            yaxis = list(title = 'Número de clientes'))
+  
+  if(dash == F){
+    c4
   }
   
   ### Gráfico c4_c5 - Ambos histogramas anteriores (c4 e c5)
