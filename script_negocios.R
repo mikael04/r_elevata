@@ -462,40 +462,40 @@ ng_cad_fin <- ng_cad_fin %>%
 ng_cad_fin <- ng_cad_fin[-1]
 ng_cad_fin <- ng_cad_fin %>%
   rename(Media = media_d)
-library(gt)
-n_13_t <- ng_cad_fin %>%
-  gt()
-
-valuebox <- data.frame(
-  x = rep(seq(2, 9, 6.5), 2),
-  y = c(rep(6.5, 2), rep(2,2)),
-  h = rep(4.25, 4),
-  w = rep(6.25, 4),
-  value = ng_cad_fin$Media,
-  info = ng_cad_fin$Status,
-  color = factor(1:4))
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
-if (nrow(valuebox) > 0){
-  n13 <- ggplot(valuebox, aes(x=x, y=y, height = h, width = w, label = info)) +
-    geom_tile(aes(fill = color)) +
-    geom_text(color = "white", fontface = "bold", size = 18,
-              aes(label = value, x = x - 2.9, y = y + 1), hjust = 0) +
-    geom_text(color = "white", fontface = "bold", size = 12,
-              aes(label = info, x = x - 2.9, y = y - 1), hjust = 0) +
-    coord_fixed() +
-    scale_fill_manual(values = colors) +
-    # geom_text(size = 20, aes(label = shape, family = font_family,
-    #                          x = x + 1.5, y = y + 0.5), alpha = 0.25) +
-    theme_void() +
-    guides(fill = FALSE)
-}else {
-  n13 <- include_graphics(s_dados_path)
-}
-
-if (dash == F){
-  n13
-}
+# library(gt)
+# n_13_t <- ng_cad_fin %>%
+#   gt()
+# 
+# valuebox <- data.frame(
+#   x = rep(seq(2, 9, 6.5), 2),
+#   y = c(rep(6.5, 2), rep(2,2)),
+#   h = rep(4.25, 4),
+#   w = rep(6.25, 4),
+#   value = ng_cad_fin$Media,
+#   info = ng_cad_fin$Status,
+#   color = factor(1:4))
+# ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
+# colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
+# if (nrow(valuebox) > 0){
+#   n13 <- ggplot(valuebox, aes(x=x, y=y, height = h, width = w, label = info)) +
+#     geom_tile(aes(fill = color)) +
+#     geom_text(color = "white", fontface = "bold", size = 18,
+#               aes(label = value, x = x - 2.9, y = y + 1), hjust = 0) +
+#     geom_text(color = "white", fontface = "bold", size = 12,
+#               aes(label = info, x = x - 2.9, y = y - 1), hjust = 0) +
+#     coord_fixed() +
+#     scale_fill_manual(values = colors) +
+#     # geom_text(size = 20, aes(label = shape, family = font_family,
+#     #                          x = x + 1.5, y = y + 0.5), alpha = 0.25) +
+#     theme_void() +
+#     guides(fill = FALSE)
+# }else {
+#   n13 <- include_graphics(s_dados_path)
+# }
+# 
+# if (dash == F){
+#   n13
+# }
 
 ### Gráfico n14 - Tempo de vida médio de um negócio perdido (status = desistência do cliente ou perdemos para concorrência)
 

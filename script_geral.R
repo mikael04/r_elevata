@@ -43,9 +43,13 @@ if(mes_atual == 1){
 ####Vari?vel global para ver se tem usados Ainda n?o usada
 #usados = T
 
+##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
+#caminho para imagem de sem dados
+s_dados_path <- "s_dados.png"
+
 #empresa = params$variable1
 #teste
-empresa = 65
+empresa = 60
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -97,8 +101,6 @@ func_fmt_numbr <- function(inteiro)
 }
 
 #################################################################################
-## Gráficos do funil de vendas
-
 ### Funil de vendas (vendas abertas)
 ########################################################################
 
@@ -197,7 +199,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
       showlegend = FALSE
     )
 }else {
-  n9 <- knitr::include_graphics(s_dados_path)
+  n9 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   n9
@@ -281,7 +283,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){
                                         "<extra></extra>"),
                  marker = list(colors = colors_pie))
 }else {
-  n10 <- knitr::include_graphics(s_dados_path)
+  n10 <- include_graphics(s_dados_path)
 }
 
 if(dash == F){
@@ -337,7 +339,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes) > 0){
                                         "<extra></extra>"),
                  marker = list(colors = colors_pie))
 }else {
-  n11 <- knitr::include_graphics(s_dados_path)
+  n11 <- include_graphics(s_dados_path)
 }
 
 
@@ -693,6 +695,7 @@ vc_ij_vse_ij_v <- inner_join(vc_ij_vse, vendedor_a, by = c('vc_vendedor_id' = 'v
 
 ##Agrupando por vendedor e por motivo (vc_status_id, depois mostrar so motivo)
 vc_ij_vse_ij_v <- vc_ij_vse_ij_v %>%
+  select(-vc_id) %>%
   group_by(vc_vendedor_id, vc_status_id) %>%
   mutate(motivo_n = n()) %>%
   distinct(vc_vendedor_id, .keep_all = T) %>%
@@ -762,7 +765,7 @@ if (nrow(vend_cli_vis_neg) > 0){
            xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
            yaxis = list(title = ''))
 }else {
-  c0 <- knitr::include_graphics(s_dados_path)
+  c0 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   c0
@@ -827,7 +830,7 @@ if (sum(cli_c_s_ng$n_anat) > 0){
                                        "<extra></extra>"),
                 marker = list(colors = colors_pie))
 }else {
-  c2 <- knitr::include_graphics(s_dados_path)
+  c2 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   c2

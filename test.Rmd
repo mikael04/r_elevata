@@ -1,9 +1,9 @@
 ---
-title: "Visão do gestor"
+title: "Painel das Marcas"
 output:
   flexdashboard::flex_dashboard:
-    orientation: rows
-    vertical_layout: scroll
+    orientation: columns
+    vertical_layout: fill
 params:
   variable1: "emp_par"
 ---
@@ -12,8 +12,6 @@ params:
 #rm(list = ls())
 #Lib q será futuramente usada pros painéis interativos
 #library(shiny)
-#lib para valuebox
-library(flexdashboard)
 #Lib pra conexão com o banco
 #library(odbc)
 #Lib para ler (mais rapidamente) os csvs
@@ -22,6 +20,8 @@ library(data.table)
 library(tidyverse)
 #Libs pra trabalhar com a base (cortes e funções similares ao SQL)
 #library(dplyr) #Contido no tidyverse
+#Lib pro gráfico
+library(ggplot2)
 #lib pros gráficos mais "interativos"
 library(plotly)
 library(highcharter)
@@ -37,11 +37,8 @@ library(RColorBrewer)
 library(lubridate)
 #usada para converter números em moeda
 #library(scales)
-#Lib usada para emojis/fonts/box de valores
-library(ggplot2)
-#Lib usada para os quadros
-library(emojifont)
-
+#Lib usada para os mapas
+library(leaflet)
 
 
 ###################################
@@ -53,19 +50,16 @@ dash = T
 ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
 ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
 ####Variavel global c/ mês atual (para comparação)
-
 mes_atual = month(today())
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
-
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 16
+  empresa = 43
 }else{
   empresa = as.integer(params$variable1)
 }
 ###################################
-
 ##Alterar o valor de inteiro para reais
 func_fmt_din <- function(inteiro)
 {
@@ -99,510 +93,510 @@ func_fmt_numbr <- function(inteiro)
   inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
   return(inteiro_br)
 }
-
-###Começando scripts negocio_scripts
+###Começando script marcas
 ###########################################################################################################
-
 ##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
 negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
-  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id, negocio_probabilidade)
-
-
+  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id)
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
-  select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
+  select(vendedor_id, vendedor_empresa_id, vendedor_ativo) %>%
   filter (vendedor_empresa_id == empresa)
-
-
-#Arrumando encoding
-Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
-
-if(empresa == 16){
-  vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
-  vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
-  vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
-}
-
 vendedor_a <- vendedor %>%
   filter(vendedor_ativo == T)
-
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
   select(np_id, np_negocio_id, np_produto_id, np_quantidade,np_ativo, np_valor)
-
+##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
+produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
+  select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 text <- paste("Não há informações para o período")
 s_dados <- ggplot() +
   annotate("text", x = 1, y = 6, size = 8, label = text) +
   theme_void()
-
-
-##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
-produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
-  select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
-
 ##join de negocios e vendedores
-negocio_ij_vendedor <- inner_join(negocio, vendedor_a, by=c("negocio_vendedor_id" = "vendedor_id"))
-
+negocio_ij_vendedor <- inner_join(negocio, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
 ########## Para o funil e para agrupar por faturamento
 #### Vou alterar o agrupamento de número de negócios para faturamento, portanto precisarei da tabela negocio_produto
 neg_ij_ven_ij_np <- inner_join(negocio_ij_vendedor, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
-
 ##Filtrando empresa, vendedores ativos e negocios de anat
 neg_ij_ven_ij_np_anat <- neg_ij_ven_ij_np %>%
   filter(negocio_data_cadastro >= ano_atual, negocio_negocio_situacao_id != 0)
-
-##removendo elementos não mais usados
-if (teste == F) {
-  rm() #vou precisar dele pro funil mais pra baixo negocio_ij_historico_ij_vendedor_anat)
-}
-
-##agrupamento de negocios por vendedor_a, contando faturamento por status e por vendedor
-##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
-ng_ij_vn_ij_np_fat <- neg_ij_ven_ij_np_anat %>%
-  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, vendedor_nome, negocio_vendedor_id, np_valor) %>%
-  group_by(negocio_negocio_situacao_id, negocio_vendedor_id) %>%
-  mutate(total_fat = sum(np_valor)) %>%
-  distinct (negocio_vendedor_id, .keep_all = TRUE) %>%
-  collect ()
-
-###remover status "desconsiderar (erro cadastro)"
-ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat[!(ng_ij_vn_ij_np_fat$negocio_negocio_situacao_id==9),]
-
-status = c("Em negociação", "Montagem de cadastro", "Aguardando aprovação", "Faturado", "Financiamento não aprovado", "Desistência do cliente",
-           "Perdemos para concorrência", "Financiamento aprovado", "Intenção ou prospecção")
-##aqui ele substitui linha a linha cada situação pelo seu respectivo em string
-ng_ij_vn_ij_np_fat$negocio_status <- with(ng_ij_vn_ij_np_fat, cut(negocio_negocio_situacao_id, breaks = c(0,1,2,3,4,5,6,7,8,10), labels = status))
-#precisa usar o factor pra colocar na ordem que quero
-ng_ij_vn_ij_np_fat$negocio_status = factor(ng_ij_vn_ij_np_fat$negocio_status, levels = c("Intenção ou prospecção", "Em negociação", "Montagem de cadastro",
-                                                                                         "Aguardando aprovação", "Financiamento aprovado", "Faturado", "Financiamento não aprovado",
-                                                                                         "Desistência do cliente", "Perdemos para concorrência"))
-
-#usando função pra criar outra coluna com número formatado (em Real, com pontos)
-ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>%
-  mutate(total_fat_t = func_fmt_din(total_fat))
-
-###Gráfico n0 - Faturamento dos negócios por vendedor_a (anat, status atual)
-##############################################
-### Gráfico n9 - Funil agrupado por faturamento
-if (nrow(ng_ij_vn_ij_np_fat) > 0){
-  n0 <- plot_ly(ng_ij_vn_ij_np_fat,
-                type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
-                color = ~negocio_status,
-                colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"),
-                name = ~negocio_status,
-                showlegend = TRUE
-              )
-  n0 <- n0 %>%
-  layout(barmode = 'stack',
-         xaxis = list(title = ''),
-         yaxis = list(title = ''),
-         legend = list(orientation = "h", x = 0.5,
-                       xanchor = "center"))
-}else {
-  n0 <- s_dados
-}
-if(dash == F){
-  n0
-}
-
-##vou manter ng_ij_vn_ij_np_fat pra fazer o join mais pro final
-if (teste == F) {
-  rm(ng_ij_vn_ij_np_fat, status)
-}
-##############################################
-##Faturamento de negócios fechados em anat
 historico_negocio_situacao <- fread("Tabelas/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_situacao_id = "character")) %>%
   select(historico_negocio_situacao_data, historico_negocio_situacao_negocio_id, historico_negocio_situacao_situacao_id)
-
 historico_negocio_situacao_anat <- historico_negocio_situacao %>%
   filter(historico_negocio_situacao_data >= ano_atual)
-
 ##Right join de negocios, vendedores com histórico pra ter apenas a última
 negocio_ij_historico_ij_vendedor_anat <- inner_join(negocio_ij_vendedor, historico_negocio_situacao_anat, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
 negocio_ij_historico_ij_vendedor_total <- inner_join(negocio_ij_vendedor, historico_negocio_situacao, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
-
 ##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais antigas, ficar só com a última atualização no negócio
 negocio_ij_historico_ij_vendedor_anat <- negocio_ij_historico_ij_vendedor_anat[order(-negocio_ij_historico_ij_vendedor_anat$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_anat$negocio_id),]
 ng_ij_hist_ij_ven_anat <- negocio_ij_historico_ij_vendedor_anat[!duplicated(negocio_ij_historico_ij_vendedor_anat$negocio_id),]
-
-
 ##tabela vem dessa: ng_ij_hist_ij_ven_anat, já foi filtrada para histórico anat, filtrando empresa_id, vendedor_ativo
 ng_ij_hist_ij_ven_anat <- ng_ij_hist_ij_ven_anat %>%
   filter(vendedor_empresa_id == empresa) %>%
-  select(negocio_id, negocio_negocio_situacao_id, negocio_vendedor_id, vendedor_nome, negocio_data_cadastro, historico_negocio_situacao_data)
-
+  select(negocio_id, negocio_negocio_situacao_id, negocio_vendedor_id, negocio_data_cadastro, historico_negocio_situacao_data)
 ##filtrando dois negócios que tem seu status 0 (possivel erro)
 ng_ij_hist_ij_ven_anat <- ng_ij_hist_ij_ven_anat %>%
   filter(negocio_negocio_situacao_id != 0)
-
 ####Aqui é pra testar um top10 de uma empresa específica
 ##ng_ij_hist_ij_ven_top10 <-ng_ij_hist_ij_ven_anat
-
 ng_ij_hist_ij_ven_ij_np_anat <- inner_join(ng_ij_hist_ij_ven_anat, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
-
-ff <- c(4, 5, 6, 7)
-
-ng_ij_hist_ij_ven_anat_ij_np_fec <-  ng_ij_hist_ij_ven_ij_np_anat%>%
-  filter(negocio_negocio_situacao_id %in% ff)
-
-ng_ij_hist_ij_ven_anat_ij_np_fec <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
-  mutate(negocio_status = negocio_negocio_situacao_id)
-
-
-status_4_5_6_7 = c("Faturado", "Financiamento não aprovado" , "Desistência do cliente", "Perdemos para concorrência")
-##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
-ng_ij_hist_ij_ven_anat_ij_np_fec$negocio_status <- with(ng_ij_hist_ij_ven_anat_ij_np_fec, cut(negocio_negocio_situacao_id, breaks = c(0,4,5,6,7),
-                                                                                              labels = status_4_5_6_7))
-
-ng_ij_hist_ij_ven_anat_ij_np_fec <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
-  filter (np_ativo == TRUE)
-
-##agrupamento de negocios por vendedor_a, contando número de negócios por status e por vendedor
-##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
-ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
-  select(negocio_id, negocio_vendedor_id, negocio_status, vendedor_nome, negocio_vendedor_id, np_valor) %>%
-  group_by(negocio_status, negocio_vendedor_id) %>%
-  mutate(total_fat = sum(np_valor)) %>%
-  distinct (negocio_vendedor_id, .keep_all = TRUE) %>%
+ng_ij_hist_ij_ven_ij_np_ij_pd <- inner_join(ng_ij_hist_ij_ven_ij_np_anat, produto, by = c("np_produto_id" = "produto_id"))
+##Vou fazer um join pra pegar os nomes de cada categoria
+categoria <- fread("Tabelas/categoria.csv", colClasses = c(categoria_id = 'character')) %>%
+  select (categoria_id, categoria_nome, categoria_ativo) %>%
+  filter(categoria_ativo == 1) %>% 
+  select (-categoria_ativo)
+Encoding(categoria$categoria_nome) <- 'latin1'
+## Primeira vez pra verificar quais são os top10
+ng_top10 <- ng_ij_hist_ij_ven_ij_np_ij_pd %>%
+  select(produto_categoria_id, np_valor) %>%
+  group_by(produto_categoria_id) %>%
+  mutate(faturamento = sum(np_valor)) %>%
+  distinct (produto_categoria_id, .keep_all = TRUE) %>%
+  arrange(desc(faturamento)) %>%
   collect ()
-
-#usando função pra criar outra coluna com número formatado (em Real, com pontos)
-ng_ij_vn_ij_np_fech_fat <- ng_ij_vn_ij_np_fech_fat %>%
-  mutate(total_fat_t = func_fmt_din(total_fat))
-
-### Gráfico n3 - Faturamento de negócios fechados em anat
-#########################################################
-if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
-  n3 <- plot_ly(ng_ij_vn_ij_np_fech_fat, type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
-              color = ~negocio_status,
-              colors = c("#32CD32", "yellow", "orange", "#DE0D26"),
-              name = ~negocio_status,
-              showlegend = T
-              )
-  
-  n3 <- n3 %>%
-    layout(barmode = 'stack',
-           xaxis = list(title = ''),
-           yaxis = list(title = ''),
-           legend = list(orientation = "h", x = 0.5,
-                       xanchor = "center"))
+##pega só os top10
+top10 <- head.matrix(ng_top10, n=10)
+top10_ij <- inner_join(top10, categoria, by = c("produto_categoria_id"="categoria_id"))
+#Removendo a contagem que ele fez de faturamento (usado pra gerar o top10)
+top10_ij <- top10_ij[, -2:-3]
+top10_ij <- as.data.frame(top10_ij)
+## Transformando tudo em "OUTRA" -1
+ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat <- left_join(ng_ij_hist_ij_ven_ij_np_ij_pd, top10_ij, by=c("produto_categoria_id" = "produto_categoria_id"))
+ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat$produto_categoria_id[is.na(ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat$categoria_nome)] <- "-1"
+ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat$categoria_nome[is.na(ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat$categoria_nome)] <- "OUTRA"
+## Removendo os NA (três negócios cadastrados errados)
+ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat <- ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat[!is.na(ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat$np_produto_id),]
+## Agora pra agrupar todos (já trocado os anteriores pra categoria "OUTRA")
+ng_top10_ag <- ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat %>%
+  select(produto_categoria_id, np_valor) %>%
+  group_by(produto_categoria_id) %>%
+  mutate(faturamento = sum(np_valor)) %>%
+  distinct (produto_categoria_id, .keep_all = TRUE) %>%
+  arrange(desc(faturamento)) %>%
+  collect ()
+##pega só os top10
+top10 <- head.matrix(ng_top10_ag, n=10)
+top10_ij <- inner_join(top10, categoria, by = c("produto_categoria_id"="categoria_id"))
+#Removendo a contagem que ele fez de faturamento (usado pra gerar o top10)
+top10_ij <- top10_ij[, -2]
+top10_ij <- top10_ij[, -2]
+top10_ij <- as.data.frame(top10_ij)
+ng_top_ag <- inner_join(ng_top10_ag, top10_ij, by=c("produto_categoria_id" = "produto_categoria_id"))
+#conversão de faturamento para texto
+ng_top_ag <- ng_top_ag %>%
+  mutate(fat_t = func_fmt_din(faturamento))
+##Chart gerado para o treemap de categorias por faturamento em anat
+chart_ng_top_ag <- ng_top_ag
+### Gráfico hc_n4 - Valor financeiro de negócios em anat  (por categoria)
+#################################################
+nrow(chart_ng_top_ag)
+if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
+  hc_n4 <- chart_ng_top_ag %>%
+    hchart (
+      type = "treemap",
+      hcaes(x=categoria_nome, value=faturamento, color = faturamento, name = categoria_nome)) %>%
+    hc_tooltip(formatter = JS("function () { return '<b>' + this.point.categoria_nome + '</b><br /> ' + ' <br />' + this.point.fat_t;}")) %>%
+    hc_colorAxis(minColor = "#ADD8E6", maxColor = "#3182FF")
 }else {
-  n3 <- s_dados
+  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
+  hc_n4 <- s_dados
 }
-
 if(dash == F){
-  n3
+  hc_n4
 }
-
-#########################################################
-
-### Idade dos negócios
-###################################################################################################################################
-##Filtrar vendedores ativos e empresa
-ng_ij_hist_ij_ven_emp <- negocio_ij_historico_ij_vendedor_total %>%
-  filter (vendedor_empresa_id == empresa)
-
-##filtrando dois negócios que tem seu status 0 (possivel erro)
-ng_ij_hist_ij_ven_emp <- ng_ij_hist_ij_ven_emp %>%
-  filter(negocio_negocio_situacao_id != 0)
-
-## Vou ordenar por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais novas, ficar só com a primeira atualização após mudança de status
-ng_ij_hist_ij_ven_emp_idd <- ng_ij_hist_ij_ven_emp[order(ng_ij_hist_ij_ven_emp$historico_negocio_situacao_situacao_id, ng_ij_hist_ij_ven_emp$negocio_id), ]
-
-##Aqui estou removendo duplicatas (de outra forma), que removem apenas quando o histórico_situacao e negocio_id se repetem
-ng_ij_hist_ij_ven_emp_idd <- subset(ng_ij_hist_ij_ven_emp_idd, !duplicated(subset(ng_ij_hist_ij_ven_emp_idd, select=c(negocio_id))))
-
-##filtrando apenas negócios não fechados negocio_situacao_id != 4,5,6,7,9
-ff = c(4,5,6,7,9)
-
-ng_ij_hist_ij_ven_ab <- ng_ij_hist_ij_ven_emp_idd %>%
-  filter(!negocio_negocio_situacao_id %in% ff)
-
-
-status_aberto = c("1 - em negociacao", "2 - montagem de cadastro", "3 - aguardando aprovacao", "4 - financiamento aprovado", "0 - intencao ou prospeccao")
-##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
-ng_ij_hist_ij_ven_ab$negocio_status <- with(ng_ij_hist_ij_ven_ab, cut(negocio_negocio_situacao_id, breaks = c(0,1,2,3,8,10),
-                                                                      labels = status_aberto))
-
-##filtrando dois negócios que tem seu status 0 (possivel erro)
-ng_ij_hist_ij_ven_ab <- ng_ij_hist_ij_ven_ab %>%
-  filter(negocio_negocio_situacao_id != 0)
-
-idades = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses")
-
-ng_ij_hist_ij_ven_idd <- ng_ij_hist_ij_ven_ab %>%
-  select (negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, vendedor_nome, historico_negocio_situacao_data) %>%
-  mutate(idade = (as.integer(today() - as_date(negocio_data_cadastro)))) %>%
-  mutate(idade_cat = NA) %>%
-  arrange(idade)
-
-ng_ij_hist_ij_ven_idd$idade_cat <- with(ng_ij_hist_ij_ven_idd, cut(idade, breaks = c(0,60, 180, 365, 730, 10000),
-                                                                   label = idades))
-
-##Aqui eu posso fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios c/status) e depois o join, sem o select, ou então usar o mutate como foi feito
-ng_ij_hist_ij_ven_num <- ng_ij_hist_ij_ven_idd %>%
-  select(negocio_id, negocio_vendedor_id, vendedor_nome, idade, idade_cat) %>%
-  group_by(idade_cat, negocio_vendedor_id) %>%
-  mutate(num_negocios_idades = n()) %>%
-  distinct (idade_cat, .keep_all = TRUE) %>%
+#################################################
+### Aqui começa o gráfico de Tipos de máquina faturadas por categoria, em anat
+#################################################
+ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat_fat <-  ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat %>%
+  filter(negocio_negocio_situacao_id == 4)
+## Agora pra agrupar todos (já trocado os anteriores pra categoria "OUTRA")
+ng_top10_ag_fat <- ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat_fat %>%
+  select(produto_categoria_id, np_valor) %>%
+  group_by(produto_categoria_id) %>%
+  mutate(faturamento = sum(np_valor)) %>%
+  distinct (produto_categoria_id, .keep_all = TRUE) %>%
+  arrange(desc(faturamento)) %>%
   collect ()
-
-##Usado pra ordenar o gráfico
-ng_ij_hist_ij_ven_num$idade_cat = factor(ng_ij_hist_ij_ven_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
-
-if (nrow(ng_ij_hist_ij_ven_num) > 0){
-  n6 <- plot_ly(ng_ij_hist_ij_ven_num, type = 'bar', orientation = 'h', x=~num_negocios_idades , y=~reorder(vendedor_nome, desc(vendedor_nome)),
-              color = ~idade_cat,
-              colors = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"))
+ng_top_ag_fat <- inner_join(ng_top10_ag_fat, top10_ij, by=c("produto_categoria_id" = "produto_categoria_id"))
+ng_top_ag_fat <- ng_top_ag_fat %>%
+  select (produto_categoria_id, categoria_nome, faturamento)
+#Removendo tabelas não mais usadas
+if (teste == F) {
+  #tabelas
+  rm(ng_top10, ng_top10_ag, top10, top10_ij, ng_ij_hist_ij_ven_ij_np_ij_pd, ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat)
+}
+#conversão de faturamento para texto
+ng_top_ag_fat <- ng_top_ag_fat %>%
+  mutate(fat_t = func_fmt_din(faturamento))
+##Chart gerado para o treemap de categorias por faturamento em anat
+chart_ng_top_ag_fat <- ng_top_ag_fat
+### Gráfico hc_n5 - Máquinas faturadas em anat (por categoria)
+if (nrow(chart_ng_top_ag_fat) > 0 & sum(chart_ng_top_ag_fat$faturamento) > 0){
+  hc_n5 <- chart_ng_top_ag_fat %>%
+    hchart (
+      "treemap",
+      hcaes(x=categoria_nome, value=faturamento, color = faturamento)) %>%
+    hc_tooltip(formatter = JS("function () { return '<b>' + this.point.categoria_nome + '</b><br /> ' + ' <br />' + this.point.fat_t;}")) %>%
+    hc_colorAxis(minColor = "#90EE90", maxColor = "#32CD32")
+}else {
+  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
+  hc_n5 <- s_dados
+}
+if(dash == F){
+  hc_n5
+}
+if (teste == F) {
+  rm(ng_top_ag, ng_top_ag_fat, ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat_fat, chart_ng_top_ag, chart_ng_top_ag_fat, ng_top10_ag_fat, ng_ij_hist_ij_ven_anat)
+}
+#################################################
+##Começando scripts de mapas
+#########################################################################################################
+#########################################################################################################
+##Distribuição de clientes, mostrando no label nome do cliente, nome do vendedor e última visita
+cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
+  select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_vendedor_id, cliente_empresa_id)
+#Arrumando encoding
+Encoding(cliente$cliente_nome) <- 'latin1'
+##Parque de máquinas
+##Mostrar distribuição de máquinas por categoria
+#######################################################################
+parque_maquina <- fread("Tabelas/parque_maquina.csv", colClasses = c(pm_id = 'character', pm_cliente_id = 'character', pm_produto_id = 'character')) %>%
+  select(pm_id, pm_cliente_id, pm_produto_id, pm_ano_modelo, pm_ativo) %>%
+  filter (pm_ativo == 1)
+##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
+marca <- fread("Tabelas/marca.csv", colClasses = c(marca_id = 'character')) %>%
+  select(marca_id, marca_nome)
+marca_categoria <- fread("Tabelas/marca_categoria.csv", colClasses = c(marca_categoria_marca_id = 'character',marca_categoria_categoria_id  = 'character'))
+##Alterando os que não possuem latitude/longitude para 0 (que será filtrado depois)
+cliente$cliente_latitude[cliente$cliente_latitude == ''] <- '0'
+cliente$cliente_longitude[cliente$cliente_longitude == ''] <- '0'
+cliente$cliente_latitude[cliente$cliente_latitude == '-'] <- '0'
+cliente$cliente_longitude[cliente$cliente_longitude == '-'] <- '0'
+##Clientes da empresa correta ##Clientes com valor NA, valores 0 e valores positivos de latlong (hemisf norte, leste do globo) removidos
+cliente_c_loc <- cliente %>%
+  filter (cliente_empresa_id == empresa, cliente_latitude < 0, cliente_longitude < 0) %>%
+  rename(lat = cliente_latitude, long = cliente_longitude) %>%
+  mutate(lat = as.numeric(lat), long = as.numeric(long)) %>%
+  filter (!is.null(lat), !is.na(lat))
+cli_in_pm <- inner_join(cliente_c_loc, parque_maquina, by = c("cliente_id" = "pm_cliente_id")) %>%
+  select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id)
+cli_in_pm_in_p <- inner_join(cli_in_pm, produto, by = c("pm_produto_id" = "produto_id")) %>%
+  select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
+cli_in_pm_in_p_in_m <- inner_join(cli_in_pm_in_p, marca, by = c("produto_marca_id" = "marca_id")) %>%
+  select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id, produto_nome, produto_marca_id, marca_nome, produto_categoria_id, produto_empresa_id)
+#########################
+##Começando o top para tratores
+#########################
+##Aqui obtenho todos os clientes e marcas, próximo passo é fazer o top5
+cli_in_pm_cont_t <- cli_in_pm_in_p_in_m %>%
+  select(cliente_id, cliente_nome, lat, long, produto_marca_id, marca_nome, produto_categoria_id) %>%
+  filter(produto_categoria_id == 1) %>%
+  group_by(cliente_id, produto_marca_id) %>%
+  mutate(cont = n()) %>%
+  distinct (cliente_id, .keep_all = T) %>%
+  ungroup()
+##Criando o top5 de categorias
+cli_in_pm_cont_top_t <- cli_in_pm_cont_t %>%
+  group_by(marca_nome) %>%
+  mutate(cont = sum(cont)) %>%
+  distinct(marca_nome, .keep_all = T) %>%
+  select (marca_nome, produto_marca_id, cont) %>%
+  arrange(desc(cont), marca_nome) %>%
+  ungroup()
+top5_t <- head.matrix(cli_in_pm_cont_top_t, 5)
+top10_t <- head.matrix(cli_in_pm_cont_top_t, 10)
+aux_t <- top5_t[,1]
+cli_in_pm_cont_top_t_aux <- cli_in_pm_cont_t %>%
+  filter (marca_nome %in% aux_t$marca_nome)
+n_color <- nrow(cli_in_pm_cont_top_t_aux %>%
+                  group_by(produto_marca_id) %>%
+                  distinct(produto_marca_id) %>%
+                  ungroup())
+#Usando nome da marca como factor
+cli_in_pm_cont_top_t_aux$marca_nome <- factor(cli_in_pm_cont_top_t_aux$marca_nome)
+##Adicionando pequenas variações
+cli_in_pm_cont_top_t_aux$lat <- jitter(cli_in_pm_cont_top_t_aux$lat, factor = .1, amount = 0)
+cli_in_pm_cont_top_t_aux$long <- jitter(cli_in_pm_cont_top_t_aux$long, factor = .1, amount = 0)
+#########################
+##Começando o top para colheitadeiras
+#########################
+##Aqui obtenho todos os clientes e marcas, próximo passo é fazer o top5
+cli_in_pm_cont_c <- cli_in_pm_in_p_in_m %>%
+  select(cliente_id, cliente_nome, lat, long, produto_marca_id, marca_nome, produto_categoria_id) %>%
+  filter(produto_categoria_id == 2) %>%
+  group_by(cliente_id, produto_marca_id) %>%
+  mutate(cont = n()) %>%
+  distinct (cliente_id, .keep_all = T) %>%
+  ungroup()
+##Criando o top5 de categorias
+cli_in_pm_cont_top_c <- cli_in_pm_cont_c %>%
+  group_by(marca_nome) %>%
+  mutate(cont = sum(cont)) %>%
+  distinct(marca_nome, .keep_all = T) %>%
+  select (marca_nome, produto_marca_id, cont) %>%
+  arrange(desc(cont), marca_nome) %>%
+  ungroup()
+top5_c <- head.matrix(cli_in_pm_cont_top_c, 5)
+top10_c <- head.matrix(cli_in_pm_cont_top_c, 10)
+aux_c <- top5_c[,1]
+cli_in_pm_cont_top_c_aux <- cli_in_pm_cont_c %>%
+  filter (marca_nome %in% aux_c$marca_nome)
+n_color <- nrow(cli_in_pm_cont_top_c_aux %>%
+                  group_by(produto_marca_id) %>%
+                  distinct(produto_marca_id) %>%
+                  ungroup())
+#Usando nome da marca como factor
+cli_in_pm_cont_top_c_aux$marca_nome <- factor(cli_in_pm_cont_top_c_aux$marca_nome)
+##Adicionando pequenas variações
+cli_in_pm_cont_top_c_aux$lat <- jitter(cli_in_pm_cont_top_c_aux$lat, factor = .1, amount = 0)
+cli_in_pm_cont_top_c_aux$long <- jitter(cli_in_pm_cont_top_c_aux$long, factor = .1, amount = 0)
+##Se precisar consultar ícones, tamanho do ícone, marcas e marcas_ids
+# marcas_ic_co <-read.csv("Icons/marcas_icon_csv.csv") %>%
+marcas_icon <- iconList(
+  '1' = makeIcon("Icons/NH_r.png", 23, 24),          ##Caso precise consultar, olhar o csv
+  '3' = makeIcon("Icons/CI_r.png", 28, 24),
+  '4' = makeIcon("Icons/JD_r.png", 26, 24),
+  '5' = makeIcon("Icons/MF_r.png", 34, 24),
+  '6' = makeIcon("Icons/agrale_r.png", 34, 24),
+  '11' = makeIcon("Icons/valtra_r.png", 26, 24),
+  '12' = makeIcon("Icons/yanmar_r.png", 44, 24),
+  '13' = makeIcon("Icons/jacto_r.png", 24, 24),
+  '120191031172113' = makeIcon("Icons/ponsse_r.png", 24, 24),
+  '120130518080852' = makeIcon("Icons/valmet_r.png", 26, 24),
+  '120120724031949' = makeIcon("Icons/ideal_r.png", 19, 24),
+  '120130802084245' = makeIcon("Icons/SLC_r.png", 26, 24),
+  '120130522055326' = makeIcon("Icons/CBT_r.png", 28, 28),
+  '120191031162533' = makeIcon("Icons/komatsu_r.png", 26, 24),
+  '120191031171837' = makeIcon("Icons/JD_r.png", 26, 20),
+  '120191031171708' = makeIcon("Icons/caterpillar_r.png", 38, 20),
+  '120191031171942' = makeIcon("Icons/logmax_r.png", 29, 20),
+  '120191031172239' = makeIcon("Icons/volvo_r.png", 24, 20),
+  '120191031171807' = makeIcon("Icons/hyundai_r.png", 45, 20),
+  '201912131603430251' = makeIcon("Icons/man_r.png", 41, 24),
+  '120190311052038' = makeIcon("Icons/vw_r.png", 32, 32)
+)
+### Gráfico m1 de distribuição das marcas (top5) m1_t = tratores, m1_c = colheitadeiras
+###################
+##Caso não haja informações para plotar o mapa (texto informando que não há informações)
+  text <- paste("Não há informações para gerar o mapa")
+  s_dados_m <- ggplot() +
+    annotate("text", x = 1, y = 6, size = 8, label = text) +
+    theme_void()
+##Tratores
+if (nrow(cli_in_pm_cont_top_t_aux) > 0){
+  m1_t <- leaflet(cli_in_pm_cont_top_t_aux) %>%
+    addTiles() %>%
+    addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon[produto_marca_id],
+               popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_t_aux$cliente_nome,
+                              "<br>",
+                              "Quantidade de máquinas ", cli_in_pm_cont_top_t_aux$marca_nome,
+                              " : ", cli_in_pm_cont_top_t_aux$cont),
+               label = ~marca_nome,
+               #clusterOptions = markerClusterOptions(),
+               group = "Ícones")
+}else {
+  ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
+  m1_t <- s_dados_m
+}
+if (nrow(cli_in_pm_cont_top_c_aux) > 0){
+  m1_c<- leaflet(cli_in_pm_cont_top_c_aux) %>%
+    addTiles() %>%
+    addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon[produto_marca_id],
+               popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_c_aux$cliente_nome,
+                              "<br>",
+                              "Quantidade de máquinas ", cli_in_pm_cont_top_c_aux$marca_nome,
+                              " : ", cli_in_pm_cont_top_c_aux$cont),
+               label = ~marca_nome,
+               #clusterOptions = markerClusterOptions(),
+               group = "Ícones")
+}else {
+  ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
+  m1_c <- s_dados_m
+}
+if(teste == F){
+  #tabelas
+  rm(top5_t, top5_c, aux_c, aux_t, n_color, cli_in_pm_cont_c, cli_in_pm_cont_t, cliente_c_loc,
+     cli_in_pm_cont_top_c_aux, cli_in_pm_cont_top_t_aux,parque_maquina, produto, marca, marca_categoria,
+     marcas_icon, categoria);
+  #variáveis
+  rm();
+}
+###################
+##Será usado apenas caso queira plotar todas as marcas como "Outros"
+##Top5 + Outra, transformando as demais em OUTRA
+#Tratores
+if(nrow(cli_in_pm_cont_top_t) > 5)
+{
+  for(i in 6:nrow(cli_in_pm_cont_top_t)){
+    cli_in_pm_cont_top_t[i,1] <- 'OUTRAS*'
+    cli_in_pm_cont_top_t[i,2] <- '-1'
+  }
+}
+##Criando o top5 (+ Outra) de categorias ##PARA TRATORES
+cli_in_pm_cont_top_t <- cli_in_pm_cont_top_t %>%
+  group_by(marca_nome) %>%
+  mutate(sum = sum(cont)) %>%
+  distinct(marca_nome, .keep_all = T) %>%
+  select (marca_nome, produto_marca_id, sum) %>%
+  arrange(desc(sum), marca_nome) %>%
+  ungroup()
+## Vou usar para consultar as cores de cada marca para o m2_t e m2_c
+#marcas_cores <- read.csv("marcas_cores.csv")
+##Cria factor e ordena o meu gráfico
+cli_in_pm_cont_top_t$marca_nome <- reorder(cli_in_pm_cont_top_t$marca_nome, desc(cli_in_pm_cont_top_t$sum))
+# marcas_ic_co <-read.csv("Icons/marcas_icon_csv.csv") %>%
+#   select (marca_id_i, cor)
+# marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
+##Alterei para txt por causa do tamanho da coluna (número muito grande, era convertido para científico)
+marcas_ic_co <-read.csv("Icons/marcas_icon_txt.txt", colClasses = c(marca_id_i = "character")) %>%
+  select (marca_id_i, cor)
+marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
+#cores_t
+cli_in_pm_cont_top_t <- inner_join(cli_in_pm_cont_top_t, marcas_ic_co, by = c("produto_marca_id" = "marca_id_i"))
+cores_t <- as.vector(cli_in_pm_cont_top_t$cor)
+#Colheitadeiras
+if(nrow(cli_in_pm_cont_top_c) > 5)
+{
+  for(i in 6:nrow(cli_in_pm_cont_top_c)){
+    cli_in_pm_cont_top_c[i,1] <- 'OUTRAS*'
+    cli_in_pm_cont_top_c[i,2] <- '-1'
+  }
+}
+##Criando o top5 (+ Outra) de categorias ##PARA COLHEITADEIRAS
+cli_in_pm_cont_top_c <- cli_in_pm_cont_top_c %>%
+  group_by(marca_nome) %>%
+  mutate(sum = sum(cont)) %>%
+  distinct(marca_nome, .keep_all = T) %>%
+  select (marca_nome, produto_marca_id, sum) %>%
+  arrange(desc(sum), marca_nome) %>%
+  ungroup()
+##Cria factor e ordena o meu gráfico
+cli_in_pm_cont_top_c$marca_nome <- reorder(cli_in_pm_cont_top_c$marca_nome, desc(cli_in_pm_cont_top_c$sum))
+#cores_c
+cli_in_pm_cont_top_c <- inner_join(cli_in_pm_cont_top_c, marcas_ic_co, by = c("produto_marca_id" = "marca_id_i"))
+cores_c <- as.vector(cli_in_pm_cont_top_c$cor)
+#############################################################################################
+##Caso não haja informações para plotar o gráfico(texto informando que não há informações p/ o período)
+text <- paste("Não há informações para gerar o gráfico")
+s_dados_g <- ggplot() +
+  annotate("text", x = 1, y = 6, size = 8, label = text) +
+  theme_void()
+### Gráfico m2 de distribuição das marcas (top5)
+###################
+if (nrow(cli_in_pm_cont_top_t) > 0){
+  m2_t <- plot_ly(cli_in_pm_cont_top_t, type = 'bar', orientation = 'v',
+                  x = ~marca_nome,
+                  y = ~sum,
+                  # color = ~pal(marca_nome), ##Pal deixou de funcionar, procurar depois
+                  color = ~marca_nome,     #Se quiser setar pela tabela, com join, senáo usar o factor como é feito acima
+                  colors = cores_t,
+                  showlegend = FALSE)
   
-  n6 <- n6 %>%
-    layout(barmode = 'stack',
-           xaxis = list(title = ''),
+  m2_t <- m2_t %>%
+    layout(xaxis = list(title = ''),
            yaxis = list(title = ''))
 }else {
-  n6 <- s_dados
+  ##Caso não haja informações para plotar o gráfico(texto informando que não há informações p/ o período)
+  m2_t <- s_dados_g
 }
 if(dash == F){
-  n6
+  m2_t
 }
-if (teste == F) {
-  #tabelas
-  rm(ng_ij_hist_ij_ven_num, ng_ij_hist_ij_ven_ab)
-  #variáveis
-  rm(ff, idades, status_aberto)
-}
-###########################################
-
-
-
-###Negócios abertos da empresa
-############################################################################
-ng_ij_hist_ij_emp_num <- ng_ij_hist_ij_ven_idd %>%
-  select(idade, idade_cat) %>%
-  group_by(idade_cat) %>%
-  mutate(num_negocios_idades = n()) %>%
-  distinct (idade_cat, .keep_all = TRUE) %>%
-  collect ()
-
-total_negocios = sum(ng_ij_hist_ij_emp_num$num_negocios_idades)
-
-ng_ij_hist_ij_emp_num <- ng_ij_hist_ij_emp_num %>%
-  select(idade, idade_cat, num_negocios_idades) %>%
-  group_by(idade_cat) %>%
-  mutate(porcentagem = num_negocios_idades/total_negocios) %>%
-  mutate(porcent = scales::percent(porcentagem)) %>%
-  distinct (idade_cat, .keep_all = TRUE) %>%
-  arrange(idade) %>%
-  collect ()
-
-ng_ij_hist_ij_emp_num$idade_cat = factor(ng_ij_hist_ij_emp_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
-
-### Gráfico n7 - Negócios abertos da empresa, pizza
-colors_pie <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
-if (nrow(ng_ij_hist_ij_emp_num) > 0){
-  n7 <- plot_ly(ng_ij_hist_ij_emp_num, labels = ~idade_cat, values = ~num_negocios_idades, type = 'pie', sort = F,
-                texttemplate = "%{value} (%{percent})",
-                hovertemplate = paste ("%{label} <br>",
-                                       "Equivalente a %{percent}",
-                                       "<extra></extra>"),
-                marker = list(colors = colors_pie))
-}else {
-  n7 <- s_dados
+## Gráfico m2 de distribuição das marcas (top5)
+###################
+if (nrow(cli_in_pm_cont_top_c) > 0){
+  m2_c <- plot_ly(cli_in_pm_cont_top_c, type = 'bar', orientation = 'v',
+                  x = ~marca_nome,
+                  y = ~sum,
+                  # color = ~pal(marca_nome),
+                  color = ~marca_nome,     #Se quiser setar pela tabela, com join, senáo usar o factor como é feito acima
+                  colors = cores_c,
+                  showlegend = FALSE)
+  
+  m2_c <- m2_c %>%
+    layout(xaxis = list(title = ''),
+           yaxis = list(title = ''))
+}else{
+  ##Caso não haja informações para plotar o gráfico(texto informando que não há informações p/ o período)
+  m2_c <- s_dados_g
+  
 }
 if(dash == F){
-  n7
+  m2_c
 }
-
-if (teste == F) {
+if(teste == F){
   #tabelas
-  rm(ng_ij_hist_ij_ven_idd, ng_ij_hist_ij_emp_num)
+  rm(cli_in_pm_cont_top_t, cli_in_pm_cont_top_c, cli_in_pm_in_p_in_m, cli_in_pm_in_p, cli_in_pm, top10_c, top10_t,
+     marcas_ic_co);
   #variáveis
-  rm(colors_pie, total_negocios)
+  rm(cores_c, cores_t);
 }
-#######################################################################################################
-
-##############################################
-###Tempo médio de vida de um negócio
-
-ng_cad_fin <- ng_ij_hist_ij_ven_emp %>%
-  select (negocio_id, negocio_data_cadastro, negocio_negocio_situacao_id, historico_negocio_situacao_situacao_id, historico_negocio_situacao_data) %>%
-  arrange (desc(historico_negocio_situacao_data), negocio_id)
-
-##Aqui estou removendo duplicatas (de outra forma), que removem apenas quando negocio_id se repete
-ng_cad_fin <- subset(ng_cad_fin, !duplicated(subset(ng_cad_fin, select=c(negocio_id))))
-
-##Já estou filtrando apenas status fechados (faturado, financiamento não aprovado, desistência do cliente, perdemos para a concorrência)
-ng_cad_fin <- ng_cad_fin %>%
-  filter(negocio_negocio_situacao_id == 4 | negocio_negocio_situacao_id == 5 | negocio_negocio_situacao_id == 6 | negocio_negocio_situacao_id == 7) %>%
-  mutate(temp_d = date(historico_negocio_situacao_data) - date(negocio_data_cadastro))
-
-##Calculando tempo médio
-ng_cad_fin <- ng_cad_fin %>%
-  group_by(negocio_negocio_situacao_id) %>%
-  mutate(media_d = round(mean(temp_d)), 2) %>%
-  distinct(negocio_negocio_situacao_id, .keep_all = T) %>%
-  ungroup() %>%
-  select (negocio_negocio_situacao_id, media_d)
-
-
-##Só pra ver os nomes
-ng_cad_fin <- ng_cad_fin %>%
-  mutate(Status = case_when(negocio_negocio_situacao_id == 4 ~ "Faturado",
-                            negocio_negocio_situacao_id == 5 ~ "Fin. não aprovado",
-                            negocio_negocio_situacao_id == 6 ~ "Des. do cliente",
-                            negocio_negocio_situacao_id == 7 ~ "Perd. para conc."))
-
-if(nrow(ng_cad_fin) != 4){
-  situacao_id_ <- c(4, 5, 6, 7)
-  Status_ <- c("Faturado", "Fin. não aprovado", "Des. do cliente", "Perd. para conc.")
-  df_ng_cad_fin <- data.frame(situacao_id_, Status_)
-  df_ng_cad_fin <- left_join(df_ng_cad_fin, ng_cad_fin, by=c('situacao_id_' = 'negocio_negocio_situacao_id'))
-  df_ng_cad_fin <- df_ng_cad_fin %>%
-    select (-Status) %>%
-    rename (Status = Status_, negocio_negocio_situacao_id = situacao_id_)
-  df_ng_cad_fin$media_d[is.na(df_ng_cad_fin$media_d)] <- '0'
-  ng_cad_fin <- df_ng_cad_fin
-}
-
-ng_cad_fin <- ng_cad_fin %>%
-  mutate (media_d = paste(as.character(media_d),"dias")) %>%
-  arrange(negocio_negocio_situacao_id)
-
-# seq(2,10,7.5)
-# rep(seq(2, 9, 6.5), 2)
-# rep(6.5, 2)
-# rep(2,2)
-
-ng_cad_fin <- ng_cad_fin[-1]
-ng_cad_fin <- ng_cad_fin %>%
-  rename(Media = media_d)
-library(gt)
-n_13_t <- ng_cad_fin %>%
-  gt()
-
-valuebox <- data.frame(
-  x = rep(seq(2, 9, 6.5), 2),
-  y = c(rep(6.5, 2), rep(2,2)),
-  h = rep(4.25, 4),
-  w = rep(6.25, 4),
-  value = ng_cad_fin$Media,
-  info = ng_cad_fin$Status,
-  color = factor(1:4))
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
-if (nrow(valuebox) > 0){
-  n13 <- ggplot(valuebox, aes(x=x, y=y, height = h, width = w, label = info)) +
-    geom_tile(aes(fill = color)) +
-    geom_text(color = "white", fontface = "bold", size = 18,
-              aes(label = value, x = x - 2.9, y = y + 1), hjust = 0) +
-    geom_text(color = "white", fontface = "bold", size = 12,
-              aes(label = info, x = x - 2.9, y = y - 1), hjust = 0) +
-    coord_fixed() +
-    scale_fill_manual(values = colors) +
-    # geom_text(size = 20, aes(label = shape, family = font_family,
-    #                          x = x + 1.5, y = y + 0.5), alpha = 0.25) +
-    theme_void() +
-    guides(fill = FALSE)
-}else {
-  n13 <- s_dados
-}
-
-if (dash == F){
-  n13
-}
-
-### Gráfico n14 - Tempo de vida médio de um negócio perdido (status = desistência do cliente ou perdemos para concorrência)
-
-if (dash == F){
-  #n14
-}
-
-if (teste == F){
-  #tabelas
-  rm(ng_ij_hist_ij_ven_emp, valuebox)
-  #variáveis
-  rm()
-}
-
-
 ```
 
-Faturamento de negócios
+
+Top 10 Categorias
 =======================================================================
 
-Column 
+Column {data-width=350}
 -----------------------------------------------------------------------
-### Faturamento dos negócios cadastrados no ano 2020, por vendedor  (Status atual) 
+###  Valor Financeiro de Negócios Cadastrados, por categoria em 2020
 
-```{r, fig.height=7, fig.width=6}
-### Gráfico n0 - Número de clientes por vendedor
-n0
-
+```{r}
+### Gráfico hc_n4 - Valor financeiro de negócios em 2020  (por categoria)
+hc_n4
 ```
 
+Column {data-width=350}
+-----------------------------------------------------------------------
+### Valor Financeiro de Negócios Faturados, por categoria em 2020
 
-### Faturamento de todos os negócios que foram fechados em 2020
-
-```{r, fig.height=7, fig.width=6}
-### Gráfico n3 - Faturamento de negócios fechados em 2020
-n3
-
+```{r}
+### Gráfico hc_n5 - Máquinas faturadas em 2020 (por categoria)
+hc_n5
 ```
 
-
-Idade dos negócios
+Marcas (Tratores)
 =======================================================================
 
-Column {.sidebar data-width=750 data-padding=10}
--------------------------------------
-```{r, fig.height=7, fig.width=7.5}
-### Gráfico n6 - Idade dos negócios abertos, por vendedor, por idade do negocio
-n6
+Column {data-width=750}
+-----------------------------------------------------------------------
+
+### Mapa das marcas
+```{r}
+### Gráfico m1 de distribuição das marcas (top5)
+m1_t
 ```
 
-Row {data-height=150}
-------------------------------------
+Column {data-width=350}
+-----------------------------------------------------------------------
 
-### Faturado
-```{r, fig.height=2, fig.width=4}
-colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
-
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[1,1], icon = "fa-calendar", color="#32CD32")
+### Distribuição das marcas
+```{r}
+### Gráfico m2 de distribuição das marcas
+m2_t
 ```
 
+Marcas (Colheitadeiras)
+=======================================================================
 
-### Fin. não aprovado
-```{r, fig.height=2, fig.width=4}
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[2,1], icon = "fa-calendar", color="#FFD700")
+Column {data-width=750}
+-----------------------------------------------------------------------
 
+### Mapa das marcas
+```{r}
+### Gráfico m1 de distribuição das marcas (top5)
+m1_c
 ```
 
-Row {data-height=150}
-------------------------------------
+Column {data-width=350}
+-----------------------------------------------------------------------
 
-### Des. do cliente
-```{r, fig.height=2, fig.width=4}
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[3,1], icon = "fa-calendar", color="#FFA500")
-
-```
-
-### Perd. p/ concorrência
-```{r, fig.height=2, fig.width=4}
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[4,1], icon = "fa-calendar", color="#DE0D26")
-
-```
-
-Row {data-height=300}
-------------------------------------
-
-### Negócios abertos da empresa
-```{r, fig.height=4, fig.width=4}
-### Gráfico n7 - Negócios abertos da empresa, pizza
-n7
+### Distribuição das marcas
+```{r}
+### Gráfico m2 de distribuição das marcas
+m2_c
 ```

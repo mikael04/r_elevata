@@ -51,7 +51,7 @@ mes_atual = month(today())
 s_dados_path <- "s_dados.png"
 
 ##Teste
-  empresa = 27
+  empresa = 36
 
 ###################################
 
@@ -157,7 +157,7 @@ vc_ij_vre_ij_v <- inner_join(vc_ij_vre, vendedor, by = c('vc_vendedor_id' = 'ven
   select (vc_id, vc_vendedor_id, vendedor_nome, vc_resultado_id, resultado)
 
 ##Agrupando por vendedor e por motivo (vc_status_id, depois mostrar so motivo)
-vc_ij_vse_ij_v <- vc_ij_vse_ij_v %>%
+vc_ij_vse_ij_v_ag <- vc_ij_vse_ij_v %>%
   group_by(vc_vendedor_id, vc_status_id) %>%
   mutate(motivo_n = n()) %>%
   distinct(vc_vendedor_id, .keep_all = T) %>%
@@ -166,7 +166,7 @@ vc_ij_vse_ij_v <- vc_ij_vse_ij_v %>%
 ### Gráfico v0 - Motivo das visitas (status) por vendedor em 2020
 if(nrow(vc_ij_vse_ij_v) > 0){
   ##descobrindo numero de status diferentes para criar paleta de cores
-  n_m_color <- n_distinct(vc_ij_vse_ij_v$vc_status_id)
+  n_m_color <- n_distinct(vc_ij_vse_ij_v_ag$vc_status_id)
   if (n_m_color < 3){
     if (n_m_color <2){
       brbg_mot <- '#9ACD32'
@@ -183,7 +183,7 @@ if(nrow(vc_ij_vse_ij_v) > 0){
   
   axis_h <- list(
     title = "")
-  v0 <- plot_ly(vc_ij_vse_ij_v, type = "bar", orientation = 'h', x = ~motivo_n, y = ~reorder(vendedor_nome, desc(vendedor_nome)), color = ~motivo,
+  v0 <- plot_ly(vc_ij_vse_ij_v_ag, type = "bar", orientation = 'h', x = ~motivo_n, y = ~reorder(vendedor_nome, desc(vendedor_nome)), color = ~motivo,
                 colors = brbg_mot,
                 name = ~motivo)
   v0 <- v0 %>%
@@ -207,11 +207,11 @@ vc_ij_vre_ij_v_ag <- vc_ij_vre_ij_v %>%
   ungroup()
 
 ### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
-if(nrow(vc_ij_vse_ij_v) > 0){
+if(nrow(vc_ij_vre_ij_v) > 0){
   ##descobrindo numero de status diferentes para criar paleta de cores
   n_r_color <- n_distinct(vc_ij_vre_ij_v_ag$vc_resultado_id)
-  if (n_m_color < 3){
-    if (n_m_color <2){
+  if (n_r_color < 3){
+    if (n_r_color <2){
       brbg_res <- '#9ACD32'
     }else{
       brbg_res <- c('#9ACD32', '#018571')
@@ -220,7 +220,7 @@ if(nrow(vc_ij_vse_ij_v) > 0){
     if(n_r_color > 11){
       brbg_res <- c(brewer.pal(name="Dark2", n = 8), brewer.pal(name="BrBG", n = 8))
     }else{
-      brbg_res <- brewer.pal(n_m_color,'BrBG')
+      brbg_res <- brewer.pal(n_r_color,'BrBG')
     }
   }
   
@@ -271,7 +271,7 @@ cli_p_v_ij_vend <- inner_join(cli_p_v, vendedor, by = c('cliente_vendedor_id' = 
 
 
 ##Já é filtrado em 2020 (filtra na tabela de visitas_cliente)
-vc_ij_vse_ij_v_count <- vc_ij_vse_ij_v %>%
+vc_ij_vse_ij_v_count <- vc_ij_vse_ij_v_ag %>%
   select (vc_vendedor_id, motivo_n) %>% ##Não vou salvar o nome pq vou fazer uma junção com a outra tabela, então só preciso do id
   group_by(vc_vendedor_id) %>%
   mutate(n_visitas = sum(motivo_n)) %>%
@@ -305,12 +305,14 @@ cli_s_neg <- anti_join(cliente, negocio, by=c("cliente_id" = "negocio_cliente_id
   select(cliente_id) %>%
   group_by(cliente_id) %>%
   ungroup() %>%
+  distinct(cliente_id) %>%
   mutate (neg = F)
 ##Clientes com negócio
 cli_c_neg <- cli_ij_ng %>%
   select (cliente_id) %>%
   group_by(cliente_id) %>%
   ungroup() %>%
+  distinct(cliente_id) %>%
   mutate (neg = T)
 
 cli_s_neg_ij_vis <- inner_join(cli_s_neg, visita_cliente, by = c("cliente_id" = "vc_cliente_id"))
