@@ -30,6 +30,8 @@ library(lubridate)
 library(ggplot2)
 #Lib usada para os quadros
 library(emojifont)
+#Lib usada para ler imagens
+library(knitr)
 
 
 
@@ -46,6 +48,10 @@ ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
 mes_atual = month(today())
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
+
+##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
+#caminho para imagem de sem dados
+s_dados_path <- "s_dados.png"
 
   empresa <- 78
 ###################################
@@ -118,12 +124,6 @@ if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
 }
 
-##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
-text <- paste("Não há informações para o período")
-s_dados <- ggplot() +
-  annotate("text", x = 1, y = 6, size = 8, label = text) +
-  theme_void()
-
 ###################################
 
 ##junção de proposta com negócio
@@ -194,7 +194,8 @@ if(nrow(prop_ij_neg_cont_vend_a_2020) > 0){
   
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  p0 <- s_dados
+  #p0 <- s_dados
+  p0 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   p0
@@ -221,7 +222,8 @@ if(nrow(prop_ij_neg_cont_2020) > 0){
   
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  p1 <- s_dados
+  #p1 <- s_dados
+  p1 <- include_graphics(s_dados_path)
 }
 
 if(dash == F){
@@ -268,7 +270,8 @@ if(nrow(prop_ij_neg_ij_vend_cont_us) > 0){
                                        "<extra></extra>"))
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  p2 <- s_dados
+  #p2 <- s_dados
+  p2 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   p2
@@ -431,7 +434,8 @@ if(nrow(fat_tot_categorias) > 0){
       legend = list(x=0.7, y=0.8))
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  p3 <- s_dados
+  #p3 <- s_dados
+  p3 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   p3
@@ -553,7 +557,8 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
       )
   }else {
     ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-    p4 <- s_dados
+    #p4 <- s_dados
+    p4 <- include_graphics(s_dados_path)
   }
 } else{
   p4 <- NULL;
@@ -627,7 +632,8 @@ if(nrow(p_ij_n_ij_pp_sum_cat) > 0){
   p5 <- p5 %>%
     layout(barmode = 'identity', xaxis = ax, yaxis = ax)
 }else {
-  p5 <- s_dados
+  #p5 <- s_dados
+  p5 <- include_graphics(s_dados_path)
 }
 
 
@@ -724,7 +730,8 @@ if(nrow(p_ij_ppa_cont_modo_ij_pmf) > 0){
     add_pie(data = p_ij_ppa_cont_modo_ij_pmf, values = ~cont_modo, labels = ~Modo,
             name = 'Instituição financeira')
 }else {
-  p6 <- s_dados
+  #p6 <- s_dados
+  p6 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   p6
@@ -737,7 +744,8 @@ if(nrow(p_ij_ppa_cont_forma_ij_pmf) > 0){
     add_pie(data = p_ij_ppa_cont_forma_ij_pmf, values = ~cont_forma, labels = ~Forma,
             name = 'Forma de pagamento')
 }else {
-  p7 <- s_dados
+  #p7 <- s_dados
+  p7 <- include_graphics(s_dados_path)
 }
 
 if(dash == F){
