@@ -28,6 +28,8 @@ library(RColorBrewer)
 library(lubridate)
 #usada para converter números em moeda
 library(leaflet)
+#lib para plotar a imagem (s_dados)
+library(knitr)
 
 
 ###################################
@@ -43,6 +45,10 @@ ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
 mes_atual = month(today())
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
+
+##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
+#caminho para imagem de sem dados
+s_dados_path <- "s_dados.png"
 
 ##Teste
   empresa = 27
@@ -70,6 +76,7 @@ func_fmt_numbr <- function(inteiro)
   inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
   return(inteiro_br)
 }
+
 
 #################################################################################
 ##Começando script visitas_clientes
@@ -130,11 +137,6 @@ if(empresa == 16){
 vendedor_a <- vendedor %>%
   filter(vendedor_ativo == T)
 
-##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
-text <- paste("Não há informações para o período")
-s_dados <- ggplot() +
-  annotate("text", x = 1, y = 6, size = 8, label = text) +
-  theme_void()
 
 ##junta as duas tabelas (status e status_empresa) pra pegar o id da empresa (vs_empresa_id) e o nome do status (vs_nome)
 vis_st_emp <- inner_join(visita_status, visita_status_empresa, by = c('vs_id'= 'vse_status_id'))
@@ -190,7 +192,7 @@ if(nrow(vc_ij_vse_ij_v) > 0){
            yaxis = list(title = ''))
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  v0 <- s_dados
+  v0 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   v0
@@ -240,7 +242,7 @@ if(nrow(vc_ij_vse_ij_v) > 0){
   }
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  v1 <- s_dados
+  v1 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   v1
@@ -326,7 +328,6 @@ cli_c_neg_ij_vis_cont <- cli_c_neg_ij_vis %>%
   count(name = "num_visitas") %>%
   ungroup()
 
-
 ### Histogramas
 if(nrow(cli_c_neg_ij_vis_cont > 0)){
   
@@ -382,9 +383,9 @@ if(nrow(cli_c_neg_ij_vis_cont > 0)){
     c4_c5
   }
 }else{
-  c4 <- s_dados
-  c5 <- s_dados
-  c4_c5 <- s_dados
+  c4 <- include_graphics(s_dados_path)
+  c5 <- include_graphics(s_dados_path)
+  c4_c5 <- include_graphics(s_dados_path)
 }
 
 
@@ -486,6 +487,6 @@ if(nrow(cli_in_ven_in_vcUltVis) > 0){
     rm(cor_idade_vis, idades_vis)
   }
 }else{
-  m0 <- s_dados
+  m0 <- include_graphics(s_dados_path)
 }
 #######################################################################
