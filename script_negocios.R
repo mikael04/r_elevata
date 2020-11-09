@@ -30,7 +30,8 @@ library(lubridate)
 library(ggplot2)
 #Lib usada para os quadros
 library(emojifont)
-
+#lib para plotar a imagem (s_dados)
+library(knitr)
 
 
 ###################################
@@ -39,8 +40,16 @@ library(emojifont)
 teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = F
-####Variavel global c/ ano atual (para comparação)
+####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
 ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
+####Variavel global c/ mês atual (para comparação)
+
+mes_atual = month(today())
+####Variável global para ver se tem usados Ainda não usada
+#usados = T
+##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
+#caminho para imagem de sem dados
+s_dados_path <- "s_dados.png"
 
 ##Variável "Global"
 empresa = 1
@@ -111,12 +120,6 @@ vendedor_a <- vendedor %>%
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
   select(np_id, np_negocio_id, np_produto_id, np_quantidade,np_ativo, np_valor)
 
-##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
-text <- paste("Não há informações para o período")
-s_dados <- ggplot() +
-  annotate("text", x = 1, y = 6, size = 8, label = text) +
-  theme_void()
-
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
 produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
@@ -181,7 +184,7 @@ if (nrow(ng_ij_vn_ij_np_fat) > 0){
            legend = list(orientation = "h", x = 0.5,
                          xanchor = "center"))
 }else {
-  n0 <- s_dados
+  n0 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   n0
@@ -269,7 +272,7 @@ if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
            legend = list(orientation = "h", x = 0.5,
                          xanchor = "center"))
 }else {
-  n3 <- s_dados
+  n3 <- include_graphics(s_dados_path)
 }
 
 if(dash == F){
@@ -342,7 +345,7 @@ if (nrow(ng_ij_hist_ij_ven_num) > 0){
            xaxis = list(title = ''),
            yaxis = list(title = ''))
 }else {
-  n6 <- s_dados
+  n6 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   n6
@@ -389,7 +392,7 @@ if (nrow(ng_ij_hist_ij_emp_num) > 0){
                                        "<extra></extra>"),
                 marker = list(colors = colors_pie))
 }else {
-  n7 <- s_dados
+  n7 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   n7
@@ -487,7 +490,7 @@ if (nrow(valuebox) > 0){
     theme_void() +
     guides(fill = FALSE)
 }else {
-  n13 <- s_dados
+  n13 <- include_graphics(s_dados_path)
 }
 
 if (dash == F){

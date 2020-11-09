@@ -201,7 +201,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
       showlegend = FALSE
     )
 }else {
-  n9 <- knitr::include_graphics(s_dados_path)
+  n9 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   n9
@@ -285,7 +285,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){
                                         "<extra></extra>"),
                  marker = list(colors = colors_pie))
 }else {
-  n10 <- knitr::include_graphics(s_dados_path)
+  n10 <- include_graphics(s_dados_path)
 }
 
 if(dash == F){
@@ -341,7 +341,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes) > 0){
                                         "<extra></extra>"),
                  marker = list(colors = colors_pie))
 }else {
-  n11 <- knitr::include_graphics(s_dados_path)
+  n11 <- include_graphics(s_dados_path)
 }
 
 
@@ -766,7 +766,7 @@ if (nrow(vend_cli_vis_neg) > 0){
            xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
            yaxis = list(title = ''))
 }else {
-  c0 <- knitr::include_graphics(s_dados_path)
+  c0 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   c0
@@ -831,7 +831,7 @@ if (sum(cli_c_s_ng$n_anat) > 0){
                                      "<extra></extra>"),
               marker = list(colors = colors_pie))
 }else {
-  c2 <- knitr::include_graphics(s_dados_path)
+  c2 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   c2
