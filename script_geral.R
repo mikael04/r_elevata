@@ -173,7 +173,7 @@ ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_ab %>%
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
   mutate(tot_fat_t = func_fmt_din(total_faturado))
 
-##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
+##Começando a gambiarra (criar nova coluna com nome da categoria + valor da categoria)
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
   mutate(nome_cat_valor_fat = paste(negocio_status, "\n", tot_fat_t))
 
