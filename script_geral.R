@@ -531,9 +531,9 @@ if(anos_ant > 1) {
 }
 
 n12 <- n12 %>%
-  layout(xaxis = list(title = ''), yaxis = list(title = ''),
+  layout(xaxis = list(title = ''), yaxis = list(title = '')
          #aqui eu ajusto onde quero que apareça a legenda
-         legend = list(x=0.8, y=0.9)#)
+         #,legend = list(x=0.8, y=0.9)#)
   )
 if (dash == F){
   n12
