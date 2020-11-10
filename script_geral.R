@@ -359,12 +359,21 @@ ng_ij_hist_ij_ven_anat_fat <- ng_ij_hist_ij_ven_ij_np_anat %>%
   filter(negocio_negocio_situacao_id == 4)
 
 ##Já filtrado apenas empresa (variavel global)
+
+
+##Adicionando "0" para ficar padrão a todos, gerando apenas para os meses (do ano atual) que já passaram
 ym_aux <- seq(1, mes_atual-1, 1)
 ym <- as.character(ym_aux)
+for (i in (1:max(ym_aux))){
+  if(ym_aux[i] < 10){
+    ym[i] <- paste("0", ym[i], sep="")
+  }
+}
+
 
 fat_anat_mes_aux <-data.frame(ym)
 fat_anat_mes <- ng_ij_hist_ij_ven_anat_fat %>%
-  mutate (ym = as.integer(format(historico_negocio_situacao_data, '%m'))) %>%
+  mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
   group_by (ym) %>%
   summarize(ym_sum = sum(np_valor), .groups = 'drop') %>%
   mutate (ym = as.character(ym)) %>%
@@ -412,7 +421,7 @@ if(anos_ant > 1) {
 #ng_ij_hist_ij_ven_ij_np_2017_fat <- ng_ij_hist_ij_ven_ij_np_total %>%
 #  filter (historico_negocio_situacao_data < '2ant-01-01' & historico_negocio_situacao_data > '2016-12-31' & negocio_negocio_situacao_id == 4)
 
-ym <- c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12")
+ym <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
 #Aqui vou fazer a mesma soma dos valores dos três anos anteriores, dividindo por mês
 if(anos_ant > 1){
   if(nrow(ng_ij_hist_ij_ven_ij_np_2ant_fat) > 0){
@@ -695,7 +704,6 @@ vc_ij_vse_ij_v <- inner_join(vc_ij_vse, vendedor_a, by = c('vc_vendedor_id' = 'v
 
 ##Agrupando por vendedor e por motivo (vc_status_id, depois mostrar so motivo)
 vc_ij_vse_ij_v <- vc_ij_vse_ij_v %>%
-  select(-vc_id) %>%
   group_by(vc_vendedor_id, vc_status_id) %>%
   mutate(motivo_n = n()) %>%
   distinct(vc_vendedor_id, .keep_all = T) %>%
