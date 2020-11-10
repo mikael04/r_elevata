@@ -51,7 +51,7 @@ mes_atual = month(today())
 s_dados_path <- "s_dados.png"
 
 ##Teste
-  empresa = 36
+  empresa = 61
 
 ###################################
 
@@ -76,7 +76,6 @@ func_fmt_numbr <- function(inteiro)
   inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
   return(inteiro_br)
 }
-
 
 #################################################################################
 ##Começando script visitas_clientes
@@ -163,6 +162,11 @@ vc_ij_vse_ij_v_ag <- vc_ij_vse_ij_v %>%
   distinct(vc_vendedor_id, .keep_all = T) %>%
   ungroup()
 
+n_vend <- vc_ij_vse_ij_v_ag %>%
+  count(vendedor_nome)
+
+n_vend <- nrow(n_vend)
+
 ### Gráfico v0 - Motivo das visitas (status) por vendedor em 2020
 if(nrow(vc_ij_vse_ij_v) > 0){
   ##descobrindo numero de status diferentes para criar paleta de cores
@@ -186,10 +190,19 @@ if(nrow(vc_ij_vse_ij_v) > 0){
   v0 <- plot_ly(vc_ij_vse_ij_v_ag, type = "bar", orientation = 'h', x = ~motivo_n, y = ~reorder(vendedor_nome, desc(vendedor_nome)), color = ~motivo,
                 colors = brbg_mot,
                 name = ~motivo)
-  v0 <- v0 %>%
-    layout(barmode = 'stack',
-           xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
-           yaxis = list(title = ''))
+  if(n_vend > 15){
+    v0 <- v0 %>%
+      layout(barmode = 'stack',
+             xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
+             yaxis = list(title = ''),
+             legend = list(x = 100, y = 0.5))
+  }else{
+    v0 <- v0 %>%
+      layout(barmode = 'stack',
+             xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
+             yaxis = list(title = ''),
+             legend = list(orientation = 'h'))
+  }
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   v0 <- include_graphics(s_dados_path)
@@ -205,6 +218,7 @@ vc_ij_vre_ij_v_ag <- vc_ij_vre_ij_v %>%
   mutate(resultado_n = n()) %>%
   distinct(vc_vendedor_id, .keep_all = T) %>%
   ungroup()
+
 
 ### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
 if(nrow(vc_ij_vre_ij_v) > 0){
@@ -227,11 +241,19 @@ if(nrow(vc_ij_vre_ij_v) > 0){
   v1 <- plot_ly(vc_ij_vre_ij_v_ag, type = "bar", orientation = 'h', x = ~resultado_n, y = ~reorder(vendedor_nome, desc(vendedor_nome)), color = ~resultado,
                 colors = brbg_res,
                 name = ~resultado)
-  
-  v1 <- v1 %>%
-    layout(barmode = 'stack',
-           xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
-           yaxis = list(title = ''))
+  if(n_vend > 15){
+    v1 <- v1 %>%
+      layout(barmode = 'stack',
+             xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
+             yaxis = list(title = ''),
+             legend = list(x = 150, y = 0.5))
+  }else{
+    v1 <- v1 %>%
+      layout(barmode = 'stack',
+             xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
+             yaxis = list(title = ''),
+             legend = list(orientation = 'h'))
+  }
   if(teste == F){
     #tabelas
     rm(visita_resultado_empresa, vis_res_emp, vc_ij_vre, vc_ij_vse,
