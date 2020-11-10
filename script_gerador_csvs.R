@@ -37,9 +37,21 @@ data.table::fwrite(cliente, file="Tabelas/cliente.csv", sep = ";")
 
 ##Collect cria o df resultado da query, nesse caso, 
 empresa <- tbl(con,'empresa') %>%
-  select (empresa_id, empresa_nome, empresa_data_cadastro) %>%
+  select (empresa_id, empresa_nome, empresa_data_cadastro, empresa_ativo) %>%
   collect ()
 
+##Pegando a tabela de empresas
+empresa_a <- empresa %>%
+  select (empresa_id, empresa_nome, empresa_ativo) %>%
+  filter (empresa_ativo == T & empresa_id > '0') %>%
+  select (-empresa_ativo) %>%
+  collect ()
+
+#Arrumando encoding
+Encoding(empresa_a$empresa_nome) <- 'latin1'
+#escrevendo empresas ativas
+data.table::fwrite(empresa_a, file="empresas_ativas_id.csv", sep = ";")
+#escrevendo tabela empresas
 data.table::fwrite(empresa, file="Tabelas/empresa.csv", sep = ";")
 
 ##Collect cria o df resultado da query, nesse caso, 
