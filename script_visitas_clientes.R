@@ -175,9 +175,9 @@ if(nrow(vc_ij_vse_ij_v) > 0){
     }
   } else{
     if(n_m_color > 11){
-      brbg_mot <- colorRampPalette(brewer.pal(name="Dark2", n = 8)) (n_m_color)
+      brbg_mot <- colorRampPalette(brewer.pal(name="Paired", n = 8)) (n_m_color)
     }else{
-      brbg_mot <- brewer.pal(n_m_color,'BrBG')
+      brbg_mot <- brewer.pal(n_m_color,'Paired')
     }
   }
   
@@ -218,9 +218,9 @@ if(nrow(vc_ij_vre_ij_v) > 0){
     }
   } else{
     if(n_r_color > 11){
-      brbg_res <- c(brewer.pal(name="Dark2", n = 8), brewer.pal(name="BrBG", n = 8))
+      brbg_res <- c(brewer.pal(name="Paired", n = 8), brewer.pal(name="BrBG", n = 8))
     }else{
-      brbg_res <- brewer.pal(n_r_color,'BrBG')
+      brbg_res <- brewer.pal(n_r_color,'Paired')
     }
   }
   
