@@ -273,7 +273,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%
 ### Gráfico n10 - Pizza fechados do ano
 ##############################################
 colors_pie <- c("#32CD32", "yellow" , "orange" , "#DE0D26")
-if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){
+if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0 & sum(ng_ij_hist_ij_ven_funil_fat_fec_anat$total_faturado) > 0){
   n10 <- plot_ly(ng_ij_hist_ij_ven_funil_fat_fec_anat, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
                  text = ~total_fat_t,
                  texttemplate = "%{text}mi (%{percent})",
@@ -329,7 +329,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat
 
 colors_pie <- c("#32CD32", "yellow" , "orange" , "#DE0D26")
 
-if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes) > 0){
+if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes) > 0 & sum(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes$total_faturado) > 0){
   n11 <- plot_ly(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
                  text = ~total_fat_t,
                  texttemplate = "%{text}mi (%{percent})",
