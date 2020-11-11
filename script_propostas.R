@@ -40,7 +40,7 @@ library(knitr)
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável usada para não plotar os gráficos na dash
-dash = T
+dash = F
 ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
 ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
 ####Variavel global c/ mês atual (para comparação)
@@ -53,7 +53,7 @@ mes_atual = month(today())
 #caminho para imagem de sem dados
 s_dados_path <- "s_dados.png"
 
-  empresa <- 78
+  empresa <- 16
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -148,21 +148,7 @@ prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend %>%
   filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= '2020-01-01')
 
 
-##Aqui tenho a contagem de status da empresa
-prop_ij_neg_ij_vend_cont_2020 <- prop_ij_neg_ij_vend_2020 %>%
-  select (proposta_status) %>%
-  group_by(proposta_status) %>%
-  mutate(cont_status = n()) %>%
-  distinct(proposta_status, .keep_all = TRUE) %>%
-  ungroup ()
-
-status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
-##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
-prop_ij_neg_ij_vend_cont_2020$proposta_status <- with(prop_ij_neg_ij_vend_cont_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
-                                                                                         labels = status))
-
-##removendo os campos onde um ID de proposta não corresponde a um ID de negócio (erro no banco?) /Acho que era erro na junção (inner parece ter resolvido)
-#prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend_2020[!is.na(prop_ij_neg_ij_vend_2020$negocio_vendedor_id),]
+status = c("Pendente", "Aceito", "Recusado", "Cancelado", "Finalizado")
 
 ##Aqui tenho a contagem de status por vendedor
 prop_ij_neg_cont_vend_2020 <- prop_ij_neg_ij_vend_2020 %>%
@@ -190,7 +176,8 @@ if(nrow(prop_ij_neg_cont_vend_a_2020) > 0){
   p0 <- p0 %>%
     layout(barmode = 'stack',
            xaxis = list(title = ''),
-           yaxis = list(title = ''))
+           yaxis = list(title = ''),
+           legend = list(traceorder = 'normal'))
   
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
@@ -200,6 +187,7 @@ if(nrow(prop_ij_neg_cont_vend_a_2020) > 0){
 if(dash == F){
   p0
 }
+
 prop_ij_neg_cont_2020 <- prop_ij_neg_cont_vend_2020 %>%
   group_by(proposta_status) %>%
   mutate(cont_status = sum(cont_status)) %>%
@@ -218,7 +206,8 @@ if(nrow(prop_ij_neg_cont_2020) > 0){
   p1 <- p1 %>%
     layout(barmode = 'stack',
            xaxis = list(title = ''),
-           yaxis = list(title = ''))
+           yaxis = list(title = ''),
+           legend = list(traceorder = 'normal'))
   
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
@@ -235,7 +224,7 @@ if(teste == F){
   if(dash == F){
     rm()
   }
-  rm(prop_ij_neg_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_cont_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_ij_vend_2020);
+  rm(prop_ij_neg_2020, prop_ij_neg_cont_vend_2020, prop_ij_neg_cont_2020, prop_ij_neg_ij_vend_2020);
   #variáveis
   rm(status);
 }
