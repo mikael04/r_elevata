@@ -516,7 +516,7 @@ n6
 Row {data-height=150}
 ------------------------------------
 
-### Faturado
+### Tempo médio p/ faturado
 ```{r, fig.height=2, fig.width=4}
 colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
 
@@ -525,7 +525,7 @@ valueBox(ng_cad_fin[1,2], icon = "fa-calendar", color="#32CD32")
 ```
 
 
-### Fin. não aprovado
+### Tempo médio p/ fin. não      aprovado
 ```{r, fig.height=2, fig.width=4}
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
 valueBox(ng_cad_fin[2,2], icon = "fa-calendar", color="#FFD700")
@@ -535,14 +535,14 @@ valueBox(ng_cad_fin[2,2], icon = "fa-calendar", color="#FFD700")
 Row {data-height=150}
 ------------------------------------
 
-### Des. do cliente
+### Tempo médio p/ des. do     cliente
 ```{r, fig.height=2, fig.width=4}
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
 valueBox(ng_cad_fin[3,2], icon = "fa-calendar", color="#FFA500")
 
 ```
 
-### Perd. p/ concorrência
+### Tempo médio p/ perd. p/ concorrência
 ```{r, fig.height=2, fig.width=4}
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
 valueBox(ng_cad_fin[4,2], icon = "fa-calendar", color="#DE0D26")
