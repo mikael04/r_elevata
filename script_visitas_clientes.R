@@ -51,7 +51,7 @@ mes_atual = month(today())
 s_dados_path <- "s_dados.png"
 
 ##Teste
-  empresa = 61
+  empresa = 16
 
 ###################################
 
@@ -496,7 +496,7 @@ if(nrow(cli_in_ven_in_vcUltVis) > 0){
                                      "<br>",
                                      "Tempo desde a última visita: ", cli_in_ven_in_vcUltVis$vc_data_cadastro),
                      label = ~cliente_nome,
-                     color = ~pal(idade_vis),
+                     color = ~pal(idade_vis)
                      #clusterOptions = markerClusterOptions()
     ) %>%
     addLegend("topright",
@@ -506,11 +506,57 @@ if(nrow(cli_in_ven_in_vcUltVis) > 0){
               opacity = .8)
   if(teste == F){
     #tabelas
-    rm(cliente, pal, cli_in_ven, cli_in_ven_in_vcUltVis, visita_cliente, vendedor, vcUltVis);
+    rm(cliente, pal, cli_in_ven, visita_cliente, vendedor, vcUltVis);
     #var
-    rm(cor_idade_vis, idades_vis)
   }
 }else{
   m0 <- include_graphics(s_dados_path)
+}
+#######################################################################
+
+#######################################################################
+### Criando distribuição de tempo de visitas por status
+
+
+##Categorias de idades #já declarado, só para facilitar visualização
+#idades_vis = c("Sem visita", "Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses")
+##Cores das categorias #já declarado, só para facilitar visualização
+#cor_idade_vis = c("#000000", "#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
+df_cores <- data.frame(idades_vis, cor_idade_vis)
+
+cli_in_ven_in_vcUltVis_cont <- cli_in_ven_in_vcUltVis %>%
+  group_by(idade_vis) %>%
+  mutate(cont = n()) %>%
+  distinct(idade_vis, .keep_all = T) %>%
+  select (idade, idade_vis, cont) %>%
+  ungroup()
+
+## Agrupando para receber as cores do df_cores
+cli_in_ven_in_vcUltVis_cont <- left_join(cli_in_ven_in_vcUltVis_cont, df_cores, by = c('idade_vis' = 'idades_vis'))
+## Ordenando em ordem alfabética (o color do plotly faz isso automaticamente mas se perde nas cores)
+cli_in_ven_in_vcUltVis_cont <- cli_in_ven_in_vcUltVis_cont %>%
+  arrange(idade_vis)
+
+if(nrow(cli_in_ven_in_vcUltVis_cont) > 0){
+  c6 <- plot_ly(cli_in_ven_in_vcUltVis_cont, type = 'bar', orientation = 'v',
+                x = ~reorder(idade_vis, idade),
+                y = ~cont,
+                color = ~idade_vis,
+                colors = ~cor_idade_vis,
+                showlegend = F
+  ) %>%
+    layout(xaxis = list(title = ''),
+           yaxis = list(title = ''))
+}else{
+  c6 <- include_graphics(s_dados_path)
+}
+if(dash == F){
+  c6
+}
+if(teste == F){
+  #tabelas
+  rm(cli_in_ven_in_vcUltVis_cont, cli_in_ven_in_vcUltVis);
+  #var
+  rm(cor_idade_vis, idades_vis)
 }
 #######################################################################
