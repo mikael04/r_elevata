@@ -857,7 +857,7 @@ Funil de vendas
 
 Column {data-width=350}
 -----------------------------------------------------------------------
-### Funil da empresa em faturamento, por status do negócio (em milhões)
+### Funil da empresa em valor financeiro, por status do negócio (em milhões)
 ```{r}
 ### Gráfico n9 - Funil agrupado por faturamento
 n9
@@ -872,7 +872,7 @@ Column {data-width=350}
 n10
 ```
 
-### Distribuição do faturamento em pedidos fechados no último mês
+### Distribuição do valor financeiro em pedidos fechados no último mês
 
 ```{r}
 ### Gráfico n11 - Pizza fechados do mês
@@ -882,7 +882,7 @@ n11
 Faturamento ano a ano
 =======================================================================
 
-### Faturamento mês a mês e distribuição do cadastro de clientes, visitas e negócios no ano 2020
+### Valor financeiro mês a mês e distribuição do cadastro de clientes, visitas e negócios no ano 2020
 
 ```{r}
 ### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em 2020

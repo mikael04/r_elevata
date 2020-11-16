@@ -485,7 +485,7 @@ Faturamento de negócios
 
 Column 
 -----------------------------------------------------------------------
-### Faturamento dos negócios cadastrados no ano 2020, por vendedor  (Status atual) 
+### Valor financeiro dos negócios cadastrados no ano 2020, por vendedor  (Status atual) 
 
 ```{r, fig.height=7, fig.width=6}
 ### Gráfico n0 - Número de clientes por vendedor
@@ -494,7 +494,7 @@ n0
 ```
 
 
-### Faturamento de todos os negócios que foram fechados em 2020
+### Valor financeiro de todos os negócios que foram fechados em 2020
 
 ```{r, fig.height=7, fig.width=6}
 ### Gráfico n3 - Faturamento de negócios fechados em 2020
@@ -521,14 +521,14 @@ Row {data-height=150}
 colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
 
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[1,1], icon = "fa-calendar", color="#32CD32")
+valueBox(ng_cad_fin[1,2], icon = "fa-calendar", color="#32CD32")
 ```
 
 
 ### Fin. não aprovado
 ```{r, fig.height=2, fig.width=4}
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[2,1], icon = "fa-calendar", color="#FFD700")
+valueBox(ng_cad_fin[2,2], icon = "fa-calendar", color="#FFD700")
 
 ```
 
@@ -538,14 +538,14 @@ Row {data-height=150}
 ### Des. do cliente
 ```{r, fig.height=2, fig.width=4}
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[3,1], icon = "fa-calendar", color="#FFA500")
+valueBox(ng_cad_fin[3,2], icon = "fa-calendar", color="#FFA500")
 
 ```
 
 ### Perd. p/ concorrência
 ```{r, fig.height=2, fig.width=4}
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[4,1], icon = "fa-calendar", color="#DE0D26")
+valueBox(ng_cad_fin[4,2], icon = "fa-calendar", color="#DE0D26")
 
 ```
 
