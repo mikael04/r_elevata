@@ -76,5 +76,7 @@ Dash Visitas_clientes (Volume de visitas, Clientes, Mapa dos Clientes)
 
 ### Gráfico c4_c5 - Ambos histogramas anteriores (c4 e c5)
 
-### Gráfico m0 - de distribuição dos clientes
+### Gráfico m0 - Mapa de distribuição dos clientes
+
+### Gráfico c6 - Distribuição dos clientes nas categorias (por tempo de visita)
 ---------------------------------------------------------------

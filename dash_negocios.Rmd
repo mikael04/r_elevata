@@ -480,7 +480,7 @@ if (teste == F){
 
 ```
 
-Faturamento de negócios
+Valor financeiro de negócios
 =======================================================================
 
 Column 
