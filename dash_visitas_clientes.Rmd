@@ -482,7 +482,7 @@ vcUltVis <- visita_cliente %>%
 ##Categorias de idades
 idades_vis = c("Sem visita", "Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses")
 ##Cores das categorias
-cor_idade_vis = c("#000000", "#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
+cor_idade_vis = c("#000000", "#32CD32", "#87CEFA" , "#FFD700" , "orange" , "#DE0D26")
 
 ##left join pra manter todos, mesmo os q não tem visita
 cli_in_ven_in_vcUltVis <- left_join(cli_in_ven, vcUltVis, by = c("cliente_id" = "vc_cliente_id")) %>%
@@ -534,7 +534,7 @@ if(nrow(cli_in_ven_in_vcUltVis) > 0){
 ##Categorias de idades #já declarado, só para facilitar visualização
 #idades_vis = c("Sem visita", "Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses")
 ##Cores das categorias #já declarado, só para facilitar visualização
-#cor_idade_vis = c("#000000", "#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
+#cor_idade_vis = c("#000000", "#32CD32", "#87CEFA" , "#FFD700" , "orange" , "#DE0D26")
 df_cores <- data.frame(idades_vis, cor_idade_vis)
 
 cli_in_ven_in_vcUltVis_cont <- cli_in_ven_in_vcUltVis %>%
