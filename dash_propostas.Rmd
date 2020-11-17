@@ -769,7 +769,7 @@ if (teste == 0) {
 ```
 
 
-Faturamento de propostas
+Valor Financeiro de propostas
 =======================================================================
 
 Column {data-width=650}
