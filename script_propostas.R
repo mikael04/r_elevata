@@ -38,7 +38,7 @@ library(knitr)
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
 dash = F
 ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
@@ -654,8 +654,28 @@ Encoding(proposta_modo_forma$pmf_nome) <- 'latin1'
 
 p_ij_ppa <- inner_join(proposta, proposta_pagamento, by=c('proposta_id' = 'pp_proposta_id')) %>%
   select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id) %>%
-  filter (pp_modo_id != 0, pp_forma_id != 0)
+  filter (pp_modo_id != 0, pp_forma_id != 0) #, proposta_data_cadastro > '2020-01-01') ##teste de ano atual
 
+if(teste == T){
+  #####################
+  ###Apenas para print
+  # p_ij_ppa_ij_pmf <- inner_join (p_ij_ppa, proposta_modo_forma, by = c("pp_modo_id" = "pmf_id")) %>%
+  #   select(proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_modo_id, pmf_nome) %>%
+  #   rename(Modo_pagamento = pmf_nome) %>%
+  #   arrange(pp_modo_id)
+  # write_excel_csv(p_ij_ppa_ij_pmf, "propostas_c_modo_pagamento.csv", delim = ";")
+  #####################
+}
+if(teste == T){
+  #####################
+  ###Apenas para print
+  # p_ij_ppa_ij_pmf <- inner_join (p_ij_ppa, proposta_modo_forma, by = c("pp_forma_id" = "pmf_id")) %>%
+  #   select(proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_forma_id, pmf_nome) %>%
+  #   rename(Forma_pagamento = pmf_nome) %>%
+  #   arrange(pp_forma_id)
+  # write_excel_csv(p_ij_ppa_ij_pmf, "propostas_c_forma_pagamento.csv", delim = ";")
+  #####################
+}
 ##conta antes de substituir (provavelmente mais rápido lidar com int do que string) (1 contando modo) (conta todos, depois filtro através de proposta_modo_forma)
 p_ij_ppa_count_modo <- p_ij_ppa %>%
   select (pp_id, pp_modo_id) %>%

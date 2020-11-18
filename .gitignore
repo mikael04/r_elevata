@@ -42,3 +42,6 @@ grafico.axeler
 train.csv
 test.html
 test.Rmd
+negocios_vendedores_negocio_produto.csv
+propostas_c_forma_pagamento.csv
+propostas_c_modo_pagamento.csv

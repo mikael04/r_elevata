@@ -49,7 +49,7 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 60
+empresa = 16
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -129,7 +129,8 @@ vendedor_a <- vendedor %>%
 
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
-  select(np_id, np_negocio_id, np_produto_id, np_quantidade, np_ativo, np_valor)
+  select(np_id, np_negocio_id, np_produto_id, np_quantidade, np_ativo, np_valor) %>%
+  filter (np_ativo == T)
 
 ##join de negocios e vendedores
 negocio_ij_vendedor <- inner_join(negocio, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
@@ -158,17 +159,25 @@ ng_ij_hist_ij_ven_funil_ab <- ng_ij_hist_ij_ven_funil_ab %>%
 ##aqui ele substitui linha a linha cada situação pelo seu respectivo em string
 ng_ij_hist_ij_ven_funil_ab$negocio_status <- with(ng_ij_hist_ij_ven_funil_ab, cut(negocio_negocio_situacao_id, breaks = c(0,1,2,3,8,10),
                                                                                   labels = status))
-
+sum(ng_ij_hist_ij_ven_funil_ab$np_valor)
 ##Agora será agrupado por pedidos em aberto e faturamento total
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_ab %>%
-  select (negocio_status, np_valor, negocio_negocio_situacao_id) %>%
+  select (negocio_status, np_valor, negocio_negocio_situacao_id, np_quantidade) %>%
   group_by(negocio_status) %>%
-  mutate(total_faturado = sum(np_valor)) %>%
+  mutate(total_faturado = sum(np_valor*np_quantidade)) %>%
   arrange(negocio_status) %>%
   distinct(negocio_status, .keep_all = TRUE) %>%
+  select (-np_valor, -np_quantidade) %>%
   collect()
 
-
+if (teste == T){
+  ###Testando e imprimindo tabela para envio
+  #negocio_print <- ng_ij_hist_ij_ven_funil_ab %>%
+  #  select (negocio_id, negocio_vendedor_id, vendedor_nome, negocio_status, negocio_data_cadastro, negocio_usado, negocio_produto_id, np_quantidade, np_valor)
+  
+  #write_excel_csv(negocio_print, "negocios_vendedores_negocio_produto.csv", delim = ";")
+  
+}
 
 ##conversão de faturamento para texto
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
@@ -204,6 +213,8 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
 if(dash == F){
   n9
 }
+
+
 
 if (teste == F){
   #tabelas

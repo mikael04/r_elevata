@@ -64,7 +64,7 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 1
+  empresa = 16
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -162,7 +162,7 @@ prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend %>%
   filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= '2020-01-01')
 
 
-status = c("Pendente", "Aceita", "Recusada", "Cancelada", "Finalizada")
+status = c("Pendente", "Aceito", "Recusado", "Cancelado", "Finalizado")
 
 ##Aqui tenho a contagem de status por vendedor
 prop_ij_neg_cont_vend_2020 <- prop_ij_neg_ij_vend_2020 %>%
@@ -615,7 +615,7 @@ p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum %>%
   ungroup ()
 
 ##Usar pra renomear os status das propostas
-status = c("0 - Pendente", "1 - Aceita", "2 - Recusada", "3 - Cancelada", "4 - Finalizada")
+status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
 p_ij_n_ij_pp_sum_cat$proposta_status <- with(p_ij_n_ij_pp_sum_cat, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
                                                                        labels = status))
@@ -668,8 +668,28 @@ Encoding(proposta_modo_forma$pmf_nome) <- 'latin1'
 
 p_ij_ppa <- inner_join(proposta, proposta_pagamento, by=c('proposta_id' = 'pp_proposta_id')) %>%
   select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id) %>%
-  filter (pp_modo_id != 0, pp_forma_id != 0)
+  filter (pp_modo_id != 0, pp_forma_id != 0) #, proposta_data_cadastro > '2020-01-01') ##teste de ano atual
 
+if(teste == T){
+  #####################
+  ###Apenas para print
+  # p_ij_ppa_ij_pmf <- inner_join (p_ij_ppa, proposta_modo_forma, by = c("pp_modo_id" = "pmf_id")) %>%
+  #   select(proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_modo_id, pmf_nome) %>%
+  #   rename(Modo_pagamento = pmf_nome) %>%
+  #   arrange(pp_modo_id)
+  # write_excel_csv(p_ij_ppa_ij_pmf, "propostas_c_modo_pagamento.csv", delim = ";")
+  #####################
+}
+if(teste == T){
+  #####################
+  ###Apenas para print
+  # p_ij_ppa_ij_pmf <- inner_join (p_ij_ppa, proposta_modo_forma, by = c("pp_forma_id" = "pmf_id")) %>%
+  #   select(proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_forma_id, pmf_nome) %>%
+  #   rename(Forma_pagamento = pmf_nome) %>%
+  #   arrange(pp_forma_id)
+  # write_excel_csv(p_ij_ppa_ij_pmf, "propostas_c_forma_pagamento.csv", delim = ";")
+  #####################
+}
 ##conta antes de substituir (provavelmente mais rápido lidar com int do que string) (1 contando modo) (conta todos, depois filtro através de proposta_modo_forma)
 p_ij_ppa_count_modo <- p_ij_ppa %>%
   select (pp_id, pp_modo_id) %>%
