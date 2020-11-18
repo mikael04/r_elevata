@@ -38,7 +38,7 @@ library(knitr)
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = T
+teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = F
 ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia

@@ -30,7 +30,7 @@ library(lubridate)
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para n?o remover e imprimir valores de teste, 1 para teste, 0 para n?o estou testando, rodando
-teste = T
+teste = F
 ####Vari?vel usada para n?o plotar os gr?ficos na dash
 dash = F
 ####Variavel global c/ ano atual (para compara??o)
