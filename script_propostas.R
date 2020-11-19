@@ -53,7 +53,7 @@ mes_atual = month(today())
 #caminho para imagem de sem dados
 s_dados_path <- "s_dados.png"
 
-  empresa <- 16
+empresa <- 16
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -278,7 +278,7 @@ if(teste == F){
 #################################################
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
-  select(np_id, np_negocio_id, np_produto_id, np_quantidade,np_ativo, np_valor)
+  select(np_id, np_negocio_id, np_produto_id, np_quantidade, np_ativo, np_valor)
 
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
@@ -288,7 +288,8 @@ produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character",
 proposta_produto <- fread("Tabelas/proposta_produto.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character", pp_produto_id = "character")) %>%
   select(pp_id, pp_proposta_id, pp_produto_id, pp_quantidade, pp_valor, pp_ativo) %>%
   filter (pp_ativo == 1) %>% #Filtrando pp_ativo = true
-  select(-pp_ativo)
+  select(-pp_ativo) %>%
+  mutate (pp_valor_tot = pp_valor*pp_quantidade)
 
 
 
@@ -303,15 +304,15 @@ p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio_aux, by = c("propos
 
 ##filtro da empresa e também propostas finalizadas, também filtrando só negócios novos e com valores acima de 10
 p_ij_n_ij_pp_empresa <- p_ij_n_ij_v_ij_pp_n %>%
-  filter(vendedor_empresa_id == empresa, proposta_status == 4, negocio_tipo_negocio == 'N', pp_valor > 10)
+  filter(vendedor_empresa_id == empresa, proposta_status == 4, negocio_tipo_negocio == 'N', pp_valor_tot > 10)
 
 p_ij_n_ij_pp_empresa <- p_ij_n_ij_pp_empresa %>%
   group_by(proposta_id) %>%
-  mutate (valor_proposta = sum(pp_valor)) %>%
+  mutate (valor_proposta = sum(pp_valor_tot)) %>%
   ungroup ()
 
 ##media geral da empresa
-total_empresa <- sum(p_ij_n_ij_pp_empresa$pp_valor)
+total_empresa <- sum(p_ij_n_ij_pp_empresa$pp_valor_tot)
 n_empresa <- nrow(p_ij_n_ij_pp_empresa)
 media_empresa <- round((total_empresa/n_empresa), 2)
 
@@ -319,15 +320,15 @@ media_empresa <- round((total_empresa/n_empresa), 2)
 ##Calculando ticket médio por categoria
 
 p_ij_n_ij_pp_ij_prod <- inner_join (p_ij_n_ij_pp_empresa, produto, by= c('pp_produto_id' = 'produto_id')) %>%
-  select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_produto_id, pp_quantidade, pp_valor, produto_categoria_id, vendedor_empresa_id) %>%
+  select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_produto_id, pp_valor_tot, produto_categoria_id, vendedor_empresa_id) %>%
   filter(proposta_status == 4, vendedor_empresa_id == empresa) #Proposta finalizada
 
 
 ## Primeira vez pra verificar quais são os top5
 pr_top5_fat <- p_ij_n_ij_pp_ij_prod %>%
-  select(produto_categoria_id, pp_valor) %>%
+  select(produto_categoria_id, pp_valor_tot) %>%
   group_by(produto_categoria_id) %>%
-  mutate(fat = sum(pp_valor)) %>%
+  mutate(fat = sum(pp_valor_tot)) %>%
   mutate(n = n()) %>%
   distinct (produto_categoria_id, .keep_all = TRUE) %>%
   ungroup ()
@@ -436,17 +437,17 @@ p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio_aux, by = c("propos
 
 ##filtro da empresa e também propostas finalizadas, também filtrando só negócios novos e com valores acima de 10
 p_ij_n_ij_pp_empresa_us <- p_ij_n_ij_v_ij_pp_n %>%
-  filter(vendedor_empresa_id == empresa, proposta_status == 4, negocio_tipo_negocio == 'U', pp_valor > 10)
+  filter(vendedor_empresa_id == empresa, proposta_status == 4, negocio_tipo_negocio == 'U', pp_valor_tot > 10)
 
 if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
 {
   p_ij_n_ij_pp_empresa_us <- p_ij_n_ij_pp_empresa_us %>%
     group_by(proposta_id) %>%
-    mutate (valor_proposta = sum(pp_valor)) %>%
+    mutate (valor_proposta = sum(pp_valor_tot)) %>%
     ungroup ()
   
   ##media geral da empresa
-  total_empresa_us <- sum(p_ij_n_ij_pp_empresa_us$pp_valor)
+  total_empresa_us <- sum(p_ij_n_ij_pp_empresa_us$pp_valor_tot)
   n_empresa_us <- nrow(p_ij_n_ij_pp_empresa_us)
   media_empresa_us <- round((total_empresa_us/n_empresa_us), 2)
   
@@ -454,7 +455,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
   ##Calculando ticket médio por categoria
   
   p_ij_n_ij_pp_ij_prod_us <- inner_join (p_ij_n_ij_pp_empresa_us, produto, by= c('pp_produto_id' = 'produto_id')) %>%
-    select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_produto_id, pp_quantidade, pp_valor, produto_categoria_id, vendedor_empresa_id, negocio_tipo_negocio) %>%
+    select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_produto_id, pp_quantidade, pp_valor_tot, produto_categoria_id, vendedor_empresa_id, negocio_tipo_negocio) %>%
     filter(proposta_status == 4, vendedor_empresa_id == empresa) #Proposta finalizada
   
   ##Adicionar categoria pra ver se é isso mesmo
@@ -462,9 +463,9 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
   
   ## Primeira vez pra verificar quais são os top5
   pr_top5_fat_us <- p_ij_n_ij_pp_ij_prod_us %>%
-    select(produto_categoria_id, pp_valor) %>%
+    select(produto_categoria_id, pp_valor_tot) %>%
     group_by(produto_categoria_id) %>%
-    mutate(fat = sum(pp_valor)) %>%
+    mutate(fat = sum(pp_valor_tot)) %>%
     mutate(n = n()) %>%
     distinct (produto_categoria_id, .keep_all = TRUE) %>%
     ungroup ()
@@ -589,6 +590,7 @@ p_ij_n_ij_pp_sum <- p_ij_n_ij_pp %>%
   group_by(proposta_status) %>%
   mutate (valor_proposta = sum(pp_valor)) %>%
   distinct(proposta_status, .keep_all = TRUE) %>%
+  select (-pp_valor) %>%
   ungroup ()
 
 ## Aqui agrupo as categorias

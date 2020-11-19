@@ -126,7 +126,8 @@ vendedor_a <- vendedor %>%
 
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
-  select(np_id, np_negocio_id, np_produto_id, np_quantidade,np_ativo, np_valor)
+  select(np_id, np_negocio_id, np_produto_id, np_quantidade,np_ativo, np_valor) %>%
+  mutate(np_valor_tot = np_valor*np_quantidade)
 
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
@@ -187,9 +188,9 @@ Encoding(categoria$categoria_nome) <- 'latin1'
 
 ## Primeira vez pra verificar quais são os top10
 ng_top10 <- ng_ij_hist_ij_ven_ij_np_ij_pd %>%
-  select(produto_categoria_id, np_valor) %>%
+  select(produto_categoria_id, np_valor_tot) %>%
   group_by(produto_categoria_id) %>%
-  mutate(faturamento = sum(np_valor)) %>%
+  mutate(faturamento = sum(np_valor_tot)) %>%
   distinct (produto_categoria_id, .keep_all = TRUE) %>%
   arrange(desc(faturamento)) %>%
   collect ()
@@ -213,9 +214,9 @@ ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat <- ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat[!is
 
 ## Agora pra agrupar todos (já trocado os anteriores pra categoria "OUTRA")
 ng_top10_ag <- ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat %>%
-  select(produto_categoria_id, np_valor) %>%
+  select(produto_categoria_id, np_valor_tot) %>%
   group_by(produto_categoria_id) %>%
-  mutate(faturamento = sum(np_valor)) %>%
+  mutate(faturamento = sum(np_valor_tot)) %>%
   distinct (produto_categoria_id, .keep_all = TRUE) %>%
   arrange(desc(faturamento)) %>%
   collect ()
@@ -270,9 +271,9 @@ ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat_fat <-  ng_ij_hist_ij_ven_ij_np_ij_pd_ij_ca
 
 ## Agora pra agrupar todos (já trocado os anteriores pra categoria "OUTRA")
 ng_top10_ag_fat <- ng_ij_hist_ij_ven_ij_np_ij_pd_ij_cat_fat %>%
-  select(produto_categoria_id, np_valor) %>%
+  select(produto_categoria_id, np_valor_tot) %>%
   group_by(produto_categoria_id) %>%
-  mutate(faturamento = sum(np_valor)) %>%
+  mutate(faturamento = sum(np_valor_tot)) %>%
   distinct (produto_categoria_id, .keep_all = TRUE) %>%
   arrange(desc(faturamento)) %>%
   collect ()

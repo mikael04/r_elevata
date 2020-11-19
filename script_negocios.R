@@ -118,7 +118,8 @@ vendedor_a <- vendedor %>%
 
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
-  select(np_id, np_negocio_id, np_produto_id, np_quantidade,np_ativo, np_valor)
+  select(np_id, np_negocio_id, np_produto_id, np_quantidade,np_ativo, np_valor) %>%
+  mutate (np_valor_tot = np_valor*np_quantidade)
 
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
@@ -144,9 +145,9 @@ if (teste == F) {
 ##agrupamento de negocios por vendedor_a, contando faturamento por status e por vendedor
 ##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
 ng_ij_vn_ij_np_fat <- neg_ij_ven_ij_np_anat %>%
-  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, vendedor_nome, negocio_vendedor_id, np_valor) %>%
+  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, vendedor_nome, negocio_vendedor_id, np_valor_tot) %>%
   group_by(negocio_negocio_situacao_id, negocio_vendedor_id) %>%
-  mutate(total_fat = sum(np_valor)) %>%
+  mutate(total_fat = sum(np_valor_tot)) %>%
   distinct (negocio_vendedor_id, .keep_all = TRUE) %>%
   collect ()
 
@@ -246,9 +247,9 @@ ng_ij_hist_ij_ven_anat_ij_np_fec <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
 ##agrupamento de negocios por vendedor_a, contando número de negócios por status e por vendedor
 ##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
 ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
-  select(negocio_id, negocio_vendedor_id, negocio_status, vendedor_nome, negocio_vendedor_id, np_valor) %>%
+  select(negocio_id, negocio_vendedor_id, negocio_status, vendedor_nome, negocio_vendedor_id, np_valor_tot) %>%
   group_by(negocio_status, negocio_vendedor_id) %>%
-  mutate(total_fat = sum(np_valor)) %>%
+  mutate(total_fat = sum(np_valor_tot)) %>%
   distinct (negocio_vendedor_id, .keep_all = TRUE) %>%
   collect ()
 

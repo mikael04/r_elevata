@@ -137,7 +137,8 @@ negocio_ij_vendedor <- inner_join(negocio, vendedor, by=c("negocio_vendedor_id" 
 
 ########## Para o funil e para agrupar por faturamento
 #### Vou alterar o agrupamento de número de negócios para faturamento, portanto precisarei da tabela negocio_produto
-neg_ij_ven_ij_np <- inner_join(negocio_ij_vendedor, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
+neg_ij_ven_ij_np <- inner_join(negocio_ij_vendedor, negocio_produto, by=c("negocio_id" = "np_negocio_id")) %>%
+  mutate (np_valor_tot = np_quantidade*np_valor)
 
 ##Status aberto
 st_a = c(1,2,3,8,10)
@@ -159,15 +160,14 @@ ng_ij_hist_ij_ven_funil_ab <- ng_ij_hist_ij_ven_funil_ab %>%
 ##aqui ele substitui linha a linha cada situação pelo seu respectivo em string
 ng_ij_hist_ij_ven_funil_ab$negocio_status <- with(ng_ij_hist_ij_ven_funil_ab, cut(negocio_negocio_situacao_id, breaks = c(0,1,2,3,8,10),
                                                                                   labels = status))
-sum(ng_ij_hist_ij_ven_funil_ab$np_valor)
 ##Agora será agrupado por pedidos em aberto e faturamento total
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_ab %>%
-  select (negocio_status, np_valor, negocio_negocio_situacao_id, np_quantidade) %>%
+  select (negocio_status, np_valor_tot, negocio_negocio_situacao_id) %>%
   group_by(negocio_status) %>%
-  mutate(total_faturado = sum(np_valor*np_quantidade)) %>%
+  mutate(total_faturado = sum(np_valor_tot)) %>%
   arrange(negocio_status) %>%
   distinct(negocio_status, .keep_all = TRUE) %>%
-  select (-np_valor, -np_quantidade) %>%
+  select (-np_valor_tot) %>%
   collect()
 
 if (teste == T){
@@ -264,12 +264,13 @@ ng_ij_hist_ij_ven_fec_anat$negocio_status <- with(ng_ij_hist_ij_ven_fec_anat, cu
 
 ##Agora será agrupado por pedidos em aberto e faturamento total
 ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_fec_anat %>%
-  select (negocio_status, np_valor) %>%
+  select (negocio_status, np_valor_tot) %>%
   group_by(negocio_status) %>%
-  mutate(total_faturado = sum(np_valor)) %>%
+  mutate(total_faturado = sum(np_valor_tot)) %>%
   arrange(negocio_status) %>%
   distinct(negocio_status, .keep_all = TRUE) %>%
-  collect()
+  select (-np_valor_tot)
+ungroup()
 
 
 ##Coluna nova criada para facilitar compreensão (diminui as casas para exibir em milhões)
@@ -317,12 +318,13 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat_mes$negocio_status <- with(ng_ij_hist_ij_ve
 
 ##Agora será agrupado por pedidos em aberto e faturamento total
 ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat_mes %>%
-  select (negocio_status, np_valor) %>%
+  select (negocio_status, np_valor_tot) %>%
   group_by(negocio_status) %>%
-  mutate(total_faturado = sum(np_valor)) %>%
+  mutate(total_faturado = sum(np_valor_tot)) %>%
   arrange(negocio_status) %>%
   distinct(negocio_status, .keep_all = TRUE) %>%
-  collect()
+  select(-np_valor_tot) %>%
+  ungroup()
 
 
 ##Coluna nova criada para facilitar compreensão (diminui as casas para exibir em milhões)
@@ -386,7 +388,7 @@ fat_anat_mes_aux <-data.frame(ym)
 fat_anat_mes <- ng_ij_hist_ij_ven_anat_fat %>%
   mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
   group_by (ym) %>%
-  summarize(ym_sum = sum(np_valor), .groups = 'drop') %>%
+  summarize(ym_sum = sum(np_valor_tot), .groups = 'drop') %>%
   mutate (ym = as.character(ym)) %>%
   ungroup()
 
@@ -439,13 +441,13 @@ if(anos_ant > 1){
     fat_2ant_mes <- ng_ij_hist_ij_ven_ij_np_2ant_fat %>%
       mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
       group_by (ym) %>%
-      summarize(ym_sum_2ant = sum(np_valor), .groups = 'drop')%>%
+      summarize(ym_sum_2ant = sum(np_valor_tot), .groups = 'drop')%>%
       ungroup ()
     
     fat_1ant_mes <- ng_ij_hist_ij_ven_ij_np_1ant_fat %>%
       mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
       group_by (ym) %>%
-      summarize(ym_sum_1ant = sum(np_valor), .groups = 'drop') %>%
+      summarize(ym_sum_1ant = sum(np_valor_tot), .groups = 'drop') %>%
       ungroup ()
   }else{
     ym_sum_2ant <- rep(NA, 12)
@@ -458,7 +460,7 @@ if(anos_ant > 0) {
     fat_1ant_mes <- ng_ij_hist_ij_ven_ij_np_1ant_fat %>%
       mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
       group_by (ym) %>%
-      summarize(ym_sum_1ant = sum(np_valor), .groups = 'drop') %>%
+      summarize(ym_sum_1ant = sum(np_valor_tot), .groups = 'drop') %>%
       ungroup ()
   }else{
     ym_sum_1ant <- rep(NA, 12)
