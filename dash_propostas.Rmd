@@ -669,7 +669,7 @@ Encoding(proposta_modo_forma$pmf_nome) <- 'latin1'
 #proposta_modo_forma_aux <-proposta_modo_forma[,1:2]
 
 p_ij_ppa <- inner_join(proposta, proposta_pagamento, by=c('proposta_id' = 'pp_proposta_id')) %>%
-  select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id) %>%
+  select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id, pp_valor) %>%
   filter (pp_modo_id != 0, pp_forma_id != 0) #, proposta_data_cadastro > '2020-01-01') ##teste de ano atual
 
 if(teste == T){
@@ -693,66 +693,73 @@ if(teste == T){
   #####################
 }
 ##conta antes de substituir (provavelmente mais rápido lidar com int do que string) (1 contando modo) (conta todos, depois filtro através de proposta_modo_forma)
-p_ij_ppa_count_modo <- p_ij_ppa %>%
-  select (pp_id, pp_modo_id) %>%
+p_ij_ppa_sum_modo <- p_ij_ppa %>%
+  select (pp_id, pp_modo_id, pp_valor) %>%
   group_by(pp_modo_id) %>%
-  mutate(cont_modo_aux = n()) %>%
+  mutate(sum_modo_aux = sum(pp_valor)) %>%
   ungroup() %>%
   distinct(pp_modo_id, .keep_all = T)
 
-if (empresa == 16)
-{
-  ##Vou calcular 5% e agrupar esses que forem menores que 5% em outra categoria (outros)
-  n_total_modo <- sum(p_ij_ppa_count_modo$cont_modo_aux)
-  aux_3perc <- n_total_modo/33
-  p_ij_ppa_count_modo$pp_modo_id[p_ij_ppa_count_modo$cont_modo_aux < aux_3perc] <- 26
-}
+p_ij_ppa_sum_modo_ij_pmf <- inner_join (p_ij_ppa_sum_modo, proposta_modo_forma, by = c("pp_modo_id" = "pmf_id")) %>%
+  select(pp_modo_id, pmf_nome, sum_modo_aux) %>%
+  rename(Modo = pmf_nome)
+
+##Vou calcular 5% e agrupar esses que forem menores que 5% em outra categoria (outros)
+n_total_modo <- sum(p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux)
+aux_3perc <- n_total_modo*0.05
+if (empresa == 16){
+  p_ij_ppa_sum_modo_ij_pmf$pp_modo_id[p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux < aux_3perc] <- 26
+  p_ij_ppa_sum_modo_ij_pmf$Modo[p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux < aux_3perc] <- "OUTRAS"
+}else if (empresa == 78){
+  p_ij_ppa_sum_modo_ij_pmf$pp_modo_id[p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux < aux_3perc] <- 52
+  p_ij_ppa_sum_modo_ij_pmf$Modo[p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux < aux_3perc] <- "OUTRA"
+  }
 
 ##Aqui eu estou refazendo a contagem pq já havia uma categoria "Outras", só estou adicionando os demais (com taxa <3%) nela
-p_ij_ppa_count_modo <- p_ij_ppa_count_modo %>%
-  select (pp_modo_id, cont_modo_aux) %>%
+p_ij_ppa_sum_modo_ij_pmf <- p_ij_ppa_sum_modo_ij_pmf %>%
+  select (pp_modo_id, Modo, sum_modo_aux) %>%
   group_by(pp_modo_id) %>%
-  mutate(cont_modo = sum(cont_modo_aux)) %>%
+  mutate(sum_modo = sum(sum_modo_aux)) %>%
   ungroup() %>%
   distinct(pp_modo_id, .keep_all = T)
-
-p_ij_ppa_cont_modo_ij_pmf <- inner_join (p_ij_ppa_count_modo, proposta_modo_forma, by = c("pp_modo_id" = "pmf_id")) %>%
-  select(pp_modo_id, cont_modo, pmf_nome) %>%
-  rename(
-    Modo = pmf_nome)
-
 
 
 #conta antes de substituir (provavelmente mais rápido lidar com int do que string) (2 contando forma) (conta todos, depois filtro através de proposta_modo_forma)
-p_ij_ppa_count_forma <- p_ij_ppa %>%
-  select (pp_id, pp_forma_id) %>%
+p_ij_ppa_sum_forma <- p_ij_ppa %>%
+  select (pp_id, pp_forma_id, pp_valor) %>%
   group_by(pp_forma_id) %>%
-  mutate(cont_forma = n()) %>%
+  mutate(sum_forma_aux = sum(pp_valor)) %>%
   ungroup() %>%
   distinct(pp_forma_id, .keep_all = T)
 
-if (empresa == 16){
-  ##Aqui terei que fazer diferente, porque não existe a coluna OUTRAS, criarei uma
-  p_ij_ppa_count_forma$pp_forma_id[p_ij_ppa_count_forma$cont_forma < aux_3perc] <- 2
-  n_outros_forma <- sum(p_ij_ppa_count_forma$cont_forma[which(p_ij_ppa_count_forma$pp_forma_id==2)])
+p_ij_ppa_sum_forma_ij_pmf <- inner_join (p_ij_ppa_sum_forma, proposta_modo_forma, by = c("pp_forma_id" = "pmf_id")) %>%
+  select(pp_forma_id, pmf_nome, sum_forma_aux) %>%
+  rename(Forma = pmf_nome)
+
+##Vou calcular 5% e agrupar esses que forem menores que 5% em outra categoria (outros)
+n_total_forma <- sum(p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux)
+aux_3perc <- n_total_forma*0.05
+if (empresa == 16){##Super não tem forma Outras (usando -1 como valor)
+  p_ij_ppa_sum_forma_ij_pmf$pp_forma_id[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- -1
+  p_ij_ppa_sum_forma_ij_pmf$forma[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- "OUTRAS"
+}else if (empresa == 78){
+  p_ij_ppa_sum_forma_ij_pmf$pp_forma_id[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- 50
+  p_ij_ppa_sum_forma_ij_pmf$forma[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- "OUTROS"
 }
 
-p_ij_ppa_cont_forma_ij_pmf <- inner_join (p_ij_ppa_count_forma, proposta_modo_forma, by = c("pp_forma_id" = "pmf_id")) %>%
-  select(pp_forma_id, cont_forma, pmf_nome) %>%
-  rename(
-    Forma = pmf_nome)
-
-if (empresa == 16){
-  ##Adicicionando a linha "outros"
-  p_ij_ppa_cont_forma_ij_pmf <- p_ij_ppa_cont_forma_ij_pmf %>%
-    add_row(pp_forma_id = -1, cont_forma = n_outros_forma, Forma = "OUTRAS")
-}
+##Aqui eu estou refazendo a contagem pq já havia uma categoria "Outras", só estou adicionando os demais (com taxa <3%) nela
+p_ij_ppa_sum_forma_ij_pmf <- p_ij_ppa_sum_forma_ij_pmf %>%
+  select (pp_forma_id, Forma, sum_forma_aux) %>%
+  group_by(pp_forma_id) %>%
+  mutate(sum_forma = sum(sum_forma_aux)) %>%
+  ungroup() %>%
+  distinct(pp_forma_id, .keep_all = T)
 
 ### Gráfico p6 - Modos de pagamento
-if(nrow(p_ij_ppa_cont_modo_ij_pmf) > 0){
+if(nrow(p_ij_ppa_sum_modo_ij_pmf) > 0){
   p6 <- plot_ly()
   p6 <- p6 %>%
-    add_pie(data = p_ij_ppa_cont_modo_ij_pmf, values = ~cont_modo, labels = ~Modo,
+    add_pie(data = p_ij_ppa_sum_modo_ij_pmf, values = ~sum_modo, labels = ~Modo,
             name = 'Instituição financeira')
 }else {
   #p6 <- s_dados
@@ -763,10 +770,10 @@ if(dash == F){
 }
 
 ### Gráfico p7 - Formas de pagamento
-if(nrow(p_ij_ppa_cont_forma_ij_pmf) > 0){
+if(nrow(p_ij_ppa_sum_forma_ij_pmf) > 0){
   p7 <- plot_ly()
   p7 <- p7 %>%
-    add_pie(data = p_ij_ppa_cont_forma_ij_pmf, values = ~cont_forma, labels = ~Forma,
+    add_pie(data = p_ij_ppa_sum_forma_ij_pmf, values = ~sum_forma, labels = ~Forma,
             name = 'Forma de pagamento')
 }else {
   #p7 <- s_dados
