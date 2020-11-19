@@ -744,7 +744,7 @@ p_ij_ppa_sum_forma_ij_pmf <- p_ij_ppa_sum_forma_ij_pmf %>%
 if(nrow(p_ij_ppa_sum_modo_ij_pmf) > 0){
   p6 <- plot_ly()
   p6 <- p6 %>%
-    add_pie(data = p_ij_ppa_sum_modo_ij_pmf, values = ~cont_modo, labels = ~Modo,
+    add_pie(data = p_ij_ppa_sum_modo_ij_pmf, values = ~sum_modo, labels = ~Modo,
             name = 'Instituição financeira')
 }else {
   #p6 <- s_dados
@@ -758,7 +758,7 @@ if(dash == F){
 if(nrow(p_ij_ppa_sum_forma_ij_pmf) > 0){
   p7 <- plot_ly()
   p7 <- p7 %>%
-    add_pie(data = p_ij_ppa_sum_forma_ij_pmf, values = ~cont_forma, labels = ~Forma,
+    add_pie(data = p_ij_ppa_sum_forma_ij_pmf, values = ~sum_forma, labels = ~Forma,
             name = 'Forma de pagamento')
 }else {
   #p7 <- s_dados

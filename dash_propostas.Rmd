@@ -818,7 +818,7 @@ if (!is.null(p4)){
 
 Column {data-width=450}
 -----------------------------------------------------------------------
-### Instituição financeira
+### Instituição financeira (proporção do valor financeiro)
 
 ```{r, fig.height=3, fig.width=4}
 ### Gráfico p6 - Modos de pagamento
@@ -826,7 +826,7 @@ p6
 
 ```
 
-### Forma de pagamento
+### Forma de pagamento (proporção do valor financeiro)
 
 ```{r, fig.height=3, fig.width=4}
 ### Gráfico p7 - Formas de pagamento
