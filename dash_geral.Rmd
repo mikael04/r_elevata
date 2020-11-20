@@ -159,7 +159,6 @@ ng_ij_hist_ij_ven_funil_ab <- ng_ij_hist_ij_ven_funil_ab %>%
 ##aqui ele substitui linha a linha cada situação pelo seu respectivo em string
 ng_ij_hist_ij_ven_funil_ab$negocio_status <- with(ng_ij_hist_ij_ven_funil_ab, cut(negocio_negocio_situacao_id, breaks = c(0,1,2,3,8,10),
                                                                                   labels = status))
-sum(ng_ij_hist_ij_ven_funil_ab$np_valor)
 ##Agora será agrupado por pedidos em aberto e faturamento total
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_ab %>%
   select (negocio_status, np_valor, negocio_negocio_situacao_id, np_quantidade) %>%

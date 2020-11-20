@@ -1,7 +1,7 @@
 Dash Geral (Funil, Faturamento ano a ano e Oportunidades)
 ---------------------------------------------------------------
 
-### Gráfico n0 - Funil agrupado por faturamento
+### Gráfico n9 - Funil agrupado por faturamento
 
 ### Gráfico n10 - Pizza fechados do ano
 
