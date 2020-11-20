@@ -182,9 +182,8 @@ ng_ij_vn_ij_np_fat$negocio_status = factor(ng_ij_vn_ij_np_fat$negocio_status, le
 ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>%
   mutate(total_fat_t = func_fmt_din(total_fat))
 
-###Gráfico n0 - Faturamento dos negócios por vendedor_a (anat, status atual)
 ##############################################
-### Gráfico n9 - Funil agrupado por faturamento
+### Gráfico n0 - Funil agrupado por faturamento
 if (nrow(ng_ij_vn_ij_np_fat) > 0){
   n0 <- plot_ly(ng_ij_vn_ij_np_fat,
                 type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
