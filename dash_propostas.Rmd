@@ -783,11 +783,11 @@ if(nrow(p_ij_ppa_sum_modo_ij_pmf) > 0){
     add_pie(data = p_ij_ppa_sum_modo_ij_pmf, values = ~sum_modo, labels = ~Modo,
             hovertemplate = ~paste0("%{label}: ",
                                    "<br>",
-                                   "Valor financeiro: %{value}",
+                                   "Valor financeiro: ", func_fmt_din_mi(sum_modo), " milhões",
                                    "<br>",
                                    "Nº de propostas: ", count_modo,
                                    "<br>"),
-            name = 'Instituição financeira')
+            name = '')
 }else {
   #p6 <- s_dados
   p6 <- include_graphics(s_dados_path)
@@ -803,11 +803,11 @@ if(nrow(p_ij_ppa_sum_forma_ij_pmf) > 0){
     add_pie(data = p_ij_ppa_sum_forma_ij_pmf, values = ~sum_forma, labels = ~Forma,
             hovertemplate = ~paste0("%{label}: ",
                                     "<br>",
-                                    "Valor financeiro: %{value}",
+                                    "Valor financeiro: ", func_fmt_din_mi(sum_forma), " milhões",
                                     "<br>",
                                     "Nº de propostas: ", count_forma,
                                     "<br>"), 
-            name = 'Forma de pagamento')
+            name = '')
 }else {
   #p7 <- s_dados
   p7 <- include_graphics(s_dados_path)

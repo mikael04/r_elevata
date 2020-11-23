@@ -123,7 +123,7 @@ if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
 }
 
-##coleta proposta_pagamenmto
+##coleta proposta_pagamento
 proposta_pagamento <- fread("Tabelas/proposta_pagamento.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character")) %>%
   select(pp_id, pp_proposta_id, pp_modo_id, pp_forma_id, pp_valor, pp_ativo, pp_usado_id) %>%
   filter(pp_ativo == 1) %>%
@@ -170,7 +170,7 @@ prop_ij_neg_ij_vend_ij_propag_2020 <- prop_ij_neg_ij_vend_ij_propag_2020 %>%
 
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
 prop_ij_neg_ij_vend_ij_propag_2020$proposta_status <- with(prop_ij_neg_ij_vend_ij_propag_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
-                                                                                   labels = status))
+                                                                                                   labels = status))
 prop_ij_neg_cont_vend_a_ij_propag_2020 <- prop_ij_neg_ij_vend_ij_propag_2020 %>%
   filter(vendedor_ativo == T)
 
@@ -716,7 +716,7 @@ if (empresa == 16){
 }else if (empresa == 78){
   p_ij_ppa_sum_modo_ij_pmf$pp_modo_id[p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux < aux_3perc] <- 52
   p_ij_ppa_sum_modo_ij_pmf$Modo[p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux < aux_3perc] <- "OUTRA"
-  }
+}
 
 ##Aqui eu estou refazendo a contagem pq já havia uma categoria "Outras", só estou adicionando os demais (com taxa <3%) nela
 p_ij_ppa_sum_modo_ij_pmf <- p_ij_ppa_sum_modo_ij_pmf %>%
@@ -767,12 +767,12 @@ if(nrow(p_ij_ppa_sum_modo_ij_pmf) > 0){
   p6 <- p6 %>%
     add_pie(data = p_ij_ppa_sum_modo_ij_pmf, values = ~sum_modo, labels = ~Modo,
             hovertemplate = ~paste0("%{label}: ",
-                                   "<br>",
-                                   "Valor financeiro: %{value}",
-                                   "<br>",
-                                   "Nº de propostas: ", count_modo,
-                                   "<br>"),
-            name = 'Instituição financeira')
+                                    "<br>",
+                                    "Valor financeiro: ", func_fmt_din_mi(sum_modo), " milhões",
+                                    "<br>",
+                                    "Nº de propostas: ", count_modo,
+                                    "<br>"),
+            name = '')
 }else {
   #p6 <- s_dados
   p6 <- include_graphics(s_dados_path)
@@ -788,11 +788,11 @@ if(nrow(p_ij_ppa_sum_forma_ij_pmf) > 0){
     add_pie(data = p_ij_ppa_sum_forma_ij_pmf, values = ~sum_forma, labels = ~Forma,
             hovertemplate = ~paste0("%{label}: ",
                                     "<br>",
-                                    "Valor financeiro: %{value}",
+                                    "Valor financeiro: ", func_fmt_din_mi(sum_forma), " milhões",
                                     "<br>",
                                     "Nº de propostas: ", count_forma,
                                     "<br>"), 
-            name = 'Forma de pagamento')
+            name = '')
 }else {
   #p7 <- s_dados
   p7 <- include_graphics(s_dados_path)
