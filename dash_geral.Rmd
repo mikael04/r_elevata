@@ -37,6 +37,7 @@ library(RColorBrewer)
 library(lubridate)
 #lib para plotar a imagem (s_dados)
 library(knitr)
+source("fct_tempo.R")
 
 
 
@@ -47,10 +48,10 @@ teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = T
 ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
+ano_atual = fct_ano_atual()
 ####Variavel global c/ mês atual (para comparação)
 
-mes_atual = month(today())
+mes_atual = fct_mes_atual()
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
@@ -303,11 +304,10 @@ if(dash == F){
 ##############################################
 ##Criando nova tabela com dados apenas do mês anterior
 ##Auxiliares para meses
-this_month <- today()
-day(this_month) <- 1
-last_month <- this_month-months(1)
+mes_atual <- fct_mes_atual()
+mes_ant <- fct_mes_ant()
 ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_fec_anat %>%
-  filter(last_month <= historico_negocio_situacao_data,  historico_negocio_situacao_data < this_month) %>%
+  filter(mes_ant <= historico_negocio_situacao_data,  historico_negocio_situacao_data < mes_atual) %>%
   mutate(negocio_status = negocio_negocio_situacao_id)
 
 ##aqui ele substitui linha a linha cada situação pelo seu respectivo em string
@@ -361,7 +361,7 @@ if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_funil_fat_fec_anat, ng_ij_hist_ij_ven_funil_fat_fec_anat_mes, ng_ij_hist_ij_ven_fec_anat)
   #variáveis
-  rm(colors_pie, st_f, status_f, this_month, last_month)
+  rm(colors_pie, st_f, status_f, mes_ant)
 }
 
 ##Filtrando empresa, vendedores ativos e negocios de anat
