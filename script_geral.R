@@ -24,22 +24,25 @@ library(RColorBrewer)
 #library(scales)
 #Lib para lidar com o tempo
 library(lubridate)
+source("fct_tempo.R")
 
 
 
 ###################################
 ##Variáveis "Globais"
-####Variavel de teste para n?o remover e imprimir valores de teste, 1 para teste, 0 para n?o estou testando, rodando
+####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
-####Vari?vel usada para n?o plotar os gr?ficos na dash
+####Variável usada para não plotar os gráficos na dash
 dash = F
-####Variavel global c/ ano atual (para compara??o)
-ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
+####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+ano_atual = fct_ano_atual()
 ####Variavel global c/ mês atual (para comparação)
-mes_atual = month(today())
-if(mes_atual == 1){
-  mes_atual <- 13
-}
+mes_atual = fct_mes_atual()
+
+#teste
+# ano_atual = ymd(today()-months(month(today())-1)- days(day(today())-1)+years(1))
+# mes_atual = month(01)
+ano <- year(ano_atual)
 ####Vari?vel global para ver se tem usados Ainda n?o usada
 #usados = T
 
@@ -79,26 +82,14 @@ func_nome <- function (nome_comp)
   lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
   return (lista[,1])
 }
-
-func_nome_29 <- function (nome_comp)
-{
-  lista <- str_split_fixed(nome_comp, " ", 4)
-  lista <- lista[, -4]
-  lista[,3] = str_sub(lista[,3], 1, 1)
-  lista[,2] = str_sub(lista[,2], 1, 1)
-  lista[,2] = paste(lista[,2], '.', sep='')
-  lista[,3] = paste(lista[,3], '.', sep='')
-  lista[,2] <- gsub('^.$', '',lista[,2])
-  lista[,3] <- gsub('^.$', '',lista[,3])
-  lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
-  return (lista[,1])
-}
 ##Alterar o número apresentado na forma americana (com vírgula) para a forma brasileira (com ponto), através da transformação em string
 func_fmt_numbr <- function(inteiro)
 {
   inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
   return(inteiro_br)
 }
+
+
 
 #################################################################################
 ### Funil de vendas (vendas abertas)
@@ -107,12 +98,10 @@ func_fmt_numbr <- function(inteiro)
 negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id)
 
-
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
   filter (vendedor_empresa_id == empresa)
-
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
@@ -137,8 +126,7 @@ negocio_ij_vendedor <- inner_join(negocio, vendedor, by=c("negocio_vendedor_id" 
 
 ########## Para o funil e para agrupar por faturamento
 #### Vou alterar o agrupamento de número de negócios para faturamento, portanto precisarei da tabela negocio_produto
-neg_ij_ven_ij_np <- inner_join(negocio_ij_vendedor, negocio_produto, by=c("negocio_id" = "np_negocio_id")) %>%
-  mutate (np_valor_tot = np_quantidade*np_valor)
+neg_ij_ven_ij_np <- inner_join(negocio_ij_vendedor, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
 
 ##Status aberto
 st_a = c(1,2,3,8,10)
@@ -162,12 +150,12 @@ ng_ij_hist_ij_ven_funil_ab$negocio_status <- with(ng_ij_hist_ij_ven_funil_ab, cu
                                                                                   labels = status))
 ##Agora será agrupado por pedidos em aberto e faturamento total
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_ab %>%
-  select (negocio_status, np_valor_tot, negocio_negocio_situacao_id) %>%
+  select (negocio_status, np_valor, negocio_negocio_situacao_id, np_quantidade) %>%
   group_by(negocio_status) %>%
-  mutate(total_faturado = sum(np_valor_tot)) %>%
+  mutate(total_faturado = sum(np_valor*np_quantidade)) %>%
   arrange(negocio_status) %>%
   distinct(negocio_status, .keep_all = TRUE) %>%
-  select (-np_valor_tot) %>%
+  select (-np_valor, -np_quantidade) %>%
   collect()
 
 if (teste == T){
@@ -264,13 +252,12 @@ ng_ij_hist_ij_ven_fec_anat$negocio_status <- with(ng_ij_hist_ij_ven_fec_anat, cu
 
 ##Agora será agrupado por pedidos em aberto e faturamento total
 ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_fec_anat %>%
-  select (negocio_status, np_valor_tot) %>%
+  select (negocio_status, np_valor) %>%
   group_by(negocio_status) %>%
-  mutate(total_faturado = sum(np_valor_tot)) %>%
+  mutate(total_faturado = sum(np_valor)) %>%
   arrange(negocio_status) %>%
   distinct(negocio_status, .keep_all = TRUE) %>%
-  select (-np_valor_tot)
-ungroup()
+  collect()
 
 
 ##Coluna nova criada para facilitar compreensão (diminui as casas para exibir em milhões)
@@ -305,11 +292,11 @@ if(dash == F){
 ##############################################
 ##Criando nova tabela com dados apenas do mês anterior
 ##Auxiliares para meses
-this_month <- today()
-day(this_month) <- 1
-last_month <- this_month-months(1)
+#mes_ant <- fct_mes_ant()
+mes_ant = month(12)
+
 ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_fec_anat %>%
-  filter(last_month <= historico_negocio_situacao_data,  historico_negocio_situacao_data < this_month) %>%
+  filter(mes_ant <= historico_negocio_situacao_data,  historico_negocio_situacao_data < mes_atual) %>%
   mutate(negocio_status = negocio_negocio_situacao_id)
 
 ##aqui ele substitui linha a linha cada situação pelo seu respectivo em string
@@ -318,13 +305,12 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat_mes$negocio_status <- with(ng_ij_hist_ij_ve
 
 ##Agora será agrupado por pedidos em aberto e faturamento total
 ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat_mes %>%
-  select (negocio_status, np_valor_tot) %>%
+  select (negocio_status, np_valor) %>%
   group_by(negocio_status) %>%
-  mutate(total_faturado = sum(np_valor_tot)) %>%
+  mutate(total_faturado = sum(np_valor)) %>%
   arrange(negocio_status) %>%
   distinct(negocio_status, .keep_all = TRUE) %>%
-  select(-np_valor_tot) %>%
-  ungroup()
+  collect()
 
 
 ##Coluna nova criada para facilitar compreensão (diminui as casas para exibir em milhões)
@@ -364,8 +350,10 @@ if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_funil_fat_fec_anat, ng_ij_hist_ij_ven_funil_fat_fec_anat_mes, ng_ij_hist_ij_ven_fec_anat)
   #variáveis
-  rm(colors_pie, st_f, status_f, this_month, last_month)
+  rm(colors_pie, st_f, status_f, mes_ant)
 }
+#####################################################################
+### Faturamento anual (ano atual + dois anteriores se disponíveis)
 
 ##Filtrando empresa, vendedores ativos e negocios de anat
 ng_ij_hist_ij_ven_anat_fat <- ng_ij_hist_ij_ven_ij_np_anat %>%
@@ -375,7 +363,7 @@ ng_ij_hist_ij_ven_anat_fat <- ng_ij_hist_ij_ven_ij_np_anat %>%
 
 
 ##Adicionando "0" para ficar padrão a todos, gerando apenas para os meses (do ano atual) que já passaram
-ym_aux <- seq(1, mes_atual-1, 1)
+ym_aux <- fct_meses_ant(mes_atual)
 ym <- as.character(ym_aux)
 for (i in (1:max(ym_aux))){
   if(ym_aux[i] < 10){
@@ -388,7 +376,7 @@ fat_anat_mes_aux <-data.frame(ym)
 fat_anat_mes <- ng_ij_hist_ij_ven_anat_fat %>%
   mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
   group_by (ym) %>%
-  summarize(ym_sum = sum(np_valor_tot), .groups = 'drop') %>%
+  summarize(ym_sum = sum(np_valor), .groups = 'drop') %>%
   mutate (ym = as.character(ym)) %>%
   ungroup()
 
@@ -441,13 +429,13 @@ if(anos_ant > 1){
     fat_2ant_mes <- ng_ij_hist_ij_ven_ij_np_2ant_fat %>%
       mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
       group_by (ym) %>%
-      summarize(ym_sum_2ant = sum(np_valor_tot), .groups = 'drop')%>%
+      summarize(ym_sum_2ant = sum(np_valor), .groups = 'drop')%>%
       ungroup ()
     
     fat_1ant_mes <- ng_ij_hist_ij_ven_ij_np_1ant_fat %>%
       mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
       group_by (ym) %>%
-      summarize(ym_sum_1ant = sum(np_valor_tot), .groups = 'drop') %>%
+      summarize(ym_sum_1ant = sum(np_valor), .groups = 'drop') %>%
       ungroup ()
   }else{
     ym_sum_2ant <- rep(NA, 12)
@@ -460,7 +448,7 @@ if(anos_ant > 0) {
     fat_1ant_mes <- ng_ij_hist_ij_ven_ij_np_1ant_fat %>%
       mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
       group_by (ym) %>%
-      summarize(ym_sum_1ant = sum(np_valor_tot), .groups = 'drop') %>%
+      summarize(ym_sum_1ant = sum(np_valor), .groups = 'drop') %>%
       ungroup ()
   }else{
     ym_sum_1ant <- rep(NA, 12)
@@ -502,7 +490,13 @@ if(anos_ant > 0) {
 if(anos_ant > 1) {
   fat_anat_1ant_2ant_mes$ym_sum_2ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_2ant)] <- 0
 }
-
+# Aqui eu vou preencher com valores NA para os meses seguintes (se estamos em jan, só teremos valores de jan, então os demais serão NA para não aparecerem como zero no plot)
+for (value in fat_anat_1ant_2ant_mes$ym){
+  if(mes_atual < value){
+    fat_anat_1ant_2ant_mes$ym_sum[value] <- NA
+  }else{
+  }
+}
 #######################################################################
 
 ##Começando o gráfico
@@ -521,7 +515,7 @@ ay <- list(
 n12 <- plot_ly(fat_anat_1ant_2ant_mes)
 n12 <- n12 %>%
   add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum,
-            name = 'Faturamento de 2020',
+            name = paste('Faturamento de', ano),
             text = ~paste(func_fmt_din_mi(ym_sum),'milhões'),
             hoverinfo = "text",
             color = I("green")
@@ -529,7 +523,7 @@ n12 <- n12 %>%
 if(anos_ant > 0) {
   n12 <- n12 %>%
     add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_1ant, yaxis = ay,
-              name = 'Faturamento de 2019',
+              name = paste('Faturamento de', ano-1),
               text = ~paste(func_fmt_din_mi(ym_sum_1ant),'milhões'),
               hoverinfo = "text",
               color = I("#1E90FF"))
@@ -537,7 +531,7 @@ if(anos_ant > 0) {
 if(anos_ant > 1) {
   n12 <- n12 %>%
     add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_2ant, yaxis = ay,
-              name = 'Faturamento de 2018',
+              name = paste('Faturamento de', ano-2),
               text = ~paste(func_fmt_din_mi(ym_sum_2ant),'milhões'),
               hoverinfo = "text",
               color = I("#4682B4"))
@@ -601,7 +595,7 @@ Encoding(visita_status$motivo) <- 'latin1'
 vis_st_emp <- inner_join(visita_status, visita_status_empresa, by = c('vs_id'= 'vse_status_id'))
 
 ##Já filtrado apenas empresa (variavel global)
-ym_aux <- seq(1, mes_atual-1, 1)
+ym_aux <- fct_meses_ant(mes_atual)
 ym <- as.character(ym_aux)
 
 clientes_mes_aux <- data.frame(ym)
@@ -666,6 +660,15 @@ cli_ij_vc_ij_ng_mes$ym <- as.integer(cli_ij_vc_ij_ng_mes$ym)
 cli_ij_vc_ij_ng_mes <- cli_ij_vc_ij_ng_mes %>%
   mutate(mes = cut(ym,breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
                    labels = meses))
+# Aqui eu vou preencher com valores NA para os meses seguintes (se estamos em jan, só teremos valores de jan, então os demais serão NA para não aparecerem como zero no plot)
+for (value in cli_ij_vc_ij_ng_mes$ym){
+  if(mes_atual < value){
+    cli_ij_vc_ij_ng_mes$n_cli[value] <- NA
+    cli_ij_vc_ij_ng_mes$n_vis[value] <- NA
+    cli_ij_vc_ij_ng_mes$n_neg[value] <- NA
+  }else{
+  }
+}
 ###Não farei dessa forma pois quero manter a coluna
 #cli_ij_vc_ij_ng_mes$ym <- with(cli_ij_vc_ij_ng_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
 #                                                        labels = meses))
@@ -778,9 +781,9 @@ if (nrow(vend_cli_vis_neg) > 0){
   c0 <- plot_ly(vend_cli_vis_neg, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
                 name = 'Clientes (total)')
   c0 <- c0 %>%
-    add_trace(y= ~n_visitas, name = 'Visitas (2020)')
+    add_trace(y= ~n_visitas, name =  paste('Visitas', ano))
   c0 <- c0 %>%
-    add_trace(y= ~n_negocios, name = 'Negócios (2020)')
+    add_trace(y= ~n_negocios, name = paste('Negócios', ano))
   c0 <- c0 %>%
     layout(barmode = 'grouped',
            xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
