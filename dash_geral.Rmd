@@ -33,8 +33,6 @@ library(RColorBrewer)
 #library(waffle)
 #usada para converter números em moeda
 #library(scales)
-#Lib para lidar com o tempo
-library(lubridate)
 #lib para plotar a imagem (s_dados)
 library(knitr)
 source("fct_tempo.R")

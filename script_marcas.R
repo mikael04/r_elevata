@@ -22,8 +22,6 @@ library(RColorBrewer)
 #library(treemap)
 #Lib usada pros waffles
 #library(waffle)
-#Lib para funções de tempo
-library(lubridate)
 #usada para converter números em moeda
 #library(scales)
 #Lib usada para emojis/fonts/box de valores
@@ -32,6 +30,8 @@ library(ggplot2)
 library(leaflet)
 #lib para plotar a imagem (s_dados)
 library(knitr)
+#funçoes de tempo
+source("fct_tempo.R")
 
 
 ###################################
@@ -39,12 +39,16 @@ library(knitr)
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável usada para não plotar os gráficos na dash
-dash = F
+dash = T
 ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
+ano_atual = fct_ano_atual()
 ####Variavel global c/ mês atual (para comparação)
+mes_atual = fct_mes_atual()
 
-mes_atual = month(today())
+#teste
+# ano_atual = ymd(today()-months(month(today())-1)- days(day(today())-1)+years(1))
+# mes_atual = month(01)
+ano <- year(ano_atual)
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 

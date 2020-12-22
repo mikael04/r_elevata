@@ -41,6 +41,7 @@ library(lubridate)
 library(leaflet)
 #lib para plotar a imagem (s_dados)
 library(knitr)
+source("fct_tempo.R")
 
 
 ###################################
@@ -50,10 +51,11 @@ teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = T
 ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
+ano_atual = fct_ano_atual()
 ####Variavel global c/ mês atual (para comparação)
-
-mes_atual = month(today())
+mes_atual = fct_mes_atual()
+# Apenas ano, para gerar títulos
+ano <- year(ano_atual)
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
@@ -63,7 +65,7 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 1
+  empresa = 33
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -636,7 +638,8 @@ Top 10 Categorias
 
 Column {data-width=350}
 -----------------------------------------------------------------------
-###  Valor Financeiro de Negócios Cadastrados, por categoria em 2020
+`r paste("###  Valor Financeiro de Negócios Cadastrados, por categoria em", ano)`
+
 
 ```{r}
 ### Gráfico hc_n4 - Valor financeiro de negócios em 2020  (por categoria)
@@ -646,7 +649,7 @@ hc_n4
 
 Column {data-width=350}
 -----------------------------------------------------------------------
-### Valor Financeiro de Negócios Faturados, por categoria em 2020
+`r paste("### Valor Financeiro de Negócios Faturados, por categoria em", ano)`
 
 ```{r}
 ### Gráfico hc_n5 - Máquinas faturadas em 2020 (por categoria)
