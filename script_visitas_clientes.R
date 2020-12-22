@@ -24,12 +24,11 @@ library(RColorBrewer)
 #library(waffle)
 #usada para converter números em moeda
 #library(scales)
-#Lib para funções de tempo
-library(lubridate)
 #usada para converter números em moeda
 library(leaflet)
 #lib para plotar a imagem (s_dados)
 library(knitr)
+source("fct_tempo.R")
 
 
 ###################################
@@ -37,12 +36,16 @@ library(knitr)
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável usada para não plotar os gráficos na dash
-dash = F
+dash = T
 ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
+ano_atual = fct_ano_atual()
 ####Variavel global c/ mês atual (para comparação)
-
-mes_atual = month(today())
+mes_atual = fct_mes_atual()
+#teste
+# ano_atual = ymd(today()-months(month(today())-1)- days(day(today())-1)+years(1))
+# mes_atual = month(01)
+## Apenas ano, para gerar títulos
+ano <- year(ano_atual)
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
@@ -469,7 +472,7 @@ vcUltVis <- visita_cliente %>%
 ##Categorias de idades
 idades_vis = c("Sem visita", "Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses")
 ##Cores das categorias
-cor_idade_vis = c("#000000", "#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
+cor_idade_vis = c("#000000", "#32CD32", "#87CEFA" , "#FFD700" , "orange" , "#DE0D26")
 
 ##left join pra manter todos, mesmo os q não tem visita
 cli_in_ven_in_vcUltVis <- left_join(cli_in_ven, vcUltVis, by = c("cliente_id" = "vc_cliente_id")) %>%
@@ -494,7 +497,7 @@ if(nrow(cli_in_ven_in_vcUltVis) > 0){
                                      "<br>",
                                      "Vendedor: ", cli_in_ven_in_vcUltVis$vendedor_nome,
                                      "<br>",
-                                     "Tempo desde a última visita: ", cli_in_ven_in_vcUltVis$vc_data_cadastro),
+                                     "Data da última visita: ", cli_in_ven_in_vcUltVis$vc_data_cadastro),
                      label = ~cliente_nome,
                      color = ~pal(idade_vis)
                      #clusterOptions = markerClusterOptions()
@@ -521,7 +524,7 @@ if(nrow(cli_in_ven_in_vcUltVis) > 0){
 ##Categorias de idades #já declarado, só para facilitar visualização
 #idades_vis = c("Sem visita", "Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses")
 ##Cores das categorias #já declarado, só para facilitar visualização
-#cor_idade_vis = c("#000000", "#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
+#cor_idade_vis = c("#000000", "#32CD32", "#87CEFA" , "#FFD700" , "orange" , "#DE0D26")
 df_cores <- data.frame(idades_vis, cor_idade_vis)
 
 cli_in_ven_in_vcUltVis_cont <- cli_in_ven_in_vcUltVis %>%
