@@ -32,7 +32,7 @@ library(ggplot2)
 library(emojifont)
 #Lib usada para ler imagens
 library(knitr)
-
+source("fct_tempo.R")
 
 
 ###################################
@@ -42,10 +42,14 @@ teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = F
 ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
+ano_atual = fct_ano_atual()
 ####Variavel global c/ mês atual (para comparação)
-
-mes_atual = month(today())
+mes_atual = fct_mes_atual()
+#teste
+# ano_atual = ymd(today()-months(month(today())-1)- days(day(today())-1)+years(1))
+# mes_atual = month(01)
+## Apenas ano, para gerar títulos
+ano <- year(ano_atual)
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
@@ -142,24 +146,24 @@ if (teste == F){
   rm()
 }
 
-prop_ij_neg_2020 <- prop_ij_neg %>%
-  filter(proposta_data_cadastro >= '2020-01-01')
+prop_ij_neg_anat <- prop_ij_neg %>%
+  filter(proposta_data_cadastro >= ano_atual)
 
 ##Juntando com vendedor pra obter o nome do vendedor
 prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
 
 ##Filtrando a empresa
-prop_ij_neg_ij_vend_2020 <- prop_ij_neg_ij_vend %>%
-  filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= '2020-01-01')
+prop_ij_neg_ij_vend_anat <- prop_ij_neg_ij_vend %>%
+  filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= ano_atual)
 
-prop_ij_neg_ij_vend_ij_propag_2020 <- inner_join(prop_ij_neg_ij_vend_2020, proposta_pagamento, by=c("proposta_id" = "pp_proposta_id")) %>%
+prop_ij_neg_ij_vend_ij_propag_anat <- inner_join(prop_ij_neg_ij_vend_anat, proposta_pagamento, by=c("proposta_id" = "pp_proposta_id")) %>%
   select (-pp_modo_id, -pp_forma_id, -pp_usado_id)
 
 
 status = c("Pendente", "Aceito", "Recusado", "Cancelado", "Finalizado")
 
 ##Aqui tenho a contagem de status por vendedor
-prop_ij_neg_ij_vend_ij_propag_2020 <- prop_ij_neg_ij_vend_ij_propag_2020 %>%
+prop_ij_neg_ij_vend_ij_propag_anat <- prop_ij_neg_ij_vend_ij_propag_anat %>%
   select (negocio_vendedor_id, negocio_vendedor_id, vendedor_nome, proposta_status, vendedor_ativo, pp_valor) %>%
   group_by(proposta_status, negocio_vendedor_id) %>%
   mutate(cont_status = n()) %>%
@@ -169,14 +173,14 @@ prop_ij_neg_ij_vend_ij_propag_2020 <- prop_ij_neg_ij_vend_ij_propag_2020 %>%
 
 
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
-prop_ij_neg_ij_vend_ij_propag_2020$proposta_status <- with(prop_ij_neg_ij_vend_ij_propag_2020, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
+prop_ij_neg_ij_vend_ij_propag_anat$proposta_status <- with(prop_ij_neg_ij_vend_ij_propag_anat, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
                                                                                                    labels = status))
-prop_ij_neg_cont_vend_a_ij_propag_2020 <- prop_ij_neg_ij_vend_ij_propag_2020 %>%
+prop_ij_neg_cont_vend_a_ij_propag_anat <- prop_ij_neg_ij_vend_ij_propag_anat %>%
   filter(vendedor_ativo == T)
 
 ### Gráfico p0 - Número propostas, por tipo, por vendedor (total)
-if(nrow(prop_ij_neg_cont_vend_a_ij_propag_2020) > 0){
-  p0 <- plot_ly(prop_ij_neg_cont_vend_a_ij_propag_2020, type = 'bar', orientation = 'h', x = ~cont_status , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
+if(nrow(prop_ij_neg_cont_vend_a_ij_propag_anat) > 0){
+  p0 <- plot_ly(prop_ij_neg_cont_vend_a_ij_propag_anat, type = 'bar', orientation = 'h', x = ~cont_status , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
                 color = ~proposta_status,
                 colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
                 name = ~proposta_status,
@@ -197,7 +201,7 @@ if(dash == F){
   p0
 }
 
-prop_ij_neg_ij_propag_cont_2020 <- prop_ij_neg_ij_vend_ij_propag_2020 %>%
+prop_ij_neg_ij_propag_cont_anat <- prop_ij_neg_ij_vend_ij_propag_anat %>%
   group_by(proposta_status) %>%
   mutate(cont_status_v = sum(cont_status)) %>%
   mutate(sum_valor_v = sum(sum_valor)) %>%
@@ -205,12 +209,12 @@ prop_ij_neg_ij_propag_cont_2020 <- prop_ij_neg_ij_vend_ij_propag_2020 %>%
   select (-negocio_vendedor_id, -vendedor_nome, -vendedor_ativo, -cont_status, sum_valor) %>%
   ungroup ()
 
-### Gráfico p1 - Número propostas, por tipo em 2020 (total)
-if(nrow(prop_ij_neg_ij_propag_cont_2020) > 0){
-  p1 <- plot_ly(prop_ij_neg_ij_propag_cont_2020, type = 'bar', x = ~proposta_status , y = ~sum_valor_v,
+### Gráfico p1 - Número propostas, por tipo em anat (total)
+if(nrow(prop_ij_neg_ij_propag_cont_anat) > 0){
+  p1 <- plot_ly(prop_ij_neg_ij_propag_cont_anat, type = 'bar', x = ~proposta_status , y = ~sum_valor_v,
                 color = ~proposta_status,
                 colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
-                text = ~paste(proposta_status,
+                text = ~paste0(proposta_status,
                               '<br>',
                               'Valor financeiro: ', func_fmt_din(sum_valor_v),
                               '<br>',
@@ -245,7 +249,7 @@ if(teste == F){
   if(dash == F){
     rm()
   }
-  rm(prop_ij_neg_2020, prop_ij_neg_ij_vend_ij_propag_2020, prop_ij_neg_ij_vend_2020, prop_ij_neg_ij_propag_cont_2020);
+  rm(prop_ij_neg_anat, prop_ij_neg_ij_vend_ij_propag_anat, prop_ij_neg_ij_vend_anat, prop_ij_neg_ij_propag_cont_anat);
   #variáveis
   rm(status);
 }
@@ -593,13 +597,12 @@ if(teste == F){
 }
 
 ##################################################################
-### Faturamento de propostas em 2020 por status
+### Faturamento de propostas em anat por status
 
 
 ##Junção pra termos valor da proposta (preciso do negócio pra filtrar empresa e vendedores se preciso)
 p_ij_n_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_pagamento, by = c("proposta_id" = "pp_proposta_id")) %>%
-  arrange(pp_valor)
-
+  dplyr::arrange(pp_valor)
 ##Aqui tenho a soma de faturamento da empresa dividido em categorias
 p_ij_n_ij_pp_sum <- p_ij_n_ij_pp %>%
   select (proposta_status, pp_valor) %>%
@@ -615,7 +618,7 @@ p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum %>%
   group_by(proposta_status) %>%
   mutate (valor_status = sum(valor_proposta)) %>%
   distinct(proposta_status, .keep_all = TRUE) %>%
-  arrange(proposta_status) %>%
+  dplyr::arrange(proposta_status) %>%
   ungroup ()
 
 ##Usar pra renomear os status das propostas
@@ -672,7 +675,7 @@ Encoding(proposta_modo_forma$pmf_nome) <- 'latin1'
 
 p_ij_ppa <- inner_join(proposta, proposta_pagamento, by=c('proposta_id' = 'pp_proposta_id')) %>%
   select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id, pp_valor) %>%
-  filter (pp_modo_id != 0, pp_forma_id != 0) #, proposta_data_cadastro > '2020-01-01') ##teste de ano atual
+  filter (pp_modo_id != 0, pp_forma_id != 0) #, proposta_data_cadastro > 'ano_atual) ##teste de ano atual
 
 if(teste == T){
   #####################
@@ -680,7 +683,7 @@ if(teste == T){
   # p_ij_ppa_ij_pmf <- inner_join (p_ij_ppa, proposta_modo_forma, by = c("pp_modo_id" = "pmf_id")) %>%
   #   select(proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_modo_id, pmf_nome) %>%
   #   rename(Modo_pagamento = pmf_nome) %>%
-  #   arrange(pp_modo_id)
+  #   dplyr::arrange(pp_modo_id)
   # write_excel_csv(p_ij_ppa_ij_pmf, "propostas_c_modo_pagamento.csv", delim = ";")
   #####################
 }
@@ -690,7 +693,7 @@ if(teste == T){
   # p_ij_ppa_ij_pmf <- inner_join (p_ij_ppa, proposta_modo_forma, by = c("pp_forma_id" = "pmf_id")) %>%
   #   select(proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_forma_id, pmf_nome) %>%
   #   rename(Forma_pagamento = pmf_nome) %>%
-  #   arrange(pp_forma_id)
+  #   dplyr::arrange(pp_forma_id)
   # write_excel_csv(p_ij_ppa_ij_pmf, "propostas_c_forma_pagamento.csv", delim = ";")
   #####################
 }
@@ -746,10 +749,10 @@ n_total_forma <- sum(p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux)
 aux_3perc <- n_total_forma*0.05
 if (empresa == 16){##Super não tem forma Outras (usando -1 como valor)
   p_ij_ppa_sum_forma_ij_pmf$pp_forma_id[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- -1
-  p_ij_ppa_sum_forma_ij_pmf$forma[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- "OUTRAS"
+  p_ij_ppa_sum_forma_ij_pmf$Forma[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- "OUTRAS"
 }else if (empresa == 78){
   p_ij_ppa_sum_forma_ij_pmf$pp_forma_id[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- 50
-  p_ij_ppa_sum_forma_ij_pmf$forma[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- "OUTROS"
+  p_ij_ppa_sum_forma_ij_pmf$Forma[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- "OUTROS"
 }
 
 ##Aqui eu estou refazendo a contagem pq já havia uma categoria "Outras", só estou adicionando os demais (com taxa <3%) nela
@@ -804,11 +807,11 @@ if(dash == F){
 
 if(teste == F){
   #tabelas
-  rm(p_ij_ppa, proposta, proposta_modo_forma, p_ij_ppa_count_modo, p_ij_ppa_cont_modo_ij_pmf,
-     p_ij_ppa_count_forma, p_ij_ppa_cont_forma_ij_pmf, proposta_pagamento, media_empresa_us,
-     n_empresa, n_empresa_us, total_empresa_us);
+  # rm(p_ij_ppa, proposta, proposta_modo_forma, p_ij_ppa_count_modo, p_ij_ppa_cont_modo_ij_pmf,
+  #    p_ij_ppa_count_forma, p_ij_ppa_cont_forma_ij_pmf, proposta_pagamento, media_empresa_us,
+  #    n_empresa, n_empresa_us, total_empresa_us);
   #variáveis
-  if(empresa == 16){rm(aux_3perc, n_outros_forma, n_total_modo)}
+  # if(empresa == 16){rm(aux_3perc, n_outros_forma, n_total_modo)}
 }
 if (teste == 0) {
   #rm(list=ls())
