@@ -32,6 +32,7 @@ library(ggplot2)
 library(emojifont)
 #lib para plotar a imagem (s_dados)
 library(knitr)
+source("fct_tempo.R")
 
 
 ###################################
@@ -39,12 +40,16 @@ library(knitr)
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável usada para não plotar os gráficos na dash
-dash = F
+dash = T
 ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-ano_atual = ymd(today()) - months(month(today())-1) - days(day(today())-1)
+ano_atual = fct_ano_atual()
 ####Variavel global c/ mês atual (para comparação)
-
-mes_atual = month(today())
+mes_atual = fct_mes_atual()
+#teste
+# ano_atual = ymd(today()-months(month(today())-1)- days(day(today())-1)+years(1))
+# mes_atual = month(01)
+## Apenas ano, para gerar títulos
+ano <- year(ano_atual)
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
@@ -52,7 +57,7 @@ mes_atual = month(today())
 s_dados_path <- "s_dados.png"
 
 ##Variável "Global"
-empresa = 1
+empresa = 16
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -461,3 +466,4 @@ if (teste == F){
   #variáveis
   rm()
 }
+```
