@@ -37,7 +37,7 @@ x <- length(params_list)
 
 ########################################################
 
-# ##Gerando dashs geral ##Funcionando, apenas comentada pra facilitar teste das marcas
+## Gerando dashs geral ##Funcionando, apenas comentada pra facilitar teste das marcas
 for(i in (1:x)){
   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
   template <- "dash_geral.Rmd"
@@ -57,7 +57,7 @@ for(i in (1:x)){
                     params = parameters)
   invisible(TRUE)
 }
-##Gerando dashs marcas
+## Gerando dashs marcas
 for(i in (1:x)){
   if (params_list[i] != 78 & params_list[i] != 79)
   {
@@ -89,7 +89,7 @@ for(i in (1:x)){
     invisible(TRUE)
   }
 }
-# ## Gerando dash negocios
+## Gerando dash negocios
 for(i in (1:x)){
   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
   template <- "dash_negocios.Rmd"

@@ -65,7 +65,7 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 16
+  empresa = 21
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -399,6 +399,11 @@ ng_ij_hist_ij_emp_num <- ng_ij_hist_ij_emp_num %>%
 
 ng_ij_hist_ij_emp_num$idade_cat = factor(ng_ij_hist_ij_emp_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
 
+## Adicionando cores através de junção
+cor <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
+df_idd_cor <- tibble(idades, cor)
+ng_ij_hist_ij_emp_num <- inner_join(ng_ij_hist_ij_emp_num, df_idd_cor, by=c("idade_cat" = "idades"))
+
 ### Gráfico n7 - Negócios abertos da empresa, pizza
 colors_pie <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
 if (nrow(ng_ij_hist_ij_emp_num) > 0){
@@ -407,7 +412,8 @@ if (nrow(ng_ij_hist_ij_emp_num) > 0){
                 hovertemplate = paste ("%{label} <br>",
                                        "Equivalente a %{percent}",
                                        "<extra></extra>"),
-                marker = list(colors = colors_pie))
+                marker = list(color = ~idade_cat,
+                              colors = ~cor))
 }else {
   n7 <- include_graphics(s_dados_path)
 }

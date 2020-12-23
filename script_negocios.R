@@ -40,7 +40,7 @@ source("fct_tempo.R")
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável usada para não plotar os gráficos na dash
-dash = T
+dash = F
 ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
 ano_atual = fct_ano_atual()
 ####Variavel global c/ mês atual (para comparação)
@@ -57,7 +57,7 @@ ano <- year(ano_atual)
 s_dados_path <- "s_dados.png"
 
 ##Variável "Global"
-empresa = 16
+empresa = 21
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -339,7 +339,6 @@ ng_ij_hist_ij_ven_num <- ng_ij_hist_ij_ven_idd %>%
   distinct (idade_cat, .keep_all = TRUE) %>%
   collect ()
 
-
 if (nrow(ng_ij_hist_ij_ven_num) > 0){
   n6 <- plot_ly(ng_ij_hist_ij_ven_num, type = 'bar', orientation = 'h', x=~num_negocios_idades , y=~reorder(vendedor_nome, desc(vendedor_nome)),
                 color = ~idade_cat,
@@ -388,6 +387,11 @@ ng_ij_hist_ij_emp_num <- ng_ij_hist_ij_emp_num %>%
 
 ng_ij_hist_ij_emp_num$idade_cat = factor(ng_ij_hist_ij_emp_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
 
+## Adicionando cores através de junção
+cor <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
+df_idd_cor <- tibble(idades, cor)
+ng_ij_hist_ij_emp_num <- inner_join(ng_ij_hist_ij_emp_num, df_idd_cor, by=c("idade_cat" = "idades"))
+
 ### Gráfico n7 - Negócios abertos da empresa, pizza
 colors_pie <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
 if (nrow(ng_ij_hist_ij_emp_num) > 0){
@@ -396,7 +400,8 @@ if (nrow(ng_ij_hist_ij_emp_num) > 0){
                 hovertemplate = paste ("%{label} <br>",
                                        "Equivalente a %{percent}",
                                        "<extra></extra>"),
-                marker = list(colors = colors_pie))
+                marker = list(color = ~idade_cat,
+                              colors = ~cor))
 }else {
   n7 <- include_graphics(s_dados_path)
 }

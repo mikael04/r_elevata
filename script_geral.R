@@ -27,7 +27,6 @@ library(lubridate)
 source("fct_tempo.R")
 
 
-
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
@@ -52,7 +51,7 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 16
+empresa = 62
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -292,8 +291,7 @@ if(dash == F){
 ##############################################
 ##Criando nova tabela com dados apenas do mês anterior
 ##Auxiliares para meses
-#mes_ant <- fct_mes_ant()
-mes_ant = month(12)
+mes_ant <- fct_mes_ant(mes_atual)
 
 ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_fec_anat %>%
   filter(mes_ant <= historico_negocio_situacao_data,  historico_negocio_situacao_data < mes_atual) %>%
