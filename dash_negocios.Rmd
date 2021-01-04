@@ -371,7 +371,7 @@ if (teste == F) {
   #tabelas
   rm(ng_ij_hist_ij_ven_num, ng_ij_hist_ij_ven_ab)
   #variáveis
-  rm(ff, idades, status_aberto)
+  rm(ff, status_aberto)
 }
 ###########################################
 

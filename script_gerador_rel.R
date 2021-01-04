@@ -42,7 +42,7 @@ for(i in (1:x)){
   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
   template <- "dash_geral.Rmd"
   #Teste (nome da empresa, mais fácil de analisar)
-  # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
+  # out_file <- sprintf("Dashs/Geral_%s, var1)
   if(teste){
     print(i)
     print(params_list[i])
@@ -63,8 +63,6 @@ for(i in (1:x)){
   {
     rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'empresas_ativas')))
     template <- "dash_marcas.Rmd"
-    #Teste (nome da empresa, mais fácil de analisar)
-    # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
     if(teste){
       print(i)
       print(params_list[i])
@@ -113,8 +111,6 @@ for(i in (1:x)){
 for(i in (1:x)){
     rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
     template <- "dash_propostas.Rmd"
-    #Teste (nome da empresa, mais fácil de analisar)
-    # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
     if(teste){
       print(i)
       print(params_list[i])
@@ -133,8 +129,6 @@ for(i in (1:x)){
 for(i in (1:x)){
   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
   template <- "dash_visitas_clientes.Rmd"
-  #Teste (nome da empresa, mais fácil de analisar)
-  # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
   if(teste){
     print(i)
     print(params_list[i])

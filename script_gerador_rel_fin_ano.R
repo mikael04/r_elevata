@@ -29,7 +29,7 @@ x <- length(params_list)
 ###Teste
 # params_test <- list(78)
 # template <- "dash_marcas_k.Rmd"
-# out_file <- sprintf("Dashs/Marcas_%s", params_test[1])
+# out_file <- sprintf("Dashs_final_ano/Marcas_%s", params_test[1])
 # parameters <- list(variable1 = params_list[i])
 # 
 # rmarkdown::render(template,
@@ -41,14 +41,14 @@ for(i in (1:x)){
   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'num_dias_list')))
   template <- "dash_geral_final_ano.Rmd"
   #Teste (nome da empresa, mais fácil de analisar)
-  # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
+  # out_file <- sprintf("Dashs_final_ano/Negocios_Propostas_%s, var1)
   if(teste){
     print(i)
     print(params_list[i])
     #print(params_list[[i]])
     #print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs/Geral_%s", params_list[i])
+  out_file <- sprintf("Dashs_final_ano/Geral_%s", params_list[i])
   ##Final de ano
   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
   
@@ -63,15 +63,13 @@ for(i in (1:x)){
   {
     rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'num_dias_list')))
     template <- "dash_marcas_final_ano.Rmd"
-    #Teste (nome da empresa, mais fácil de analisar)
-    # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
     if(teste){
       print(i)
       print(params_list[i])
       print(params_list[[i]])
       print(as.list(params_list[[i]]))
     }
-    out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
+    out_file <- sprintf("Dashs_final_ano/Marcas_%s", params_list[i])
     parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
     
     rmarkdown::render(template,
@@ -80,7 +78,7 @@ for(i in (1:x)){
     invisible(TRUE)
   }else{ ##########Caso seja a komatsu, marcas diferentes
     template <- "dash_marcas_k_final_ano.Rmd"
-    out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
+    out_file <- sprintf("Dashs_final_ano/Marcas_%s", params_list[i])
     parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
     
     rmarkdown::render(template,
@@ -93,15 +91,13 @@ for(i in (1:x)){
 for(i in (1:x)){
   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'num_dias_list')))
   template <- "dash_negocios_final_ano.Rmd"
-  #Teste (nome da empresa, mais fácil de analisar)
-  # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
   if(teste){
     print(i)
     print(params_list[i])
     print(params_list[[i]])
     print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs/Negocios_%s", params_list[i])
+  out_file <- sprintf("Dashs_final_ano/Negocios_%s", params_list[i])
   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
   
   rmarkdown::render(template,
@@ -113,15 +109,13 @@ for(i in (1:x)){
 for(i in (1:x)){
   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'num_dias_list')))
   template <- "dash_propostas_final_ano.Rmd"
-  #Teste (nome da empresa, mais fácil de analisar)
-  # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
   if(teste){
     print(i)
     print(params_list[i])
     print(params_list[[i]])
     print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs/Propostas_%s", params_list[i])
+  out_file <- sprintf("Dashs_final_ano/Propostas_%s", params_list[i])
   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
   
   rmarkdown::render(template,
@@ -133,15 +127,13 @@ for(i in (1:x)){
 for(i in (1:x)){
   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'num_dias_list')))
   template <- "dash_visitas_clientes_final_ano.Rmd"
-  #Teste (nome da empresa, mais fácil de analisar)
-  # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
   if(teste){
     print(i)
     print(params_list[i])
     print(params_list[[i]])
     print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs/Visitas_Clientes_%s", params_list[i])
+  out_file <- sprintf("Dashs_final_ano/Visitas_Clientes_%s", params_list[i])
   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
   
   rmarkdown::render(template,

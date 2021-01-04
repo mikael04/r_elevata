@@ -665,7 +665,7 @@ m0
 
 Column {data-width=450}
 -----------------------------------------------------------------------
-### Distribuição dos clientes nas categorias
+### Distribuição dos clientes nas categorias até o final de 2020
 
 ```{r}
 ### Gráfico c6 - Distribuição dos clientes nas categorias (por tempo de visita)
