@@ -51,7 +51,7 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 62
+empresa = 16
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -270,7 +270,12 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%
 
 ### Gráfico n10 - Pizza fechados do ano
 ##############################################
-colors_pie <- c("#32CD32", "yellow" , "orange" , "#DE0D26")
+######################################################################################################
+## Adicionando cores através de junção
+cor <- c("#32CD32", "yellow" , "orange" , "#DE0D26")
+df_stat_cor <- tibble(status_f, cor)
+ng_ij_hist_ij_ven_funil_fat_fec_anat <- inner_join(ng_ij_hist_ij_ven_funil_fat_fec_anat, df_stat_cor, by=c("negocio_status" = "status_f"))
+######################################################################################################
 if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0 & sum(ng_ij_hist_ij_ven_funil_fat_fec_anat$total_faturado) > 0){
   n10 <- plot_ly(ng_ij_hist_ij_ven_funil_fat_fec_anat, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
                  text = ~total_fat_t,
@@ -279,7 +284,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0 & sum(ng_ij_hist_ij_ven_funil
                                         "%{text}mi <br>",
                                         "Equivalente a %{percent}",
                                         "<extra></extra>"),
-                 marker = list(colors = colors_pie))
+                 marker = list(colors = ~cor))
 }else {
   n10 <- include_graphics(s_dados_path)
 }
@@ -348,7 +353,7 @@ if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_funil_fat_fec_anat, ng_ij_hist_ij_ven_funil_fat_fec_anat_mes, ng_ij_hist_ij_ven_fec_anat)
   #variáveis
-  rm(colors_pie, st_f, status_f, mes_ant)
+  rm(colors_pie, st_f, status_f)
 }
 #####################################################################
 ### Faturamento anual (ano atual + dois anteriores se disponíveis)

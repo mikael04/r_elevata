@@ -6,6 +6,7 @@ output:
     vertical_layout: fill
 params:
   variable1: "emp_par"
+  num_dias: 0
 ---
 
 ```{r setup, include=FALSE, error= TRUE}
@@ -44,12 +45,30 @@ source("fct_tempo.R")
 teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = T
-####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-ano_atual = fct_ano_atual()
-####Variavel global c/ mês atual (para comparação)
-mes_atual = fct_mes_atual()
-## Apenas ano, para gerar títulos
-ano <- year(ano_atual)
+# ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+# ano_atual = fct_ano_atual()
+# ####Variavel global c/ mês atual (para comparação)
+# mes_atual = fct_mes_atual()
+# ## Apenas ano, para gerar títulos
+# ano <- year(ano_atual)
+## Para o final de ano, só vou diminuir o número de dias até chegar no dia 31 (ex: hoje é dia 04, então vou remover 4d pra voltar pra 2020-12-31)
+if(as.integer(params$num_dias) == 0) {
+  ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+  ano_atual = fct_ano_atual()
+  ####Variavel global c/ mês atual (para comparação)
+  mes_atual = fct_mes_atual()
+  ## Apenas ano, para gerar títulos
+  ano <- year(ano_atual)
+}else{
+  data <- (lubridate::today()-lubridate::days(params$num_dias))
+  ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+  ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+  ####Variavel global c/ mês atual (para comparação)
+  mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
+  ## Apenas ano, para gerar títulos
+  ano <- lubridate::year(ano_atual)
+}
+
 
 
 
@@ -66,6 +85,7 @@ if(params$variable1 == 'emp_par'){
 }else{
   empresa = as.integer(params$variable1)
 }
+
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -282,8 +302,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%
 
 ### Gráfico n10 - Pizza fechados do ano
 ##############################################
-### Gráfico n10 - Pizza fechados do ano
-##############################################
+
 ######################################################################################################
 ## Adicionando cores através de junção
 cor <- c("#32CD32", "yellow" , "orange" , "#DE0D26")
@@ -906,12 +925,6 @@ Column {data-width=350}
 n10
 ```
 
-### Distribuição do valor financeiro em pedidos fechados no último mês
-
-```{r}
-### Gráfico n11 - Pizza fechados do mês
-n11
-```
 
 Faturamento ano a ano
 =======================================================================
