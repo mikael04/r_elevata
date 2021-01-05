@@ -24,8 +24,8 @@ library(RColorBrewer)
 #library(scales)
 #Lib para lidar com o tempo
 library(lubridate)
-source("fct_tempo.R")
-
+source("/mnt/data/Mikael/P…cripts_R/r_elevata")
+source("fct_fmt_din.R")
 
 ###################################
 ##Variáveis "Globais"
@@ -33,15 +33,29 @@ source("fct_tempo.R")
 teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = F
-####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-ano_atual = fct_ano_atual()
-####Variavel global c/ mês atual (para comparação)
-mes_atual = fct_mes_atual()
+## Para o final de ano, só vou diminuir o número de dias até chegar no dia 31 (ex: hoje é dia 04, então vou remover 4d pra voltar pra 2020-12-31)
+# if(as.integer(params$num_dias) == 0) {
+  ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+  ano_atual = fct_ano_atual()
+  ####Variavel global c/ mês atual (para comparação)
+  mes_atual = fct_mes_atual()
+  ## Apenas ano, para gerar títulos
+  ano <- year(ano_atual)
+# }else{
+num_dias <- 5
+  # data <- (lubridate::today()-lubridate::days(num_dias))
+  # ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+  # ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+  # ####Variavel global c/ mês atual (para comparação)
+  # mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
+  # ## Apenas ano, para gerar títulos
+  # ano <- lubridate::year(ano_atual)
+# }
 
 #teste
 # ano_atual = ymd(today()-months(month(today())-1)- days(day(today())-1)+years(1))
 # mes_atual = month(01)
-ano <- year(ano_atual)
+# ano <- year(ano_atual)
 ####Vari?vel global para ver se tem usados Ainda n?o usada
 #usados = T
 
@@ -54,19 +68,6 @@ s_dados_path <- "s_dados.png"
 empresa = 16
 ###################################
 
-##Alterar o valor de inteiro para reais
-func_fmt_din <- function(inteiro)
-{
-  inteiro_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
-  return(inteiro_em_reais)
-}
-##Alterar o valor de inteiro para reais convertendo para milh?es (78000000 = R$78,0) -> posteriormente adicionar o "mi"
-func_fmt_din_mi <- function(inteiro)
-{
-  inteiro <- round(inteiro/1000000, digits = 1)
-  inteiro_mi_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 1))
-  return(inteiro_mi_em_reais)
-}
 ##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
 func_nome <- function (nome_comp)
 {
@@ -81,14 +82,6 @@ func_nome <- function (nome_comp)
   lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
   return (lista[,1])
 }
-##Alterar o número apresentado na forma americana (com vírgula) para a forma brasileira (com ponto), através da transformação em string
-func_fmt_numbr <- function(inteiro)
-{
-  inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
-  return(inteiro_br)
-}
-
-
 #################################################################################
 ##### Dash geral
 
@@ -96,11 +89,11 @@ func_fmt_numbr <- function(inteiro)
 ### Funil de vendas (vendas abertas)
 ########################################################################
 
-negocio <- fread("Tabelas_final_ano/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
+negocio <- fread("scripts_final_ano/Tabelas_final_ano/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id)
 
 ##coleta todos os vendedores
-vendedor <- fread("Tabelas_final_ano/vendedor.csv") %>%
+vendedor <- fread("scripts_final_ano/Tabelas_final_ano/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
   filter (vendedor_empresa_id == empresa)
 
@@ -118,7 +111,7 @@ vendedor_a <- vendedor %>%
   filter(vendedor_ativo == T)
 
 ##negocio_produto para pegar os valores de cada negócio
-negocio_produto <- fread("Tabelas_final_ano/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
+negocio_produto <- fread("scripts_final_ano/Tabelas_final_ano/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
   select(np_id, np_negocio_id, np_produto_id, np_quantidade, np_ativo, np_valor) %>%
   filter (np_ativo == T)
 
@@ -170,7 +163,7 @@ if (teste == T){
 
 ##conversão de faturamento para texto
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
-  mutate(tot_fat_t = func_fmt_din(total_faturado))
+  mutate(tot_fat_t = func_fmt_din_milhoes(total_faturado))
 
 ##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
@@ -218,7 +211,7 @@ if (teste == F){
 st_f = c(4,5,6,7)
 status_f = c("Faturado", "Financiamento não aprovado", "Desistencia do cliente", "Perdemos para concorrência")
 
-historico_negocio_situacao <- fread("Tabelas_final_ano/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_situacao_id = "character")) %>%
+historico_negocio_situacao <- fread("scripts_final_ano/Tabelas_final_ano/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_situacao_id = "character")) %>%
   select(historico_negocio_situacao_data, historico_negocio_situacao_negocio_id, historico_negocio_situacao_situacao_id)
 
 ##filtrando apenas ano atual
@@ -268,7 +261,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %
 
 
 ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%
-  mutate(total_fat_t = func_fmt_din_mi(total_faturado))
+  mutate(total_fat_t = func_fmt_din_milhoes(total_faturado))
 
 ### Gráfico n10 - Pizza fechados do ano
 ##############################################
@@ -327,7 +320,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat_mes  <- ng_ij_hist_ij_ven_funil_fat_fec_ana
 
 #criando uma coluna nova para usar como texto dentro do gráfico
 ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat_mes %>%
-  mutate(total_fat_t = func_fmt_din_mi(total_faturado))
+  mutate(total_fat_t = func_fmt_din_milhoes(total_faturado))
 
 ### Gráfico n11 - Pizza fechados no último mês
 ##############################################
@@ -387,7 +380,7 @@ fat_anat_mes <- ng_ij_hist_ij_ven_anat_fat %>%
   ungroup()
 
 fat_anat_mes <- left_join(fat_anat_mes_aux, fat_anat_mes, by = c('ym'))
-fat_anat_mes$ym_sum[is.na(fat_anat_mes$ym_sum)] <- 0
+#fat_anat_mes$ym_sum[is.na(fat_anat_mes$ym_sum)] <- 0
 
 ##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais antigas, ficar só com a última atualização no negócio
 negocio_ij_historico_ij_vendedor_total <- negocio_ij_historico_ij_vendedor_total[order(-negocio_ij_historico_ij_vendedor_total$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_total$negocio_id),]
@@ -496,13 +489,13 @@ if(anos_ant > 0) {
 if(anos_ant > 1) {
   fat_anat_1ant_2ant_mes$ym_sum_2ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_2ant)] <- 0
 }
-# Aqui eu vou preencher com valores NA para os meses seguintes (se estamos em jan, só teremos valores de jan, então os demais serão NA para não aparecerem como zero no plot)
-for (value in fat_anat_1ant_2ant_mes$ym){
-  if(mes_atual < value){
-    fat_anat_1ant_2ant_mes$ym_sum[value] <- NA
-  }else{
-  }
-}
+# # Aqui eu vou preencher com valores NA para os meses seguintes (se estamos em jan, só teremos valores de jan, então os demais serão NA para não aparecerem como zero no plot)
+# for (value in fat_anat_1ant_2ant_mes$ym){
+#   if(mes_atual < value){
+#     fat_anat_1ant_2ant_mes$ym_sum[value] <- NA
+#   }else{
+#   }
+# }
 #######################################################################
 
 ##Começando o gráfico
@@ -520,28 +513,29 @@ ay <- list(
 ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
 n12 <- plot_ly(fat_anat_1ant_2ant_mes)
 n12 <- n12 %>%
-  add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum,
+  add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum, yaxis = ay,
             name = paste('Faturamento de', ano),
-            text = ~paste(func_fmt_din_mi(ym_sum),'milhões'),
+            text = ~paste(func_fmt_din_milhoes(ym_sum),'milhões'),
             hoverinfo = "text",
-            color = I("green")
-  )
+            color = I("green"))
 if(anos_ant > 0) {
   n12 <- n12 %>%
-    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_1ant, yaxis = ay,
+    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum_1ant,
               name = paste('Faturamento de', ano-1),
-              text = ~paste(func_fmt_din_mi(ym_sum_1ant),'milhões'),
+              text = ~paste(func_fmt_din_milhoes(ym_sum_1ant),'milhões'),
               hoverinfo = "text",
-              color = I("#1E90FF"))
+              color = I("#4682B4")
+    )
 }
 if(anos_ant > 1) {
   n12 <- n12 %>%
     add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_2ant, yaxis = ay,
               name = paste('Faturamento de', ano-2),
-              text = ~paste(func_fmt_din_mi(ym_sum_2ant),'milhões'),
+              text = ~paste(func_fmt_din_milhoes(ym_sum_2ant),'milhões'),
               hoverinfo = "text",
-              color = I("#4682B4"))
+              color = I("#1E90FF"))
 }
+  
 
 n12 <- n12 %>%
   layout(xaxis = list(title = ''), yaxis = list(title = '')
@@ -571,25 +565,25 @@ if (teste == F){
 ###Contar clientes/visitas/negocios cadastrados por mês -> vem do script visita_clientes
 ####################################
 
-cliente <- fread("Tabelas_final_ano/cliente.csv", colClasses = c(cliente_id = "character")) %>%
+cliente <- fread("scripts_final_ano/Tabelas_final_ano/cliente.csv", colClasses = c(cliente_id = "character")) %>%
   select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_ultima_visita) %>%
   filter(cliente_empresa_id == empresa)
 
 
 ##Collect cria o df resultado da query, nesse caso, visitas_cliente, já filtrando apenas ano atual
-visita_cliente <- fread("Tabelas_final_ano/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
+visita_cliente <- fread("scripts_final_ano/Tabelas_final_ano/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
   select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
   filter (vc_data_cadastro >= ano_atual)
 
 ##Pra pegar o nome do status
-visita_status <- fread("Tabelas_final_ano/visita_status.csv") %>%
+visita_status <- fread("scripts_final_ano/Tabelas_final_ano/visita_status.csv") %>%
   select(vs_id, vs_nome, vs_ativo) %>%
   filter(vs_ativo == 1) %>%
   select(-vs_ativo) %>%
   rename (motivo = vs_nome)
 
 ##Pra filtrar os status da empresa
-visita_status_empresa <- fread("Tabelas_final_ano/visita_status_empresa.csv") %>%
+visita_status_empresa <- fread("scripts_final_ano/Tabelas_final_ano/visita_status_empresa.csv") %>%
   select(vse_status_id, vse_empresa_id, vse_ativo) %>%
   filter(vse_ativo == 1, vse_empresa_id == empresa) %>%
   select(-vse_ativo)
@@ -668,7 +662,7 @@ cli_ij_vc_ij_ng_mes <- cli_ij_vc_ij_ng_mes %>%
                    labels = meses))
 # Aqui eu vou preencher com valores NA para os meses seguintes (se estamos em jan, só teremos valores de jan, então os demais serão NA para não aparecerem como zero no plot)
 for (value in cli_ij_vc_ij_ng_mes$ym){
-  if(mes_atual < value){
+  if(fct_data_num_meses(mes_atual) < value){
     cli_ij_vc_ij_ng_mes$n_cli[value] <- NA
     cli_ij_vc_ij_ng_mes$n_vis[value] <- NA
     cli_ij_vc_ij_ng_mes$n_neg[value] <- NA
@@ -682,19 +676,19 @@ for (value in cli_ij_vc_ij_ng_mes$ym){
 ### Gráfico c3 - Cadastro de clientes, visitas e negócios no ano de 2020
 c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
               name = 'Clientes',
-              text = ~paste(func_fmt_numbr(n_cli), 'clientes'),
+              text = ~paste(n_cli, 'clientes'),
               hoverinfo = "text",
               color = I('#7B68EE'))
 c3 <- c3 %>%
   add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_vis,
              name = 'Visitas',
-             text = ~paste(func_fmt_numbr(n_vis), 'visitas'),
+             text = ~paste(n_vis, 'visitas'),
              hoverinfo = "text",
              color = I('#DAA520'))
 c3 <- c3 %>%
   add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_neg,
              name = 'Negócios',
-             text = ~paste(func_fmt_numbr(n_neg), 'negócios'),
+             text = ~paste(n_neg, 'negócios'),
              hoverinfo = "text",
              color = I('green'))
 
@@ -762,7 +756,7 @@ vend_cli_vis <- left_join(cli_p_v_ij_vend, vc_ij_vse_ij_v_count, by = c("cliente
   select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas)
 
 ##Contar quantos negócios são feitos por vendedor em anat
-negocio <- fread("Tabelas_final_ano/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character", negocio_cliente_id = "character")) %>%
+negocio <- fread("scripts_final_ano/Tabelas_final_ano/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character", negocio_cliente_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_cliente_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_produto_id)
 
 ##Juncao pra pegar a empresa do negócio (e vendedor)

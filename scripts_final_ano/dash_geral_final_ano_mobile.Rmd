@@ -19,6 +19,8 @@ params:
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
 library(tidyverse)
+#lib com uma cacetada de outras libs para manipular dados
+library(dplyr)
 #Libs pra trabalhar com a base (cortes e funções similares ao SQL)
 #library(dplyr) #Contido no tidyverse
 #lib pros gráficos mais "interativos"
@@ -35,13 +37,14 @@ library(RColorBrewer)
 #library(scales)
 #lib para plotar a imagem (s_dados)
 library(knitr)
-source("fct_tempo.R")
+source("/mnt/data/Mikael/Projetos/Scripts_R/r_elevata/fct_tempo.R")
+source("fct_fmt_din.R")
 
 
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
 dash = T
 # ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
@@ -80,26 +83,13 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 33
+  empresa = 16
 }else{
   empresa = as.integer(params$variable1)
 }
 
 ###################################
 
-##Alterar o valor de inteiro para reais
-func_fmt_din <- function(inteiro)
-{
-  inteiro_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
-  return(inteiro_em_reais)
-}
-##Alterar o valor de inteiro para reais convertendo para milhões (78000000 = R$78,0) -> posteriormente adicionar o "mi"
-func_fmt_din_mi <- function(inteiro)
-{
-  inteiro <- round(inteiro/1000000, digits = 1)
-  inteiro_mi_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 1))
-  return(inteiro_mi_em_reais)
-}
 ##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
 func_nome <- function (nome_comp)
 {
@@ -114,13 +104,6 @@ func_nome <- function (nome_comp)
   lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
   return (lista[,1])
 }
-##Alterar o número apresentado na forma americana (com vírgula) para a forma brasileira (com ponto), através da transformação em string
-func_fmt_numbr <- function(inteiro)
-{
-  inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
-  return(inteiro_br)
-}
-
 #################################################################################
 ##### Dash geral
 
@@ -202,7 +185,7 @@ if (teste == T){
 
 ##conversão de faturamento para texto
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
-  mutate(tot_fat_t = func_fmt_din(total_faturado))
+  mutate(tot_fat_t = func_fmt_din_milhoes(total_faturado))
 
 ##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
@@ -257,8 +240,10 @@ historico_negocio_situacao <- fread("Tabelas_final_ano/historico_negocio_situaca
 historico_negocio_situacao_anat <- historico_negocio_situacao %>%
   filter(historico_negocio_situacao_data >= ano_atual)
 
-negocio_ij_historico_ij_vendedor_anat <- inner_join(negocio_ij_vendedor, historico_negocio_situacao_anat, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
-negocio_ij_historico_ij_vendedor_total <- inner_join(negocio_ij_vendedor, historico_negocio_situacao, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
+negocio_ij_historico_ij_vendedor_total <- dplyr::inner_join(negocio_ij_vendedor, historico_negocio_situacao, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
+negocio_ij_historico_ij_vendedor_anat <-  dplyr::inner_join(negocio_ij_vendedor, historico_negocio_situacao_anat, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
+
+
 
 ##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais antigas, ficar só com a última atualização no negócio
 negocio_ij_historico_ij_vendedor_anat <- negocio_ij_historico_ij_vendedor_anat[order(-negocio_ij_historico_ij_vendedor_anat$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_anat$negocio_id),]
@@ -300,7 +285,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %
 
 
 ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%
-  mutate(total_fat_t = func_fmt_din_mi(total_faturado))
+  mutate(total_fat_t = func_fmt_din_milhoes(total_faturado))
 
 ### Gráfico n10 - Pizza fechados do ano
 ##############################################
@@ -359,7 +344,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat_mes  <- ng_ij_hist_ij_ven_funil_fat_fec_ana
 
 #criando uma coluna nova para usar como texto dentro do gráfico
 ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat_mes %>%
-  mutate(total_fat_t = func_fmt_din_mi(total_faturado))
+  mutate(total_fat_t = func_fmt_din_milhoes(total_faturado))
 
 ### Gráfico n11 - Pizza fechados no último mês
 ##############################################
@@ -418,8 +403,10 @@ fat_anat_mes <- ng_ij_hist_ij_ven_anat_fat %>%
   mutate (ym = as.character(ym)) %>%
   ungroup()
 
+
+fat_anat_mes_2 <- fat_anat_mes
 fat_anat_mes <- left_join(fat_anat_mes_aux, fat_anat_mes, by = c('ym'))
-fat_anat_mes$ym_sum[is.na(fat_anat_mes$ym_sum)] <- 0
+#fat_anat_mes$ym_sum[is.na(fat_anat_mes$ym_sum)] <- 0
 
 ##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais antigas, ficar só com a última atualização no negócio
 negocio_ij_historico_ij_vendedor_total <- negocio_ij_historico_ij_vendedor_total[order(-negocio_ij_historico_ij_vendedor_total$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_total$negocio_id),]
@@ -552,29 +539,28 @@ ay <- list(
 ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
 n12 <- plot_ly(fat_anat_1ant_2ant_mes)
 n12 <- n12 %>%
-  add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum,
+  add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum, yaxis = ay,
             name = paste('Faturamento de', ano),
-            text = ~paste(func_fmt_din_mi(ym_sum),'milhões'),
+            text = ~paste(func_fmt_din_milhoes(ym_sum),'milhões'),
             hoverinfo = "text",
-            color = I("green")
-  )
+            color = I("green"))
 if(anos_ant > 0) {
   n12 <- n12 %>%
-    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_1ant, yaxis = ay,
+    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum_1ant,
               name = paste('Faturamento de', ano-1),
-              text = ~paste(func_fmt_din_mi(ym_sum_1ant),'milhões'),
+              text = ~paste(func_fmt_din_milhoes(ym_sum_1ant),'milhões'),
               hoverinfo = "text",
-              color = I("#1E90FF"))
+              color = I("#4682B4")
+    )
 }
 if(anos_ant > 1) {
   n12 <- n12 %>%
     add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_2ant, yaxis = ay,
               name = paste('Faturamento de', ano-2),
-              text = ~paste(func_fmt_din_mi(ym_sum_2ant),'milhões'),
+              text = ~paste(func_fmt_din_milhoes(ym_sum_2ant),'milhões'),
               hoverinfo = "text",
-              color = I("#4682B4"))
+              color = I("#1E90FF"))
 }
-
 n12 <- n12 %>%
   layout(xaxis = list(title = ''), yaxis = list(title = '')
          #aqui eu ajusto onde quero que apareça a legenda
@@ -587,8 +573,8 @@ if (dash == F){
 
 if (teste == F){
   #tabelas
-  rm(ng_ij_hist_ij_ven_ij_np_anat, fat_anat_mes, ng_ij_hist_ij_ven_total, negocio_ij_historico_ij_vendedor_total,
-     fat_anat_1ant_2ant_mes, fat_anat_mes_aux, ay, a,
+  rm(ng_ij_hist_ij_ven_ij_np_anat, ng_ij_hist_ij_ven_total,
+     fat_anat_mes_aux, ay, a,
      ng_ij_hist_ij_ven_anat_fat, ng_ij_hist_ij_ven_ij_np_total)
   if(anos_ant > 0){
     rm(fat_1ant_mes, ng_ij_hist_ij_ven_ij_np_1ant_fat)
@@ -700,7 +686,7 @@ cli_ij_vc_ij_ng_mes <- cli_ij_vc_ij_ng_mes %>%
                    labels = meses))
 # Aqui eu vou preencher com valores NA para os meses seguintes (se estamos em jan, só teremos valores de jan, então os demais serão NA para não aparecerem como zero no plot)
 for (value in cli_ij_vc_ij_ng_mes$ym){
-  if(mes_atual < value){
+  if(fct_data_num_meses(mes_atual) < value){
     cli_ij_vc_ij_ng_mes$n_cli[value] <- NA
     cli_ij_vc_ij_ng_mes$n_vis[value] <- NA
     cli_ij_vc_ij_ng_mes$n_neg[value] <- NA
@@ -714,19 +700,19 @@ for (value in cli_ij_vc_ij_ng_mes$ym){
 ### Gráfico c3 - Cadastro de clientes, visitas e negócios no ano de 2020
 c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
               name = 'Clientes',
-              text = ~paste(func_fmt_numbr(n_cli), 'clientes'),
+              text = ~paste(n_cli, 'clientes'),
               hoverinfo = "text",
               color = I('#7B68EE'))
 c3 <- c3 %>%
   add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_vis,
              name = 'Visitas',
-             text = ~paste(func_fmt_numbr(n_vis), 'visitas'),
+             text = ~paste(n_vis, 'visitas'),
              hoverinfo = "text",
              color = I('#DAA520'))
 c3 <- c3 %>%
   add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_neg,
              name = 'Negócios',
-             text = ~paste(func_fmt_numbr(n_neg), 'negócios'),
+             text = ~paste(n_neg, 'negócios'),
              hoverinfo = "text",
              color = I('green'))
 
@@ -871,7 +857,7 @@ cli_c_s_ng <- data.frame(Clientes, n_total, n_total_p, n_anat, n_anat_p)
 ### Grafico c1 - Clientes cadastrados que possuem negocio (pizza)
 colors_pie<- c("#32CD32", "#FFA500")
 c1 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_total, type = 'pie', sort = F,
-              text = func_fmt_numbr(n_total),
+              text = n_total,
               texttemplate = "%{text} (%{percent})",
               hovertemplate = paste ("%{label}: %{text}<br>",
                                      "Equivalente a %{percent}",
@@ -885,7 +871,7 @@ if(dash == F){
 ### Grafico c2 - Clientes cadastrados em anat que possuem negocio (pizza)
 if (sum(cli_c_s_ng$n_anat) > 0){
   c2 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_anat, type = 'pie', sort = F,
-                text = func_fmt_numbr(n_anat),
+                text = n_anat,
                 texttemplate = "%{text} (%{percent})",
                 hovertemplate = paste ("%{label}: %{text}<br>",
                                        "Equivalente a %{percent}",
@@ -934,8 +920,6 @@ Faturamento ano a ano
 
 ```{r}
 ### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em 2020
-# subplot(n12, c3, nrows = 2, shareX = T) %>%
-#   layout(legend = list(y=0.3))
 n12
 
 ```
