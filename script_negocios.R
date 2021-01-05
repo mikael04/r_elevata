@@ -57,7 +57,7 @@ ano <- year(ano_atual)
 s_dados_path <- "s_dados.png"
 
 ##Variável "Global"
-empresa = 21
+empresa = 35
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -339,6 +339,7 @@ ng_ij_hist_ij_ven_num <- ng_ij_hist_ij_ven_idd %>%
   distinct (idade_cat, .keep_all = TRUE) %>%
   collect ()
 
+
 if (nrow(ng_ij_hist_ij_ven_num) > 0){
   n6 <- plot_ly(ng_ij_hist_ij_ven_num, type = 'bar', orientation = 'h', x=~num_negocios_idades , y=~reorder(vendedor_nome, desc(vendedor_nome)),
                 color = ~idade_cat,
@@ -359,7 +360,7 @@ if (teste == F) {
   #tabelas
   rm(ng_ij_hist_ij_ven_num, ng_ij_hist_ij_ven_ab)
   #variáveis
-  rm(ff, idades, status_aberto)
+  rm(ff, status_aberto)
 }
 ###########################################
 
@@ -471,4 +472,3 @@ if (teste == F){
   #variáveis
   rm()
 }
-```
