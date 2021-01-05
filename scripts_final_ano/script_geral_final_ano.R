@@ -1,28 +1,17 @@
----
-title: "Painel Geral"
-output:
-  flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
-params:
-  variable1: "emp_par"
-  num_dias: 0
----
-
-```{r setup, include=FALSE, error= TRUE}
-#rm(list=setdiff(ls(), c("params")))
-#Lib q será futuramente usada pros painéis interativos
+rm(list = ls())
+#Lib q ser? futuramente usada pros pain?is interativos
 #library(shiny)
-#Lib pra conexão com o banco
+#Lib pra conex?o com o banco
 #library(odbc)
 #Lib para ler (mais rapidamente) os csvs
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
 library(tidyverse)
-#Libs pra trabalhar com a base (cortes e funções similares ao SQL)
+#Libs pra trabalhar com a base (cortes e fun??es similares ao SQL)
 #library(dplyr) #Contido no tidyverse
-#lib pros gráficos mais "interativos"
+#lib pros gr?ficos mais "interativos"
 library(plotly)
+library(highcharter)
 #library(htmlwidgets)
 #Lib pra usar paletas de cores
 library(RColorBrewer)
@@ -31,10 +20,10 @@ library(RColorBrewer)
 #library(treemap)
 #Lib usada pros waffles
 #library(waffle)
-#usada para converter números em moeda
+#usada para converter n?meros em moeda
 #library(scales)
-#lib para plotar a imagem (s_dados)
-library(knitr)
+#Lib para lidar com o tempo
+library(lubridate)
 source("fct_tempo.R")
 
 
@@ -43,48 +32,26 @@ source("fct_tempo.R")
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = F
 ####Variável usada para não plotar os gráficos na dash
-dash = T
-# ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-# ano_atual = fct_ano_atual()
-# ####Variavel global c/ mês atual (para comparação)
-# mes_atual = fct_mes_atual()
-# ## Apenas ano, para gerar títulos
-# ano <- year(ano_atual)
-## Para o final de ano, só vou diminuir o número de dias até chegar no dia 31 (ex: hoje é dia 04, então vou remover 4d pra voltar pra 2020-12-31)
-if(as.integer(params$num_dias) == 0) {
-  ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-  ano_atual = fct_ano_atual()
-  ####Variavel global c/ mês atual (para comparação)
-  mes_atual = fct_mes_atual()
-  ## Apenas ano, para gerar títulos
-  ano <- year(ano_atual)
-}else{
-  data <- (lubridate::today()-lubridate::days(params$num_dias))
-  ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-  ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
-  ####Variavel global c/ mês atual (para comparação)
-  mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
-  ## Apenas ano, para gerar títulos
-  ano <- lubridate::year(ano_atual)
-}
+dash = F
+####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+ano_atual = fct_ano_atual()
+####Variavel global c/ mês atual (para comparação)
+mes_atual = fct_mes_atual()
 
-
-
-
-####Variável global para ver se tem usados Ainda não usada
+#teste
+# ano_atual = ymd(today()-months(month(today())-1)- days(day(today())-1)+years(1))
+# mes_atual = month(01)
+ano <- year(ano_atual)
+####Vari?vel global para ver se tem usados Ainda n?o usada
 #usados = T
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
 s_dados_path <- "s_dados.png"
 
-##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
-if(params$variable1 == 'emp_par'){
-  empresa = 78
-}else{
-  empresa = as.integer(params$variable1)
-}
-
+#empresa = params$variable1
+#teste
+empresa = 16
 ###################################
 
 ##Alterar o valor de inteiro para reais
@@ -93,7 +60,7 @@ func_fmt_din <- function(inteiro)
   inteiro_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
   return(inteiro_em_reais)
 }
-##Alterar o valor de inteiro para reais convertendo para milhões (78000000 = R$78,0) -> posteriormente adicionar o "mi"
+##Alterar o valor de inteiro para reais convertendo para milh?es (78000000 = R$78,0) -> posteriormente adicionar o "mi"
 func_fmt_din_mi <- function(inteiro)
 {
   inteiro <- round(inteiro/1000000, digits = 1)
@@ -120,6 +87,10 @@ func_fmt_numbr <- function(inteiro)
   inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
   return(inteiro_br)
 }
+
+
+#################################################################################
+##### Dash geral
 
 #################################################################################
 ### Funil de vendas (vendas abertas)
@@ -901,77 +872,3 @@ if(teste == F){
   rm(n_cli_cneg, n_cli_cneg_anat, n_clientes, n_clientes_anat, colors_pie);
 }
 ####################################
-
-```
-
-Funil de vendas
-=======================================================================
-
-Column {data-width=350}
------------------------------------------------------------------------
-### Funil da empresa em valor financeiro, por status do negócio
-```{r}
-### Gráfico n9 - Funil agrupado por faturamento
-n9
-```
-
-Column {data-width=350}
------------------------------------------------------------------------
-`r paste("### Distribuição do valor financeiro em pedidos fechados no ano de", ano)`
-
-```{r}
-### Gráfico n10 - Pizza fechados do ano
-n10
-```
-
-
-Faturamento ano a ano
-=======================================================================
-
-`r paste("### Valor financeiro mês a mês e distribuição do cadastro de clientes, visitas e negócios no ano", ano)`
-
-
-```{r}
-### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em 2020
-subplot(n12, c3, nrows = 2, shareX = T) %>%
-  layout(legend = list(y=0.3))
-
-```
-
-Oportunidades
-=======================================================================
-
-Column {data-width=750}
------------------------------------------------------------------------
-
-`r paste0("### Distribuição do cadastro de clientes (total), visitas (", ano, ") e negócios (", ano, ") por vendedor")`
-
-
-```{r}
-
-### Grafico c0 - Distribuicao de clientes (total), visitas (2020) e negocios (2020) cadastrados por vendedor
-c0
-
-```
-
-Column {data-width=350}
------------------------------------------------------------------------
-
-### Distribuição de clientes com ou sem negócios
-
-```{r}
-
-### Grafico c1 - Clientes cadastrados que possuem negocio (pizza)
-c1
-
-```
-
-
-`r paste("### Distribuição de clientes cadastrados em", ano, "com ou sem negócios")`
-
-```{r}
-
-### Grafico c2 - Clientes cadastrados em 2020 que possuem negocio (pizza)
-c2
-
-```

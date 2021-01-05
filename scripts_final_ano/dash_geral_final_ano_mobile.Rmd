@@ -80,7 +80,7 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 78
+  empresa = 33
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -120,6 +120,9 @@ func_fmt_numbr <- function(inteiro)
   inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
   return(inteiro_br)
 }
+
+#################################################################################
+##### Dash geral
 
 #################################################################################
 ### Funil de vendas (vendas abertas)
@@ -907,18 +910,17 @@ if(teste == F){
 Funil de vendas
 =======================================================================
 
-Column {data-width=350}
------------------------------------------------------------------------
+Column {.tabset}
+-------------------------------------
+
 ### Funil da empresa em valor financeiro, por status do negócio
 ```{r}
 ### Gráfico n9 - Funil agrupado por faturamento
 n9
 ```
 
-Column {data-width=350}
------------------------------------------------------------------------
-`r paste("### Distribuição do valor financeiro em pedidos fechados no ano de", ano)`
 
+`r paste("### Distribuição do valor financeiro em pedidos fechados no ano de", ano)`
 ```{r}
 ### Gráfico n10 - Pizza fechados do ano
 n10
@@ -928,24 +930,31 @@ n10
 Faturamento ano a ano
 =======================================================================
 
-`r paste("### Valor financeiro mês a mês e distribuição do cadastro de clientes, visitas e negócios no ano", ano)`
-
+`r paste("### Valor financeiro mês a mês eno ano", ano)`
 
 ```{r}
 ### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em 2020
-subplot(n12, c3, nrows = 2, shareX = T) %>%
-  layout(legend = list(y=0.3))
+# subplot(n12, c3, nrows = 2, shareX = T) %>%
+#   layout(legend = list(y=0.3))
+n12
+
+```
+
+`r paste("### Distribuição do cadastro de clientes, visitas e negócios no ano", ano)`
+
+```{r}
+### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em 2020
+c3
 
 ```
 
 Oportunidades
 =======================================================================
 
-Column {data-width=750}
------------------------------------------------------------------------
+Column {.tabset}
+-------------------------------------
 
 `r paste0("### Distribuição do cadastro de clientes (total), visitas (", ano, ") e negócios (", ano, ") por vendedor")`
-
 
 ```{r}
 
@@ -953,9 +962,6 @@ Column {data-width=750}
 c0
 
 ```
-
-Column {data-width=350}
------------------------------------------------------------------------
 
 ### Distribuição de clientes com ou sem negócios
 
