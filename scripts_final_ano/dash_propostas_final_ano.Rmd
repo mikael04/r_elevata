@@ -131,16 +131,16 @@ func_fmt_numbr <- function(inteiro)
 
 ##-> Collect cria o dataframe resultado da query, proposta será a tabela na qual estou lendo (FROM cliente)
 ##coleta todas as propostas
-proposta <- fread("Tabelas/proposta.csv", colClasses = c(proposta_id = "character", proposta_negocio_id = "character")) %>%
+proposta <- fread("Tabelas_final_ano/proposta.csv", colClasses = c(proposta_id = "character", proposta_negocio_id = "character")) %>%
   select(proposta_id, proposta_versao, proposta_negocio_id, proposta_data_cadastro, proposta_status)
 
 ##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
-negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
+negocio <- fread("Tabelas_final_ano/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id)
 
 
 ##coleta todos os vendedores
-vendedor <- fread("Tabelas/vendedor.csv") %>%
+vendedor <- fread("Tabelas_final_ano/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
   filter (vendedor_empresa_id == empresa)
 
@@ -158,7 +158,7 @@ if(empresa == 16){
 }
 
 ##coleta proposta_pagamento
-proposta_pagamento <- fread("Tabelas/proposta_pagamento.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character")) %>%
+proposta_pagamento <- fread("Tabelas_final_ano/proposta_pagamento.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character")) %>%
   select(pp_id, pp_proposta_id, pp_modo_id, pp_forma_id, pp_valor, pp_ativo, pp_usado_id) %>%
   filter(pp_ativo == 1) %>%
   select(-pp_ativo)
@@ -332,15 +332,15 @@ if(teste == F){
 
 #################################################
 ##negocio_produto para pegar os valores de cada negócio
-negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
+negocio_produto <- fread("Tabelas_final_ano/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
   select(np_id, np_negocio_id, np_produto_id, np_quantidade, np_ativo, np_valor)
 
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
-produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
+produto <- fread("Tabelas_final_ano/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
   select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
-proposta_produto <- fread("Tabelas/proposta_produto.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character", pp_produto_id = "character")) %>%
+proposta_produto <- fread("Tabelas_final_ano/proposta_produto.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character", pp_produto_id = "character")) %>%
   select(pp_id, pp_proposta_id, pp_produto_id, pp_quantidade, pp_valor, pp_ativo) %>%
   filter (pp_ativo == 1) %>% #Filtrando pp_ativo = true
   select(-pp_ativo) %>%
@@ -351,7 +351,7 @@ proposta_produto <- fread("Tabelas/proposta_produto.csv", colClasses = c(pp_id =
 p_ij_n_ij_v_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_produto, by = c("proposta_id" = "pp_proposta_id"))
 
 ##Vou puxar negócio novamente pra pegar a coluna de se é usado ou não (acho que é mais eficiente do que usar a tabela completa desde o início)
-negocio_aux <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character")) %>%
+negocio_aux <- fread("Tabelas_final_ano/negocio.csv", colClasses = c(negocio_id = "character")) %>%
   select(negocio_id, negocio_tipo_negocio)
 
 
@@ -392,7 +392,7 @@ pr_top5_fat <- p_ij_n_ij_pp_ij_prod %>%
 top5_fat <- head.matrix(pr_top5_fat, n=5)
 
 ##Vou fazer um join pra pegar os nomes de cada categoria
-categoria <- fread("Tabelas/categoria.csv", colClasses = c(categoria_id = "character")) %>%
+categoria <- fread("Tabelas_final_ano/categoria.csv", colClasses = c(categoria_id = "character")) %>%
   select(categoria_id, categoria_nome)
 
 
@@ -691,7 +691,7 @@ if(teste == F){
 ##Vou selecionar só o que for usar para contar tipos de pagamentos
 
 ##Já faço o filtro da empresa aqui na hora de puxar do banco
-proposta_modo_forma <- fread("Tabelas/proposta_modo_forma.csv") %>%
+proposta_modo_forma <- fread("Tabelas_final_ano/proposta_modo_forma.csv") %>%
   select (pmf_id, pmf_nome, pmf_ativo, PMF_EMPRESA_ID) %>%
   filter (pmf_ativo == 1 & PMF_EMPRESA_ID == empresa) %>%
   select (-pmf_ativo, -PMF_EMPRESA_ID)

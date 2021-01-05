@@ -126,11 +126,11 @@ func_fmt_numbr <- function(inteiro)
 ### Funil de vendas (vendas abertas)
 ########################################################################
 
-negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
+negocio <- fread("Tabelas_final_ano/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id)
 
 ##coleta todos os vendedores
-vendedor <- fread("Tabelas/vendedor.csv") %>%
+vendedor <- fread("Tabelas_final_ano/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
   filter (vendedor_empresa_id == empresa)
 
@@ -148,7 +148,7 @@ vendedor_a <- vendedor %>%
   filter(vendedor_ativo == T)
 
 ##negocio_produto para pegar os valores de cada negócio
-negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
+negocio_produto <- fread("Tabelas_final_ano/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
   select(np_id, np_negocio_id, np_produto_id, np_quantidade, np_ativo, np_valor) %>%
   filter (np_ativo == T)
 
@@ -248,7 +248,7 @@ if (teste == F){
 st_f = c(4,5,6,7)
 status_f = c("Faturado", "Financiamento não aprovado", "Desistencia do cliente", "Perdemos para concorrência")
 
-historico_negocio_situacao <- fread("Tabelas/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_situacao_id = "character")) %>%
+historico_negocio_situacao <- fread("Tabelas_final_ano/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_situacao_id = "character")) %>%
   select(historico_negocio_situacao_data, historico_negocio_situacao_negocio_id, historico_negocio_situacao_situacao_id)
 
 ##filtrando apenas ano atual
@@ -601,25 +601,25 @@ if (teste == F){
 ###Contar clientes/visitas/negocios cadastrados por mês -> vem do script visita_clientes
 ####################################
 
-cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
+cliente <- fread("Tabelas_final_ano/cliente.csv", colClasses = c(cliente_id = "character")) %>%
   select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_ultima_visita) %>%
   filter(cliente_empresa_id == empresa)
 
 
 ##Collect cria o df resultado da query, nesse caso, visitas_cliente, já filtrando apenas ano atual
-visita_cliente <- fread("Tabelas/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
+visita_cliente <- fread("Tabelas_final_ano/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
   select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
   filter (vc_data_cadastro >= ano_atual)
 
 ##Pra pegar o nome do status
-visita_status <- fread("Tabelas/visita_status.csv") %>%
+visita_status <- fread("Tabelas_final_ano/visita_status.csv") %>%
   select(vs_id, vs_nome, vs_ativo) %>%
   filter(vs_ativo == 1) %>%
   select(-vs_ativo) %>%
   rename (motivo = vs_nome)
 
 ##Pra filtrar os status da empresa
-visita_status_empresa <- fread("Tabelas/visita_status_empresa.csv") %>%
+visita_status_empresa <- fread("Tabelas_final_ano/visita_status_empresa.csv") %>%
   select(vse_status_id, vse_empresa_id, vse_ativo) %>%
   filter(vse_ativo == 1, vse_empresa_id == empresa) %>%
   select(-vse_ativo)
@@ -792,7 +792,7 @@ vend_cli_vis <- left_join(cli_p_v_ij_vend, vc_ij_vse_ij_v_count, by = c("cliente
   select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas)
 
 ##Contar quantos negócios são feitos por vendedor em anat
-negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character", negocio_cliente_id = "character")) %>%
+negocio <- fread("Tabelas_final_ano/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character", negocio_cliente_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_cliente_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_produto_id)
 
 ##Juncao pra pegar a empresa do negócio (e vendedor)
