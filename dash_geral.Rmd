@@ -509,7 +509,7 @@ if(anos_ant > 1) {
 }
 # Aqui eu vou preencher com valores NA para os meses seguintes (se estamos em jan, só teremos valores de jan, então os demais serão NA para não aparecerem como zero no plot)
 for (value in fat_anat_1ant_2ant_mes$ym){
-  if(mes_atual < value){
+  if(fct_data_num_meses(mes_atual) < value){
     fat_anat_1ant_2ant_mes$ym_sum[value] <- NA
   }else{
   }
@@ -679,7 +679,7 @@ cli_ij_vc_ij_ng_mes <- cli_ij_vc_ij_ng_mes %>%
                    labels = meses))
 # Aqui eu vou preencher com valores NA para os meses seguintes (se estamos em jan, só teremos valores de jan, então os demais serão NA para não aparecerem como zero no plot)
 for (value in cli_ij_vc_ij_ng_mes$ym){
-  if(mes_atual < value){
+  if(fct_data_num_meses(mes_atual) < value){
     cli_ij_vc_ij_ng_mes$n_cli[value] <- NA
     cli_ij_vc_ij_ng_mes$n_vis[value] <- NA
     cli_ij_vc_ij_ng_mes$n_neg[value] <- NA
