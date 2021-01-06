@@ -1,31 +1,18 @@
----
-title: "Painel das Marcas"
-output:
-  flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: scroll
-params:
-  variable1: "emp_par"
-  num_dias: 0
----
-
-```{r setup, include=FALSE}
-#rm(list = ls())
-#Lib q será futuramente usada pros painéis interativos
+rm(list = ls())
+#Lib q ser? futuramente usada pros pain?is interativos
 #library(shiny)
-#Lib pra conexão com o banco
+#Lib pra conex?o com o banco
 #library(odbc)
 #Lib para ler (mais rapidamente) os csvs
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
 library(tidyverse)
-#Libs pra trabalhar com a base (cortes e funções similares ao SQL)
+#Libs pra trabalhar com a base (cortes e fun??es similares ao SQL)
 #library(dplyr) #Contido no tidyverse
-#Lib pro gráfico
-library(ggplot2)
-#lib pros gráficos mais "interativos"
+#lib pros gr?ficos mais "interativos"
 library(plotly)
-#library(htmlwidgets)
+library(htmlwidgets)
+library(leaflet)
 #Lib pra usar paletas de cores
 library(RColorBrewer)
 #library(viridis)
@@ -33,49 +20,27 @@ library(RColorBrewer)
 #library(treemap)
 #Lib usada pros waffles
 #library(waffle)
-#Lib para funções de tempo
-library(lubridate)
-#usada para converter números em moedaIcons/
+#usada para converter n?meros em moeda
 #library(scales)
-#Lib usada para os mapas
-library(leaflet)
-#lib para plotar a imagem (s_dados)
-library(knitr)
-source("fct_tempo.R")
+#Lib para lidar com o tempo
+library(lubridate)
+source("/mnt/data/Mikael/Projetos/Scripts_R/r_elevata/fct_tempo.R")
 source("fct_fmt_din.R")
-
 
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
 teste = T
 ####Variável usada para não plotar os gráficos na dash
-dash = T
-# ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-# ano_atual = fct_ano_atual()
-# ####Variavel global c/ mês atual (para comparação)
-# mes_atual = fct_mes_atual()
-# ## Apenas ano, para gerar títulos
-# ano <- year(ano_atual)
-## Para o final de ano, só vou diminuir o número de dias até chegar no dia 31 (ex: hoje é dia 04, então vou remover 4d pra voltar pra 2020-12-31)
+dash = F
 ## Para o final de ano, só vou diminuir o número de dias até chegar no dia 31 (ex: hoje é dia 04, então vou remover 4d pra voltar pra 2020-12-31)
 if(!teste){
-  if(as.integer(params$num_dias) == 0) {
-    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual = fct_ano_atual()
-    ####Variavel global c/ mês atual (para comparação)
-    mes_atual = fct_mes_atual()
-    ## Apenas ano, para gerar títulos
-    ano <- year(ano_atual)
-  }else{
-    data <- (lubridate::today()-lubridate::days(params$num_dias))
-    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
-    ####Variavel global c/ mês atual (para comparação)
-    mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
-    ## Apenas ano, para gerar títulos
-    ano <- lubridate::year(ano_atual)
-  }
+  ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+  ano_atual = fct_ano_atual()
+  ####Variavel global c/ mês atual (para comparação)
+  mes_atual = fct_mes_atual()
+  ## Apenas ano, para gerar títulos
+  ano <- year(ano_atual)
 }else{
   ##Testes
   num_dias <- 6
@@ -88,20 +53,20 @@ if(!teste){
   ano <- lubridate::year(ano_atual)
 }
 
-
-####Variável global para ver se tem usados Ainda não usada
+#teste
+# ano_atual = ymd(today()-months(month(today())-1)- days(day(today())-1)+years(1))
+# mes_atual = month(01)
+# ano <- year(ano_atual)
+####Vari?vel global para ver se tem usados Ainda n?o usada
 #usados = T
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
 s_dados_path <- "s_dados.png"
 
-##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
-if(params$variable1 == 'emp_par'){
-  empresa = 16
-}else{
-  empresa = as.integer(params$variable1)
-}
+#empresa = params$variable1
+#teste
+empresa = 16
 ###################################
 
 ##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
@@ -118,16 +83,17 @@ func_nome <- function (nome_comp)
   lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
   return (lista[,1])
 }
+
 ###Começando script marcas
 ###########################################################################################################
 
 ##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
-negocio <- fread("Tabelas_final_ano/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
+negocio <- fread("scripts_final_ano/Tabelas_final_ano/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id)
 
 
 ##coleta todos os vendedores
-vendedor <- fread("Tabelas_final_ano/vendedor.csv") %>%
+vendedor <- fread("scripts_final_ano/Tabelas_final_ano/vendedor.csv") %>%
   select(vendedor_id, vendedor_empresa_id, vendedor_ativo) %>%
   filter (vendedor_empresa_id == empresa)
 
@@ -135,13 +101,13 @@ vendedor_a <- vendedor %>%
   filter(vendedor_ativo == T)
 
 ##negocio_produto para pegar os valores de cada negócio
-negocio_produto <- fread("Tabelas_final_ano/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
+negocio_produto <- fread("scripts_final_ano/Tabelas_final_ano/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
   select(np_id, np_negocio_id, np_produto_id, np_quantidade,np_ativo, np_valor) %>%
   mutate(np_valor_tot = np_valor*np_quantidade)
 
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
-produto <- fread("Tabelas_final_ano/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
+produto <- fread("scripts_final_ano/Tabelas_final_ano/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
   select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
 ###########################################
@@ -157,7 +123,7 @@ neg_ij_ven_ij_np <- inner_join(negocio_ij_vendedor, negocio_produto, by=c("negoc
 neg_ij_ven_ij_np_anat <- neg_ij_ven_ij_np %>%
   filter(negocio_data_cadastro >= ano_atual, negocio_negocio_situacao_id != 0)
 
-historico_negocio_situacao <- fread("Tabelas_final_ano/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_situacao_id = "character")) %>%
+historico_negocio_situacao <- fread("scripts_final_ano/Tabelas_final_ano/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_situacao_id = "character")) %>%
   select(historico_negocio_situacao_data, historico_negocio_situacao_negocio_id, historico_negocio_situacao_situacao_id)
 
 historico_negocio_situacao_anat <- historico_negocio_situacao %>%
@@ -190,7 +156,7 @@ ng_ij_hist_ij_ven_ij_np_ij_pd <- inner_join(ng_ij_hist_ij_ven_ij_np_anat, produt
 
 
 ##Vou fazer um join pra pegar os nomes de cada categoria
-categoria <- fread("Tabelas_final_ano/categoria.csv", colClasses = c(categoria_id = 'character')) %>%
+categoria <- fread("scripts_final_ano/Tabelas_final_ano/categoria.csv", colClasses = c(categoria_id = 'character')) %>%
   select (categoria_id, categoria_nome, categoria_ativo) %>%
   filter(categoria_ativo == 1) %>% 
   select (-categoria_ativo)
@@ -335,7 +301,6 @@ chart_ng_top_ag_fat <- ng_top_ag_fat %>%
 ## Criando paleta de cores com 10 cores intermediárias
 pal <- colorRampPalette(c("lightgreen", "green"))
 pal_cores <- pal(11)
-pal_cores
 
 
 ### Gráfico n5 - Máquinas faturadas em anat (por categoria)
@@ -373,7 +338,7 @@ if (teste == F) {
 #########################################################################################################
 
 ##Distribuição de clientes, mostrando no label nome do cliente, nome do vendedor e última visita
-cliente <- fread("Tabelas_final_ano/cliente.csv", colClasses = c(cliente_id = "character")) %>%
+cliente <- fread("scripts_final_ano/Tabelas_final_ano/cliente.csv", colClasses = c(cliente_id = "character")) %>%
   select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_vendedor_id, cliente_empresa_id)
 #Arrumando encoding
 Encoding(cliente$cliente_nome) <- 'latin1'
@@ -381,15 +346,15 @@ Encoding(cliente$cliente_nome) <- 'latin1'
 ##Parque de máquinas
 ##Mostrar distribuição de máquinas por categoria
 #######################################################################
-parque_maquina <- fread("Tabelas_final_ano/parque_maquina.csv", colClasses = c(pm_id = 'character', pm_cliente_id = 'character', pm_produto_id = 'character')) %>%
+parque_maquina <- fread("scripts_final_ano/Tabelas_final_ano/parque_maquina.csv", colClasses = c(pm_id = 'character', pm_cliente_id = 'character', pm_produto_id = 'character')) %>%
   select(pm_id, pm_cliente_id, pm_produto_id, pm_ano_modelo, pm_ativo) %>%
   filter (pm_ativo == 1)
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
-marca <- fread("Tabelas_final_ano/marca.csv", colClasses = c(marca_id = 'character')) %>%
+marca <- fread("scripts_final_ano/Tabelas_final_ano/marca.csv", colClasses = c(marca_id = 'character')) %>%
   select(marca_id, marca_nome)
 
-marca_categoria <- fread("Tabelas_final_ano/marca_categoria.csv", colClasses = c(marca_categoria_marca_id = 'character',marca_categoria_categoria_id  = 'character'))
+marca_categoria <- fread("scripts_final_ano/Tabelas_final_ano/marca_categoria.csv", colClasses = c(marca_categoria_marca_id = 'character',marca_categoria_categoria_id  = 'character'))
 
 ##Alterando os que não possuem latitude/longitude para 0 (que será filtrado depois)
 cliente$cliente_latitude[cliente$cliente_latitude == ''] <- '0'
@@ -560,6 +525,9 @@ if (nrow(cli_in_pm_cont_top_c_aux) > 0){
   ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
   m1_c <- include_graphics("s_dados_m.png")
 }
+m1_c
+library(htmlwidgets)
+saveWidget(m1_c, file="m1_c.html")
 
 if(teste == F){
   #tabelas
@@ -681,62 +649,3 @@ if(teste == F){
   #variáveis
   rm(cores_c, cores_t);
 }
-
-```
-
-
-Top 10 Categorias
-=======================================================================
-
-Column
------------------------------------------------------------------------
-`r paste("###  Valor Financeiro de Negócios Cadastrados, por categoria em", ano)`
-
-
-```{r}
-### Gráfico hc_n4 - Valor financeiro de negócios em 2020  (por categoria)
-n4
-
-```
-
-`r paste("### Valor Financeiro de Negócios Faturados, por categoria em", ano)`
-
-```{r}
-### Gráfico hc_n5 - Máquinas faturadas em 2020 (por categoria)
-n5
-
-```
-
-Marcas (Tratores)
-=======================================================================
-
-Column
------------------------------------------------------------------------
-
-### Mapa das marcas
-```{r}
-### Gráfico m1 de distribuição das marcas (top5)
-m1_t
-
-```
-
-
-### Distribuição das marcas
-```{r}
-### Gráfico m2 de distribuição das marcas
-m2_t
-
-```
-
-Marcas (Colheitadeiras)
-=======================================================================
-
-Column 
------------------------------------------------------------------------
-
-### Mapa das marcas
-```{r}
-### Gráfico m1 de distribuição das marcas (top5)
-m1_c
-
-```
