@@ -525,9 +525,6 @@ if (nrow(cli_in_pm_cont_top_c_aux) > 0){
   ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
   m1_c <- include_graphics("s_dados_m.png")
 }
-m1_c
-library(htmlwidgets)
-saveWidget(m1_c, file="m1_c.html")
 
 if(teste == F){
   #tabelas

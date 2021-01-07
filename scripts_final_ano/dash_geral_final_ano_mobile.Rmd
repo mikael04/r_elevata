@@ -73,7 +73,7 @@ if(!teste){
   }
 }else{
   ##Testes
-  num_dias <- 6
+  num_dias <- 7
   data <- (lubridate::today()-lubridate::days(num_dias))
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
@@ -547,10 +547,11 @@ ay <- list(
 
 ###Assim estarei mostrando anat, 1ant e 2ant
 ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
-n12 <- plot_ly(fat_anat_1ant_2ant_mes)
+n12 <- plot_ly(fat_anat_1ant_2ant_mes,
+            width = 800, height = 700)
 n12 <- n12 %>%
   add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum, yaxis = ay,
-            name = paste('Faturamento de', ano),
+            #name = paste('Faturamento de', ano),
             text = ~func_fmt_din_milhoes(ym_sum),
             hovertemplate = paste0 ("Faturamento de ", ano,
                                     "<br>",
@@ -723,7 +724,9 @@ for (value in cli_ij_vc_ij_ng_mes$ym){
 #                                                        labels = meses))
 
 ### Gráfico c3 - Cadastro de clientes, visitas e negócios no ano de 2020
-c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
+c3 <- plot_ly(cli_ij_vc_ij_ng_mes,
+              #width = 800, height = 650,
+              type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
               name = 'Clientes',
               text = ~paste(n_cli, 'clientes'),
               hoverinfo = "text",
@@ -908,6 +911,38 @@ if (sum(cli_c_s_ng$n_anat) > 0){
 if(dash == F){
   c2
 }
+t <- list(
+  family = "sans serif",
+  size = 16)
+if (sum(cli_c_s_ng$n_anat) > 0){
+  c1_c2 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_total, type = 'pie', sort = F,
+                title = list(text = "Total", font = t),
+                domain = list(row = 0, column = 0),
+                text = n_total,
+                textposition = 'inside',
+                texttemplate = "%{text} (%{percent})",
+                hovertemplate = paste ("%{label}: %{text}<br>",
+                                       "Equivalente a %{percent}",
+                                       "<extra></extra>"),
+                marker = list(colors = colors_pie)) %>%
+    
+    add_pie(cli_c_s_ng, labels = ~Clientes, values = ~n_anat, type = 'pie', sort = F,
+            title = list(text = paste0("", ano), font = t),
+            domain = list(row = 1, column = 0),
+            text = n_anat,
+            textposition = 'inside',
+            texttemplate = "%{text} (%{percent})",
+            hovertemplate = paste ("%{label}: %{text}<br>",
+                                   "Equivalente a %{percent}",
+                                   "<extra></extra>"),
+            marker = list(colors = colors_pie)) %>%
+    layout(
+           showlegend = T, title = F,
+           grid=list(rows=2, columns=1))
+}
+if(dash == F){
+  c1_c2
+}
 if(teste == F){
   #tabelas
   rm(cli_anat_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_anat, n_anat_p, cliente_anat);
@@ -921,7 +956,7 @@ if(teste == F){
 Funil de vendas
 =======================================================================
 
-Column
+Column {.tabset}
 -------------------------------------
 
 ### Funil da empresa em valor financeiro, por status do negócio
@@ -941,11 +976,11 @@ n10
 Faturamento ano a ano
 =======================================================================
 
-Column
+Column {.tabset}
 -------------------------------------
 `r paste("### Valor financeiro mês a mês eno ano", ano)`
 
-```{r}
+```{r, fig.height=7, fig.width=7.5}
 ### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em 2020
 n12
 
@@ -953,7 +988,7 @@ n12
 
 `r paste("### Distribuição do cadastro de clientes, visitas e negócios no ano", ano)`
 
-```{r}
+```{r, fig.height=7, fig.width=7.5}
 ### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em 2020
 c3
 
@@ -961,12 +996,13 @@ c3
 
 Oportunidades
 =======================================================================
-Column
+
+Column {.tabset}
 -------------------------------------
 
 `r paste0("### Distribuição do cadastro de clientes (total), visitas (", ano, ") e negócios (", ano, ") por vendedor")`
 
-```{r}
+```{r, fig.height=7, fig.width=7.5}
 
 ### Grafico c0 - Distribuicao de clientes (total), visitas (2020) e negocios (2020) cadastrados por vendedor
 c0
@@ -975,19 +1011,10 @@ c0
 
 ### Distribuição de clientes com ou sem negócios
 
-
 ```{r}
 
 ### Grafico c1 - Clientes cadastrados que possuem negocio (pizza)
-c1
+c1_c2
 
 ```
 
-`r paste("### Distribuição de clientes cadastrados em", ano, "com ou sem negócios")`
-
-```{r}
-
-### Grafico c2 - Clientes cadastrados em 2020 que possuem negocio (pizza)
-c2
-
-```

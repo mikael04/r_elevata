@@ -43,7 +43,7 @@ if(!teste){
   ano <- year(ano_atual)
 }else{
   ##Testes
-  num_dias <- 6
+  num_dias <- 7
   data <- (lubridate::today()-lubridate::days(num_dias))
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
@@ -877,6 +877,38 @@ if (sum(cli_c_s_ng$n_anat) > 0){
 }
 if(dash == F){
   c2
+}
+t <- list(
+  family = "sans serif",
+  size = 16)
+if (sum(cli_c_s_ng$n_anat) > 0){
+  c3 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_total, type = 'pie', sort = F,
+                title = list(text = "Total", font = t),
+                domain = list(row = 0, column = 0),
+                text = n_total,
+                textposition = 'inside',
+                texttemplate = "%{text} (%{percent})",
+                hovertemplate = paste ("%{label}: %{text}<br>",
+                                       "Equivalente a %{percent}",
+                                       "<extra></extra>"),
+                marker = list(colors = colors_pie)) %>%
+    
+    add_pie(cli_c_s_ng, labels = ~Clientes, values = ~n_anat, type = 'pie', sort = F,
+            title = list(text = paste0("", ano), font = t),
+            domain = list(row = 1, column = 0),
+            text = n_anat,
+            textposition = 'inside',
+            texttemplate = "%{text} (%{percent})",
+            hovertemplate = paste ("%{label}: %{text}<br>",
+                                   "Equivalente a %{percent}",
+                                   "<extra></extra>"),
+            marker = list(colors = colors_pie)) %>%
+    layout(
+           showlegend = T, title = F,
+           grid=list(rows=2, columns=1))
+}
+if(dash == F){
+  c3
 }
 if(teste == F){
   #tabelas
