@@ -73,7 +73,7 @@ if(!teste){
   }
 }else{
   ##Testes
-  num_dias <- 7
+  num_dias <- 8
   data <- (lubridate::today()-lubridate::days(num_dias))
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
@@ -513,6 +513,7 @@ if(anos_ant > 1){
 
 
 meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
+#meses = c('Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez')
 ## alterando pra números pra poder fazer da mesma forma
 fat_anat_1ant_2ant_mes$ym <- as.integer(fat_anat_1ant_2ant_mes$ym)
 ##Vou usar dessa forma, ao invés de transformar, irei apenas criar uma nova coluna (poderia ser feito com um join também)
@@ -544,14 +545,19 @@ ay <- list(
   side = 'right',
   title = ''
 )
-
+l <- list(
+  font = list(
+    size = 14,
+    color = "#000"),
+  orientation = 'h')
 ###Assim estarei mostrando anat, 1ant e 2ant
 ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
-n12 <- plot_ly(fat_anat_1ant_2ant_mes,
-            width = 800, height = 700)
+n12 <- plot_ly(fat_anat_1ant_2ant_mes
+            #,width = 800, height = 700
+            )
 n12 <- n12 %>%
   add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum, yaxis = ay,
-            #name = paste('Faturamento de', ano),
+            name = paste('Faturamento de', ano),
             text = ~func_fmt_din_milhoes(ym_sum),
             hovertemplate = paste0 ("Faturamento de ", ano,
                                     "<br>",
@@ -590,7 +596,8 @@ if(anos_ant > 1) {
 n12 <- n12 %>%
   layout(xaxis = list(title = ''), yaxis = list(title = '')
          #aqui eu ajusto onde quero que apareça a legenda
-         #,legend = list(x=0.8, y=0.9)#)
+         ,legend = list(orientation = 'h', x=0.2, y=-0.2,
+                        xanchor = "bottom")#)
   )
 if (dash == F){
   n12
@@ -746,7 +753,9 @@ c3 <- c3 %>%
 
 c3 <- c3 %>%
   layout(xaxis = list(title = '', range = c(min(0), max(12))), ##Dessa forma pego os 12 meses do ano
-         yaxis = list(title = ''))
+         yaxis = list(title = ''),
+         legend = list(orientation = 'h', x=0.2, y=-0.25,
+                       xanchor = "bottom"))
 if(dash == F){
   c3
 }
@@ -839,7 +848,9 @@ if (nrow(vend_cli_vis_neg) > 0){
   c0 <- c0 %>%
     layout(barmode = 'grouped',
            xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
-           yaxis = list(title = ''))
+           yaxis = list(title = ''),
+           legend = list(orientation = 'h',
+                        xanchor = "bottom"))
 }else {
   c0 <- include_graphics(s_dados_path)
 }
@@ -936,9 +947,13 @@ if (sum(cli_c_s_ng$n_anat) > 0){
                                    "Equivalente a %{percent}",
                                    "<extra></extra>"),
             marker = list(colors = colors_pie)) %>%
-    layout(
-           showlegend = T, title = F,
-           grid=list(rows=2, columns=1))
+    layout(showlegend = T, title = F,
+           grid=list(rows=2, columns=1),
+           legend = list(orientation = 'h', #x=0.2, y=-0.2,
+                        xanchor = "bottom")
+           )
+} else{
+  c1_c2 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   c1_c2

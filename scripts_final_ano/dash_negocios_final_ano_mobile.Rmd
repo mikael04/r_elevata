@@ -77,7 +77,7 @@ if(!teste){
   }
 }else{
   ##Testes
-  num_dias <- 7
+  num_dias <- 8
   data <- (lubridate::today()-lubridate::days(num_dias))
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
@@ -541,13 +541,13 @@ Idade dos negócios para o final de 2020
 
 Column
 -------------------------------------
-```{r, fig.height=7, fig.width=7.5}
+```{r}
 ### Gráfico n6 - Idade dos negócios abertos, por vendedor, por idade do negocio
 n6
 ```
 
 ### Tempo médio p/ faturado
-```{r, fig.height=2, fig.width=4}
+```{r}
 colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
 
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
@@ -555,28 +555,28 @@ valueBox(ng_cad_fin[1,2], icon = "fa-calendar", color="#32CD32")
 ```
 
 ### Tempo médio p/ fin. não aprovado
-```{r, fig.height=2, fig.width=4}
+```{r}
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
 valueBox(ng_cad_fin[2,2], icon = "fa-calendar", color="#FFD700")
 
 ```
 
 ### Tempo médio p/ des. do cliente
-```{r, fig.height=2, fig.width=4}
+```{r}
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
 valueBox(ng_cad_fin[3,2], icon = "fa-calendar", color="#FFA500")
 
 ```
 
 ### Tempo médio p/ perd. p/ concorrência
-```{r, fig.height=2, fig.width=4}
+```{r}
 ### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
 valueBox(ng_cad_fin[4,2], icon = "fa-calendar", color="#DE0D26")
 
 ```
 
 ### Negócios abertos da empresa
-```{r, fig.height=4, fig.width=4}
+```{r}
 ### Gráfico n7 - Negócios abertos da empresa, pizza
 n7
 ```
