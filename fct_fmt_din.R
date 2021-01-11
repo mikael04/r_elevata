@@ -32,7 +32,7 @@ func_fmt_din_milhoes_ <- function(inteiro){
 ##Alterar o valor de inteiro para reais convertendo para milhões (78000000 = R$78,0) com o "mi"
 func_fmt_din_milhoes_mi <- function(inteiro){
   inteiro <- round(inteiro/1000000, digits = 1)
-  inteiro_mi_em_reais <- paste(paste0("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 1)), 'milhões')
+  inteiro_mi_em_reais <- paste(paste0("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 1)), 'mi')
   inteiro_mi_em_reais
 }
 
@@ -47,6 +47,22 @@ func_fmt_din <- function(inteiro){
         func_fmt_din_mil_(inteiro)
       }else{
         func_fmt_din_milhoes_(inteiro)
+      }
+    }
+  }
+}
+
+func_fmt_din_small <- function(inteiro){
+  if(inteiro <= 0){
+    "R$0"
+  }else{
+    if(inteiro < 1000){
+      func_fmt_din_(inteiro)
+    }else{
+      if(inteiro < 1000000){
+        func_fmt_din_mil_(inteiro)
+      }else{
+        func_fmt_din_milhoes_mi(inteiro)
       }
     }
   }

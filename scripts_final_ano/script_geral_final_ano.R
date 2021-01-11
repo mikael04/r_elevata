@@ -44,6 +44,7 @@ if(!teste){
 }else{
   ##Teste setando dia
   data <- lubridate::ymd("2020-12-31")
+  data <- as_date(data, lubridate::origin)
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
   ####Variavel global c/ mês atual (para comparação)
@@ -338,7 +339,6 @@ ng_ij_hist_ij_ven_anat_fat <- ng_ij_hist_ij_ven_ij_np_anat %>%
   filter(negocio_negocio_situacao_id == 4)
 
 ##Já filtrado apenas empresa (variavel global)
-
 
 ##Adicionando "0" para ficar padrão a todos, gerando apenas para os meses (do ano atual) que já passaram
 ym_aux <- fct_meses_ant(mes_atual)

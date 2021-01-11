@@ -43,7 +43,7 @@ source("fct_fmt_nome.R")
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
 dash = T
 # ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
@@ -178,7 +178,7 @@ if (teste == T){
 
 ##conversão de faturamento para texto
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
-  mutate(tot_fat_t = func_fmt_din_milhoes(total_faturado))
+  mutate(tot_fat_t = func_fmt_din(total_faturado))
 
 ##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
 ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
@@ -196,11 +196,11 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
     add_trace(
       type ="funnelarea",
       values = ng_ij_hist_ij_ven_funil_fat$total_faturado,
-      text = paste0(ng_ij_hist_ij_ven_funil_fat$nome_cat_valor_fat, " milhões"),
+      text = ng_ij_hist_ij_ven_funil_fat$nome_cat_valor_fat,
       textinfo = "text",
       hovertemplate = paste0 ("%{text} <br>",
-                             "Equivalente a %{percent}",
-                             "<extra></extra>"),
+                              "Equivalente a %{percent}",
+                              "<extra></extra>"),
       marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")),
       showlegend = FALSE
     )
@@ -276,7 +276,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %
 
 
 ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%
-  mutate(total_fat_t = func_fmt_din_milhoes_(total_faturado))
+  mutate(total_fat_t = func_fmt_din_small(total_faturado))
 
 ### Gráfico n10 - Pizza fechados do ano
 ##############################################
@@ -289,10 +289,10 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat <- inner_join(ng_ij_hist_ij_ven_funil_fat_f
 ######################################################################################################
 if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0 & sum(ng_ij_hist_ij_ven_funil_fat_fec_anat$total_faturado) > 0){
   n10 <- plot_ly(ng_ij_hist_ij_ven_funil_fat_fec_anat, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
-                 text = ~paste0(total_fat_t, " milhões"),
-                 texttemplate = "%{text}mi (%{percent})",
+                 text = ~total_fat_t,
+                 texttemplate = "%{text} (%{percent})",
                  hovertemplate = paste0 ("%{label} <br>",
-                                        "%{text}mi <br>",
+                                        "%{text}<br>",
                                         "Equivalente a %{percent}",
                                         "<extra></extra>"),
                  marker = list(colors = ~cor))
@@ -334,8 +334,10 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat_mes  <- ng_ij_hist_ij_ven_funil_fat_fec_ana
 
 
 #criando uma coluna nova para usar como texto dentro do gráfico
-ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat_mes %>%
-  mutate(total_fat_t = func_fmt_din_milhoes(total_faturado))
+if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes) > 0) {
+  ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat_mes %>%
+    mutate(total_fat_t = func_fmt_din_small(total_faturado))
+}
 
 ### Gráfico n11 - Pizza fechados no último mês
 ##############################################
@@ -345,9 +347,9 @@ colors_pie <- c("#32CD32", "yellow" , "orange" , "#DE0D26")
 if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes) > 0 & sum(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes$total_faturado) > 0){
   n11 <- plot_ly(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
                  text = ~total_fat_t,
-                 texttemplate = "%{text}mi (%{percent})",
+                 texttemplate = "%{text} (%{percent})",
                  hovertemplate = paste ("%{label} <br>",
-                                        "%{text}mi <br>",
+                                        "%{text}<br>",
                                         "Equivalente a %{percent}",
                                         "<extra></extra>"),
                  marker = list(colors = colors_pie))
@@ -523,7 +525,7 @@ n12 <- plot_ly(fat_anat_1ant_2ant_mes)
 n12 <- n12 %>%
   add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum,
             name = paste('Faturamento de', ano),
-            text = ~paste(func_fmt_din_milhoes(ym_sum),'milhões'),
+            text = ~paste(func_fmt_din(ym_sum)),
             hoverinfo = "text",
             color = I("green")
   )
@@ -531,7 +533,7 @@ if(anos_ant > 0) {
   n12 <- n12 %>%
     add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_1ant, yaxis = ay,
               name = paste('Faturamento de', ano-1),
-              text = ~paste(func_fmt_din_milhoes(ym_sum_1ant),'milhões'),
+              text = ~paste(func_fmt_din(ym_sum_1ant)),
               hoverinfo = "text",
               color = I("#1E90FF"))
 }
@@ -539,7 +541,7 @@ if(anos_ant > 1) {
   n12 <- n12 %>%
     add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_2ant, yaxis = ay,
               name = paste('Faturamento de', ano-2),
-              text = ~paste(func_fmt_din_milhoes(ym_sum_2ant),'milhões'),
+              text = ~paste(func_fmt_din(ym_sum_2ant)),
               hoverinfo = "text",
               color = I("#4682B4"))
 }
@@ -868,7 +870,7 @@ if(dash == F){
   c2
 }
 if(teste == F){
-  #tabelas
+  #Tabelas_final_ano
   rm(cli_anat_ij_ng, cli_c_s_ng, Clientes, n_total, n_total_p, n_anat, n_anat_p, cliente_anat);
   #variáveis
   rm(n_cli_cneg, n_cli_cneg_anat, n_clientes, n_clientes_anat, colors_pie);
