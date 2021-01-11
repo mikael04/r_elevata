@@ -6,12 +6,11 @@ rm(list = ls())
 #Lib para ler (mais rapidamente) os csvs
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
-library(tidyverse)
+#library(tidyverse)
 #Libs pra trabalhar com a base (cortes e fun??es similares ao SQL)
-#library(dplyr) #Contido no tidyverse
+library(dplyr) #Contido no tidyverse
 #lib pros gr?ficos mais "interativos"
 library(plotly)
-library(highcharter)
 #library(htmlwidgets)
 #Lib pra usar paletas de cores
 library(RColorBrewer)
@@ -24,8 +23,9 @@ library(RColorBrewer)
 #library(scales)
 #Lib para lidar com o tempo
 library(lubridate)
-source("/mnt/data/Mikael/Projetos/Scripts_R/r_elevata/fct_tempo.R")
+source("fct_tempo.R")
 source("fct_fmt_din.R")
+source("fct_fmt_nome.R")
 
 ###################################
 ##Variáveis "Globais"
@@ -42,9 +42,8 @@ if(!teste){
   ## Apenas ano, para gerar títulos
   ano <- year(ano_atual)
 }else{
-  ##Testes
-  num_dias <- 7
-  data <- (lubridate::today()-lubridate::days(num_dias))
+  ##Teste setando dia
+  data <- lubridate::ymd("2020-12-31")
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
   ####Variavel global c/ mês atual (para comparação)
@@ -53,12 +52,6 @@ if(!teste){
   ano <- lubridate::year(ano_atual)
 }
 
-#teste
-# ano_atual = ymd(today()-months(month(today())-1)- days(day(today())-1)+years(1))
-# mes_atual = month(01)
-# ano <- year(ano_atual)
-####Vari?vel global para ver se tem usados Ainda n?o usada
-#usados = T
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
@@ -67,22 +60,7 @@ s_dados_path <- "s_dados.png"
 #empresa = params$variable1
 #teste
 empresa = 16
-###################################
 
-##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
-func_nome <- function (nome_comp)
-{
-  lista <- str_split_fixed(nome_comp, " ", 4)
-  lista <- lista[, -4]
-  lista[,3] = str_sub(lista[,3], 1, 1)
-  lista[,2] = str_sub(lista[,2], 1, 1)
-  lista[,2] = paste(lista[,2], '.', sep='')
-  lista[,3] = paste(lista[,3], '.', sep='')
-  lista[,2] <- gsub('^.$', '',lista[,2])
-  lista[,3] <- gsub('^.$', '',lista[,3])
-  lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
-  return (lista[,1])
-}
 #################################################################################
 ##### Dash geral
 
@@ -90,11 +68,11 @@ func_nome <- function (nome_comp)
 ### Funil de vendas (vendas abertas)
 ########################################################################
 
-negocio <- fread("scripts_final_ano/Tabelas_final_ano/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
+negocio <- fread("Tabelas_final_ano/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id)
 
 ##coleta todos os vendedores
-vendedor <- fread("scripts_final_ano/Tabelas_final_ano/vendedor.csv") %>%
+vendedor <- fread("Tabelas_final_ano/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
   filter (vendedor_empresa_id == empresa)
 
@@ -112,7 +90,7 @@ vendedor_a <- vendedor %>%
   filter(vendedor_ativo == T)
 
 ##negocio_produto para pegar os valores de cada negócio
-negocio_produto <- fread("scripts_final_ano/Tabelas_final_ano/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
+negocio_produto <- fread("Tabelas_final_ano/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
   select(np_id, np_negocio_id, np_produto_id, np_quantidade, np_ativo, np_valor) %>%
   filter (np_ativo == T)
 
@@ -212,7 +190,7 @@ if (teste == F){
 st_f = c(4,5,6,7)
 status_f = c("Faturado", "Financiamento não aprovado", "Desistencia do cliente", "Perdemos para concorrência")
 
-historico_negocio_situacao <- fread("scripts_final_ano/Tabelas_final_ano/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_situacao_id = "character")) %>%
+historico_negocio_situacao <- fread("Tabelas_final_ano/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_situacao_id = "character")) %>%
   select(historico_negocio_situacao_data, historico_negocio_situacao_negocio_id, historico_negocio_situacao_situacao_id)
 
 ##filtrando apenas ano atual
@@ -280,9 +258,9 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0 & sum(ng_ij_hist_ij_ven_funil
                  text = ~total_fat_t,
                  texttemplate = "%{text}mi (%{percent})",
                  hovertemplate = paste0 ("%{label} <br>",
-                                        "%{text} milhões <br>",
-                                        "Equivalente a %{percent}",
-                                        "<extra></extra>"),
+                                         "%{text} milhões <br>",
+                                         "Equivalente a %{percent}",
+                                         "<extra></extra>"),
                  marker = list(colors = ~cor)) %>%
     layout(legend = list(orientation = 'h'))
 }else {
@@ -336,9 +314,9 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes) > 0 & sum(ng_ij_hist_ij_ven_f
                  text = ~total_fat_t,
                  texttemplate = "%{text}mi (%{percent})",
                  hovertemplate = paste0 ("%{label} <br>",
-                                        "%{text} milhões <br>",
-                                        "Equivalente a %{percent}",
-                                        "<extra></extra>"),
+                                         "%{text} milhões <br>",
+                                         "Equivalente a %{percent}",
+                                         "<extra></extra>"),
                  marker = list(colors = colors_pie))
 }else {
   n11 <- include_graphics(s_dados_path)
@@ -483,6 +461,7 @@ if(anos_ant > 1){
 
 
 meses = c('Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')
+#meses = c('Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez')
 ## alterando pra números pra poder fazer da mesma forma
 fat_anat_1ant_2ant_mes$ym <- as.integer(fat_anat_1ant_2ant_mes$ym)
 ##Vou usar dessa forma, ao invés de transformar, irei apenas criar uma nova coluna (poderia ser feito com um join também)
@@ -514,10 +493,16 @@ ay <- list(
   side = 'right',
   title = ''
 )
-
+l <- list(
+  font = list(
+    size = 14,
+    color = "#000"),
+  orientation = 'h')
 ###Assim estarei mostrando anat, 1ant e 2ant
 ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
-n12 <- plot_ly(fat_anat_1ant_2ant_mes)
+n12 <- plot_ly(fat_anat_1ant_2ant_mes
+               #,width = 800, height = 700
+)
 n12 <- n12 %>%
   add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum, yaxis = ay,
             name = paste('Faturamento de', ano),
@@ -559,7 +544,8 @@ if(anos_ant > 1) {
 n12 <- n12 %>%
   layout(xaxis = list(title = ''), yaxis = list(title = '')
          #aqui eu ajusto onde quero que apareça a legenda
-         #,legend = list(x=0.8, y=0.9)#)
+         ,legend = list(orientation = 'h', x=0.2, y=-0.2,
+                        xanchor = "bottom")#)
   )
 if (dash == F){
   n12
@@ -584,25 +570,25 @@ if (teste == F){
 ###Contar clientes/visitas/negocios cadastrados por mês -> vem do script visita_clientes
 ####################################
 
-cliente <- fread("scripts_final_ano/Tabelas_final_ano/cliente.csv", colClasses = c(cliente_id = "character")) %>%
+cliente <- fread("Tabelas_final_ano/cliente.csv", colClasses = c(cliente_id = "character")) %>%
   select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_ultima_visita) %>%
   filter(cliente_empresa_id == empresa)
 
 
 ##Collect cria o df resultado da query, nesse caso, visitas_cliente, já filtrando apenas ano atual
-visita_cliente <- fread("scripts_final_ano/Tabelas_final_ano/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
+visita_cliente <- fread("Tabelas_final_ano/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
   select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
   filter (vc_data_cadastro >= ano_atual)
 
 ##Pra pegar o nome do status
-visita_status <- fread("scripts_final_ano/Tabelas_final_ano/visita_status.csv") %>%
+visita_status <- fread("Tabelas_final_ano/visita_status.csv") %>%
   select(vs_id, vs_nome, vs_ativo) %>%
   filter(vs_ativo == 1) %>%
   select(-vs_ativo) %>%
   rename (motivo = vs_nome)
 
 ##Pra filtrar os status da empresa
-visita_status_empresa <- fread("scripts_final_ano/Tabelas_final_ano/visita_status_empresa.csv") %>%
+visita_status_empresa <- fread("Tabelas_final_ano/visita_status_empresa.csv") %>%
   select(vse_status_id, vse_empresa_id, vse_ativo) %>%
   filter(vse_ativo == 1, vse_empresa_id == empresa) %>%
   select(-vse_ativo)
@@ -693,7 +679,9 @@ for (value in cli_ij_vc_ij_ng_mes$ym){
 #                                                        labels = meses))
 
 ### Gráfico c3 - Cadastro de clientes, visitas e negócios no ano de 2020
-c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
+c3 <- plot_ly(cli_ij_vc_ij_ng_mes,
+              #width = 800, height = 650,
+              type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
               name = 'Clientes',
               text = ~paste(n_cli, 'clientes'),
               hoverinfo = "text",
@@ -713,7 +701,9 @@ c3 <- c3 %>%
 
 c3 <- c3 %>%
   layout(xaxis = list(title = '', range = c(min(0), max(12))), ##Dessa forma pego os 12 meses do ano
-         yaxis = list(title = ''))
+         yaxis = list(title = ''),
+         legend = list(orientation = 'h', x=0.2, y=-0.25,
+                       xanchor = "bottom"))
 if(dash == F){
   c3
 }
@@ -775,7 +765,7 @@ vend_cli_vis <- left_join(cli_p_v_ij_vend, vc_ij_vse_ij_v_count, by = c("cliente
   select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas)
 
 ##Contar quantos negócios são feitos por vendedor em anat
-negocio <- fread("scripts_final_ano/Tabelas_final_ano/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character", negocio_cliente_id = "character")) %>%
+negocio <- fread("Tabelas_final_ano/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character", negocio_cliente_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_cliente_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_produto_id)
 
 ##Juncao pra pegar a empresa do negócio (e vendedor)
@@ -806,7 +796,9 @@ if (nrow(vend_cli_vis_neg) > 0){
   c0 <- c0 %>%
     layout(barmode = 'grouped',
            xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
-           yaxis = list(title = ''))
+           yaxis = list(title = ''),
+           legend = list(orientation = 'h',
+                         xanchor = "bottom"))
 }else {
   c0 <- include_graphics(s_dados_path)
 }
@@ -882,16 +874,16 @@ t <- list(
   family = "sans serif",
   size = 16)
 if (sum(cli_c_s_ng$n_anat) > 0){
-  c3 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_total, type = 'pie', sort = F,
-                title = list(text = "Total", font = t),
-                domain = list(row = 0, column = 0),
-                text = n_total,
-                textposition = 'inside',
-                texttemplate = "%{text} (%{percent})",
-                hovertemplate = paste ("%{label}: %{text}<br>",
-                                       "Equivalente a %{percent}",
-                                       "<extra></extra>"),
-                marker = list(colors = colors_pie)) %>%
+  c1_c2 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_total, type = 'pie', sort = F,
+                   title = list(text = "Total", font = t),
+                   domain = list(row = 0, column = 0),
+                   text = n_total,
+                   textposition = 'inside',
+                   texttemplate = "%{text} (%{percent})",
+                   hovertemplate = paste ("%{label}: %{text}<br>",
+                                          "Equivalente a %{percent}",
+                                          "<extra></extra>"),
+                   marker = list(colors = colors_pie)) %>%
     
     add_pie(cli_c_s_ng, labels = ~Clientes, values = ~n_anat, type = 'pie', sort = F,
             title = list(text = paste0("", ano), font = t),
@@ -903,12 +895,16 @@ if (sum(cli_c_s_ng$n_anat) > 0){
                                    "Equivalente a %{percent}",
                                    "<extra></extra>"),
             marker = list(colors = colors_pie)) %>%
-    layout(
-           showlegend = T, title = F,
-           grid=list(rows=2, columns=1))
+    layout(showlegend = T, title = F,
+           grid=list(rows=2, columns=1),
+           legend = list(orientation = 'h', #x=0.2, y=-0.2,
+                         xanchor = "bottom")
+    )
+} else{
+  c1_c2 <- include_graphics(s_dados_path)
 }
 if(dash == F){
-  c3
+  c1_c2
 }
 if(teste == F){
   #tabelas

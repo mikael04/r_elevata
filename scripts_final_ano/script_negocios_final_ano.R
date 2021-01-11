@@ -1,31 +1,16 @@
----
-title: "Painel de Negócios"
-output:
-  flexdashboard::flex_dashboard:
-    orientation: column
-    vertical_layout: scroll
-params:
-  variable1: "emp_par"
-  num_dias: 0
----
-
-```{r setup, include=FALSE}
-#rm(list = ls())
-#Lib q será futuramente usada pros painéis interativos
+rm(list = ls())
+rm(list = ls())
+#Lib q ser? futuramente usada pros pain?is interativos
 #library(shiny)
-#lib para valuebox
-library(flexdashboard)
-#Lib pra conexão com o banco
+#Lib pra conex?o com o banco
 #library(odbc)
 #Lib para ler (mais rapidamente) os csvs
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
 #library(tidyverse)
-#Libs pra trabalhar com a base (cortes e funções similares ao SQL)
+#Libs pra trabalhar com a base (cortes e fun??es similares ao SQL)
 library(dplyr) #Contido no tidyverse
-#lib para lidar com as palavras
-#library(stringr)
-#lib pros gráficos mais "interativos"
+#lib pros gr?ficos mais "interativos"
 library(plotly)
 #library(htmlwidgets)
 #Lib pra usar paletas de cores
@@ -35,51 +20,28 @@ library(RColorBrewer)
 #library(treemap)
 #Lib usada pros waffles
 #library(waffle)
-#usada para converter números em moeda
+#usada para converter n?meros em moeda
 #library(scales)
-#Lib usada para emojis/fonts/box de valores
-library(ggplot2)
-#Lib usada para os quadros
-library(emojifont)
-#lib para plotar a imagem (s_dados)
-library(knitr)
+#Lib para lidar com o tempo
+library(lubridate)
 source("fct_tempo.R")
 source("fct_fmt_din.R")
 source("fct_fmt_nome.R")
 
-
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
-dash = T
-# ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-# ano_atual = fct_ano_atual()
-# ####Variavel global c/ mês atual (para comparação)
-# mes_atual = fct_mes_atual()
-# ## Apenas ano, para gerar títulos
-# ano <- year(ano_atual)
+dash = F
 ## Para o final de ano, só vou diminuir o número de dias até chegar no dia 31 (ex: hoje é dia 04, então vou remover 4d pra voltar pra 2020-12-31)
 if(!teste){
-  ##Teste se estou gerando via rstudio (knit)
-  if(as.integer(params$num_dias) == 0) {
-    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual = fct_ano_atual()
-    ####Variavel global c/ mês atual (para comparação)
-    mes_atual = fct_mes_atual()
-    ## Apenas ano, para gerar títulos
-    ano <- year(ano_atual)
-  ##Execução normal, recebendo data do gerador de dashs
-  }else{
-    data <- (lubridate::today()-lubridate::days(params$num_dias))
-    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
-    ####Variavel global c/ mês atual (para comparação)
-    mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
-    ## Apenas ano, para gerar títulos
-    ano <- lubridate::year(ano_atual)
-  }
+  ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+  ano_atual = fct_ano_atual()
+  ####Variavel global c/ mês atual (para comparação)
+  mes_atual = fct_mes_atual()
+  ## Apenas ano, para gerar títulos
+  ano <- year(ano_atual)
 }else{
   ##Teste setando dia
   data <- lubridate::ymd("2020-12-31")
@@ -91,19 +53,14 @@ if(!teste){
   ano <- lubridate::year(ano_atual)
 }
 
-####Variável global para ver se tem usados Ainda não usada
-#usados = T
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
 s_dados_path <- "s_dados.png"
 
-##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
-if(params$variable1 == 'emp_par'){
-  empresa = 16
-}else{
-  empresa = as.integer(params$variable1)
-}
+#empresa = params$variable1
+#teste
+empresa = 16
 
 ###Começando scripts negocio_scripts
 ###########################################################################################################
@@ -180,11 +137,8 @@ ng_ij_vn_ij_np_fat$negocio_status = factor(ng_ij_vn_ij_np_fat$negocio_status, le
                                                                                          "Desistência do cliente", "Perdemos para concorrência"))
 
 #usando função pra criar outra coluna com número formatado (em Real, com pontos)
-if (nrow(ng_ij_vn_ij_np_fat) > 0){
-  ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>%
-    mutate(total_fat_t = func_fmt_din(total_fat))
-}
-
+ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>%
+  mutate(total_fat_t = func_fmt_din(total_fat))
 
 ##############################################
 ### Gráfico n0 - Número de clientes por vendedor
@@ -488,74 +442,3 @@ if (teste == F){
   #variáveis
   rm()
 }
-```
-
-Valor financeiro de negócios
-=======================================================================
-
-Column 
------------------------------------------------------------------------
-`r paste("### Valor financeiro dos negócios cadastrados em ", ano, "por vendedor  (Status atual)")`
-
-```{r, fig.height=7, fig.width=6}
-### Gráfico n0 - Número de clientes por vendedor
-n0
-
-```
-
-`r paste0("### Valor financeiro de todos os negócios que foram fechados em ", ano)`
-
-```{r, fig.height=7, fig.width=6}
-### Gráfico n3 - Faturamento de negócios fechados em 2020
-n3
-
-```
-
-
-Idade dos negócios para o final de 2020
-=======================================================================
-
-Column
--------------------------------------
-
-### Tempo médio p/ faturado
-```{r}
-
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[1,2], icon = "fa-calendar", color="#32CD32")
-```
-
-### Tempo médio p/ fin. não aprovado
-```{r}
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[2,2], icon = "fa-calendar", color="#FFD700")
-
-```
-
-### Tempo médio p/ des. do cliente
-```{r}
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[3,2], icon = "fa-calendar", color="#FFA500")
-
-```
-
-### Tempo médio p/ perd. p/ concorrência
-```{r}
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[4,2], icon = "fa-calendar", color="#DE0D26")
-
-```
-
-### Idade dos negócios abertos por vendedor
-```{r}
-### Gráfico n6 - Idade dos negócios abertos, por vendedor, por idade do negocio
-n6
-```
-
-
-
-### Negócios abertos da empresa
-```{r}
-### Gráfico n7 - Negócios abertos da empresa, pizza
-n7
-```

@@ -23,3 +23,7 @@ fct_meses_ant <- function(mes_atual) {
     seq(1, mes_at, 1)
   }
 }
+
+fct_data_num_meses <- function(mes_atual){
+  month(mes_atual)
+}
