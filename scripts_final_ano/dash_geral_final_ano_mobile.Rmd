@@ -18,11 +18,11 @@ params:
 #Lib para ler (mais rapidamente) os csvs
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
-library(tidyverse)
+#library(tidyverse)
 #lib com uma cacetada de outras libs para manipular dados
-library(dplyr)
+# library(tidyverse)
 #Libs pra trabalhar com a base (cortes e funções similares ao SQL)
-#library(dplyr) #Contido no tidyverse
+library(dplyr) #Contido no tidyverse
 #lib pros gráficos mais "interativos"
 library(plotly)
 #library(htmlwidgets)

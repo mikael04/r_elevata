@@ -18,9 +18,9 @@ params:
 #Lib para ler (mais rapidamente) os csvs
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
-library(tidyverse)
+# library(tidyverse)
 #Libs pra trabalhar com a base (cortes e funções similares ao SQL)
-#library(dplyr) #Contido no tidyverse
+library(dplyr) #Contido no tidyverse
 #lib pros gráficos mais "interativos"
 library(plotly)
 #library(htmlwidgets)
@@ -35,8 +35,9 @@ library(RColorBrewer)
 #library(scales)
 #lib para plotar a imagem (s_dados)
 library(knitr)
-source("/mnt/data/Mikael/Projetos/Scripts_R/r_elevata/fct_tempo.R")
+source("fct_tempo.R")
 source("fct_fmt_din.R")
+source("fct_fmt_nome.R")
 
 
 ###################################
@@ -82,9 +83,6 @@ if(!teste){
   ano <- lubridate::year(ano_atual)
 }
 
-
-
-
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
@@ -99,22 +97,6 @@ if(params$variable1 == 'emp_par'){
   empresa = as.integer(params$variable1)
 }
 
-###################################
-
-##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
-func_nome <- function (nome_comp)
-{
-  lista <- str_split_fixed(nome_comp, " ", 4)
-  lista <- lista[, -4]
-  lista[,3] = str_sub(lista[,3], 1, 1)
-  lista[,2] = str_sub(lista[,2], 1, 1)
-  lista[,2] = paste(lista[,2], '.', sep='')
-  lista[,3] = paste(lista[,3], '.', sep='')
-  lista[,2] <- gsub('^.$', '',lista[,2])
-  lista[,3] <- gsub('^.$', '',lista[,3])
-  lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
-  return (lista[,1])
-}
 #################################################################################
 ##### Dash geral
 
@@ -214,9 +196,9 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
     add_trace(
       type ="funnelarea",
       values = ng_ij_hist_ij_ven_funil_fat$total_faturado,
-      text = ng_ij_hist_ij_ven_funil_fat$nome_cat_valor_fat,
+      text = paste0(ng_ij_hist_ij_ven_funil_fat$nome_cat_valor_fat, " milhões"),
       textinfo = "text",
-      hovertemplate = paste ("%{text} <br>",
+      hovertemplate = paste0 ("%{text} <br>",
                              "Equivalente a %{percent}",
                              "<extra></extra>"),
       marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")),
@@ -294,7 +276,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %
 
 
 ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%
-  mutate(total_fat_t = func_fmt_din_milhoes(total_faturado))
+  mutate(total_fat_t = func_fmt_din_milhoes_(total_faturado))
 
 ### Gráfico n10 - Pizza fechados do ano
 ##############################################
@@ -307,9 +289,9 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat <- inner_join(ng_ij_hist_ij_ven_funil_fat_f
 ######################################################################################################
 if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0 & sum(ng_ij_hist_ij_ven_funil_fat_fec_anat$total_faturado) > 0){
   n10 <- plot_ly(ng_ij_hist_ij_ven_funil_fat_fec_anat, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
-                 text = ~total_fat_t,
+                 text = ~paste0(total_fat_t, " milhões"),
                  texttemplate = "%{text}mi (%{percent})",
-                 hovertemplate = paste ("%{label} <br>",
+                 hovertemplate = paste0 ("%{label} <br>",
                                         "%{text}mi <br>",
                                         "Equivalente a %{percent}",
                                         "<extra></extra>"),
@@ -799,7 +781,8 @@ neg_ij_vend_count <- neg_ij_vend %>%
 neg_ij_vend_count$n_negocios[is.na(neg_ij_vend_count$n_negocios)] <- 0
 
 vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_vendedor_id" = "negocio_vendedor_id")) %>%
-  select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas, n_negocios)
+  select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas, n_negocios) %>%
+  dplyr::arrange(vendedor_nome)
 
 ### Grafico c0 - Distribuicao de clientes (total), visitas (anat) e negocios (anat) cadastrados por vendedor
 if (nrow(vend_cli_vis_neg) > 0){

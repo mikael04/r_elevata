@@ -6,6 +6,7 @@ output:
     vertical_layout: scroll
 params:
   variable1: "emp_par"
+  num_dias: 0
 ---
 
 ```{r setup, include=FALSE}
