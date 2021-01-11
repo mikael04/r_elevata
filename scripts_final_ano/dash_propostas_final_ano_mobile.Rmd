@@ -48,7 +48,7 @@ source("fct_tempo.R")
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
 dash = T
 # ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
@@ -57,17 +57,29 @@ dash = T
 # mes_atual = fct_mes_atual()
 # ## Apenas ano, para gerar títulos
 # ano <- year(ano_atual)
-if(as.integer(params$num_dias) == 0) {
-  ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-  ano_atual = fct_ano_atual()
-  ####Variavel global c/ mês atual (para comparação)
-  mes_atual = fct_mes_atual()
-  ## Apenas ano, para gerar títulos
-  ano <- year(ano_atual)
+if(!teste){
+  if(as.integer(params$num_dias) == 0) {
+    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+    ano_atual = fct_ano_atual()
+    ####Variavel global c/ mês atual (para comparação)
+    mes_atual = fct_mes_atual()
+    ## Apenas ano, para gerar títulos
+    ano <- year(ano_atual)
+  }else{
+    data <- (lubridate::today()-lubridate::days(params$num_dias))
+    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+    ####Variavel global c/ mês atual (para comparação)
+    mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
+    ## Apenas ano, para gerar títulos
+    ano <- lubridate::year(ano_atual)
+  }
 }else{
-  data <- (lubridate::today()-lubridate::days(params$num_dias))
+  ##Testes
+  num_dias <- 11
+  data <- (lubridate::today()-lubridate::days(num_dias))
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-  ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+  ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
   ####Variavel global c/ mês atual (para comparação)
   mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
   ## Apenas ano, para gerar títulos
@@ -219,7 +231,7 @@ if(nrow(prop_ij_neg_cont_vend_a_ij_propag_anat) > 0){
     layout(barmode = 'stack',
            xaxis = list(title = ''),
            yaxis = list(title = ''),
-           legend = list(traceorder = 'normal'))
+           legend = list(traceorder = 'normal', orientation = 'h'))
   
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
@@ -475,7 +487,7 @@ if(nrow(fat_tot_categorias) > 0){
       #range nos dois eixos iguais pra ficar na mesma proporção
       yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F),
       ##aqui eu ajusto onde quero que apareça a legenda
-      legend = list(x=0.7, y=0.8))
+      legend = list(orientation = 'h'))
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   #p3 <- s_dados
