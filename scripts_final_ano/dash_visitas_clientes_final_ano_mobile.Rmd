@@ -25,7 +25,6 @@ library(tidyverse)
 library(ggplot2)
 #lib pros gráficos mais "interativos"
 library(plotly)
-library(highcharter)
 #library(htmlwidgets)
 #Lib pra usar paletas de cores
 library(RColorBrewer)
