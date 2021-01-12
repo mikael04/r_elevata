@@ -6,17 +6,16 @@ rm(list = ls())
 #Lib para ler (mais rapidamente) os csvs
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
-library(tidyverse)
+# library(tidyverse)
 #Libs pra trabalhar com a base (cortes e funções similares ao SQL)
-#library(dplyr) #Contido no tidyverse
-#Lib pro gráfico
-library(ggplot2)
+library(dplyr) #Contido no tidyverse
 #lib pros gráficos mais "interativos"
 library(plotly)
-library(highcharter)
 #library(htmlwidgets)
 #Lib pra usar paletas de cores
 library(RColorBrewer)
+#Lib usada para os mapas
+library(leaflet)
 #library(viridis)
 #Lib usada pros treemaps
 #library(treemap)
@@ -24,57 +23,61 @@ library(RColorBrewer)
 #library(waffle)
 #usada para converter números em moeda
 #library(scales)
-#Lib usada para emojis/fonts/box de valores
-library(ggplot2)
-#Lib usada para os mapas
-library(leaflet)
 #lib para plotar a imagem (s_dados)
 library(knitr)
-#funçoes de tempo
 source("fct_tempo.R")
 source("fct_fmt_din.R")
+source("fct_fmt_nome.R")
 
 
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
 dash = F
-####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-ano_atual = fct_ano_atual()
-####Variavel global c/ mês atual (para comparação)
-mes_atual = fct_mes_atual()
+if(!teste){
+  ##Teste se estou gerando via rstudio (knit)
+  if(as.integer(params$num_dias) == 0) {
+    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+    ano_atual = fct_ano_atual()
+    ####Variavel global c/ mês atual (para comparação)
+    mes_atual = fct_mes_atual()
+    ## Apenas ano, para gerar títulos
+    ano <- year(ano_atual)
+    ##Execução normal, recebendo data do gerador de dashs
+  }else{
+    data <- (lubridate::today()-lubridate::days(params$num_dias))
+    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+    ####Variavel global c/ mês atual (para comparação)
+    mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
+    ## Apenas ano, para gerar títulos
+    ano <- lubridate::year(ano_atual)
+  }
+}else{
+  ##Teste setando dia
+  data <- lubridate::ymd("2020-12-31")
+  ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+  ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
+  ####Variavel global c/ mês atual (para comparação)
+  mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
+  ## Apenas ano, para gerar títulos
+  ano <- lubridate::year(ano_atual)
+}
 
-#teste
-# ano_atual = ymd(today()-months(month(today())-1)- days(day(today())-1)+years(1))
-# mes_atual = month(01)
-ano <- year(ano_atual)
-####Variável global para ver se tem usados Ainda não usada
+##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
+####Vari?vel global para ver se tem usados Ainda n?o usada
 #usados = T
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
 s_dados_path <- "s_dados.png"
 
-##Teste script
-empresa = 16
+#empresa = params$variable1
+#teste
+empresa = 65
 ###################################
-
-##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
-func_nome <- function (nome_comp)
-{
-  lista <- str_split_fixed(nome_comp, " ", 4)
-  lista <- lista[, -4]
-  lista[,3] = str_sub(lista[,3], 1, 1)
-  lista[,2] = str_sub(lista[,2], 1, 1)
-  lista[,2] = paste(lista[,2], '.', sep='')
-  lista[,3] = paste(lista[,3], '.', sep='')
-  lista[,2] <- gsub('^.$', '',lista[,2])
-  lista[,3] <- gsub('^.$', '',lista[,3])
-  lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
-  return (lista[,1])
-}
 
 ###Começando script marcas
 ###########################################################################################################
@@ -204,15 +207,20 @@ top10_ij <- as.data.frame(top10_ij)
 ng_top_ag <- inner_join(ng_top10_ag, top10_ij, by=c("produto_categoria_id" = "produto_categoria_id"))
 
 #conversão de faturamento para texto
-ng_top_ag <- ng_top_ag %>%
-  mutate(fat_t = func_fmt_din_(faturamento))
+if (nrow(ng_top_ag) > 0){
+  ng_top_ag <- ng_top_ag %>%
+    mutate(fat_t = func_fmt_din(faturamento))
+}else{
+  
+}
+
 
 ##Chart gerado para o treemap de categorias por faturamento em anat
 
 ##definindo categorias para seleção de cores
 faturamento_tot <- sum(ng_top_ag$faturamento)
 chart_ng_top_ag <- ng_top_ag %>%
-  mutate(perc = round(faturamento/faturamento_tot, 2)) %>%
+  mutate(perc = round(faturamento/faturamento_tot, 4)) %>%
   mutate(cat_cor = round(perc,1)*10)
 
 ## Criando paleta de cores com 10 cores intermediárias
@@ -231,7 +239,7 @@ if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
                 text = ~paste0(categoria_nome),
                 textinfo = "text",
                 hovertemplate = paste0("%{text} <br>",
-                                       "", func_fmt_din_(chart_ng_top_ag$faturamento),
+                                       "", chart_ng_top_ag$fat_t,
                                        "<br>",
                                        "Equivalente à ", chart_ng_top_ag$perc*100, "%",
                                        "<br>",
@@ -242,7 +250,6 @@ if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   n4 <- include_graphics(s_dados_path)
 }
-chart_ng_top_ag$faturamento
 if(dash == F){
   n4
 }
@@ -279,8 +286,12 @@ if (teste == F) {
 }
 
 #conversão de faturamento para texto
-ng_top_ag_fat <- ng_top_ag_fat %>%
-  mutate(fat_t = func_fmt_din_(faturamento))
+if (nrow(ng_top_ag_fat) > 0){
+  ng_top_ag_fat <- ng_top_ag_fat %>%
+    mutate(fat_t = func_fmt_din(faturamento))
+}else{
+  
+}
 
 ##Chart gerado para o treemap de categorias por faturamento em anat
 chart_ng_top_ag_fat <- ng_top_ag_fat
@@ -288,7 +299,7 @@ chart_ng_top_ag_fat <- ng_top_ag_fat
 ##definindo categorias para seleção de cores
 faturamento_tot <- sum(ng_top_ag_fat$faturamento)
 chart_ng_top_ag_fat <- ng_top_ag_fat %>%
-  mutate(perc = round(faturamento/faturamento_tot, 2)) %>%
+  mutate(perc = round(faturamento/faturamento_tot, 4)) %>%
   mutate(cat_cor = round(perc,1)*10)
 
 ## Criando paleta de cores com 10 cores intermediárias
@@ -307,7 +318,7 @@ if (nrow(chart_ng_top_ag_fat) > 0 & sum(chart_ng_top_ag_fat$faturamento) > 0){
                 text = ~paste0(categoria_nome),
                 textinfo = "text",
                 hovertemplate = paste0("%{text} <br>",
-                                       "", func_fmt_din_(chart_ng_top_ag_fat$faturamento),
+                                       "", chart_ng_top_ag_fat$fat_t,
                                        "<br>",
                                        "Equivalente à ", chart_ng_top_ag_fat$perc*100, "%",
                                        "<br>",
