@@ -177,17 +177,19 @@ if (teste == T){
 }
 
 ##conversão de faturamento para texto
-ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
-  mutate(tot_fat_t = func_fmt_din(total_faturado))
-
-##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
-ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
-  mutate(nome_cat_valor_fat = paste(negocio_status, "\n", tot_fat_t))
-
-##Vou converter o id de situação pra 0, pra poder ordenar (intenção seria o status 0, é o primeiro)
-ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id == 10] <- 0
-ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
-  arrange(negocio_negocio_situacao_id)
+if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){	
+    ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%	
+    mutate(tot_fat_t = func_fmt_din(total_faturado))	
+  	
+  ##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)	
+  ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%	
+    mutate(nome_cat_valor_fat = paste(negocio_status, "\n", tot_fat_t))	
+  	
+  ##Vou converter o id de situação pra 0, pra poder ordenar (intenção seria o status 0, é o primeiro)	
+  ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id == 10] <- 0	
+  ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%	
+    arrange(negocio_negocio_situacao_id)	
+}
 
 
 ### Gráfico n9 - Funil agrupado por faturamento
@@ -275,8 +277,10 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %
   mutate(tot_fat_m = as.integer(total_faturado/1000000))
 
 
-ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%
-  mutate(total_fat_t = func_fmt_din_small(total_faturado))
+if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){	
+  ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%	
+    mutate(total_fat_t = func_fmt_din_small(total_faturado))	
+}
 
 ### Gráfico n10 - Pizza fechados do ano
 ##############################################
@@ -374,7 +378,12 @@ if (teste == F){
 ##Filtrando empresa, vendedores ativos e negocios de anat
 ng_ij_hist_ij_ven_anat_fat <- ng_ij_hist_ij_ven_ij_np_anat %>%
   filter(negocio_negocio_situacao_id == 4)
-
+	flag_fat = NULL	
+	if(nrow(ng_ij_hist_ij_ven_anat_fat) > 0){	
+	  flag_fat = F	
+	} else{	
+	  flag_fat = T	
+	}
 ##Já filtrado apenas empresa (variavel global)
 
 
@@ -518,61 +527,68 @@ ay <- list(
   side = 'right',
   title = ''
 )
-
-###Assim estarei mostrando anat, 1ant e 2ant
-### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
-n12 <- plot_ly(fat_anat_1ant_2ant_mes)
-n12 <- n12 %>%
-  add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum,
-            name = paste('Faturamento de', ano),
-            text = ~paste(func_fmt_din(ym_sum)),
-            hoverinfo = "text",
-            color = I("green")
-  )
-if(anos_ant > 0) {
-  n12 <- n12 %>%
-    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_1ant, yaxis = ay,
-              name = paste('Faturamento de', ano-1),
-              text = ~paste(func_fmt_din(ym_sum_1ant)),
-              hoverinfo = "text",
-              color = I("#1E90FF"))
-}
-if(anos_ant > 1) {
-  n12 <- n12 %>%
-    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_2ant, yaxis = ay,
-              name = paste('Faturamento de', ano-2),
-              text = ~paste(func_fmt_din(ym_sum_2ant)),
-              hoverinfo = "text",
-              color = I("#4682B4"))
-}
-
-n12 <- n12 %>%
-  layout(xaxis = list(title = ''), yaxis = list(title = '')
-         #aqui eu ajusto onde quero que apareça a legenda
-         #,legend = list(x=0.8, y=0.9)#)
-  )
-if (dash == F){
-  n12
-}
-
-
-if (teste == F){
-  #tabelas
-  rm(ng_ij_hist_ij_ven_ij_np_anat, fat_anat_mes, ng_ij_hist_ij_ven_total, negocio_ij_historico_ij_vendedor_total,
-     fat_anat_1ant_2ant_mes, fat_anat_mes_aux, ay, a,
-     ng_ij_hist_ij_ven_anat_fat, ng_ij_hist_ij_ven_ij_np_total)
-  if(anos_ant > 0){
-    rm(fat_1ant_mes, ng_ij_hist_ij_ven_ij_np_1ant_fat)
-    if (anos_ant > 1){
-      rm(fat_2ant_mes, ng_ij_hist_ij_ven_ij_np_2ant_fat)
-    }
-  }
-  #variáveis
-  rm(meses, n_linhas, ym, anos_ant)
-}
-
-###Contar clientes/visitas/negocios cadastrados por mês -> vem do script visita_clientes
-####################################
+if(flag_fat == T && anos_ant == 0) {	
+	  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	
+	    dplyr::mutate(ym_sum_fat = paste0("R$0"))	
+	} else{	
+	  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	
+	    dplyr::mutate(ym_sum_fat = func_fmt_din(ym_sum))	
+	}	
+		
+	###Assim estarei mostrando anat, 1ant e 2ant	
+	### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)	
+	n12 <- plot_ly(fat_anat_1ant_2ant_mes)	
+	n12 <- n12 %>%	
+	  add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum,	
+	            name = paste('Faturamento de', ano),	
+	            text = ~ym_sum_fat,	
+	            hoverinfo = "text",	
+	            color = I("green")	
+	  )	
+	if(anos_ant > 0) {	
+	  n12 <- n12 %>%	
+	    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_1ant, yaxis = ay,	
+	              name = paste('Faturamento de', ano-1),	
+	              text = ~paste(func_fmt_din(ym_sum_1ant)),	
+	              hoverinfo = "text",	
+	              color = I("#1E90FF"))	
+	}	
+	if(anos_ant > 1) {	
+	  n12 <- n12 %>%	
+	    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_2ant, yaxis = ay,	
+	              name = paste('Faturamento de', ano-2),	
+	              text = ~paste(func_fmt_din(ym_sum_2ant)),	
+	              hoverinfo = "text",	
+	              color = I("#4682B4"))	
+	}	
+		
+	n12 <- n12 %>%	
+	  layout(xaxis = list(title = ''), yaxis = list(title = '')	
+	         #aqui eu ajusto onde quero que apareça a legenda	
+	         #,legend = list(x=0.8, y=0.9)#)	
+	  )	
+	if (dash == F){	
+	  n12	
+	}	
+		
+		
+	if (teste == F){	
+	  #tabelas	
+	  rm(ng_ij_hist_ij_ven_ij_np_anat, fat_anat_mes, ng_ij_hist_ij_ven_total, negocio_ij_historico_ij_vendedor_total,	
+	     fat_anat_1ant_2ant_mes, fat_anat_mes_aux, ay, a,	
+	     ng_ij_hist_ij_ven_anat_fat, ng_ij_hist_ij_ven_ij_np_total)	
+	  if(anos_ant > 0){	
+	    rm(fat_1ant_mes, ng_ij_hist_ij_ven_ij_np_1ant_fat)	
+	    if (anos_ant > 1){	
+	      rm(fat_2ant_mes, ng_ij_hist_ij_ven_ij_np_2ant_fat)	
+	    }	
+	  }	
+	  #variáveis	
+	  rm(meses, n_linhas, ym)	
+	}	
+		
+	###Contar clientes/visitas/negocios cadastrados por mês -> vem do script visita_clientes	
+	####################################
 
 cliente <- fread("Tabelas_final_ano/cliente.csv", colClasses = c(cliente_id = "character")) %>%
   select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_ultima_visita) %>%
