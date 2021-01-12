@@ -37,7 +37,7 @@ func_fmt_din_milhoes_mi <- function(inteiro){
 }
 
 func_fmt_din <- function(inteiro){
-  if(inteiro <= 0){
+  if(inteiro <= 0 | is.na(inteiro)){
     "R$0"
   }else{
     if(inteiro < 1000){
@@ -53,7 +53,7 @@ func_fmt_din <- function(inteiro){
 }
 
 func_fmt_din_small <- function(inteiro){
-  if(inteiro <= 0){
+  if(inteiro <= 0 | is.na(inteiro)){
     "R$0"
   }else{
     if(inteiro < 1000){

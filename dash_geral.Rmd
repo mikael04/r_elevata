@@ -178,7 +178,7 @@ if (teste == T){
 
 ##conversão de faturamento para texto
 if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
-    ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
+    ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%	rowwise() %>%	
     mutate(tot_fat_t = func_fmt_din(total_faturado))
   
   ##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
@@ -277,7 +277,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %
 
 
 if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){
-  ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%
+  ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%	rowwise() %>%	
     mutate(total_fat_t = func_fmt_din_small(total_faturado))
 }
 
@@ -338,7 +338,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat_mes  <- ng_ij_hist_ij_ven_funil_fat_fec_ana
 
 #criando uma coluna nova para usar como texto dentro do gráfico
 if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes) > 0) {
-  ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat_mes %>%
+  ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat_mes %>%	rowwise() %>%	
     mutate(total_fat_t = func_fmt_din_small(total_faturado))
 }
 
@@ -531,7 +531,7 @@ if(flag_fat == T && anos_ant == 0) {
   fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%
     dplyr::mutate(ym_sum_fat = paste0("R$0"))
 } else{
-  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%
+  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%	
     dplyr::mutate(ym_sum_fat = func_fmt_din(ym_sum))
 }
 

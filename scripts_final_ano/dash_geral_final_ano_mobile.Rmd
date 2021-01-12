@@ -18,8 +18,6 @@ params:
 #Lib para ler (mais rapidamente) os csvs
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
-#library(tidyverse)
-#lib com uma cacetada de outras libs para manipular dados
 # library(tidyverse)
 #Libs pra trabalhar com a base (cortes e funções similares ao SQL)
 library(dplyr) #Contido no tidyverse
@@ -94,7 +92,7 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 16
+  empresa = 65
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -178,19 +176,20 @@ if (teste == T){
   
 }
 
-##conversão de faturamento para texto
-ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
-  mutate(tot_fat_t = func_fmt_din_milhoes(total_faturado))
-
-##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
-ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
-  mutate(nome_cat_valor_fat = paste(negocio_status, "\n", tot_fat_t))
-
-##Vou converter o id de situação pra 0, pra poder ordenar (intenção seria o status 0, é o primeiro)
-ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id == 10] <- 0
-ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
-  arrange(negocio_negocio_situacao_id)
-
+##conversão de faturamento para texto	
+if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){		
+    ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%		
+    mutate(tot_fat_t = func_fmt_din(total_faturado))		
+  		
+  ##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)		
+  ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%		
+    mutate(nome_cat_valor_fat = paste(negocio_status, "\n", tot_fat_t))		
+  		
+  ##Vou converter o id de situação pra 0, pra poder ordenar (intenção seria o status 0, é o primeiro)		
+  ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id == 10] <- 0		
+  ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%		
+    arrange(negocio_negocio_situacao_id)		
+}
 
 ### Gráfico n9 - Funil agrupado por faturamento
 if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
@@ -199,8 +198,8 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
       type ="funnelarea",
       values = ng_ij_hist_ij_ven_funil_fat$total_faturado,
       text = ng_ij_hist_ij_ven_funil_fat$nome_cat_valor_fat,
-      texttemplate = "%{text}mi",
-      hovertemplate = paste0 ("%{text} milhões <br>",
+      textinfo = "text",	
+      hovertemplate = paste0 ("%{text} <br>",	
                               "Equivalente a %{percent}",
                               "<extra></extra>"),
       marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")),
@@ -279,8 +278,10 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %
   mutate(tot_fat_m = as.integer(total_faturado/1000000))
 
 
-ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%
-  mutate(total_fat_t = func_fmt_din_milhoes(total_faturado))
+if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){		
+  ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%	rowwise() %>%	
+    mutate(total_fat_t = func_fmt_din_small(total_faturado))		
+}
 
 ### Gráfico n10 - Pizza fechados do ano
 ##############################################
@@ -294,9 +295,9 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat <- inner_join(ng_ij_hist_ij_ven_funil_fat_f
 if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0 & sum(ng_ij_hist_ij_ven_funil_fat_fec_anat$total_faturado) > 0){
   n10 <- plot_ly(ng_ij_hist_ij_ven_funil_fat_fec_anat, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
                  text = ~total_fat_t,
-                 texttemplate = "%{text}mi (%{percent})",
-                 hovertemplate = paste0 ("%{label} <br>",
-                                        "%{text} milhões <br>",
+                 texttemplate = "%{text} (%{percent})",	
+                 hovertemplate = paste0 ("%{label} <br>",	
+                                        "%{text}<br>",	
                                         "Equivalente a %{percent}",
                                         "<extra></extra>"),
                  marker = list(colors = ~cor)) %>%
@@ -339,8 +340,10 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat_mes  <- ng_ij_hist_ij_ven_funil_fat_fec_ana
 
 
 #criando uma coluna nova para usar como texto dentro do gráfico
-ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat_mes %>%
-  mutate(total_fat_t = func_fmt_din_milhoes(total_faturado))
+	if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes) > 0) {	
+	  ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat_mes %>%	rowwise() %>%		
+	    mutate(total_fat_t = func_fmt_din_small(total_faturado))	
+	}
 
 ### Gráfico n11 - Pizza fechados no último mês
 ##############################################
@@ -350,8 +353,9 @@ colors_pie <- c("#32CD32", "yellow" , "orange" , "#DE0D26")
 if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes) > 0 & sum(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes$total_faturado) > 0){
   n11 <- plot_ly(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
                  text = ~total_fat_t,
-                 texttemplate = "%{text}mi (%{percent})",
-                 hovertemplate = paste0 ("%{label} <br>",
+                 texttemplate = "%{text} (%{percent})",	
+                 hovertemplate = paste0 ("%{label} <br>",	
+                                        "%{text}<br>",
                                         "%{text} milhões <br>",
                                         "Equivalente a %{percent}",
                                         "<extra></extra>"),
@@ -376,7 +380,13 @@ if (teste == F){
 
 ##Filtrando empresa, vendedores ativos e negocios de anat
 ng_ij_hist_ij_ven_anat_fat <- ng_ij_hist_ij_ven_ij_np_anat %>%
-  filter(negocio_negocio_situacao_id == 4)
+  filter(negocio_negocio_situacao_id == 4)	
+flag_fat = NULL		
+if(nrow(ng_ij_hist_ij_ven_anat_fat) > 0){		
+  flag_fat = F		
+} else{		
+  flag_fat = T		
+}
 
 ##Já filtrado apenas empresa (variavel global)
 
@@ -399,8 +409,6 @@ fat_anat_mes <- ng_ij_hist_ij_ven_anat_fat %>%
   mutate (ym = as.character(ym)) %>%
   ungroup()
 
-
-fat_anat_mes_2 <- fat_anat_mes
 fat_anat_mes <- left_join(fat_anat_mes_aux, fat_anat_mes, by = c('ym'))
 #fat_anat_mes$ym_sum[is.na(fat_anat_mes$ym_sum)] <- 0
 
@@ -531,11 +539,13 @@ ay <- list(
   side = 'right',
   title = ''
 )
-l <- list(
-  font = list(
-    size = 14,
-    color = "#000"),
-  orientation = 'h')
+if(flag_fat == T && anos_ant == 0) {
+  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%	
+    dplyr::mutate(ym_sum_fat = paste0("R$0"))
+} else{
+  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>% rowwise() %>%
+    dplyr::mutate(ym_sum_fat = func_fmt_din(ym_sum))
+}
 ###Assim estarei mostrando anat, 1ant e 2ant
 ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
 n12 <- plot_ly(fat_anat_1ant_2ant_mes
@@ -544,7 +554,7 @@ n12 <- plot_ly(fat_anat_1ant_2ant_mes
 n12 <- n12 %>%
   add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum, yaxis = ay,
             name = paste('Faturamento de', ano),
-            text = ~func_fmt_din_milhoes(ym_sum),
+            text = ~ym_sum_fat,
             hovertemplate = paste0 ("Faturamento de ", ano,
                                     "<br>",
                                     "", fat_anat_1ant_2ant_mes$mes,
@@ -884,7 +894,7 @@ colors_pie<- c("#32CD32", "#FFA500")
 c1 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_total, type = 'pie', sort = F,
               text = n_total,
               texttemplate = "%{text} (%{percent})",
-              hovertemplate = paste ("%{label}: %{text}<br>",
+              hovertemplate = paste0 ("%{label}: %{text}<br>",
                                      "Equivalente a %{percent}",
                                      "<extra></extra>"),
               marker = list(colors = colors_pie))
@@ -898,7 +908,7 @@ if (sum(cli_c_s_ng$n_anat) > 0){
   c2 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_anat, type = 'pie', sort = F,
                 text = n_anat,
                 texttemplate = "%{text} (%{percent})",
-                hovertemplate = paste ("%{label}: %{text}<br>",
+                hovertemplate = paste0 ("%{label}: %{text}<br>",
                                        "Equivalente a %{percent}",
                                        "<extra></extra>"),
                 marker = list(colors = colors_pie))
@@ -918,7 +928,7 @@ if (sum(cli_c_s_ng$n_anat) > 0){
                 text = n_total,
                 textposition = 'inside',
                 texttemplate = "%{text} (%{percent})",
-                hovertemplate = paste ("%{label}: %{text}<br>",
+                hovertemplate = paste0 ("%{label}: %{text}<br>",
                                        "Equivalente a %{percent}",
                                        "<extra></extra>"),
                 marker = list(colors = colors_pie)) %>%
@@ -929,7 +939,7 @@ if (sum(cli_c_s_ng$n_anat) > 0){
             text = n_anat,
             textposition = 'inside',
             texttemplate = "%{text} (%{percent})",
-            hovertemplate = paste ("%{label}: %{text}<br>",
+            hovertemplate = paste0 ("%{label}: %{text}<br>",
                                    "Equivalente a %{percent}",
                                    "<extra></extra>"),
             marker = list(colors = colors_pie)) %>%
