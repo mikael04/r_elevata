@@ -1,0 +1,14 @@
+Dash geral:
+	- Remover gráfico de distribuição do val fin no último mês (n11) da apresentação
+
+Dash marcas & marcas_k:
+	- Igual
+
+Dash negócios:
+	- Atualizar título de "Idade dos negócios" para "Idade dos negócios no final de 2020"
+
+Dash propostas:
+	- Igual
+
+Dash visitas_clientes:
+	- Igual
