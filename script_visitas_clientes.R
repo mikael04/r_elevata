@@ -1,19 +1,16 @@
 rm(list = ls())
-#Lib q será futuramente usada pros painéis interativos
+#Lib q ser? futuramente usada pros pain?is interativos
 #library(shiny)
-#Lib pra conexão com o banco
+#Lib pra conex?o com o banco
 #library(odbc)
 #Lib para ler (mais rapidamente) os csvs
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
-library(tidyverse)
-#Libs pra trabalhar com a base (cortes e funções similares ao SQL)
-#library(dplyr) #Contido no tidyverse
-#Lib pro gráfico
-library(ggplot2)
-#lib pros gráficos mais "interativos"
+#library(tidyverse)
+#Libs pra trabalhar com a base (cortes e fun??es similares ao SQL)
+library(dplyr) #Contido no tidyverse
+#lib pros gr?ficos mais "interativos"
 library(plotly)
-library(highcharter)
 #library(htmlwidgets)
 #Lib pra usar paletas de cores
 library(RColorBrewer)
@@ -22,65 +19,67 @@ library(RColorBrewer)
 #library(treemap)
 #Lib usada pros waffles
 #library(waffle)
-#usada para converter números em moeda
+#usada para converter n?meros em moeda
 #library(scales)
-#usada para converter números em moeda
-library(leaflet)
-#lib para plotar a imagem (s_dados)
-library(knitr)
+#Lib para lidar com o tempo
+library(lubridate)
 source("fct_tempo.R")
+source("fct_fmt_din.R")
+source("fct_fmt_nome.R")
 
 
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
-dash = T
-####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-ano_atual = fct_ano_atual()
-####Variavel global c/ mês atual (para comparação)
-mes_atual = fct_mes_atual()
-#teste
-# ano_atual = ymd(today()-months(month(today())-1)- days(day(today())-1)+years(1))
-# mes_atual = month(01)
-## Apenas ano, para gerar títulos
-ano <- year(ano_atual)
-####Variável global para ver se tem usados Ainda não usada
+dash = F
+####Variável para testar dias anteriores
+num_dias <- 0
+if(!teste){
+  ##Teste se estou gerando via rstudio (knit)
+  if(as.integer(num_dias) == 0) {
+    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+    ano_atual = fct_ano_atual()
+    ####Variavel global c/ mês atual (para comparação)
+    mes_atual = fct_mes_atual()
+    ## Apenas ano, para gerar títulos
+    ano <- year(ano_atual)
+    ##Execução normal, recebendo data do gerador de dashs
+  }else{
+    data <- (lubridate::today()-lubridate::days(num_dias))
+    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+    ####Variavel global c/ mês atual (para comparação)
+    mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
+    ## Apenas ano, para gerar títulos
+    ano <- lubridate::year(ano_atual)
+  }
+}else{
+  ##Teste setando dia
+  data <- lubridate::ymd("2020-12-31")
+  ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+  ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
+  ####Variavel global c/ mês atual (para comparação)
+  mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
+  ## Apenas ano, para gerar títulos
+  ano <- lubridate::year(ano_atual)
+}
+
+##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
+####Vari?vel global para ver se tem usados Ainda n?o usada
 #usados = T
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
 s_dados_path <- "s_dados.png"
 
-##Teste
-  empresa = 35
-
+#empresa = params$variable1
+#teste
+empresa = 65
 ###################################
 
-##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
-func_nome <- function (nome_comp)
-{
-  lista <- str_split_fixed(nome_comp, " ", 4)
-  lista <- lista[, -4]
-  lista[,3] = str_sub(lista[,3], 1, 1)
-  lista[,2] = str_sub(lista[,2], 1, 1)
-  lista[,2] = paste(lista[,2], '.', sep='')
-  lista[,3] = paste(lista[,3], '.', sep='')
-  lista[,2] <- gsub('^.$', '',lista[,2])
-  lista[,3] <- gsub('^.$', '',lista[,3])
-  lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
-  return (lista[,1])
-}
-
-##Alterar o número apresentado na forma americana (com vírgula) para a forma brasileira (com ponto), através da transformação em string
-func_fmt_numbr <- function(inteiro)
-{
-  inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
-  return(inteiro_br)
-}
-
-#################################################################################
+################################################################################
 ##Começando script visitas_clientes
 
 ##Collect cria o df resultado da query, nesse caso, visitas_cliente, já filtrando apenas ano atual

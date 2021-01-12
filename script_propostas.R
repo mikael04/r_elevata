@@ -1,19 +1,16 @@
 rm(list = ls())
-#Lib q será futuramente usada pros painéis interativos
+#Lib q ser? futuramente usada pros pain?is interativos
 #library(shiny)
-#Lib pra conexão com o banco
+#Lib pra conex?o com o banco
 #library(odbc)
 #Lib para ler (mais rapidamente) os csvs
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
-library(tidyverse)
-#Libs pra trabalhar com a base (cortes e funções similares ao SQL)
-#library(dplyr) #Contido no tidyverse
-#Lib pro gráfico
-library(ggplot2)
-#lib pros gráficos mais "interativos"
+#library(tidyverse)
+#Libs pra trabalhar com a base (cortes e fun??es similares ao SQL)
+library(dplyr) #Contido no tidyverse
+#lib pros gr?ficos mais "interativos"
 library(plotly)
-library(highcharter)
 #library(htmlwidgets)
 #Lib pra usar paletas de cores
 library(RColorBrewer)
@@ -22,77 +19,65 @@ library(RColorBrewer)
 #library(treemap)
 #Lib usada pros waffles
 #library(waffle)
-#usada para converter números em moeda
+#usada para converter n?meros em moeda
 #library(scales)
 #Lib para lidar com o tempo
 library(lubridate)
-#Lib usada para emojis/fonts/box de valores
-library(ggplot2)
-#Lib usada para os quadros
-library(emojifont)
-#Lib usada para ler imagens
-library(knitr)
 source("fct_tempo.R")
+source("fct_fmt_din.R")
+source("fct_fmt_nome.R")
 
 
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
 dash = F
-####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-ano_atual = fct_ano_atual()
-####Variavel global c/ mês atual (para comparação)
-mes_atual = fct_mes_atual()
-#teste
-# ano_atual = ymd(today()-months(month(today())-1)- days(day(today())-1)+years(1))
-# mes_atual = month(01)
-## Apenas ano, para gerar títulos
-ano <- year(ano_atual)
-####Variável global para ver se tem usados Ainda não usada
+####Variável para testar dias anteriores
+num_dias <- 0
+if(!teste){
+  ##Teste se estou gerando via rstudio (knit)
+  if(as.integer(num_dias) == 0) {
+    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+    ano_atual = fct_ano_atual()
+    ####Variavel global c/ mês atual (para comparação)
+    mes_atual = fct_mes_atual()
+    ## Apenas ano, para gerar títulos
+    ano <- year(ano_atual)
+    ##Execução normal, recebendo data do gerador de dashs
+  }else{
+    data <- (lubridate::today()-lubridate::days(num_dias))
+    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+    ####Variavel global c/ mês atual (para comparação)
+    mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
+    ## Apenas ano, para gerar títulos
+    ano <- lubridate::year(ano_atual)
+  }
+}else{
+  ##Teste setando dia
+  data <- lubridate::ymd("2020-12-31")
+  ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+  ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
+  ####Variavel global c/ mês atual (para comparação)
+  mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
+  ## Apenas ano, para gerar títulos
+  ano <- lubridate::year(ano_atual)
+}
+
+##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
+####Vari?vel global para ver se tem usados Ainda n?o usada
 #usados = T
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
 s_dados_path <- "s_dados.png"
 
-empresa <- 16
-###################################
+#empresa = params$variable1
+#teste
+empresa = 65
 
-##Alterar o valor de inteiro para reais
-func_fmt_din <- function(inteiro)
-{
-  inteiro_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
-  return(inteiro_em_reais)
-}
-##Alterar o valor de inteiro para reais convertendo para milhões (78000000 = R$78,0) -> posteriormente adicionar o "mi"
-func_fmt_din_mi <- function(inteiro)
-{
-  inteiro <- round(inteiro/1000000, digits = 1)
-  inteiro_mi_em_reais <- paste("R$", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 1))
-  return(inteiro_mi_em_reais)
-}
-##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
-func_nome <- function (nome_comp)
-{
-  lista <- str_split_fixed(nome_comp, " ", 4)
-  lista <- lista[, -4]
-  lista[,3] = str_sub(lista[,3], 1, 1)
-  lista[,2] = str_sub(lista[,2], 1, 1)
-  lista[,2] = paste(lista[,2], '.', sep='')
-  lista[,3] = paste(lista[,3], '.', sep='')
-  lista[,2] <- gsub('^.$', '',lista[,2])
-  lista[,3] <- gsub('^.$', '',lista[,3])
-  lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
-  return (lista[,1])
-}
-##Alterar o número apresentado na forma americana (com vírgula) para a forma brasileira (com ponto), através da transformação em string
-func_fmt_numbr <- function(inteiro)
-{
-  inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
-  return(inteiro_br)
-}
 ###########################################################################################################
 ###########################################################################################################
 ###Começando scripts proposta_scripts
@@ -215,10 +200,10 @@ if(nrow(prop_ij_neg_ij_propag_cont_anat) > 0){
                 color = ~proposta_status,
                 colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
                 text = ~paste0(proposta_status,
-                              '<br>',
-                              'Valor financeiro: ', func_fmt_din(sum_valor_v),
-                              '<br>',
-                              "Nº de propostas", cont_status_v),
+                               '<br>',
+                               'Valor financeiro: ', func_fmt_din(sum_valor_v),
+                               '<br>',
+                               "Nº de propostas", cont_status_v),
                 hoverinfo = "text",
                 # hovertemplate = ~paste0("%{label}: ",
                 #                         "<br>",
@@ -771,7 +756,7 @@ if(nrow(p_ij_ppa_sum_modo_ij_pmf) > 0){
     add_pie(data = p_ij_ppa_sum_modo_ij_pmf, values = ~sum_modo, labels = ~Modo,
             hovertemplate = ~paste0("%{label}: ",
                                     "<br>",
-                                    "Valor financeiro: ", func_fmt_din_mi(sum_modo), " milhões",
+                                    "Valor financeiro: ", func_fmt_din(sum_modo),
                                     "<br>",
                                     "Nº de propostas: ", count_modo,
                                     "<br>"),
@@ -791,7 +776,7 @@ if(nrow(p_ij_ppa_sum_forma_ij_pmf) > 0){
     add_pie(data = p_ij_ppa_sum_forma_ij_pmf, values = ~sum_forma, labels = ~Forma,
             hovertemplate = ~paste0("%{label}: ",
                                     "<br>",
-                                    "Valor financeiro: ", func_fmt_din_mi(sum_forma), " milhões",
+                                    "Valor financeiro: ", func_fmt_din(sum_forma),
                                     "<br>",
                                     "Nº de propostas: ", count_forma,
                                     "<br>"), 
