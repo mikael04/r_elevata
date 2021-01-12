@@ -76,7 +76,7 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 21
+empresa = 16
 ###################################
 
 #################################################################################
@@ -219,9 +219,22 @@ historico_negocio_situacao_anat <- historico_negocio_situacao %>%
 negocio_ij_historico_ij_vendedor_anat <- inner_join(negocio_ij_vendedor, historico_negocio_situacao_anat, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
 negocio_ij_historico_ij_vendedor_total <- inner_join(negocio_ij_vendedor, historico_negocio_situacao, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
 
+##Aqui lidarei com a exceção de janeiro (pegar o mês anterior, q é dezembro, envolve lidar com a tabela do ano anterior)
+if(month(mes_atual) == 1) {
+  negocio_ij_historico_ij_vendedor_dez_anant <- negocio_ij_historico_ij_vendedor_total %>%
+    filter((mes_atual -months(1)) <= historico_negocio_situacao_data, historico_negocio_situacao_data < mes_atual)
+}
+
 ##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais antigas, ficar só com a última atualização no negócio
 negocio_ij_historico_ij_vendedor_anat <- negocio_ij_historico_ij_vendedor_anat[order(-negocio_ij_historico_ij_vendedor_anat$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_anat$negocio_id),]
 ng_ij_hist_ij_ven_anat <- negocio_ij_historico_ij_vendedor_anat[!duplicated(negocio_ij_historico_ij_vendedor_anat$negocio_id),]
+
+if(month(mes_atual) == 1) {
+  negocio_ij_historico_ij_vendedor_dez_anant <- negocio_ij_historico_ij_vendedor_dez_anant[order(-negocio_ij_historico_ij_vendedor_dez_anant$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_dez_anant$negocio_id),]
+  ng_ij_hist_ij_ven_anat_dez <- negocio_ij_historico_ij_vendedor_dez_anant[!duplicated(negocio_ij_historico_ij_vendedor_dez_anant$negocio_id),]
+  ng_ij_hist_ij_ven_fec_anat_dez <- inner_join(ng_ij_hist_ij_ven_anat_dez, negocio_produto, by=c("negocio_id" = "np_negocio_id")) %>%
+    filter(negocio_negocio_situacao_id %in% st_f)
+}
 
 ng_ij_hist_ij_ven_ij_np_anat <- inner_join(ng_ij_hist_ij_ven_anat, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
 
@@ -294,10 +307,14 @@ if(dash == F){
 ##Auxiliares para meses
 mes_ant <- fct_mes_ant(mes_atual)
 
-ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_fec_anat %>%
-  filter(mes_ant <= historico_negocio_situacao_data,  historico_negocio_situacao_data < mes_atual) %>%
-  mutate(negocio_status = negocio_negocio_situacao_id)
-
+if(month(mes_atual)>1){
+  ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_fec_anat %>%
+    filter(mes_ant <= historico_negocio_situacao_data,  historico_negocio_situacao_data < mes_atual) %>%
+    mutate(negocio_status = negocio_negocio_situacao_id)
+}else{
+  ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_fec_anat_dez %>%
+    mutate(negocio_status = negocio_negocio_situacao_id)
+}
 ##aqui ele substitui linha a linha cada situação pelo seu respectivo em string
 ng_ij_hist_ij_ven_funil_fat_fec_anat_mes$negocio_status <- with(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes, cut(negocio_negocio_situacao_id, breaks = c(0,4,5,6,7),
                                                                                                               labels = status_f))
