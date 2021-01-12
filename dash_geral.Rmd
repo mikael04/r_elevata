@@ -33,7 +33,7 @@ library(RColorBrewer)
 #library(waffle)
 #usada para converter números em moeda
 #library(scales)
-#lib para plotar a imagem (s_dados)
+#lib para plotar a imagem (s_dados)_
 library(knitr)
 source("fct_tempo.R")
 source("fct_fmt_din.R")
@@ -74,7 +74,7 @@ if(!teste){
   }
 }else{
   ##Teste setando dia
-  data <- lubridate::ymd("2020-12-31")
+  data <- lubridate::today()
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
   ####Variavel global c/ mês atual (para comparação)
@@ -92,7 +92,7 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 65
+  empresa = 21
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -510,10 +510,15 @@ fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%
                    labels = meses))
 if(anos_ant > 0) {
   fat_anat_1ant_2ant_mes$ym_sum_1ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_1ant)] <- 0
+  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%	
+    dplyr::mutate(ym_sum_fat_1ant = func_fmt_din(ym_sum_1ant))
 }
 if(anos_ant > 1) {
   fat_anat_1ant_2ant_mes$ym_sum_2ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_2ant)] <- 0
+  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%	
+    dplyr::mutate(ym_sum_fat_2ant = func_fmt_din(ym_sum_2ant))
 }
+
 #######################################################################
 
 ##Começando o gráfico
@@ -529,11 +534,12 @@ ay <- list(
 
 if(flag_fat == T && anos_ant == 0) {
   fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%
-    dplyr::mutate(ym_sum_fat = paste0("R$0"))
+    dplyr::mutate(ym_sum_fat_anat = paste0("R$0"))
 } else{
   fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%	
-    dplyr::mutate(ym_sum_fat = func_fmt_din(ym_sum))
+    dplyr::mutate(ym_sum_fat_anat = func_fmt_din(ym_sum))
 }
+
 
 ###Assim estarei mostrando anat, 1ant e 2ant
 ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
@@ -541,7 +547,7 @@ n12 <- plot_ly(fat_anat_1ant_2ant_mes)
 n12 <- n12 %>%
   add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum,
             name = paste('Faturamento de', ano),
-            text = ~ym_sum_fat,
+            text = ~ym_sum_fat_anat,
             hoverinfo = "text",
             color = I("green")
   )
@@ -549,7 +555,7 @@ if(anos_ant > 0) {
   n12 <- n12 %>%
     add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_1ant, yaxis = ay,
               name = paste('Faturamento de', ano-1),
-              text = ~paste(func_fmt_din(ym_sum_1ant)),
+              text = ~ym_sum_fat_1ant,
               hoverinfo = "text",
               color = I("#1E90FF"))
 }
@@ -557,11 +563,10 @@ if(anos_ant > 1) {
   n12 <- n12 %>%
     add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_2ant, yaxis = ay,
               name = paste('Faturamento de', ano-2),
-              text = ~paste(func_fmt_din(ym_sum_2ant)),
+              text = ~ym_sum_fat_2ant,
               hoverinfo = "text",
               color = I("#4682B4"))
 }
-
 n12 <- n12 %>%
   layout(xaxis = list(title = ''), yaxis = list(title = '')
          #aqui eu ajusto onde quero que apareça a legenda

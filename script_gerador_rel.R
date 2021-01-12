@@ -3,7 +3,7 @@ library(data.table)
 library(dplyr)
 
 setwd("E:\\Mikael\\OneDrive\\Projetos\\Scripts_R\\r_elevata")
-teste = T
+teste = F
 #Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")
 ##Usado para super e komatsu
 ##renderiza dash_negocios_propostas e dash_visitas_mapas

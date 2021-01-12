@@ -31,7 +31,7 @@ source("fct_fmt_nome.R")
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = T
+teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = F
 ####Variável para testar dias anteriores
@@ -76,8 +76,11 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 65
+empresa = 21
 ###################################
+
+#################################################################################
+##### Dash geral
 
 #################################################################################
 ### Funil de vendas (vendas abertas)
@@ -157,7 +160,7 @@ if (teste == T){
 
 ##conversão de faturamento para texto
 if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
-  ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
+  ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%	rowwise() %>%	
     mutate(tot_fat_t = func_fmt_din(total_faturado))
   
   ##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
@@ -256,7 +259,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %
 
 
 if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){
-  ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%
+  ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%	rowwise() %>%	
     mutate(total_fat_t = func_fmt_din_small(total_faturado))
 }
 
@@ -317,7 +320,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat_mes  <- ng_ij_hist_ij_ven_funil_fat_fec_ana
 
 #criando uma coluna nova para usar como texto dentro do gráfico
 if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat_mes) > 0) {
-  ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat_mes %>%
+  ng_ij_hist_ij_ven_funil_fat_fec_anat_mes <- ng_ij_hist_ij_ven_funil_fat_fec_anat_mes %>%	rowwise() %>%	
     mutate(total_fat_t = func_fmt_din_small(total_faturado))
 }
 
@@ -489,10 +492,15 @@ fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%
                    labels = meses))
 if(anos_ant > 0) {
   fat_anat_1ant_2ant_mes$ym_sum_1ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_1ant)] <- 0
+  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%	
+    dplyr::mutate(ym_sum_fat_1ant = func_fmt_din(ym_sum_1ant))
 }
 if(anos_ant > 1) {
   fat_anat_1ant_2ant_mes$ym_sum_2ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_2ant)] <- 0
+  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%	
+    dplyr::mutate(ym_sum_fat_2ant = func_fmt_din(ym_sum_2ant))
 }
+
 #######################################################################
 
 ##Começando o gráfico
@@ -508,11 +516,12 @@ ay <- list(
 
 if(flag_fat == T && anos_ant == 0) {
   fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%
-    dplyr::mutate(ym_sum_fat = paste0("R$0"))
+    dplyr::mutate(ym_sum_fat_anat = paste0("R$0"))
 } else{
-  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%
-    dplyr::mutate(ym_sum_fat = func_fmt_din(ym_sum))
+  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%	
+    dplyr::mutate(ym_sum_fat_anat = func_fmt_din(ym_sum))
 }
+
 
 ###Assim estarei mostrando anat, 1ant e 2ant
 ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
@@ -520,7 +529,7 @@ n12 <- plot_ly(fat_anat_1ant_2ant_mes)
 n12 <- n12 %>%
   add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum,
             name = paste('Faturamento de', ano),
-            text = ~ym_sum_fat,
+            text = ~ym_sum_fat_anat,
             hoverinfo = "text",
             color = I("green")
   )
@@ -528,7 +537,7 @@ if(anos_ant > 0) {
   n12 <- n12 %>%
     add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_1ant, yaxis = ay,
               name = paste('Faturamento de', ano-1),
-              text = ~paste(func_fmt_din(ym_sum_1ant)),
+              text = ~ym_sum_fat_1ant,
               hoverinfo = "text",
               color = I("#1E90FF"))
 }
@@ -536,11 +545,10 @@ if(anos_ant > 1) {
   n12 <- n12 %>%
     add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_2ant, yaxis = ay,
               name = paste('Faturamento de', ano-2),
-              text = ~paste(func_fmt_din(ym_sum_2ant)),
+              text = ~ym_sum_fat_2ant,
               hoverinfo = "text",
               color = I("#4682B4"))
 }
-
 n12 <- n12 %>%
   layout(xaxis = list(title = ''), yaxis = list(title = '')
          #aqui eu ajusto onde quero que apareça a legenda
@@ -549,8 +557,6 @@ n12 <- n12 %>%
 if (dash == F){
   n12
 }
-
-
 
 if (teste == F){
   #tabelas
@@ -564,7 +570,7 @@ if (teste == F){
     }
   }
   #variáveis
-  rm(meses, n_linhas, ym, anos_ant)
+  rm(meses, n_linhas, ym)
 }
 
 ###Contar clientes/visitas/negocios cadastrados por mês -> vem do script visita_clientes
