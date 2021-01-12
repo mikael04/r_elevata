@@ -92,7 +92,7 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 16
+  empresa = 65
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -177,18 +177,19 @@ if (teste == T){
 }
 
 ##conversão de faturamento para texto
-ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
-  mutate(tot_fat_t = func_fmt_din(total_faturado))
-
-##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
-ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
-  mutate(nome_cat_valor_fat = paste(negocio_status, "\n", tot_fat_t))
-
-##Vou converter o id de situação pra 0, pra poder ordenar (intenção seria o status 0, é o primeiro)
-ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id == 10] <- 0
-ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
-  arrange(negocio_negocio_situacao_id)
-
+if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
+    ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
+    mutate(tot_fat_t = func_fmt_din(total_faturado))
+  
+  ##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
+  ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
+    mutate(nome_cat_valor_fat = paste(negocio_status, "\n", tot_fat_t))
+  
+  ##Vou converter o id de situação pra 0, pra poder ordenar (intenção seria o status 0, é o primeiro)
+  ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id == 10] <- 0
+  ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
+    arrange(negocio_negocio_situacao_id)
+}
 
 ### Gráfico n9 - Funil agrupado por faturamento
 if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
@@ -275,8 +276,10 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %
   mutate(tot_fat_m = as.integer(total_faturado/1000000))
 
 
-ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%
-  mutate(total_fat_t = func_fmt_din_small(total_faturado))
+if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){
+  ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%
+    mutate(total_fat_t = func_fmt_din_small(total_faturado))
+}
 
 ### Gráfico n10 - Pizza fechados do ano
 ##############################################
@@ -374,7 +377,12 @@ if (teste == F){
 ##Filtrando empresa, vendedores ativos e negocios de anat
 ng_ij_hist_ij_ven_anat_fat <- ng_ij_hist_ij_ven_ij_np_anat %>%
   filter(negocio_negocio_situacao_id == 4)
-
+flag_fat = NULL
+if(nrow(ng_ij_hist_ij_ven_anat_fat) > 0){
+  flag_fat = F
+} else{
+  flag_fat = T
+}
 ##Já filtrado apenas empresa (variavel global)
 
 
@@ -519,13 +527,21 @@ ay <- list(
   title = ''
 )
 
+if(flag_fat == T && anos_ant == 0) {
+  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%
+    dplyr::mutate(ym_sum_fat = paste0("R$0"))
+} else{
+  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%
+    dplyr::mutate(ym_sum_fat = func_fmt_din(ym_sum))
+}
+
 ###Assim estarei mostrando anat, 1ant e 2ant
 ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
 n12 <- plot_ly(fat_anat_1ant_2ant_mes)
 n12 <- n12 %>%
   add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum,
             name = paste('Faturamento de', ano),
-            text = ~paste(func_fmt_din(ym_sum)),
+            text = ~ym_sum_fat,
             hoverinfo = "text",
             color = I("green")
   )
@@ -568,7 +584,7 @@ if (teste == F){
     }
   }
   #variáveis
-  rm(meses, n_linhas, ym, anos_ant)
+  rm(meses, n_linhas, ym)
 }
 
 ###Contar clientes/visitas/negocios cadastrados por mês -> vem do script visita_clientes
