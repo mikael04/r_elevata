@@ -36,9 +36,11 @@ source("fct_fmt_nome.R")
 teste = T
 ####Variável usada para não plotar os gráficos na dash
 dash = F
+####Variável para testar dias anteriores
+num_dias <- 0
 if(!teste){
   ##Teste se estou gerando via rstudio (knit)
-  if(as.integer(params$num_dias) == 0) {
+  if(as.integer(num_dias) == 0) {
     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
     ano_atual = fct_ano_atual()
     ####Variavel global c/ mês atual (para comparação)
@@ -47,7 +49,7 @@ if(!teste){
     ano <- year(ano_atual)
     ##Execução normal, recebendo data do gerador de dashs
   }else{
-    data <- (lubridate::today()-lubridate::days(params$num_dias))
+    data <- (lubridate::today()-lubridate::days(num_dias))
     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
     ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
     ####Variavel global c/ mês atual (para comparação)

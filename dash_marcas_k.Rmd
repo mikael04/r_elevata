@@ -228,7 +228,7 @@ ng_top_ag <- inner_join(ng_top10_ag, top10_ij, by=c("produto_categoria_id" = "pr
 
 #conversão de faturamento para texto
 if (nrow(ng_top_ag) > 0){
-  ng_top_ag <- ng_top_ag %>%
+  ng_top_ag <- ng_top_ag %>% rowwise() %>%
   mutate(fat_t = func_fmt_din(faturamento))
 }else{
   
@@ -307,7 +307,7 @@ if (teste == F) {
 
 #conversão de faturamento para texto
 if (nrow(ng_top_ag_fat) > 0){
-  ng_top_ag_fat <- ng_top_ag_fat %>%
+  ng_top_ag_fat <- ng_top_ag_fat %>% rowwise() %>%
     mutate(fat_t = func_fmt_din(faturamento))
 }else{
   
