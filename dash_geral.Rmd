@@ -74,7 +74,8 @@ if(!teste){
   }
 }else{
   ##Teste setando dia
-  data <- lubridate::today()
+  #data <- lubridate::today()
+  data <- lubridate::ymd("2020-12-15")
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
   ####Variavel global c/ mês atual (para comparação)
@@ -244,11 +245,11 @@ if(month(mes_atual) == 1) {
 }
 
 ##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais antigas, ficar só com a última atualização no negócio
-negocio_ij_historico_ij_vendedor_anat <- negocio_ij_historico_ij_vendedor_anat[order(-negocio_ij_historico_ij_vendedor_anat$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_anat$negocio_id),]
+negocio_ij_historico_ij_vendedor_anat <- negocio_ij_historico_ij_vendedor_anat[ order(-negocio_ij_historico_ij_vendedor_anat$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_anat$negocio_id),]
 ng_ij_hist_ij_ven_anat <- negocio_ij_historico_ij_vendedor_anat[!duplicated(negocio_ij_historico_ij_vendedor_anat$negocio_id),]
 
 if(month(mes_atual) == 1) {
-  negocio_ij_historico_ij_vendedor_dez_anant <- negocio_ij_historico_ij_vendedor_dez_anant[order(-negocio_ij_historico_ij_vendedor_dez_anant$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_dez_anant$negocio_id),]
+  negocio_ij_historico_ij_vendedor_dez_anant <- negocio_ij_historico_ij_vendedor_dez_anant[ order(-negocio_ij_historico_ij_vendedor_dez_anant$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_dez_anant$negocio_id),]
   ng_ij_hist_ij_ven_anat_dez <- negocio_ij_historico_ij_vendedor_dez_anant[!duplicated(negocio_ij_historico_ij_vendedor_dez_anant$negocio_id),]
   ng_ij_hist_ij_ven_fec_anat_dez <- inner_join(ng_ij_hist_ij_ven_anat_dez, negocio_produto, by=c("negocio_id" = "np_negocio_id")) %>%
     filter(negocio_negocio_situacao_id %in% st_f)
