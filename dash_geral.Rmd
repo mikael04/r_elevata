@@ -33,7 +33,7 @@ library(RColorBrewer)
 #library(waffle)
 #usada para converter números em moeda
 #library(scales)
-#lib para plotar a imagem (s_dados)_
+#lib para plotar a imagem (s_dados)
 library(knitr)
 source("fct_tempo.R")
 source("fct_fmt_din.R")
@@ -74,8 +74,8 @@ if(!teste){
   }
 }else{
   ##Teste setando dia
-  #data <- lubridate::today()
-  data <- lubridate::ymd("2020-12-15")
+  data <- lubridate::today()
+  # data <- lubridate::ymd("2020-12-15")
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
   ####Variavel global c/ mês atual (para comparação)
@@ -720,7 +720,7 @@ for (value in cli_ij_vc_ij_ng_mes$ym){
 #cli_ij_vc_ij_ng_mes$ym <- with(cli_ij_vc_ij_ng_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
 #                                                        labels = meses))
 
-### Gráfico c3 - Cadastro de clientes, visitas e negócios no ano de 2020
+### Gráfico c3 - Cadastro de clientes, visitas e negócios no ano anat
 c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
               name = 'Clientes',
               text = ~paste(n_cli, 'clientes'),
@@ -951,8 +951,8 @@ Faturamento ano a ano
 
 
 ```{r}
-### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em 2020
-subplot(n12, c3, nrows = 2, shareX = F) %>%
+### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em anat
+subplot(n12, c3, nrows = 2, shareX = T) %>%
   layout(legend = list(y=0.3))
 #n12
 ```
@@ -968,7 +968,7 @@ Column {data-width=750}
 
 ```{r}
 
-### Grafico c0 - Distribuicao de clientes (total), visitas (2020) e negocios (2020) cadastrados por vendedor
+### Grafico c0 - Distribuicao de clientes (total), visitas (anat) e negocios (anat) cadastrados por vendedor
 c0
 
 ```
@@ -990,7 +990,7 @@ c1
 
 ```{r}
 
-### Grafico c2 - Clientes cadastrados em 2020 que possuem negocio (pizza)
+### Grafico c2 - Clientes cadastrados em anat que possuem negocio (pizza)
 c2
 
 ```
