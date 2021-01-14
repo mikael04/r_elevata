@@ -51,7 +51,7 @@ source("fct_fmt_nome.R")
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = T
+teste = F
 ####Variável usada para não plotar os gráficos na dash
 dash = T
 # ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
@@ -81,7 +81,8 @@ if(!teste){
   }
 }else{
   ##Teste setando dia
-  data <- lubridate::ymd("2020-12-31")
+  #data <- lubridate::ymd("2020-12-31")
+  data <- lubridate::today()
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
   ####Variavel global c/ mês atual (para comparação)
