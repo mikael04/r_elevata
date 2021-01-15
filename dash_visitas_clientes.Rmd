@@ -626,14 +626,14 @@ O gráfico na posição superior mostra a distribuição de clientes por número
 Column {data-width=350}
 -----------------------------------------------------------------------
 
-`r paste0("### Distribuição de clientes por número de visitas (clientes sem negócios em (", ano, ")")`
+`r paste0("### Distribuição de clientes por número de visitas clientes sem negócios em ", ano)`
 ```{r, fig.height=3, fig.width=4}
 ### Gráfico c4_c5 - Ambos histogramas anteriores (c4 e c5)
 c5
 
 ```
 
-`r paste0("### Distribuição de clientes por número de visitas (clientes com negócios em (", ano, ")")`
+`r paste0("### Distribuição de clientes por número de visitas clientes com negócios em ", ano)`
 
 ```{r, fig.height=3, fig.width=4}
 ### Gráfico c4_c5 - Ambos histogramas anteriores (c4 e c5)
