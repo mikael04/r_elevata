@@ -158,15 +158,12 @@ if (teste == F){
   rm()
 }
 
-prop_ij_neg_anat <- prop_ij_neg %>%
-  filter(proposta_data_cadastro >= ano_atual)
-
 ##Juntando com vendedor pra obter o nome do vendedor
 prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
 
 ##Filtrando a empresa
 prop_ij_neg_ij_vend_anat <- prop_ij_neg_ij_vend %>%
-  filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= ano_atual)
+  filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= ano_atual, proposta_data_cadastro < (ano_atual+years(1)))
 
 prop_ij_neg_ij_vend_ij_propag_anat <- inner_join(prop_ij_neg_ij_vend_anat, proposta_pagamento, by=c("proposta_id" = "pp_proposta_id")) %>%
   select (-pp_modo_id, -pp_forma_id, -pp_usado_id)
