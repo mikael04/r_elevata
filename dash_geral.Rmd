@@ -93,7 +93,7 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 30
+  empresa = 10
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -193,7 +193,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
 }
 
 ### Gráfico n9 - Funil agrupado por faturamento
-if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
+if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$total_faturado) > 0){
   n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat) %>%
     add_trace(
       type ="funnelarea",

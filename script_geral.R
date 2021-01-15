@@ -177,7 +177,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
 }
 
 ### Gráfico n9 - Funil agrupado por faturamento
-if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
+if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$total_faturado) > 0){
   n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat) %>%
     add_trace(
       type ="funnelarea",
@@ -190,7 +190,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
       marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")),
       showlegend = FALSE
     )
-}else {
+}else{
   n9 <- include_graphics(s_dados_path)
 }
 if(dash == F){
