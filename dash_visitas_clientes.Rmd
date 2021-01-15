@@ -106,7 +106,7 @@ if(params$variable1 == 'emp_par'){
 ##Collect cria o df resultado da query, nesse caso, visitas_cliente, já filtrando apenas ano atual
 visita_cliente <- fread("Tabelas/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
   select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
-  filter (vc_data_cadastro >= ano_atual)
+  filter (vc_data_cadastro >= ano_atual, vc_data_cadastro < (ano_atual+years(1)))
 
 ##Pra pegar o nome do resultado
 visita_resultado <- fread("Tabelas/visita_resultado.csv") %>%

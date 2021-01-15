@@ -76,7 +76,7 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 16
+empresa = 64
 ###################################
 
 ###Começando scripts negocio_scripts
@@ -162,7 +162,7 @@ if (nrow(ng_ij_vn_ij_np_fat) > 0){
 
 ##############################################
 ### Gráfico n0 - Número de clientes por vendedor
-if (nrow(ng_ij_vn_ij_np_fat) > 0){
+if (nrow(ng_ij_vn_ij_np_fat) > 0 && sum(ng_ij_vn_ij_np_fat$total_fat) > 0){
   n0 <- plot_ly(ng_ij_vn_ij_np_fat,
                 type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
                 color = ~negocio_status,
@@ -194,7 +194,7 @@ historico_negocio_situacao <- fread("Tabelas/historico_negocio_situacao.csv", co
   select(historico_negocio_situacao_data, historico_negocio_situacao_negocio_id, historico_negocio_situacao_situacao_id)
 
 historico_negocio_situacao_anat <- historico_negocio_situacao %>%
-  filter(historico_negocio_situacao_data >= ano_atual)
+  filter(historico_negocio_situacao_data >= ano_atual, historico_negocio_situacao_data < (ano_atual + years(1)))
 
 ##Right join de negocios, vendedores com histórico pra ter apenas a última
 negocio_ij_historico_ij_vendedor_anat <- inner_join(negocio_ij_vendedor, historico_negocio_situacao_anat, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
@@ -248,7 +248,7 @@ ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
 #usando função pra criar outra coluna com número formatado (em Real, com pontos)
 if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
   ng_ij_vn_ij_np_fech_fat <- ng_ij_vn_ij_np_fech_fat %>% rowwise() %>%
-  mutate(total_fat_t = func_fmt_din(total_fat))
+    mutate(total_fat_t = func_fmt_din(total_fat))
 }
 
 ### Gráfico n3 - Faturamento de negócios fechados em anat
