@@ -870,7 +870,7 @@ Volume de propostas
 Column {}
 -----------------------------------------------------------------------
 
-### Volume de propostas por vendedor
+`r paste("### Volume de propostas por vendedor em", ano)`
 
 ```{r, fig.height=6, fig.width=4}
 ### Gráfico p0 - Número propostas, por tipo, por vendedor (total)
