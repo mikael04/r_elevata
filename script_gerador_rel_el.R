@@ -4,10 +4,8 @@ library(data.table)
 library(dplyr)
 
 setwd("C:\\Users\\sysadmin\\Documents\\R\\Scripts")
-teste = F
-#Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")
-##Usado para super e komatsu
-##renderiza dash_negocios_propostas e dash_visitas_mapas
+teste = T
+Sys.setenv(RSTUDIO_PANDOC="C:\\Program Files\\RStudio\\bin\\pandoc")
 
 # geral
 # marcas
@@ -16,7 +14,7 @@ teste = F
 # propostas
 # visitas_clientes
 
-empresas_ativas <- fread("empresas_ativas_id.csv") %>%
+empresas_ativas <- fread("Tabelas/empresas_ativas_id.csv") %>%
   select(empresa_id)
 
 params_list_i <- empresas_ativas$empresa_id
@@ -24,11 +22,26 @@ params_list <- as.list(params_list_i)
 
 x <- length(params_list)
 
+########################################################
+###Teste
+# params_test <- list(78)
+# template <- "dash_geral.Rmd"
+# out_file <- sprintf("Dashs/Geral_%s", params_test[1])
+# parameters_test <- list(variable1 = params_test[1])
+# 
+# parameters_test
+# 
+# rmarkdown::render(template,
+#                   output_file = out_file,
+#                   params = parameters_test)
+
+########################################################
+
 # ##Gerando dashs geral ##Funcionando, apenas comentada pra facilitar teste das marcas
 for(i in (1:x)){
   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
   template <- "dash_geral.Rmd"
-  #Teste (nome da empresa, mais fácil de analisar)
+  #Teste (nome da empresa, mais fÃ¡cil de analisar)
   # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
   if(teste){
     print(i)
@@ -50,7 +63,7 @@ for(i in (1:x)){
   {
     rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'empresas_ativas')))
     template <- "dash_marcas.Rmd"
-    #Teste (nome da empresa, mais fácil de analisar)
+    #Teste (nome da empresa, mais fÃ¡cil de analisar)
     # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
     if(teste){
       print(i)
@@ -80,7 +93,7 @@ for(i in (1:x)){
 for(i in (1:x)){
   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
   template <- "dash_negocios.Rmd"
-  #Teste (nome da empresa, mais fácil de analisar)
+  #Teste (nome da empresa, mais fÃ¡cil de analisar)
   # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
   if(teste){
     print(i)
@@ -100,7 +113,7 @@ for(i in (1:x)){
 for(i in (1:x)){
   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
   template <- "dash_propostas.Rmd"
-  #Teste (nome da empresa, mais fácil de analisar)
+  #Teste (nome da empresa, mais fÃ¡cil de analisar)
   # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
   if(teste){
     print(i)
@@ -120,7 +133,7 @@ for(i in (1:x)){
 for(i in (1:x)){
   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
   template <- "dash_visitas_clientes.Rmd"
-  #Teste (nome da empresa, mais fácil de analisar)
+  #Teste (nome da empresa, mais fÃ¡cil de analisar)
   # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
   if(teste){
     print(i)

@@ -48,7 +48,7 @@ empresa_a <- empresa %>%
 #Arrumando encoding
 Encoding(empresa_a$empresa_nome) <- 'latin1'
 #escrevendo empresas ativas
-data.table::fwrite(empresa_a, file="empresas_ativas_id.csv", sep = ";")
+data.table::fwrite(empresa_a, file="Tabelas/empresas_ativas_id.csv", sep = ";")
 #escrevendo tabela empresas
 data.table::fwrite(empresa, file="Tabelas/empresa.csv", sep = ";")
 
