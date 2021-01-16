@@ -16,7 +16,7 @@ teste = F
 # visitas_clientes
 
 
-empresas_ativas <- fread("empresas_ativas_id.csv") %>%
+empresas_ativas <- fread("Tabelas/empresas_ativas_id.csv") %>%
   select(empresa_id)
 
 params_list_i <- empresas_ativas$empresa_id

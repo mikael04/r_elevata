@@ -2,7 +2,7 @@ library(purrr)
 library(data.table)
 library(dplyr)
 
-setwd("E:\\Mikael\\OneDrive\\Projetos\\Scripts_R\\r_elevata\\")
+#setwd("E:\\Mikael\\OneDrive\\Projetos\\Scripts_R\\r_elevata\\")
 teste = T
 #Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")
 ##Usado para super e komatsu
@@ -16,7 +16,7 @@ teste = T
 # visitas_clientes
 
 
-empresas_ativas <- fread("empresas_ativas_id.csv") %>%
+empresas_ativas <- fread("Tabelas/empresas_ativas_id.csv") %>%
   select(empresa_id)
 
 params_list_i <- empresas_ativas$empresa_id
