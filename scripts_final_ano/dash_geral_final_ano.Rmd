@@ -937,13 +937,6 @@ Column {data-width=350}
 n10
 ```
 
-### Distribuição do valor financeiro em pedidos fechados no último mês
-
-```{r}
-### Gráfico n11 - Pizza fechados do mês
-n11
-```
-
 Faturamento ano a ano
 =======================================================================
 
