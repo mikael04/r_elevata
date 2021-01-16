@@ -45,6 +45,8 @@ if(!teste){
     mes_atual = fct_mes_atual()
     ## Apenas ano, para gerar títulos
     ano <- year(ano_atual)
+    ##Auxiliares para meses
+    mes_ant <- fct_mes_ant(mes_atual)
     ##Execução normal, recebendo data do gerador de dashs
   }else{
     data <- (lubridate::today()-lubridate::days(num_dias))
@@ -54,6 +56,8 @@ if(!teste){
     mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
     ## Apenas ano, para gerar títulos
     ano <- lubridate::year(ano_atual)
+    ##Auxiliares para meses
+    mes_ant <- fct_mes_ant(mes_atual)
   }
 }else{
   ##Teste setando dia
@@ -190,7 +194,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$tot
       marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")),
       showlegend = FALSE
     )
-}else{
+}else {
   n9 <- include_graphics(s_dados_path)
 }
 if(dash == F){
@@ -704,7 +708,7 @@ for (value in cli_ij_vc_ij_ng_mes$ym){
 #cli_ij_vc_ij_ng_mes$ym <- with(cli_ij_vc_ij_ng_mes, cut(ym, breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
 #                                                        labels = meses))
 
-### Gráfico c3 - Cadastro de clientes, visitas e negócios no ano de 2020
+### Gráfico c3 - Cadastro de clientes, visitas e negócios no ano anat
 c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
               name = 'Clientes',
               text = ~paste(n_cli, 'clientes'),

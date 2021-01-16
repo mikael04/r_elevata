@@ -62,6 +62,8 @@ if(!teste){
     mes_atual = fct_mes_atual()
     ## Apenas ano, para gerar títulos
     ano <- year(ano_atual)
+    ##Auxiliares para meses
+    mes_ant <- fct_mes_ant(mes_atual)
   ##Execução normal, recebendo data do gerador de dashs
   }else{
     data <- (lubridate::today()-lubridate::days(params$num_dias))
@@ -71,17 +73,21 @@ if(!teste){
     mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
     ## Apenas ano, para gerar títulos
     ano <- lubridate::year(ano_atual)
+    ##Auxiliares para meses
+    mes_ant <- fct_mes_ant(mes_atual)
   }
 }else{
   ##Teste setando dia
-  data <- lubridate::today()
-  # data <- lubridate::ymd("2020-12-15")
+  # data <- lubridate::today()
+  data <- lubridate::ymd("2020-12-31")
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
   ####Variavel global c/ mês atual (para comparação)
   mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
   ## Apenas ano, para gerar títulos
   ano <- lubridate::year(ano_atual)
+  ##Auxiliares para meses
+  mes_ant <- fct_mes_ant(mes_atual)
 }
 
 ####Variável global para ver se tem usados Ainda não usada
@@ -93,7 +99,7 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 30
+  empresa = 16
 }else{
   empresa = as.integer(params$variable1)
 }

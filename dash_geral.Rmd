@@ -62,6 +62,8 @@ if(!teste){
     mes_atual = fct_mes_atual()
     ## Apenas ano, para gerar títulos
     ano <- year(ano_atual)
+    ##Auxiliares para meses
+    mes_ant <- fct_mes_ant(mes_atual)
   ##Execução normal, recebendo data do gerador de dashs
   }else{
     data <- (lubridate::today()-lubridate::days(params$num_dias))
@@ -71,6 +73,8 @@ if(!teste){
     mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
     ## Apenas ano, para gerar títulos
     ano <- lubridate::year(ano_atual)
+    ##Auxiliares para meses
+    mes_ant <- fct_mes_ant(mes_atual)
   }
 }else{
   ##Teste setando dia
@@ -82,6 +86,8 @@ if(!teste){
   mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
   ## Apenas ano, para gerar títulos
   ano <- lubridate::year(ano_atual)
+  ##Auxiliares para meses
+  mes_ant <- fct_mes_ant(mes_atual)
 }
 
 ####Variável global para ver se tem usados Ainda não usada
