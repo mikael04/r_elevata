@@ -83,7 +83,7 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 16
+empresa = 10
 ###################################
 
 #################################################################################
@@ -195,7 +195,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$tot
       showlegend = FALSE
     )
 }else {
-  n9 <- include_graphics(s_dados_path)
+  n9 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   n9
@@ -286,7 +286,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %
 
 if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){
   ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%	rowwise() %>%	
-    mutate(total_fat_t = func_fmt_din_small(total_faturado))
+    mutate(total_fat_t = func_fmt_din(total_faturado))
 }
 
 ### Gráfico n10 - Pizza fechados do ano
@@ -308,7 +308,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0 && sum(ng_ij_hist_ij_ven_funi
                                          "<extra></extra>"),
                  marker = list(colors = ~cor))
 }else {
-  n10 <- include_graphics(s_dados_path)
+  n10 <- knitr::include_graphics(s_dados_path)
 }
 
 if(dash == F){
@@ -349,7 +349,7 @@ ng_ij_hist_ij_ven_fec_mes_ant  <- ng_ij_hist_ij_ven_fec_mes_ant  %>%
 #criando uma coluna nova para usar como texto dentro do gráfico
 if (nrow(ng_ij_hist_ij_ven_fec_mes_ant) > 0) {
   ng_ij_hist_ij_ven_fec_mes_ant <- ng_ij_hist_ij_ven_fec_mes_ant %>%	rowwise() %>%	
-    mutate(total_fat_t = func_fmt_din_small(total_faturado))
+    mutate(total_fat_t = func_fmt_din(total_faturado))
 }
 
 ### Gráfico n11 - Pizza fechados no último mês
@@ -367,7 +367,7 @@ if (nrow(ng_ij_hist_ij_ven_fec_mes_ant) > 0 && sum(ng_ij_hist_ij_ven_fec_mes_ant
                                          "<extra></extra>"),
                  marker = list(colors = colors_pie))
 }else {
-  n11 <- include_graphics(s_dados_path)
+  n11 <- knitr::include_graphics(s_dados_path)
 }
 
 
@@ -414,8 +414,16 @@ fat_anat_mes <- ng_ij_hist_ij_ven_anat_fat %>%
   mutate (ym = as.character(ym)) %>%
   ungroup()
 
-fat_anat_mes <- left_join(fat_anat_mes_aux, fat_anat_mes, by = c('ym'))
-#fat_anat_mes$ym_sum[is.na(fat_anat_mes$ym_sum)] <- 0
+fat_anat_mes <- left_join(fat_anat_mes_aux, fat_anat_mes, by = c('ym')) %>%
+  rowwise() %>%
+  mutate (flag = if_else(is.na(ym_sum), T, F))
+for(mes in fat_anat_mes$ym){
+  print(mes)
+  if(is.na(fat_anat_mes$ym_sum[mes]) && as.integer(mes) <= month(mes_atual))
+  {
+    fat_anat_mes$ym_sum[as.integer(mes)] <- 0
+  }
+}
 
 
 ##tabela vem dessa: negocio_ij_historico_ij_vendedor_total, todos os vendedores, filtrando empresa_id, vendedor_ativo
@@ -491,9 +499,9 @@ if(anos_ant > 0) {
 ###Na super temos 2ant, na komatsu tem q verificar se possui 2ant e 1ant
 #######################################################################
 n_linhas <- nrow(fat_anat_mes)
-fat_anat_mes_aux <- data.frame(ym)
-fat_anat_mes_aux$ym_sum <- NA
-fat_anat_mes_aux$ym_sum[1:n_linhas] <- fat_anat_mes$ym_sum
+# fat_anat_mes_aux <- data.frame(ym)
+# fat_anat_mes_aux$ym_sum <- NA
+# fat_anat_mes_aux$ym_sum[1:n_linhas] <- fat_anat_mes$ym_sum
 fat_anat_1ant_2ant_mes <- data.frame(ym)
 fat_anat_1ant_2ant_mes <- left_join(fat_anat_1ant_2ant_mes, fat_anat_mes, by = c("ym"))
 
@@ -549,35 +557,39 @@ if(flag_fat == T && anos_ant == 0) {
 
 ###Assim estarei mostrando anat, 1ant e 2ant
 ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
-n12 <- plot_ly(fat_anat_1ant_2ant_mes)
-n12 <- n12 %>%
-  add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum,
-            name = paste('Faturamento de', ano),
-            text = ~ym_sum_fat_anat,
-            hoverinfo = "text",
-            color = I("green")
-  )
-if(anos_ant > 0) {
+if(anos_ant > 0 || all(fat_anat_1ant_2ant_mes$flag == F)){
+  n12 <- plot_ly(fat_anat_1ant_2ant_mes)
   n12 <- n12 %>%
-    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_1ant, yaxis = ay,
-              name = paste('Faturamento de', ano-1),
-              text = ~ym_sum_fat_1ant,
+    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum,
+              name = paste('Faturamento de', ano),
+              text = ~ym_sum_fat_anat,
               hoverinfo = "text",
-              color = I("#1E90FF"))
-}
-if(anos_ant > 1) {
+              color = I("green")
+    )
+  if(anos_ant > 0) {
+    n12 <- n12 %>%
+      add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_1ant, yaxis = ay,
+                name = paste('Faturamento de', ano-1),
+                text = ~ym_sum_fat_1ant,
+                hoverinfo = "text",
+                color = I("#1E90FF"))
+  }
+  if(anos_ant > 1) {
+    n12 <- n12 %>%
+      add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_2ant, yaxis = ay,
+                name = paste('Faturamento de', ano-2),
+                text = ~ym_sum_fat_2ant,
+                hoverinfo = "text",
+                color = I("#4682B4"))
+  }
   n12 <- n12 %>%
-    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_2ant, yaxis = ay,
-              name = paste('Faturamento de', ano-2),
-              text = ~ym_sum_fat_2ant,
-              hoverinfo = "text",
-              color = I("#4682B4"))
+    layout(xaxis = list(title = ''), yaxis = list(title = '')
+           #aqui eu ajusto onde quero que apareça a legenda
+           #,legend = list(x=0.8, y=0.9)#)
+    )
+}else{
+  n12 <- knitr::include_graphics(s_dados_path)
 }
-n12 <- n12 %>%
-  layout(xaxis = list(title = ''), yaxis = list(title = '')
-         #aqui eu ajusto onde quero que apareça a legenda
-         #,legend = list(x=0.8, y=0.9)#)
-  )
 if (dash == F){
   n12
 }
@@ -642,9 +654,10 @@ clientes_mes <- cliente %>%
   mutate(ym = as.character(ym)) %>%
   ungroup ()
 
-clientes_mes <- left_join(clientes_mes_aux, clientes_mes, by = c("ym"))
-
-clientes_mes$n_cli[is.na(clientes_mes$n_cli)] <- 0
+clientes_mes <- left_join(clientes_mes_aux, clientes_mes, by = c("ym")) %>%
+  rowwise() %>%
+  mutate (flag_cli = if_else(is.na(n_cli), T, F))
+#clientes_mes$n_cli[is.na(clientes_mes$n_cli)] <- 0
 
 ##Visita precisa juntar com visita_status ou _resultado () pra obter empresa_id ##poderia ser vendedor, mas a tabela vis_st_emp (status c/ status_empresa) já está pronta
 ##vis_st_emp já vem filtrada pela empresa (var global)
@@ -661,8 +674,10 @@ visitas_mes <- vc_ij_emp %>%
   mutate(ym = as.character(ym)) %>%
   ungroup ()
 
-visitas_mes <- left_join(visitas_mes_aux, visitas_mes, by = c("ym"))
-visitas_mes$n_vis[is.na(visitas_mes$n_vis)] <- 0
+visitas_mes <- left_join(visitas_mes_aux, visitas_mes, by = c("ym")) %>%
+  rowwise() %>%
+  mutate (flag_vis = if_else(is.na(n_vis), T, F))
+#visitas_mes$n_vis[is.na(visitas_mes$n_vis)] <- 0
 
 ##Negocio precisa juntar com vendedor pra obter empresa_id ##Poderia ser cliente também, mas a tabela vendedor é menor
 ##vendedor já vem filtrado pela empresa (var global)
@@ -679,8 +694,10 @@ negocios_mes <- ng_ij_emp %>%
   mutate(ym = as.character(ym)) %>%
   ungroup ()
 
-negocios_mes <- left_join(negocios_mes_aux, negocios_mes, by = c("ym"))
-negocios_mes$n_neg[is.na(negocios_mes$n_neg)] <- 0
+negocios_mes <- left_join(negocios_mes_aux, negocios_mes, by = c("ym")) %>%
+  rowwise() %>%
+  mutate (flag_neg = if_else(is.na(n_neg), T, F))
+#negocios_mes$n_neg[is.na(negocios_mes$n_neg)] <- 0
 ##Juntando tudo em um só dataframe
 cli_ij_vc_mes <- inner_join(clientes_mes, visitas_mes, by = c("ym"))
 cli_ij_vc_ij_ng_mes <- inner_join(cli_ij_vc_mes, negocios_mes, by = c("ym"))
@@ -696,12 +713,15 @@ cli_ij_vc_ij_ng_mes <- cli_ij_vc_ij_ng_mes %>%
   mutate(mes = cut(ym,breaks = c(0,1,2,3,4,5,6,7,8, 9, 10, 11, 12),
                    labels = meses))
 # Aqui eu vou preencher com valores NA para os meses seguintes (se estamos em jan, só teremos valores de jan, então os demais serão NA para não aparecerem como zero no plot)
-for (value in cli_ij_vc_ij_ng_mes$ym){
-  if(fct_data_num_meses(mes_atual) < value){
-    cli_ij_vc_ij_ng_mes$n_cli[value] <- NA
-    cli_ij_vc_ij_ng_mes$n_vis[value] <- NA
-    cli_ij_vc_ij_ng_mes$n_neg[value] <- NA
-  }else{
+for (mes in cli_ij_vc_ij_ng_mes$ym){
+  if(fct_data_num_meses(mes_atual) >= mes && is.na(cli_ij_vc_ij_ng_mes$n_cli[mes])){
+    cli_ij_vc_ij_ng_mes$n_cli[mes] <- 0
+  }
+  if(fct_data_num_meses(mes_atual) >= mes && is.na(cli_ij_vc_ij_ng_mes$n_vis[mes])){
+    cli_ij_vc_ij_ng_mes$n_vis[mes] <- 0
+  }
+  if(fct_data_num_meses(mes_atual) >= mes && is.na(cli_ij_vc_ij_ng_mes$n_neg[mes])){
+    cli_ij_vc_ij_ng_mes$n_neg[mes] <- 0
   }
 }
 ###Não farei dessa forma pois quero manter a coluna
@@ -709,27 +729,32 @@ for (value in cli_ij_vc_ij_ng_mes$ym){
 #                                                        labels = meses))
 
 ### Gráfico c3 - Cadastro de clientes, visitas e negócios no ano anat
-c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
-              name = 'Clientes',
-              text = ~paste(n_cli, 'clientes'),
-              hoverinfo = "text",
-              color = I('#7B68EE'))
-c3 <- c3 %>%
-  add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_vis,
-             name = 'Visitas',
-             text = ~paste(n_vis, 'visitas'),
-             hoverinfo = "text",
-             color = I('#DAA520'))
-c3 <- c3 %>%
-  add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_neg,
-             name = 'Negócios',
-             text = ~paste(n_neg, 'negócios'),
-             hoverinfo = "text",
-             color = I('green'))
+# if(all(cli_ij_vc_ij_ng_mes$flag_cli == T) && all(cli_ij_vc_ij_ng_mes$flag_vis == T) && all(cli_ij_vc_ij_ng_mes$flag_neg == T)){
+  c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
+                name = 'Clientes',
+                text = ~paste(n_cli, 'clientes'),
+                hoverinfo = "text",
+                color = I('#7B68EE'))
+  c3 <- c3 %>%
+    add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_vis,
+               name = 'Visitas',
+               text = ~paste(n_vis, 'visitas'),
+               hoverinfo = "text",
+               color = I('#DAA520'))
+  c3 <- c3 %>%
+    add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_neg,
+               name = 'Negócios',
+               text = ~paste(n_neg, 'negócios'),
+               hoverinfo = "text",
+               color = I('green'))
+  
+  c3 <- c3 %>%
+    layout(xaxis = list(title = '', range = c(min(0), max(12))), ##Dessa forma pego os 12 meses do ano
+           yaxis = list(title = ''))
+# }else{
+#   c3 <- knitr::include_graphics(s_dados_path)
+# }
 
-c3 <- c3 %>%
-  layout(xaxis = list(title = '', range = c(min(0), max(12))), ##Dessa forma pego os 12 meses do ano
-         yaxis = list(title = ''))
 if(dash == F){
   c3
 }
@@ -825,7 +850,7 @@ if (nrow(vend_cli_vis_neg) > 0){
            xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
            yaxis = list(title = ''))
 }else {
-  c0 <- include_graphics(s_dados_path)
+  c0 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   c0
@@ -890,7 +915,7 @@ if (sum(cli_c_s_ng$n_anat) > 0){
                                         "<extra></extra>"),
                 marker = list(colors = colors_pie))
 }else {
-  c2 <- include_graphics(s_dados_path)
+  c2 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   c2
