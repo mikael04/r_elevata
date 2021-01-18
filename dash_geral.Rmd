@@ -99,7 +99,7 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 10
+  empresa = 16
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -304,7 +304,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %
 
 if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){
   ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%	rowwise() %>%	
-    mutate(total_fat_t = func_fmt_din_small(total_faturado))
+    mutate(total_fat_t = func_fmt_din(total_faturado))
 }
 
 ### Gráfico n10 - Pizza fechados do ano
@@ -367,7 +367,7 @@ ng_ij_hist_ij_ven_fec_mes_ant  <- ng_ij_hist_ij_ven_fec_mes_ant  %>%
 #criando uma coluna nova para usar como texto dentro do gráfico
 if (nrow(ng_ij_hist_ij_ven_fec_mes_ant) > 0) {
   ng_ij_hist_ij_ven_fec_mes_ant <- ng_ij_hist_ij_ven_fec_mes_ant %>%	rowwise() %>%	
-    mutate(total_fat_t = func_fmt_din_small(total_faturado))
+    mutate(total_fat_t = func_fmt_din(total_faturado))
 }
 
 ### Gráfico n11 - Pizza fechados no último mês
