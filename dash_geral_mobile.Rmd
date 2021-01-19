@@ -993,7 +993,7 @@ if(teste == F){
 Funil de vendas
 =======================================================================
 
-Column {.tabset}
+Column
 -------------------------------------
 
 ### Funil da empresa em valor financeiro, por status do negócio
@@ -1013,11 +1013,11 @@ n10
 Faturamento ano a ano
 =======================================================================
 
-Column {.tabset}
+Column
 -------------------------------------
 `r paste("### Valor financeiro mês a mês em", ano)`
 
-```{r, fig.height=7, fig.width=7.5}
+```{r}
 ### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em 2020
 n12
 
@@ -1025,7 +1025,7 @@ n12
 
 `r paste("### Distribuição do cadastro de clientes, visitas e negócios no ano", ano)`
 
-```{r, fig.height=7, fig.width=7.5}
+```{r}
 ### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em 2020
 c3
 
@@ -1034,7 +1034,7 @@ c3
 Oportunidades
 =======================================================================
 
-Column {.tabset}
+Column
 -------------------------------------
 
 `r paste0("### Distribuição do cadastro de clientes (total), visitas (", ano, ") e negócios (", ano, ") por vendedor")`

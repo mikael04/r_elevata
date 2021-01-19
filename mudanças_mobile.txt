@@ -1,5 +1,76 @@
+P/ todas:
+    cabeçalho:
+        - vertical_layout: fill
 Dash geral:
-	- Remover gráfico de distribuição do val fin no último mês (n11) da apresentação
+	- n10 ->
+        %>%
+            layout(legend = list(orientation = 'h'))
+    - n12 ->
+        n12 <- n12 %>%
+	    layout(xaxis = list(title = ''), yaxis = list(title = '')
+	           #aqui eu ajusto onde quero que apareça a legenda
+	           ,legend = list(orientation = 'h', x=0.2, y=-0.2,
+	                          xanchor = "bottom")#)
+	    )
+    - c3 ->
+        	c3 <- c3 %>%
+                layout(xaxis = list(title = '', range = c(min(0), max(12))), ##Dessa forma pego os 12 meses do ano
+                        yaxis = list(title = ''),
+                        legend = list(orientation = 'h', x=0.2, y=-0.25,
+                                    xanchor = "bottom"))
+    - c0
+        c0 <- plot_ly(vend_cli_vis_neg, x = ~n_clientes, y= ~reorder(vendedor_nome, desc(vendedor_nome)), type = 'bar',
+	                name = 'Clientes (total)')
+        c0 <- c0 %>%
+            add_trace(x= ~n_visitas, name =  paste('Visitas', ano))
+        c0 <- c0 %>%
+            add_trace(x= ~n_negocios, name = paste('Negócios', ano))
+        c0 <- c0 %>%
+            layout(barmode = 'grouped',
+                xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
+                yaxis = list(title = ''),
+                legend = list(orientation = 'h',
+                                xanchor = "bottom")
+    - Adicionando gráfico conjunto de pizzas
+            if (sum(cli_c_s_ng$n_anat) > 0){
+                c1_c2 <- plot_ly(cli_c_s_ng, labels = ~Clientes, values = ~n_total, type = 'pie', sort = F,
+                                title = list(text = "Total", font = t),
+                                domain = list(row = 0, column = 0),
+                                text = n_total,
+                                textposition = 'inside',
+                                texttemplate = "%{text} (%{percent})",
+                                hovertemplate = paste0 ("%{label}: %{text}<br>",
+                                                    "Equivalente a %{percent}",
+                                                    "<extra></extra>"),
+                                marker = list(colors = colors_pie)) %>%
+                    
+                    add_pie(cli_c_s_ng, labels = ~Clientes, values = ~n_anat, type = 'pie', sort = F,
+                            title = list(text = paste0("", ano), font = t),
+                            domain = list(row = 1, column = 0),
+                            text = n_anat,
+                            textposition = 'inside',
+                            texttemplate = "%{text} (%{percent})",
+                            hovertemplate = paste0 ("%{label}: %{text}<br>",
+                                                "Equivalente a %{percent}",
+                                                "<extra></extra>"),
+                            marker = list(colors = colors_pie)) %>%
+                    layout(showlegend = T, title = F,
+                        grid=list(rows=2, columns=1),
+                        legend = list(orientation = 'h', #x=0.2, y=-0.2,
+                                        xanchor = "bottom")
+                        )
+            } else{
+            c1_c2 <- include_graphics(s_dados_path)
+            }
+            if(dash == F){
+            c1_c2
+            }
+            
+    - Apresentação (construção das dashs)
+        - Apenas Column no início
+        Em c0 por causa do tamanho do gráfico
+            ```{r, fig.height=7, fig.width=7.5}
+        - gráfico c1 e c2 combinados (c1_c2 com título: 	### Distribuição de clientes com ou sem negócios
 
 Dash marcas & marcas_k:
 	- Igual
