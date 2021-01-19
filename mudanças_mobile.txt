@@ -67,19 +67,37 @@ Dash geral:
             }
             
     - Apresentação (construção das dashs)
+        - Vertical_layout e column (apenas uma no início da aba)
         - Apenas Column no início
         Em c0 por causa do tamanho do gráfico
             ```{r, fig.height=7, fig.width=7.5}
         - gráfico c1 e c2 combinados (c1_c2 com título: 	### Distribuição de clientes com ou sem negócios
 
 Dash marcas & marcas_k:
-	- Igual
+    - Apresentação (construção das dashs)
+        - Vertical_layout e column (apenas uma no início da aba)
+        - Alteração da ordem de m1_t depois m2_t para m2_t depois m1_t (para marcas, fazer nos dois, para marcas_k, só um)
 
 Dash negócios:
-	- Atualizar título de "Idade dos negócios" para "Idade dos negócios no final de 2020"
+    - Apresentação (construção das dashs)
+        - Vertical_layout e column (apenas uma no início da aba)
+        - n6 (idade dos negócios abertos por vendedor) foi pra baixo, acima do n7
 
 Dash propostas:
-	- Igual
+    - p0:
+        legend = list(traceorder = 'normal', orientation = 'h'))
+    - p3:
+        legend = list(orientation = "h", x = 0.9, y = 0.9,
+                      xanchor = "center",
+                      traceorder = 'normal'))
+    - p4: 
+        legend = list(orientation = "h", x = 0.5, y = -0.2,
+                      xanchor = "center",
+                      traceorder = 'normal'))
+    - Apresentação (construção das dashs)
+        - Vertical_layout e column (apenas uma no início da aba)
+        
 
 Dash visitas_clientes:
-	- Igual
+    - Apresentação (construção das dashs)
+        - Vertical_layout e column (apenas uma no início da aba)

@@ -76,7 +76,7 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 65
+empresa = 16
 
 ###########################################################################################################
 ###########################################################################################################
@@ -131,15 +131,12 @@ if (teste == F){
   rm()
 }
 
-prop_ij_neg_anat <- prop_ij_neg %>%
-  filter(proposta_data_cadastro >= ano_atual)
-
 ##Juntando com vendedor pra obter o nome do vendedor
 prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
 
 ##Filtrando a empresa
 prop_ij_neg_ij_vend_anat <- prop_ij_neg_ij_vend %>%
-  filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= ano_atual)
+  filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= ano_atual, proposta_data_cadastro < (ano_atual+years(1)))
 
 prop_ij_neg_ij_vend_ij_propag_anat <- inner_join(prop_ij_neg_ij_vend_anat, proposta_pagamento, by=c("proposta_id" = "pp_proposta_id")) %>%
   select (-pp_modo_id, -pp_forma_id, -pp_usado_id)
@@ -175,7 +172,7 @@ if(nrow(prop_ij_neg_cont_vend_a_ij_propag_anat) > 0){
     layout(barmode = 'stack',
            xaxis = list(title = ''),
            yaxis = list(title = ''),
-           legend = list(traceorder = 'normal'))
+           legend = list(traceorder = 'normal', orientation = 'h'))
   
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
@@ -326,7 +323,8 @@ total_empresa <- sum(p_ij_n_ij_pp_empresa$pp_valor_tot)
 n_empresa <- nrow(p_ij_n_ij_pp_empresa)
 media_empresa <- round((total_empresa/n_empresa), 2)
 
-
+##flag usada para mostrar gráfico p3 (caso não tenha usados, flag_ticket_usados = F) ou p4 (caso tenha usados, flag_ticket_usados = T)
+flag_ticket_usados = F
 ##Calculando ticket médio por categoria
 
 p_ij_n_ij_pp_ij_prod <- inner_join (p_ij_n_ij_pp_empresa, produto, by= c('pp_produto_id' = 'produto_id')) %>%
@@ -399,6 +397,9 @@ fat_tot_categorias <- pr_top5_fat_med
 fat_tot_categorias <- fat_tot_categorias %>%
   mutate(med_emp = media_empresa)
 
+##Adicionando coluna com os valores já em texto para plot
+fat_tot_categorias <- fat_tot_categorias %>% rowwise() %>%
+  mutate(fat_med_t = func_fmt_din(fat_med))
 
 ### Gráfico p3 - Ticket médio novos
 if(nrow(fat_tot_categorias) > 0){
@@ -406,32 +407,34 @@ if(nrow(fat_tot_categorias) > 0){
     autotick = TRUE,
     title = "",
     showticklabels = TRUE)
-  p3 <- plot_ly(fat_tot_categorias, type = "bar", x = ~categoria_nome, y = ~fat_med,
-                name = 'Categorias novos',
-                marker = list(color = 'lightblue'),
-                text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
-                hoverinfo = "text")
+  
+  p3 <- plot_ly(fat_tot_categorias, x = ~categoria_nome)
+  p3 <- p3 %>%
+    add_trace(type = "bar", y = ~fat_med,
+              name = 'Categorias novos',
+              marker = list(color = 'lightblue'),
+              text = ~paste0("Categoria novos",
+                             '<br>' ,
+                             categoria_nome,
+                             '<br>' ,
+                             fat_med_t),
+              hoverinfo = "text")
   
   p3 <- p3 %>%
-    layout(barmode = 'identity', xaxis = ax, yaxis = ax)
-  
-  p3 <- p3 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
-                         name = 'Novos (média)',
-                         x = ~categoria_nome,
-                         y = ~med_emp,
-                         line = list(color = 'red'),
-                         text = ~paste('Ticket médio<br>' , func_fmt_din(med_emp)),
-                         hoverinfo = "text",
-                         marker = list(color = 'orange'))
-  
-  p3 <- p3 %>%
+    add_trace(type = "scatter", mode = "markers+line", y = ~med_emp,
+              name = 'Novos (média)',
+              line = list(color = '#21618c'),
+              text = ~paste0('Ticket médio novos<br>' , func_fmt_din(med_emp)),
+              hoverinfo = "text",
+              marker = list(color = 'red'))
+  p3 <- p3  %>%
     layout(
       autosize = T,
-      yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = ''),
+      xaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = ''),
       #range nos dois eixos iguais pra ficar na mesma proporção
-      yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F),
+      yaxis = list(title = '', showgrid = TRUE, zeroline = T),
       ##aqui eu ajusto onde quero que apareça a legenda
-      legend = list(x=0.7, y=0.8))
+      legend = list(traceorder = 'normal', x = 0.7, y = 0.8))
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   #p3 <- s_dados
@@ -451,6 +454,7 @@ p_ij_n_ij_pp_empresa_us <- p_ij_n_ij_v_ij_pp_n %>%
 
 if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
 {
+  flag_ticket_usados = T
   p_ij_n_ij_pp_empresa_us <- p_ij_n_ij_pp_empresa_us %>%
     group_by(proposta_id) %>%
     mutate (valor_proposta = sum(pp_valor_tot)) %>%
@@ -519,49 +523,81 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
   
   ##Adicionando a matriz pra poder exibir no gráfico ###########################################################################################################
   fat_tot_categorias_us <- fat_tot_categorias_us %>%
-    mutate(med_emp = media_empresa_us)
+    mutate(med_emp_us = media_empresa_us) %>%
+    rename(produto_categoria_id_us = produto_categoria_id, fat_us = fat, n_us = n, fat_med_us = fat_med)
+  # rename(fat_us = fat) %>%
+  # rename(fat_med_us = fat_med) %>%
+  # rename(n_us = n)
   
+  ##Adicionando coluna com os valores já em texto para plot
+  fat_tot_categorias_us <- fat_tot_categorias_us %>% rowwise() %>%
+    mutate(fat_med_t_us = func_fmt_din(fat_med_us))
   
+  fat_tot_categorias_n_us <- full_join(fat_tot_categorias, fat_tot_categorias_us, by=("categoria_nome")) %>%
+    select(-produto_categoria_id_us)
   ### Gráfico p4 - Ticket médio usados
   if(nrow(fat_tot_categorias_us) > 0){
     ax <- list(
       autotick = TRUE,
       title = "",
       showticklabels = TRUE)
-    p4 <- plot_ly(fat_tot_categorias_us, type = "bar", x = ~categoria_nome, y = ~fat_med,
-                  name = 'Categorias usados',
-                  marker = list(color = '#DAA520'),
-                  text = ~paste(categoria_nome,'<br>' , func_fmt_din(fat_med)),
-                  hoverinfo = "text")
+    p4 <- plot_ly(fat_tot_categorias_n_us, x = ~categoria_nome)
+    p4 <- p4 %>%
+      add_trace(type = "bar", y = ~fat_med,
+                name = 'Categorias novos',
+                marker = list(color = 'lightblue'),
+                text = ~paste0("Categoria novos",
+                               '<br>' ,
+                               categoria_nome,
+                               '<br>' ,
+                               fat_med_t),
+                hoverinfo = "text")
     
     p4 <- p4 %>%
-      layout(barmode = 'identity', xaxis = ax, yaxis = ax)
+      add_trace(type = "bar", y = ~fat_med_us,
+                name = 'Categorias usados',
+                marker = list(color = '#DAA520'),
+                text = ~paste0("Categoria usados",
+                               '<br>' ,
+                               categoria_nome,
+                               '<br>' ,
+                               fat_med_t_us),
+                hoverinfo = "text")
     
-    p4 <- p4 %>% add_trace(type = 'scatter', mode = 'markers+line', yaxis = 'y2',
-                           name = 'Usados (média)',
-                           x = ~categoria_nome,
-                           y = ~med_emp,
-                           line = list(color = 'red'),
-                           text = ~paste('Ticket médio<br>' , func_fmt_din(med_emp)),
-                           hoverinfo = "text",
-                           marker = list(color = 'orange'))
+    
+    p4 <- p4 %>%
+      add_trace(type = "scatter", mode = "markers+line", y = ~med_emp,
+                name = 'Novos (média)',
+                line = list(color = '#21618c'),
+                text = ~paste0('Ticket médio novos<br>' , func_fmt_din(med_emp)),
+                hoverinfo = "text",
+                marker = list(color = 'red'))
+    
+    p4 <- p4 %>%
+      add_trace(type = "scatter", mode = "markers+line", y = ~med_emp_us,
+                name = 'Usados (média)',
+                line = list(color = '#6e2c00'),
+                text = ~paste0('Ticket médio usados<br>' , func_fmt_din(med_emp_us)),
+                hoverinfo = "text",
+                marker = list(color = 'red'))
     
     p4 <- p4 %>%
       layout(
         autosize = T,
-        yaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = ''),
+        xaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = ''),
         #range nos dois eixos iguais pra ficar na mesma proporção
-        yaxis2 = list(overlaying = "y", showgrid = FALSE, zeroline = FALSE, showticklabels= F),
+        yaxis = list(title = '', showgrid = TRUE, zeroline = T),
         ##aqui eu ajusto onde quero que apareça a legenda
-        legend = list(x=0.7, y=0.8)#)
-      )
+        legend = list(orientation = "h", x = 0.5,
+                      xanchor = "center",
+                      traceorder = 'normal'))
   }else {
     ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
     #p4 <- s_dados
     p4 <- include_graphics(s_dados_path)
   }
 } else{
-  p4 <- NULL;
+  p4 <- NULL
 }
 if(dash == F){
   p4
@@ -760,7 +796,8 @@ if(nrow(p_ij_ppa_sum_modo_ij_pmf) > 0){
                                     "<br>",
                                     "Nº de propostas: ", count_modo,
                                     "<br>"),
-            name = '')
+            name = '') %>%
+    layout(legend = list(orientation = 'h'))
 }else {
   #p6 <- s_dados
   p6 <- include_graphics(s_dados_path)
@@ -780,7 +817,8 @@ if(nrow(p_ij_ppa_sum_forma_ij_pmf) > 0){
                                     "<br>",
                                     "Nº de propostas: ", count_forma,
                                     "<br>"), 
-            name = '')
+            name = '') %>%
+    layout(legend = list(orientation = 'h'))
 }else {
   #p7 <- s_dados
   p7 <- include_graphics(s_dados_path)

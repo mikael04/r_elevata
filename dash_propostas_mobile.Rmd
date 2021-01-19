@@ -437,15 +437,11 @@ if(nrow(fat_tot_categorias) > 0){
   
   p3 <- plot_ly(fat_tot_categorias, x = ~categoria_nome)
   p3 <- p3 %>%
-      add_trace(type = "bar", y = ~fat_med,
-                name = 'Categorias novos',
-                marker = list(color = 'lightblue'),
-                text = ~paste0("Categoria novos",
-                               '<br>' ,
-                               categoria_nome,
-                               '<br>' ,
-                               fat_med_t),
-                hoverinfo = "text")
+    add_trace(type = "bar", y = ~fat_med,
+              name = 'Categorias novos',
+              marker = list(color = 'lightblue'),
+              text = ~paste0(categoria_nome,'<br>' , fat_med_t),
+              hoverinfo = "text")
   
   p3 <- p3 %>%
     add_trace(type = "scatter", mode = "markers+line", y = ~med_emp,
@@ -461,7 +457,9 @@ if(nrow(fat_tot_categorias) > 0){
       #range nos dois eixos iguais pra ficar na mesma proporção
       yaxis = list(title = '', showgrid = TRUE, zeroline = T),
       ##aqui eu ajusto onde quero que apareça a legenda
-      legend = list(traceorder = 'normal', x = 0.7, y = 0.8))
+      legend = list(orientation = "h", x = 0.9, y = 0.9,
+                      xanchor = "center",
+                      traceorder = 'normal'))
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   #p3 <- s_dados
@@ -615,7 +613,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
         #range nos dois eixos iguais pra ficar na mesma proporção
         yaxis = list(title = '', showgrid = TRUE, zeroline = T),
         ##aqui eu ajusto onde quero que apareça a legenda
-        legend = list(orientation = "h", x = 0.5,
+        legend = list(orientation = "h", x = 0.5, y = -0.2,
                       xanchor = "center",
                       traceorder = 'normal'))
   }else {
@@ -878,7 +876,7 @@ Column {data-width=650}
 ### Ticket médio das propostas
 
 ```{r, fig.height=6, fig.width=4}
-### Gráfico p3 - Ticket médio novos
+### Gráfico p3 ou p4 - Ticket médio novos (p3), Ticket médio novos e usados (p4)
 if (flag_ticket_usados){
   p4
 }else{
@@ -887,7 +885,7 @@ if (flag_ticket_usados){
 
 ```
 
-Column {data-width=450}
+Column
 -----------------------------------------------------------------------
 ### Instituição financeira (proporção do valor financeiro)
 
@@ -908,7 +906,7 @@ p7
 Volume de propostas
 =======================================================================
 
-Column {}
+Column
 -----------------------------------------------------------------------
 
 `r paste("### Volume de propostas por vendedor em", ano)`
@@ -919,7 +917,7 @@ p0
 
 ```
 
-Column {}
+Column
 -----------------------------------------------------------------------
 
 `r paste("### Valor financeiro por Status em", ano)`
