@@ -99,5 +99,4 @@ Dash propostas:
         
 
 Dash visitas_clientes:
-    - Apresentação (construção das dashs)
-        - Vertical_layout e column (apenas uma no início da aba)
+    - TUDO IGUAL
