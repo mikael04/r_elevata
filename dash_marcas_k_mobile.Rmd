@@ -3,7 +3,7 @@ title: "Visão do gestor"
 output:
   flexdashboard::flex_dashboard:
     orientation: columns
-    vertical_layout: fill
+    vertical_layout: scroll
 params:
   variable1: "emp_par"
   num_dias: 0
@@ -577,7 +577,7 @@ if(teste == F){
 Top 10 Categorias
 =======================================================================
 
-Column {data-width=350}
+Column
 -----------------------------------------------------------------------
 `r paste("###  Valor Financeiro de Negócios Cadastrados, por categoria em", ano)`
 
@@ -587,8 +587,6 @@ n4
 
 ```
 
-Column {data-width=350}
------------------------------------------------------------------------
 `r paste("### Valor Financeiro de Negócios Faturados, por categoria em", ano)`
 
 ```{r}
@@ -600,22 +598,19 @@ n5
 Mapa das marcas
 =======================================================================
 
-Column {data-width=750}
------------------------------------------------------------------------
-
-### Mapa das marcas
-```{r}
-### Gráfico m1 de distribuição das marcas (top5) da komatsu
-m1_t
-
-```
-
-Column {data-width=350}
+Column
 -----------------------------------------------------------------------
 
 ### Distribuição das marcas
 ```{r}
 ### Gráfico m2 de distribuição das marcas da komatsu
 m2_t
+
+```
+
+### Mapa das marcas
+```{r}
+### Gráfico m1 de distribuição das marcas (top5) da komatsu
+m1_t
 
 ```

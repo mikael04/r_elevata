@@ -78,7 +78,7 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 65
+empresa = 16
 ###################################
 
 ###Começando script marcas
@@ -124,7 +124,7 @@ historico_negocio_situacao <- fread("Tabelas/historico_negocio_situacao.csv", co
   select(historico_negocio_situacao_data, historico_negocio_situacao_negocio_id, historico_negocio_situacao_situacao_id)
 
 historico_negocio_situacao_anat <- historico_negocio_situacao %>%
-  filter(historico_negocio_situacao_data >= ano_atual)
+  filter(historico_negocio_situacao_data >= ano_atual, historico_negocio_situacao_data < (ano_atual + years(1)))
 
 ##Right join de negocios, vendedores com histórico pra ter apenas a última
 negocio_ij_historico_ij_vendedor_anat <- inner_join(negocio_ij_vendedor, historico_negocio_situacao_anat, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
@@ -238,14 +238,18 @@ if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
                 labels = ~categoria_nome,
                 textposition = "middle center",
                 parents = NA,
-                text = ~paste0(categoria_nome),
+                text = ~paste0("", categoria_nome ,"<br>",
+                               "", fat_t,
+                               "<br>",
+                               "", perc*100, "%",
+                               "<br>"),
                 textinfo = "text",
-                hovertemplate = paste0("%{text} <br>",
-                                       "", chart_ng_top_ag$fat_t,
-                                       "<br>",
-                                       "Equivalente à ", chart_ng_top_ag$perc*100, "%",
-                                       "<br>",
-                                       "<extra></extra>"),
+                hovertemplate = ~paste0("", categoria_nome ,"<br>",
+                                        "", fat_t,
+                                        "<br>",
+                                        "Equivalente à ", perc*100, "%",
+                                        "<br>",
+                                        "<extra></extra>"),
                 values = ~faturamento,
                 marker = list(colors = pal_cores[chart_ng_top_ag$cat_cor+1])) 
 }else {
@@ -307,7 +311,6 @@ chart_ng_top_ag_fat <- ng_top_ag_fat %>%
 ## Criando paleta de cores com 10 cores intermediárias
 pal <- colorRampPalette(c("lightgreen", "green"))
 pal_cores <- pal(11)
-pal_cores
 
 
 ### Gráfico n5 - Máquinas faturadas em anat (por categoria)
@@ -317,14 +320,18 @@ if (nrow(chart_ng_top_ag_fat) > 0 & sum(chart_ng_top_ag_fat$faturamento) > 0){
                 labels = ~categoria_nome,
                 textposition = "middle center",
                 parents = NA,
-                text = ~paste0(categoria_nome),
+                text = ~paste0("", categoria_nome ,"<br>",
+                               "", fat_t,
+                               "<br>",
+                               "", perc*100, "%",
+                               "<br>"),
                 textinfo = "text",
-                hovertemplate = paste0("%{text} <br>",
-                                       "", chart_ng_top_ag_fat$fat_t,
-                                       "<br>",
-                                       "Equivalente à ", chart_ng_top_ag_fat$perc*100, "%",
-                                       "<br>",
-                                       "<extra></extra>"),
+                hovertemplate = ~paste0("", categoria_nome ,"<br>",
+                                        "", fat_t,
+                                        "<br>",
+                                        "Equivalente à ", perc*100, "%",
+                                        "<br>",
+                                        "<extra></extra>"),
                 values = ~faturamento,
                 marker = list(colors = pal_cores[chart_ng_top_ag_fat$cat_cor+1])) 
 }else {
@@ -653,3 +660,4 @@ if(teste == F){
   #variáveis
   rm(cores_c, cores_t);
 }
+###########################################################################################################
