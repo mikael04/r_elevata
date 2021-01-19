@@ -1,0 +1,570 @@
+---
+title: "Painel de Negócios"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: scroll
+params:
+  variable1: "emp_par"
+  num_dias: 0
+---
+
+```{r setup, include=FALSE}
+#rm(list = ls())
+#Lib q será futuramente usada pros painéis interativos
+#library(shiny)
+#lib para valuebox
+library(flexdashboard)
+#Lib pra conexão com o banco
+#library(odbc)
+#Lib para ler (mais rapidamente) os csvs
+library(data.table)
+#lib com uma cacetada de outras libs para manipular dados
+#library(tidyverse)
+#Libs pra trabalhar com a base (cortes e funções similares ao SQL)
+library(dplyr) #Contido no tidyverse
+#lib para lidar com as palavras
+#library(stringr)
+#lib pros gráficos mais "interativos"
+library(plotly)
+#library(htmlwidgets)
+#Lib pra usar paletas de cores
+library(RColorBrewer)
+#library(viridis)
+#Lib usada pros treemaps
+#library(treemap)
+#Lib usada pros waffles
+#library(waffle)
+#usada para converter números em moeda
+#library(scales)
+#Lib usada para emojis/fonts/box de valores
+library(ggplot2)
+#Lib usada para os quadros
+library(emojifont)
+#lib para plotar a imagem (s_dados)
+library(knitr)
+source("fct_tempo.R")
+source("fct_fmt_din.R")
+source("fct_fmt_nome.R")
+
+
+###################################
+##Variáveis "Globais"
+####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
+teste = F
+####Variável usada para não plotar os gráficos na dash
+dash = T
+# ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+# ano_atual = fct_ano_atual()
+# ####Variavel global c/ mês atual (para comparação)
+# mes_atual = fct_mes_atual()
+# ## Apenas ano, para gerar títulos
+# ano <- year(ano_atual)
+if(!teste){
+  ##Teste se estou gerando via rstudio (knit)
+  if(as.integer(params$num_dias) == 0) {
+    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+    ano_atual = fct_ano_atual()
+    ####Variavel global c/ mês atual (para comparação)
+    mes_atual = fct_mes_atual()
+    ## Apenas ano, para gerar títulos
+    ano <- year(ano_atual)
+  ##Execução normal, recebendo data do gerador de dashs
+  }else{
+    data <- (lubridate::today()-lubridate::days(params$num_dias))
+    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+    ####Variavel global c/ mês atual (para comparação)
+    mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
+    ## Apenas ano, para gerar títulos
+    ano <- lubridate::year(ano_atual)
+  }
+}else{
+  ##Teste setando dia
+  #data <- lubridate::ymd("2020-12-31")
+  data <- lubridate::today()
+  ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+  ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
+  ####Variavel global c/ mês atual (para comparação)
+  mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
+  ## Apenas ano, para gerar títulos
+  ano <- lubridate::year(ano_atual)
+}
+
+####Variável global para ver se tem usados Ainda não usada
+#usados = T
+
+##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
+#caminho para imagem de sem dados
+s_dados_path <- "s_dados.png"
+
+##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
+if(params$variable1 == 'emp_par'){
+  empresa = 64
+}else{
+  empresa = as.integer(params$variable1)
+}
+
+###Começando scripts negocio_scripts
+###########################################################################################################
+
+##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
+negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
+  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id, negocio_probabilidade)
+
+
+##coleta todos os vendedores
+vendedor <- fread("Tabelas/vendedor.csv") %>%
+  select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
+  filter (vendedor_empresa_id == empresa)
+
+
+#Arrumando encoding
+Encoding(vendedor$vendedor_nome) <- 'latin1'
+vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+
+if(empresa == 16){
+  vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
+  vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
+  vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
+}
+
+vendedor_a <- vendedor %>%
+  filter(vendedor_ativo == T)
+
+##negocio_produto para pegar os valores de cada negócio
+negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
+  select(np_id, np_negocio_id, np_produto_id, np_quantidade,np_ativo, np_valor) %>%
+  mutate (np_valor_tot = np_valor*np_quantidade)
+
+
+##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
+produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
+  select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
+
+##join de negocios e vendedores
+negocio_ij_vendedor <- inner_join(negocio, vendedor_a, by=c("negocio_vendedor_id" = "vendedor_id"))
+
+########## Para o funil e para agrupar por faturamento
+#### Vou alterar o agrupamento de número de negócios para faturamento, portanto precisarei da tabela negocio_produto
+neg_ij_ven_ij_np <- inner_join(negocio_ij_vendedor, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
+
+##Filtrando empresa, vendedores ativos e negocios de anat
+neg_ij_ven_ij_np_anat <- neg_ij_ven_ij_np %>%
+  filter(negocio_data_cadastro >= ano_atual, negocio_negocio_situacao_id != 0)
+
+##removendo elementos não mais usados
+if (teste == F) {
+  rm() #vou precisar dele pro funil mais pra baixo negocio_ij_historico_ij_vendedor_anat)
+}
+
+##agrupamento de negocios por vendedor_a, contando faturamento por status e por vendedor
+##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
+ng_ij_vn_ij_np_fat <- neg_ij_ven_ij_np_anat %>%
+  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, vendedor_nome, negocio_vendedor_id, np_valor_tot) %>%
+  group_by(negocio_negocio_situacao_id, negocio_vendedor_id) %>%
+  mutate(total_fat = sum(np_valor_tot)) %>%
+  distinct (negocio_vendedor_id, .keep_all = TRUE) %>%
+  collect ()
+
+###remover status "desconsiderar (erro cadastro)"
+ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat[!(ng_ij_vn_ij_np_fat$negocio_negocio_situacao_id==9),]
+
+status = c("Em negociação", "Montagem de cadastro", "Aguardando aprovação", "Faturado", "Financiamento não aprovado", "Desistência do cliente",
+           "Perdemos para concorrência", "Financiamento aprovado", "Intenção ou prospecção")
+##aqui ele substitui linha a linha cada situação pelo seu respectivo em string
+ng_ij_vn_ij_np_fat$negocio_status <- with(ng_ij_vn_ij_np_fat, cut(negocio_negocio_situacao_id, breaks = c(0,1,2,3,4,5,6,7,8,10), labels = status))
+#precisa usar o factor pra colocar na ordem que quero
+ng_ij_vn_ij_np_fat$negocio_status = factor(ng_ij_vn_ij_np_fat$negocio_status, levels = c("Intenção ou prospecção", "Em negociação", "Montagem de cadastro",
+                                                                                         "Aguardando aprovação", "Financiamento aprovado", "Faturado", "Financiamento não aprovado",
+                                                                                         "Desistência do cliente", "Perdemos para concorrência"))
+
+#usando função pra criar outra coluna com número formatado (em Real, com pontos)
+if (nrow(ng_ij_vn_ij_np_fat) > 0){
+  ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>% rowwise() %>%
+    mutate(total_fat_t = func_fmt_din(total_fat))
+}
+
+
+##############################################
+### Gráfico n0 - Número de clientes por vendedor
+if (nrow(ng_ij_vn_ij_np_fat) > 0 && sum(ng_ij_vn_ij_np_fat$total_fat) > 0){
+  n0 <- plot_ly(ng_ij_vn_ij_np_fat,
+                type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
+                color = ~negocio_status,
+                colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"),
+                name = ~negocio_status,
+                showlegend = TRUE
+  )
+  n0 <- n0 %>%
+    layout(barmode = 'stack',
+           xaxis = list(title = ''),
+           yaxis = list(title = ''),
+           legend = list(orientation = "h", x = 0.5,
+                         xanchor = "center",
+                         traceorder = 'normal'))
+}else {
+  n0 <- include_graphics(s_dados_path)
+}
+if(dash == F){
+  n0
+}
+
+##vou manter ng_ij_vn_ij_np_fat pra fazer o join mais pro final
+if (teste == F) {
+  rm(ng_ij_vn_ij_np_fat, status)
+}
+##############################################
+##Faturamento de negócios fechados em anat
+historico_negocio_situacao <- fread("Tabelas/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_situacao_id = "character")) %>%
+  select(historico_negocio_situacao_data, historico_negocio_situacao_negocio_id, historico_negocio_situacao_situacao_id)
+
+historico_negocio_situacao_anat <- historico_negocio_situacao %>%
+  filter(historico_negocio_situacao_data >= ano_atual, historico_negocio_situacao_data < (ano_atual + years(1)))
+
+##Right join de negocios, vendedores com histórico pra ter apenas a última
+negocio_ij_historico_ij_vendedor_anat <- inner_join(negocio_ij_vendedor, historico_negocio_situacao_anat, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
+negocio_ij_historico_ij_vendedor_total <- inner_join(negocio_ij_vendedor, historico_negocio_situacao, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
+
+##aqui estou ordenando por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais antigas, ficar só com a última atualização no negócio
+negocio_ij_historico_ij_vendedor_anat <- negocio_ij_historico_ij_vendedor_anat[order(-negocio_ij_historico_ij_vendedor_anat$historico_negocio_situacao_situacao_id, negocio_ij_historico_ij_vendedor_anat$negocio_id),]
+ng_ij_hist_ij_ven_anat <- negocio_ij_historico_ij_vendedor_anat[!duplicated(negocio_ij_historico_ij_vendedor_anat$negocio_id),]
+
+
+##tabela vem dessa: ng_ij_hist_ij_ven_anat, já foi filtrada para histórico anat, filtrando empresa_id, vendedor_ativo
+ng_ij_hist_ij_ven_anat <- ng_ij_hist_ij_ven_anat %>%
+  filter(vendedor_empresa_id == empresa) %>%
+  select(negocio_id, negocio_negocio_situacao_id, negocio_vendedor_id, vendedor_nome, negocio_data_cadastro, historico_negocio_situacao_data)
+
+##filtrando dois negócios que tem seu status 0 (possivel erro)
+ng_ij_hist_ij_ven_anat <- ng_ij_hist_ij_ven_anat %>%
+  filter(negocio_negocio_situacao_id != 0)
+
+####Aqui é pra testar um top10 de uma empresa específica
+##ng_ij_hist_ij_ven_top10 <-ng_ij_hist_ij_ven_anat
+
+ng_ij_hist_ij_ven_ij_np_anat <- inner_join(ng_ij_hist_ij_ven_anat, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
+
+ff <- c(4, 5, 6, 7)
+
+ng_ij_hist_ij_ven_anat_ij_np_fec <-  ng_ij_hist_ij_ven_ij_np_anat%>%
+  filter(negocio_negocio_situacao_id %in% ff)
+
+ng_ij_hist_ij_ven_anat_ij_np_fec <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
+  mutate(negocio_status = negocio_negocio_situacao_id)
+
+
+status_4_5_6_7 = c("Faturado", "Financiamento não aprovado" , "Desistência do cliente", "Perdemos para concorrência")
+##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
+ng_ij_hist_ij_ven_anat_ij_np_fec$negocio_status <- with(ng_ij_hist_ij_ven_anat_ij_np_fec, cut(negocio_negocio_situacao_id, breaks = c(0,4,5,6,7),
+                                                                                              labels = status_4_5_6_7))
+
+ng_ij_hist_ij_ven_anat_ij_np_fec <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
+  filter (np_ativo == TRUE)
+
+##agrupamento de negocios por vendedor_a, contando número de negócios por status e por vendedor
+##Aqui eu poderia fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios) e depois o join, sem o select, ou então usar o mutate como foi feito
+ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
+  select(negocio_id, negocio_vendedor_id, negocio_status, vendedor_nome, negocio_vendedor_id, np_valor_tot) %>%
+  group_by(negocio_status, negocio_vendedor_id) %>%
+  mutate(total_fat = sum(np_valor_tot)) %>%
+  distinct (negocio_vendedor_id, .keep_all = TRUE) %>%
+  collect ()
+
+#usando função pra criar outra coluna com número formatado (em Real, com pontos)
+if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
+  ng_ij_vn_ij_np_fech_fat <- ng_ij_vn_ij_np_fech_fat %>% rowwise() %>%
+  mutate(total_fat_t = func_fmt_din(total_fat))
+}
+
+### Gráfico n3 - Faturamento de negócios fechados em anat
+#########################################################
+if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
+  n3 <- plot_ly(ng_ij_vn_ij_np_fech_fat, type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
+                color = ~negocio_status,
+                colors = c("#32CD32", "yellow", "orange", "#DE0D26"),
+                name = ~negocio_status,
+                showlegend = T
+  )
+  
+  n3 <- n3 %>%
+    layout(barmode = 'stack',
+           xaxis = list(title = ''),
+           yaxis = list(title = ''),
+           legend = list(orientation = "h", x = 0.5,
+                         xanchor = "center",
+                         traceorder = 'normal'))
+}else {
+  n3 <- include_graphics(s_dados_path)
+}
+
+if(dash == F){
+  n3
+}
+
+#########################################################
+
+### Idade dos negócios
+###################################################################################################################################
+##Filtrar vendedores ativos e empresa
+ng_ij_hist_ij_ven_emp <- negocio_ij_historico_ij_vendedor_total %>%
+  filter (vendedor_empresa_id == empresa)
+
+##filtrando dois negócios que tem seu status 0 (possivel erro)
+ng_ij_hist_ij_ven_emp <- ng_ij_hist_ij_ven_emp %>%
+  filter(negocio_negocio_situacao_id != 0)
+
+## Vou ordenar por historico_negocio_situacao_situacao_id pra depois remover as atualizações mais novas, ficar só com a primeira atualização após mudança de status
+ng_ij_hist_ij_ven_emp_idd <- ng_ij_hist_ij_ven_emp[order(ng_ij_hist_ij_ven_emp$historico_negocio_situacao_situacao_id, ng_ij_hist_ij_ven_emp$negocio_id), ]
+
+##Aqui estou removendo duplicatas (de outra forma), que removem apenas quando o histórico_situacao e negocio_id se repetem
+ng_ij_hist_ij_ven_emp_idd <- subset(ng_ij_hist_ij_ven_emp_idd, !duplicated(subset(ng_ij_hist_ij_ven_emp_idd, select=c(negocio_id))))
+
+##filtrando apenas negócios não fechados negocio_situacao_id != 4,5,6,7,9
+ff = c(4,5,6,7,9)
+
+ng_ij_hist_ij_ven_ab <- ng_ij_hist_ij_ven_emp_idd %>%
+  filter(!negocio_negocio_situacao_id %in% ff)
+
+
+status_aberto = c("1 - em negociacao", "2 - montagem de cadastro", "3 - aguardando aprovacao", "4 - financiamento aprovado", "0 - intencao ou prospeccao")
+##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
+ng_ij_hist_ij_ven_ab$negocio_status <- with(ng_ij_hist_ij_ven_ab, cut(negocio_negocio_situacao_id, breaks = c(0,1,2,3,8,10),
+                                                                      labels = status_aberto))
+
+##filtrando dois negócios que tem seu status 0 (possivel erro)
+ng_ij_hist_ij_ven_ab <- ng_ij_hist_ij_ven_ab %>%
+  filter(negocio_negocio_situacao_id != 0)
+
+idades = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses")
+
+ng_ij_hist_ij_ven_idd <- ng_ij_hist_ij_ven_ab %>%
+  select (negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, vendedor_nome, historico_negocio_situacao_data) %>%
+  mutate(idade = (as.integer(today() - as_date(negocio_data_cadastro)))) %>%
+  mutate(idade_cat = NA) %>%
+  arrange(idade)
+
+ng_ij_hist_ij_ven_idd$idade_cat <- with(ng_ij_hist_ij_ven_idd, cut(idade, breaks = c(0,60, 180, 365, 730, 10000),
+                                                                   label = idades))
+
+##Aqui eu posso fazer um group_by + summarise pra ter apenas coluna id_vendedor + count(negocios c/status) e depois o join, sem o select, ou então usar o mutate como foi feito
+ng_ij_hist_ij_ven_num <- ng_ij_hist_ij_ven_idd %>%
+  select(negocio_id, negocio_vendedor_id, vendedor_nome, idade, idade_cat) %>%
+  group_by(idade_cat, negocio_vendedor_id) %>%
+  mutate(num_negocios_idades = n()) %>%
+  distinct (idade_cat, .keep_all = TRUE) %>%
+  collect ()
+
+
+if (nrow(ng_ij_hist_ij_ven_num) > 0){
+  n6 <- plot_ly(ng_ij_hist_ij_ven_num, type = 'bar', orientation = 'h', x=~num_negocios_idades , y=~reorder(vendedor_nome, desc(vendedor_nome)),
+                color = ~idade_cat,
+                colors = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"))
+  
+  n6 <- n6 %>%
+    layout(barmode = 'stack',
+           xaxis = list(title = ''),
+           yaxis = list(title = ''),
+           legend = list(orientation = "v",
+                         xanchor = "center",
+                         traceorder = 'normal'))
+}else {
+  n6 <- include_graphics(s_dados_path)
+}
+if(dash == F){
+  n6
+}
+if (teste == F) {
+  #tabelas
+  rm(ng_ij_hist_ij_ven_num, ng_ij_hist_ij_ven_ab)
+  #variáveis
+  rm(ff, status_aberto)
+}
+###########################################
+
+
+
+###Negócios abertos da empresa
+############################################################################
+ng_ij_hist_ij_emp_num <- ng_ij_hist_ij_ven_idd %>%
+  select(idade, idade_cat) %>%
+  group_by(idade_cat) %>%
+  mutate(num_negocios_idades = n()) %>%
+  distinct (idade_cat, .keep_all = TRUE) %>%
+  collect ()
+
+total_negocios = sum(ng_ij_hist_ij_emp_num$num_negocios_idades)
+
+ng_ij_hist_ij_emp_num <- ng_ij_hist_ij_emp_num %>%
+  select(idade, idade_cat, num_negocios_idades) %>%
+  group_by(idade_cat) %>%
+  mutate(porcentagem = num_negocios_idades/total_negocios) %>%
+  mutate(porcent = scales::percent(porcentagem)) %>%
+  distinct (idade_cat, .keep_all = TRUE) %>%
+  arrange(idade) %>%
+  collect ()
+
+ng_ij_hist_ij_emp_num$idade_cat = factor(ng_ij_hist_ij_emp_num$idade_cat, levels = c("Até 2 meses", "De 2 a 6 meses", "De 6 a 12 meses", "De 12 a 24 meses", "Mais de 24 meses"))
+
+## Adicionando cores através de junção
+cor <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
+df_idd_cor <- tibble(idades, cor)
+ng_ij_hist_ij_emp_num <- inner_join(ng_ij_hist_ij_emp_num, df_idd_cor, by=c("idade_cat" = "idades"))
+
+### Gráfico n7 - Negócios abertos da empresa, pizza
+colors_pie <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
+if (nrow(ng_ij_hist_ij_emp_num) > 0){
+  n7 <- plot_ly(ng_ij_hist_ij_emp_num, labels = ~idade_cat, values = ~num_negocios_idades, type = 'pie', sort = F,
+                texttemplate = "%{value} (%{percent})",
+                hovertemplate = paste ("%{label} <br>",
+                                       "Equivalente a %{percent}",
+                                       "<extra></extra>"),
+                marker = list(color = ~idade_cat,
+                              colors = ~cor))
+}else {
+  n7 <- include_graphics(s_dados_path)
+}
+if(dash == F){
+  n7
+}
+
+if (teste == F) {
+  #tabelas
+  rm(ng_ij_hist_ij_ven_idd, ng_ij_hist_ij_emp_num)
+  #variáveis
+  rm(colors_pie, total_negocios)
+}
+#######################################################################################################
+
+##############################################
+###Tempo médio de vida de um negócio
+
+ng_cad_fin <- ng_ij_hist_ij_ven_emp %>%
+  select (negocio_id, negocio_data_cadastro, negocio_negocio_situacao_id, historico_negocio_situacao_situacao_id, historico_negocio_situacao_data) %>%
+  arrange (desc(historico_negocio_situacao_data), negocio_id)
+
+##Aqui estou removendo duplicatas (de outra forma), que removem apenas quando negocio_id se repete
+ng_cad_fin <- subset(ng_cad_fin, !duplicated(subset(ng_cad_fin, select=c(negocio_id))))
+
+##Já estou filtrando apenas status fechados (faturado, financiamento não aprovado, desistência do cliente, perdemos para a concorrência)
+ng_cad_fin <- ng_cad_fin %>%
+  filter(negocio_negocio_situacao_id == 4 | negocio_negocio_situacao_id == 5 | negocio_negocio_situacao_id == 6 | negocio_negocio_situacao_id == 7) %>%
+  mutate(temp_d = date(historico_negocio_situacao_data) - date(negocio_data_cadastro))
+
+##Calculando tempo médio
+ng_cad_fin <- ng_cad_fin %>%
+  group_by(negocio_negocio_situacao_id) %>%
+  mutate(media_d = round(mean(temp_d)), 2) %>%
+  distinct(negocio_negocio_situacao_id, .keep_all = T) %>%
+  ungroup() %>%
+  select (negocio_negocio_situacao_id, media_d)
+
+
+##Só pra ver os nomes
+ng_cad_fin <- ng_cad_fin %>%
+  mutate(Status = case_when(negocio_negocio_situacao_id == 4 ~ "Faturado",
+                            negocio_negocio_situacao_id == 5 ~ "Fin. não aprovado",
+                            negocio_negocio_situacao_id == 6 ~ "Des. do cliente",
+                            negocio_negocio_situacao_id == 7 ~ "Perd. para conc."))
+
+if(nrow(ng_cad_fin) != 4){
+  situacao_id_ <- c(4, 5, 6, 7)
+  Status_ <- c("Faturado", "Fin. não aprovado", "Des. do cliente", "Perd. para conc.")
+  df_ng_cad_fin <- data.frame(situacao_id_, Status_)
+  df_ng_cad_fin <- left_join(df_ng_cad_fin, ng_cad_fin, by=c('situacao_id_' = 'negocio_negocio_situacao_id'))
+  df_ng_cad_fin <- df_ng_cad_fin %>%
+    select (-Status) %>%
+    rename (negocio_negocio_situacao_id = situacao_id_, Status = Status_) %>%
+    select (negocio_negocio_situacao_id, media_d, Status)
+  df_ng_cad_fin$media_d[is.na(df_ng_cad_fin$media_d)] <- '0'
+  ng_cad_fin <- df_ng_cad_fin
+}
+
+ng_cad_fin <- ng_cad_fin %>%
+  mutate (media_d = paste(as.character(media_d),"dias")) %>%
+  arrange(negocio_negocio_situacao_id)
+
+if (teste == F){
+  #tabelas
+  rm(ng_ij_hist_ij_ven_emp, valuebox)
+  #variáveis
+  rm()
+}
+```
+
+Valor financeiro de negócios
+=======================================================================
+
+Column 
+-----------------------------------------------------------------------
+`r paste("### Valor financeiro dos negócios cadastrados em ", ano, "por vendedor  (Status atual)")`
+
+```{r, fig.height=7, fig.width=6}
+### Gráfico n0 - Número de clientes por vendedor
+n0
+
+```
+
+`r paste0("### Valor financeiro de todos os negócios que foram fechados em ", ano)`
+
+```{r, fig.height=7, fig.width=6}
+### Gráfico n3 - Faturamento de negócios fechados em 2020
+n3
+
+```
+
+
+Idade dos negócios
+=======================================================================
+
+Column {.sidebar data-width=750 data-padding=10}
+-------------------------------------
+```{r, fig.height=7, fig.width=7.5}
+### Gráfico n6 - Idade dos negócios abertos, por vendedor, por idade do negocio
+n6
+```
+
+Row {data-height=150}
+------------------------------------
+
+### Tempo médio p/ faturado
+```{r, fig.height=2, fig.width=4}
+colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
+
+### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
+valueBox(ng_cad_fin[1,2], icon = "fa-calendar", color="#32CD32")
+```
+
+
+### Tempo médio p/ fin. não aprovado
+```{r, fig.height=2, fig.width=4}
+### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
+valueBox(ng_cad_fin[2,2], icon = "fa-calendar", color="#FFD700")
+
+```
+
+Row {data-height=150}
+------------------------------------
+
+### Tempo médio p/ des. do cliente
+```{r, fig.height=2, fig.width=4}
+### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
+valueBox(ng_cad_fin[3,2], icon = "fa-calendar", color="#FFA500")
+
+```
+
+### Tempo médio p/ perd. p/ concorrência
+```{r, fig.height=2, fig.width=4}
+### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
+valueBox(ng_cad_fin[4,2], icon = "fa-calendar", color="#DE0D26")
+
+```
+
+Row {data-height=300}
+------------------------------------
+
+### Negócios abertos da empresa
+```{r, fig.height=4, fig.width=4}
+### Gráfico n7 - Negócios abertos da empresa, pizza
+n7
+```
