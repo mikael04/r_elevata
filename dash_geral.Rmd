@@ -956,7 +956,7 @@ Column {data-width=350}
 -----------------------------------------------------------------------
 ### Funil da empresa em valor financeiro, por status do negócio
 ```{r}
-### Gráfico n9 - Funil agrupado por faturamento
+### Gráfico n9 - Funil agrupado por status do negócio
 n9
 ```
 

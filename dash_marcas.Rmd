@@ -131,7 +131,6 @@ produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character",
 ##join de negocios e vendedores
 negocio_ij_vendedor <- inner_join(negocio, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
 
-########## Para o funil e para agrupar por faturamento
 #### Vou alterar o agrupamento de número de negócios para faturamento, portanto precisarei da tabela negocio_produto
 neg_ij_ven_ij_np <- inner_join(negocio_ij_vendedor, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
 
