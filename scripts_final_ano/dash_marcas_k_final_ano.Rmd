@@ -55,26 +55,26 @@ dash = T
 # ## Apenas ano, para gerar títulos
 # ano <- year(ano_atual)
 ## Para o final de ano, só vou diminuir o número de dias até chegar no dia 31 (ex: hoje é dia 04, então vou remover 4d pra voltar pra 2020-12-31)
-if(!teste){
-  ##Teste se estou gerando via rstudio (knit)
-  if(as.integer(params$num_dias) == 0) {
-    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual = fct_ano_atual()
-    ####Variavel global c/ mês atual (para comparação)
-    mes_atual = fct_mes_atual()
-    ## Apenas ano, para gerar títulos
-    ano <- year(ano_atual)
-  ##Execução normal, recebendo data do gerador de dashs
-  }else{
-    data <- (lubridate::today()-lubridate::days(params$num_dias))
-    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
-    ####Variavel global c/ mês atual (para comparação)
-    mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
-    ## Apenas ano, para gerar títulos
-    ano <- lubridate::year(ano_atual)
-  }
-}else{
+# if(!teste){
+#   ##Teste se estou gerando via rstudio (knit)
+#   if(as.integer(params$num_dias) == 0) {
+#     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+#     ano_atual = fct_ano_atual()
+#     ####Variavel global c/ mês atual (para comparação)
+#     mes_atual = fct_mes_atual()
+#     ## Apenas ano, para gerar títulos
+#     ano <- year(ano_atual)
+#   ##Execução normal, recebendo data do gerador de dashs
+#   }else{
+#     data <- (lubridate::today()-lubridate::days(params$num_dias))
+#     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+#     ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+#     ####Variavel global c/ mês atual (para comparação)
+#     mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
+#     ## Apenas ano, para gerar títulos
+#     ano <- lubridate::year(ano_atual)
+#   }
+# }else{
   ##Teste setando dia
   data <- lubridate::ymd("2020-12-31")
   # data <- lubridate::today()
@@ -84,7 +84,7 @@ if(!teste){
   mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
   ## Apenas ano, para gerar títulos
   ano <- lubridate::year(ano_atual)
-}
+# }
 
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
@@ -257,14 +257,19 @@ if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
                 labels = ~categoria_nome,
                 textposition = "middle center",
                 parents = NA,
-                text = ~paste0(categoria_nome),
+                text = ~paste0("", categoria_nome ,"<br>",
+                               "", fat_t,
+                               "<br>",
+                               "", perc*100, "%",
+                               "<br>"),
                 textinfo = "text",
-                hovertemplate = paste0("%{text} <br>",
-                                       "", chart_ng_top_ag$fat_t,
-                                       "<br>",
-                                       "Equivalente à ", chart_ng_top_ag$perc*100, "%",
-                                       "<br>",
-                                       "<extra></extra>"),
+                hovertemplate = ~paste0("", categoria_nome ,
+                                        "<br>",
+                                        "", fat_t,
+                                        "<br>",
+                                        "Equivalente à ", perc*100, "%",
+                                        "<br>",
+                                        "<extra></extra>"),
                 values = ~faturamento,
                 marker = list(colors = pal_cores[chart_ng_top_ag$cat_cor+1])) 
 }else {
@@ -274,8 +279,6 @@ if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
 if(dash == F){
   n4
 }
-
-
 
 #################################################
 

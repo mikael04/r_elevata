@@ -1,4 +1,5 @@
 Substituir "Tabelas/" por "Tabelas_final_ano/"
+Comentar a parte inicial de tempo, deixar só o "else"
 Dash geral:
 	- Remover gráfico de distribuição do val fin no último mês (n11) da apresentação
 
@@ -13,3 +14,5 @@ Dash propostas:
 
 Dash visitas_clientes:
 	- Igual
+
+	Ela vai rodar dia 31/12, então tem q editar pra rodar no dia certo (como estou rodando depois, tenho q editar o dia manualmente)

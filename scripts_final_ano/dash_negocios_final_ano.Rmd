@@ -60,36 +60,36 @@ dash = T
 # mes_atual = fct_mes_atual()
 # ## Apenas ano, para gerar títulos
 # ano <- year(ano_atual)
-if(!teste){
-  ##Teste se estou gerando via rstudio (knit)
-  if(as.integer(params$num_dias) == 0) {
-    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual = fct_ano_atual()
-    ####Variavel global c/ mês atual (para comparação)
-    mes_atual = fct_mes_atual()
-    ## Apenas ano, para gerar títulos
-    ano <- year(ano_atual)
-  ##Execução normal, recebendo data do gerador de dashs
-  }else{
-    data <- (lubridate::today()-lubridate::days(params$num_dias))
-    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
-    ####Variavel global c/ mês atual (para comparação)
-    mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
-    ## Apenas ano, para gerar títulos
-    ano <- lubridate::year(ano_atual)
-  }
-}else{
+# if(!teste){
+#   ##Teste se estou gerando via rstudio (knit)
+#   if(as.integer(params$num_dias) == 0) {
+#     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+#     ano_atual = fct_ano_atual()
+#     ####Variavel global c/ mês atual (para comparação)
+#     mes_atual = fct_mes_atual()
+#     ## Apenas ano, para gerar títulos
+#     ano <- year(ano_atual)
+#   ##Execução normal, recebendo data do gerador de dashs
+#   }else{
+#     data <- (lubridate::today()-lubridate::days(params$num_dias))
+#     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+#     ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+#     ####Variavel global c/ mês atual (para comparação)
+#     mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
+#     ## Apenas ano, para gerar títulos
+#     ano <- lubridate::year(ano_atual)
+#   }
+# }else{
   ##Teste setando dia
-  #data <- lubridate::ymd("2020-12-31")
-  data <- lubridate::today()
+  data <- lubridate::ymd("2020-12-31")
+  # data <- lubridate::today()
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
   ####Variavel global c/ mês atual (para comparação)
   mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
   ## Apenas ano, para gerar títulos
   ano <- lubridate::year(ano_atual)
-}
+# }
 
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
@@ -100,7 +100,7 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 64
+  empresa = 16
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -187,7 +187,7 @@ if (nrow(ng_ij_vn_ij_np_fat) > 0){
 
 
 ##############################################
-### Gráfico n0 - Número de clientes por vendedor
+### Gráfico n0 - Valor financeiro dos negócios cadastrados por vendedor no ano atual (separados por status atual do negócio)
 if (nrow(ng_ij_vn_ij_np_fat) > 0 && sum(ng_ij_vn_ij_np_fat$total_fat) > 0){
   n0 <- plot_ly(ng_ij_vn_ij_np_fat,
                 type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
@@ -500,7 +500,7 @@ Column
 `r paste("### Valor financeiro dos negócios cadastrados em ", ano, "por vendedor  (Status atual)")`
 
 ```{r, fig.height=7, fig.width=6}
-### Gráfico n0 - Número de clientes por vendedor
+### Gráfico n0 - Valor financeiro dos negócios cadastrados por vendedor no ano atual (separados por status atual do negócio)
 n0
 
 ```
@@ -508,7 +508,7 @@ n0
 `r paste0("### Valor financeiro de todos os negócios que foram fechados em ", ano)`
 
 ```{r, fig.height=7, fig.width=6}
-### Gráfico n3 - Faturamento de negócios fechados em 2020
+### Gráfico n3 - Faturamento de negócios fechados no ano atual
 n3
 
 ```

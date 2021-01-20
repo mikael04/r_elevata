@@ -9,8 +9,8 @@ params:
   num_dias: 0
 ---
 
-```{r setup, include=FALSE}
-#rm(list = ls())
+```{r setup, include=FALSE, error= TRUE}
+#rm(list=setdiff(ls(), c("params")))
 #Lib q será futuramente usada pros painéis interativos
 #library(shiny)
 #Lib pra conexão com o banco
@@ -18,16 +18,16 @@ params:
 #Lib para ler (mais rapidamente) os csvs
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
-library(tidyverse)
+# library(tidyverse)
 #Libs pra trabalhar com a base (cortes e funções similares ao SQL)
-#library(dplyr) #Contido no tidyverse
-#Lib pro gráfico
-library(ggplot2)
+library(dplyr) #Contido no tidyverse
 #lib pros gráficos mais "interativos"
 library(plotly)
 #library(htmlwidgets)
 #Lib pra usar paletas de cores
 library(RColorBrewer)
+#Lib usada para os mapas
+library(leaflet)
 #library(viridis)
 #Lib usada pros treemaps
 #library(treemap)
@@ -35,13 +35,11 @@ library(RColorBrewer)
 #library(waffle)
 #usada para converter números em moeda
 #library(scales)
-#Lib para funções de tempo
-library(lubridate)
-#usada para converter números em moeda
-library(leaflet)
 #lib para plotar a imagem (s_dados)
 library(knitr)
 source("fct_tempo.R")
+source("fct_fmt_din.R")
+source("fct_fmt_nome.R")
 
 
 ###################################
@@ -56,69 +54,51 @@ dash = T
 # mes_atual = fct_mes_atual()
 # ## Apenas ano, para gerar títulos
 # ano <- year(ano_atual)
-if(!teste){
-  if(as.integer(params$num_dias) == 0) {
-    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual = fct_ano_atual()
-    ####Variavel global c/ mês atual (para comparação)
-    mes_atual = fct_mes_atual()
-    ## Apenas ano, para gerar títulos
-    ano <- year(ano_atual)
-  }else{
-    data <- (lubridate::today()-lubridate::days(params$num_dias))
-    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
-    ####Variavel global c/ mês atual (para comparação)
-    mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
-    ## Apenas ano, para gerar títulos
-    ano <- lubridate::year(ano_atual)
-  }
-}else{
-  ##Testes
-  num_dias <- 8
-  data <- (lubridate::today()-lubridate::days(num_dias))
+## Para o final de ano, só vou diminuir o número de dias até chegar no dia 31 (ex: hoje é dia 04, então vou remover 4d pra voltar pra 2020-12-31)
+# if(!teste){
+#   ##Teste se estou gerando via rstudio (knit)
+#   if(as.integer(params$num_dias) == 0) {
+#     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+#     ano_atual = fct_ano_atual()
+#     ####Variavel global c/ mês atual (para comparação)
+#     mes_atual = fct_mes_atual()
+#     ## Apenas ano, para gerar títulos
+#     ano <- year(ano_atual)
+#   ##Execução normal, recebendo data do gerador de dashs
+#   }else{
+#     data <- (lubridate::today()-lubridate::days(params$num_dias))
+#     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+#     ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+#     ####Variavel global c/ mês atual (para comparação)
+#     mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
+#     ## Apenas ano, para gerar títulos
+#     ano <- lubridate::year(ano_atual)
+#   }
+# }else{
+  ##Teste setando dia
+  data <- lubridate::ymd("2020-12-31")
+  # data <- lubridate::today()
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
   ####Variavel global c/ mês atual (para comparação)
   mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
   ## Apenas ano, para gerar títulos
   ano <- lubridate::year(ano_atual)
-}
+# }
+
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
 s_dados_path <- "s_dados.png"
+s_dados_m_path <- "s_dados_m.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 1
+  empresa = 16
 }else{
   empresa = as.integer(params$variable1)
-}
-###################################
-
-##Alterar o nome completo pra primeiro nome mais iniciais dos sobrenomes
-func_nome <- function (nome_comp)
-{
-  lista <- str_split_fixed(nome_comp, " ", 4)
-  lista <- lista[, -4]
-  lista[,3] = str_sub(lista[,3], 1, 1)
-  lista[,2] = str_sub(lista[,2], 1, 1)
-  lista[,2] = paste(lista[,2], '.', sep='')
-  lista[,3] = paste(lista[,3], '.', sep='')
-  lista[,2] <- gsub('^.$', '',lista[,2])
-  lista[,3] <- gsub('^.$', '',lista[,3])
-  lista[,1] <- paste(lista[,1], lista[,2], lista[,3], sep=' ')
-  return (lista[,1])
-}
-
-##Alterar o número apresentado na forma americana (com vírgula) para a forma brasileira (com ponto), através da transformação em string
-func_fmt_numbr <- function(inteiro)
-{
-  inteiro_br <- paste("", format(inteiro, decimal.mark = ",", big.mark = ".", nsmall = 2))
-  return(inteiro_br)
 }
 
 #################################################################################
@@ -127,7 +107,7 @@ func_fmt_numbr <- function(inteiro)
 ##Collect cria o df resultado da query, nesse caso, visitas_cliente, já filtrando apenas ano atual
 visita_cliente <- fread("Tabelas_final_ano/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
   select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
-  filter (vc_data_cadastro >= ano_atual)
+  filter (vc_data_cadastro >= ano_atual, vc_data_cadastro < (ano_atual+years(1)))
 
 ##Pra pegar o nome do resultado
 visita_resultado <- fread("Tabelas_final_ano/visita_resultado.csv") %>%
@@ -211,7 +191,7 @@ n_vend <- vc_ij_vse_ij_v_ag %>%
 
 n_vend <- nrow(n_vend)
 
-### Gráfico v0 - Motivo das visitas (status) por vendedor em 2020
+### Gráfico v0 - Motivo das visitas (status) por vendedor em anat
 if(nrow(vc_ij_vse_ij_v) > 0){
   ##descobrindo numero de status diferentes para criar paleta de cores
   n_m_color <- n_distinct(vc_ij_vse_ij_v_ag$vc_status_id)
@@ -264,7 +244,7 @@ vc_ij_vre_ij_v_ag <- vc_ij_vre_ij_v %>%
   ungroup()
 
 
-### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
+### Gráfico v1 - Resultado das visitas (resultados) por vendedor em anat
 if(nrow(vc_ij_vre_ij_v) > 0){
   ##descobrindo numero de status diferentes para criar paleta de cores
   n_r_color <- n_distinct(vc_ij_vre_ij_v_ag$vc_resultado_id)
@@ -336,7 +316,7 @@ cli_p_v_ij_vend <- inner_join(cli_p_v, vendedor, by = c('cliente_vendedor_id' = 
   select(cliente_vendedor_id, vendedor_nome, n_clientes)
 
 
-##Já é filtrado em 2020 (filtra na tabela de visitas_cliente)
+##Já é filtrado em anat (filtra na tabela de visitas_cliente)
 vc_ij_vse_ij_v_count <- vc_ij_vse_ij_v_ag %>%
   select (vc_vendedor_id, motivo_n) %>% ##Não vou salvar o nome pq vou fazer uma junção com a outra tabela, então só preciso do id
   group_by(vc_vendedor_id) %>%
@@ -344,18 +324,13 @@ vc_ij_vse_ij_v_count <- vc_ij_vse_ij_v_ag %>%
   distinct(vc_vendedor_id, .keep_all = T) %>%
   ungroup ()
 
-##Distribuição de clientes total, visita e negócios em 2020 por vendedor
+##Distribuição de clientes total, visita e negócios em anat por vendedor
 vend_cli_vis <- left_join(cli_p_v_ij_vend, vc_ij_vse_ij_v_count, by = c("cliente_vendedor_id" = "vc_vendedor_id")) %>%
   select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas)
 
-##Contar quantos negócios são feitos por vendedor em 2020
+##Contar quantos negócios são feitos por vendedor em anat
 negocio <- fread("Tabelas_final_ano/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character", negocio_cliente_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_cliente_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_produto_id)
-
-##Juncao pra pegar a empresa do negócio (e vendedor)
-neg_ij_vend <- inner_join(negocio, vendedor, by = c('negocio_vendedor_id' = 'vendedor_id')) %>%
-  select(negocio_id, negocio_vendedor_id)
-
 
 ####################################
 ###Clientes que tiveram negócios, quantas visitas recebem (histograma) e clientes que não tiveram negócios, quantas visitas recebem
@@ -399,7 +374,7 @@ cli_c_neg_ij_vis_cont <- cli_c_neg_ij_vis %>%
 ### Histogramas
 if(nrow(cli_c_neg_ij_vis_cont > 0)){
   
-  ### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios (clientes com visitas em 2020)
+  ### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios (clientes com visitas em anat)
   c5 <- plot_ly() %>%
     add_histogram(data =  cli_s_neg_ij_vis_cont,
                   x = ~num_visitas,
@@ -415,7 +390,7 @@ if(nrow(cli_c_neg_ij_vis_cont > 0)){
   if(dash == F){
     c5
   }
-  ### Gráfico c4 - Histograma de distirbuição clientes por visitas, clientes com negócios (clientes com visitas em 2020)
+  ### Gráfico c4 - Histograma de distirbuição clientes por visitas, clientes com negócios (clientes com visitas em anat)
   c4 <- plot_ly() %>%
     add_histogram(data =  cli_c_neg_ij_vis_cont,
                   x = ~num_visitas,
@@ -554,7 +529,7 @@ if(nrow(cli_in_ven_in_vcUltVis) > 0){
     #var
   }
 }else{
-  m0 <- include_graphics(s_dados_path)
+  m0 <- include_graphics(s_dados_m_path)
 }
 #######################################################################
 
@@ -618,7 +593,7 @@ Column {data-width=550}
 
 ```{r}
 
-### Gráfico v0 - Motivo das visitas (status) por vendedor em 2020
+### Gráfico v0 - Motivo das visitas (status) por vendedor em anat
 v0
 
 ```
@@ -629,7 +604,7 @@ Column {data-width=550}
 `r paste("### Distribuição de resultado das visitas por vendedor em", ano)`
 
 ```{r}
-### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
+### Gráfico v1 - Resultado das visitas (resultados) por vendedor em anat
 v1
 
 ```
@@ -646,17 +621,17 @@ O gráfico na posição superior mostra a distribuição de clientes por número
 Column {data-width=350}
 -----------------------------------------------------------------------
 
-`r paste0("### Distribuição de clientes por número de visitas (clientes sem negócios em (", ano, ")")`
+`r paste0("### Distribuição de clientes por número de visitas clientes sem negócios em ", ano)`
 ```{r, fig.height=3, fig.width=4}
-### Gráfico c4_c5 - Ambos histogramas anteriores (c4 e c5)
+### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios (clientes com visitas em anat)
 c5
 
 ```
 
-`r paste0("### Distribuição de clientes por número de visitas (clientes com negócios em (", ano, ")")`
+`r paste0("### Distribuição de clientes por número de visitas clientes com negócios em ", ano)`
 
 ```{r, fig.height=3, fig.width=4}
-### Gráfico c4_c5 - Ambos histogramas anteriores (c4 e c5)
+### Gráfico c4 - Histograma de distirbuição clientes por visitas, clientes com negócios (clientes com visitas em anat)
 c4
 
 ```
@@ -676,7 +651,7 @@ m0
 
 Column {data-width=450}
 -----------------------------------------------------------------------
-### Distribuição dos clientes nas categorias até o final de 2020
+### Distribuição dos clientes nas categorias
 
 ```{r}
 ### Gráfico c6 - Distribuição dos clientes nas categorias (por tempo de visita)
