@@ -60,26 +60,26 @@ dash = T
 # mes_atual = fct_mes_atual()
 # ## Apenas ano, para gerar títulos
 # ano <- year(ano_atual)
-# if(!teste){
-#   ##Teste se estou gerando via rstudio (knit)
-#   if(as.integer(params$num_dias) == 0) {
-#     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-#     ano_atual = fct_ano_atual()
-#     ####Variavel global c/ mês atual (para comparação)
-#     mes_atual = fct_mes_atual()
-#     ## Apenas ano, para gerar títulos
-#     ano <- year(ano_atual)
-#   ##Execução normal, recebendo data do gerador de dashs
-#   }else{
-#     data <- (lubridate::today()-lubridate::days(params$num_dias))
-#     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-#     ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
-#     ####Variavel global c/ mês atual (para comparação)
-#     mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
-#     ## Apenas ano, para gerar títulos
-#     ano <- lubridate::year(ano_atual)
-#   }
-# }else{
+if(!teste){
+  ##Teste se estou gerando via rstudio (knit)
+  if(as.integer(params$num_dias) == 0) {
+    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+    ano_atual = fct_ano_atual()
+    ####Variavel global c/ mês atual (para comparação)
+    mes_atual = fct_mes_atual()
+    ## Apenas ano, para gerar títulos
+    ano <- year(ano_atual)
+  ##Execução normal, recebendo data do gerador de dashs
+  }else{
+    data <- (lubridate::today()-lubridate::days(params$num_dias))
+    ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
+    ####Variavel global c/ mês atual (para comparação)
+    mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
+    ## Apenas ano, para gerar títulos
+    ano <- lubridate::year(ano_atual)
+  }
+}else{
   ##Teste setando dia
   data <- lubridate::ymd("2020-12-31")
   # data <- lubridate::today()
@@ -89,7 +89,7 @@ dash = T
   mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
   ## Apenas ano, para gerar títulos
   ano <- lubridate::year(ano_atual)
-# }
+}
 
 ####Variável global para ver se tem usados Ainda não usada
 #usados = T
