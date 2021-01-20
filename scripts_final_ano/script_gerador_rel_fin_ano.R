@@ -21,7 +21,7 @@ empresas_ativas <- fread("Tabelas/empresas_ativas_id.csv") %>%
 
 params_list_i <- empresas_ativas$empresa_id
 params_list <- as.list(params_list_i)
-num_dias_list <- as.list(18)
+num_dias_list <- as.list(20)
 x <- length(params_list)
 ####################################
 ####################################

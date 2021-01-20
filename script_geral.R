@@ -31,7 +31,7 @@ source("fct_fmt_nome.R")
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
 dash = F
 ####Variável para testar dias anteriores
@@ -61,8 +61,8 @@ if(!teste){
   }
 }else{
   ##Teste setando dia
-  data <- lubridate::today()
-  # data <- lubridate::ymd("2020-12-15")
+  # data <- lubridate::today()
+  data <- lubridate::ymd("2020-12-31")
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
   ####Variavel global c/ mês atual (para comparação)
@@ -83,7 +83,7 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 10
+empresa = 16
 ###################################
 
 #################################################################################
@@ -195,7 +195,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$tot
       showlegend = FALSE
     )
 }else {
-  n9 <- knitr::include_graphics(s_dados_path)
+  n9 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   n9
@@ -216,6 +216,7 @@ if (teste == F){
 st_f = c(4,5,6,7)
 status_f = c("Faturado", "Financiamento não aprovado", "Desistencia do cliente", "Perdemos para concorrência")
 
+#ordenar negócios por data e ficar apenas com as últimas alterações
 historico_negocio_situacao <- fread("Tabelas/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_negocio_id = "character")) %>%
   select(historico_negocio_situacao_data, historico_negocio_situacao_negocio_id, historico_negocio_situacao_situacao_id)
 
@@ -308,7 +309,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0 && sum(ng_ij_hist_ij_ven_funi
                                          "<extra></extra>"),
                  marker = list(colors = ~cor))
 }else {
-  n10 <- knitr::include_graphics(s_dados_path)
+  n10 <- include_graphics(s_dados_path)
 }
 
 if(dash == F){
@@ -367,7 +368,7 @@ if (nrow(ng_ij_hist_ij_ven_fec_mes_ant) > 0 && sum(ng_ij_hist_ij_ven_fec_mes_ant
                                          "<extra></extra>"),
                  marker = list(colors = colors_pie))
 }else {
-  n11 <- knitr::include_graphics(s_dados_path)
+  n11 <- include_graphics(s_dados_path)
 }
 
 
@@ -418,8 +419,7 @@ fat_anat_mes <- left_join(fat_anat_mes_aux, fat_anat_mes, by = c('ym')) %>%
   rowwise() %>%
   mutate (flag = if_else(is.na(ym_sum), T, F))
 for(mes in fat_anat_mes$ym){
-  print(mes)
-  if(is.na(fat_anat_mes$ym_sum[mes]) && as.integer(mes) <= month(mes_atual))
+  if(is.na(fat_anat_mes$ym_sum[as.integer(mes)]) && as.integer(mes) <= month(mes_atual))
   {
     fat_anat_mes$ym_sum[as.integer(mes)] <- 0
   }
@@ -557,39 +557,39 @@ if(flag_fat == T && anos_ant == 0) {
 
 ###Assim estarei mostrando anat, 1ant e 2ant
 ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
-if(anos_ant > 0 || all(fat_anat_1ant_2ant_mes$flag == F)){
-  n12 <- plot_ly(fat_anat_1ant_2ant_mes)
+# if(anos_ant > 0 || all(fat_anat_1ant_2ant_mes$flag == F)){
+n12 <- plot_ly(fat_anat_1ant_2ant_mes)
+n12 <- n12 %>%
+  add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum,
+            name = paste('Faturamento de', ano),
+            text = ~ym_sum_fat_anat,
+            hoverinfo = "text",
+            color = I("green")
+  )
+if(anos_ant > 0) {
   n12 <- n12 %>%
-    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y =~ym_sum,
-              name = paste('Faturamento de', ano),
-              text = ~ym_sum_fat_anat,
+    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_1ant, yaxis = ay,
+              name = paste('Faturamento de', ano-1),
+              text = ~ym_sum_fat_1ant,
               hoverinfo = "text",
-              color = I("green")
-    )
-  if(anos_ant > 0) {
-    n12 <- n12 %>%
-      add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_1ant, yaxis = ay,
-                name = paste('Faturamento de', ano-1),
-                text = ~ym_sum_fat_1ant,
-                hoverinfo = "text",
-                color = I("#1E90FF"))
-  }
-  if(anos_ant > 1) {
-    n12 <- n12 %>%
-      add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_2ant, yaxis = ay,
-                name = paste('Faturamento de', ano-2),
-                text = ~ym_sum_fat_2ant,
-                hoverinfo = "text",
-                color = I("#4682B4"))
-  }
-  n12 <- n12 %>%
-    layout(xaxis = list(title = ''), yaxis = list(title = '')
-           #aqui eu ajusto onde quero que apareça a legenda
-           #,legend = list(x=0.8, y=0.9)#)
-    )
-}else{
-  n12 <- knitr::include_graphics(s_dados_path)
+              color = I("#1E90FF"))
 }
+if(anos_ant > 1) {
+  n12 <- n12 %>%
+    add_trace(type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~ym_sum_2ant, yaxis = ay,
+              name = paste('Faturamento de', ano-2),
+              text = ~ym_sum_fat_2ant,
+              hoverinfo = "text",
+              color = I("#4682B4"))
+}
+n12 <- n12 %>%
+  layout(xaxis = list(title = ''), yaxis = list(title = '')
+         #aqui eu ajusto onde quero que apareça a legenda
+         #,legend = list(x=0.8, y=0.9)#)
+  )
+# }else{
+#   n12 <- knitr::include_graphics(s_dados_path)
+# }
 if (dash == F){
   n12
 }
@@ -730,27 +730,27 @@ for (mes in cli_ij_vc_ij_ng_mes$ym){
 
 ### Gráfico c3 - Cadastro de clientes, visitas e negócios no ano anat
 # if(all(cli_ij_vc_ij_ng_mes$flag_cli == T) && all(cli_ij_vc_ij_ng_mes$flag_vis == T) && all(cli_ij_vc_ij_ng_mes$flag_neg == T)){
-  c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
-                name = 'Clientes',
-                text = ~paste(n_cli, 'clientes'),
-                hoverinfo = "text",
-                color = I('#7B68EE'))
-  c3 <- c3 %>%
-    add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_vis,
-               name = 'Visitas',
-               text = ~paste(n_vis, 'visitas'),
-               hoverinfo = "text",
-               color = I('#DAA520'))
-  c3 <- c3 %>%
-    add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_neg,
-               name = 'Negócios',
-               text = ~paste(n_neg, 'negócios'),
-               hoverinfo = "text",
-               color = I('green'))
-  
-  c3 <- c3 %>%
-    layout(xaxis = list(title = '', range = c(min(0), max(12))), ##Dessa forma pego os 12 meses do ano
-           yaxis = list(title = ''))
+c3 <- plot_ly(cli_ij_vc_ij_ng_mes, type = 'scatter', mode = 'lines+markers', x = ~mes, y = ~n_cli,
+              name = 'Clientes',
+              text = ~paste(n_cli, 'clientes'),
+              hoverinfo = "text",
+              color = I('#7B68EE'))
+c3 <- c3 %>%
+  add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_vis,
+             name = 'Visitas',
+             text = ~paste(n_vis, 'visitas'),
+             hoverinfo = "text",
+             color = I('#DAA520'))
+c3 <- c3 %>%
+  add_trace (type = 'scatter', mode = 'lines+markers', y = ~n_neg,
+             name = 'Negócios',
+             text = ~paste(n_neg, 'negócios'),
+             hoverinfo = "text",
+             color = I('green'))
+
+c3 <- c3 %>%
+  layout(xaxis = list(title = '', range = c(min(0), max(12))), ##Dessa forma pego os 12 meses do ano
+         yaxis = list(title = ''))
 # }else{
 #   c3 <- knitr::include_graphics(s_dados_path)
 # }
@@ -850,7 +850,7 @@ if (nrow(vend_cli_vis_neg) > 0){
            xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
            yaxis = list(title = ''))
 }else {
-  c0 <- knitr::include_graphics(s_dados_path)
+  c0 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   c0
@@ -915,7 +915,7 @@ if (sum(cli_c_s_ng$n_anat) > 0){
                                         "<extra></extra>"),
                 marker = list(colors = colors_pie))
 }else {
-  c2 <- knitr::include_graphics(s_dados_path)
+  c2 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   c2

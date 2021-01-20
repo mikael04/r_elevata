@@ -1,3 +1,4 @@
+Substituir "Tabelas/" por "Tabelas_final_ano/"
 Dash geral:
 	- Remover gráfico de distribuição do val fin no último mês (n11) da apresentação
 

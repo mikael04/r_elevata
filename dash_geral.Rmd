@@ -437,8 +437,7 @@ fat_anat_mes <- left_join(fat_anat_mes_aux, fat_anat_mes, by = c('ym')) %>%
   rowwise() %>%
   mutate (flag = if_else(is.na(ym_sum), T, F))
 for(mes in fat_anat_mes$ym){
-  print(mes)
-  if(is.na(fat_anat_mes$ym_sum[mes]) && as.integer(mes) <= month(mes_atual))
+  if(is.na(fat_anat_mes$ym_sum[as.integer(mes)]) && as.integer(mes) <= month(mes_atual))
   {
     fat_anat_mes$ym_sum[as.integer(mes)] <- 0
   }
