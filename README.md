@@ -1,4 +1,4 @@
-## r_elevata
+# r_elevata
 Scripts R para análise de dados
 
 Subdividido em:
@@ -6,7 +6,7 @@ Dashs -> Onde são montadas as dashs (e rodado os scripts), divididos por setore
 scripts -> usados para testes (mesmos das dashs)
 scripts_geradores -> geram arquivos, podendo ser, puxar os dados do banco de dados (e escrevê-los em csvs, gerador_csvs), gerar todas as dashs (gerador_rel), gerar csv de empresas ativas
 
-# dash_geral e script_geral
+## dash_geral e script_geral
   Scripts e gráficos referentes as visões mais gerais da empresa.
   Tabelas:
   Usa as tabelas negocio, vendedor, negócio_produto (valores de cada negócio), historico_negocio_situacao (filtrar negócios apenas por última alteração), cliente, visita_cliente (já filtrado por ano, usado para medir número de visitas), visita_status (pegar nome do status), visita_status_empresa (combinar com visita_status para ter nome do status da visita).
@@ -20,7 +20,7 @@ scripts_geradores -> geram arquivos, podendo ser, puxar os dados do banco de dad
       - Distribuição de cadastro dos clientes, cadastro de visitas e cadastro de negócios no ano atual (gráfico c3)
       - Combinados (n12 e c3, subplot)
       
-# dash_marcas, marcas_k e script_marcas, marcas_k
+## dash_marcas, marcas_k e script_marcas, marcas_k
   Scripts, gráficos e mapas referentes as marcas. _k é para empresas que não se enquadram na categoria de tratores e colheitadeiras (atualmente 78 - komatsu e 79 - pampeiro caminhões e peças).
   Esta dash apresenta mapas, esses mapas usam a API openstreemap através da biblioteca leaflet, os ícones plotados (distribuição das marcas) foi pesquisado na internet e adaptado para encaixar no mapa (pasta Icons, nome da marca e _r, dentro da dash é feita a junção do ícone com a marca, através do ID, e selecionado o tamanho do ícone).
   Tabelas:
@@ -36,7 +36,7 @@ scripts_geradores -> geram arquivos, podendo ser, puxar os dados do banco de dad
       - Mapa das marcas (mapa m1_c)
       - Distribuição das marcas (m2_c)
       
-# dash_negocios e script_negocios
+## dash_negocios e script_negocios
   Scripts e gráficos referentes aos negócios.
   Nesta dash eu uso um pequeno "truque", para organizar a aba de Idade dos negócios, eu acabo usando uma sidebar ({.sidebar}) já que a lib usada (flexdashboard) é limitada nas opções de montar a dash em si. Também uso valueBox (pequenas caixas com título e valores) para apresentar algumas informações.
   Tabelas:
@@ -50,7 +50,7 @@ scripts_geradores -> geram arquivos, podendo ser, puxar os dados do banco de dad
     - valueBox (4) de cálculo de tempo médio, para os negócios, separado por status. Sendo estes, faturado, financiamento não aprovado, desistência do cliente e perdemos para a concorrência.
     - Negócios abertos da empresa agrupados por idade (n7, formato de pizza)
 
-# dash_proposta e script_proposta
+## dash_proposta e script_proposta
   Scripts e gráficos referentes as propostas.
     Tabelas:
       Usa as tabelas proposta, negocio, vendedor, proposta_pagamento (para pegar modo e forma de pagamento, além do valor da proposta), negócio_produto (valores de cada negócio), produto (nome do produto), proposta_produto (pega a id da proposta, id do produto e as quantidades/valores), categorias (nome das categorias), proposta_modo_forma (usado pra filtrar a empresa).
@@ -64,7 +64,7 @@ scripts_geradores -> geram arquivos, podendo ser, puxar os dados do banco de dad
         - Valor financeiro por status no ano atual (p1)
         - Proporção do recebimento de usados nas propostas (p2, pizza)
 
-# dash_visitas_clientes e script_visitas_clientes
+## dash_visitas_clientes e script_visitas_clientes
   Scripts e gráficos referentes as visitas e clientes.
   Esta dash apresenta mapas, esses mapas usam a API openstreemap através da biblioteca leaflet.
     Tabelas:
@@ -78,6 +78,6 @@ scripts_geradores -> geram arquivos, podendo ser, puxar os dados do banco de dad
         - Histograma de clientes sem negócio (c5)
         - Histograma de clientes sem negócio (c4)
 
-# dic_variaveis.txt
+## dic_variaveis.txt
 A ideia é deixar um resumo do que cada variável (geralmente dataframes) é, com um resumo, de onde vem ou para que é usada.
 Atualmente incompleto
