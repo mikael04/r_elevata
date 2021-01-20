@@ -12,11 +12,11 @@ Subdividido em:
 ## dash_geral e script_geral
   Scripts e gráficos referentes as visões mais gerais da empresa.
   
-  ### Tabelas:
+  #### Tabelas:
   
   Usa as tabelas negocio, vendedor, negócio_produto (valores de cada negócio), historico_negocio_situacao (filtrar negócios apenas por última alteração), cliente, visita_cliente (já filtrado por ano, usado para medir número de visitas), visita_status (pegar nome do status), visita_status_empresa (combinar com visita_status para ter nome do status da visita).
   
-  ### Dash (abas):
+  #### Dash (abas):
   
     - Funil de vendas.
       - Funil da empresa, em valor financeiro por status do negócio (gráfico n9)
@@ -33,11 +33,11 @@ Subdividido em:
   
   Esta dash apresenta mapas, esses mapas usam a API openstreemap através da biblioteca leaflet, os ícones plotados (distribuição das marcas) foi pesquisado na internet e adaptado para encaixar no mapa (pasta Icons, nome da marca e _r, dentro da dash é feita a junção do ícone com a marca, através do ID, e selecionado o tamanho do ícone).
   
-  ### Tabelas:
+  #### Tabelas:
   
   Usa as tabelas cliente, parque_máquina (distribuição do parque de máquinas/inventário), marca (nome da marca), marca_categoria (categoria de cada marca), negocio (agora para pegar os faturamentos de cada marca), vendedor (para poder separar por empresa), negocio_produto (novamente, faturamento), produto (juntar a marca, categoria e empresa), historico_negocio_situacao (filtrar negócios apenas por última alteração), categoria (pega nome de categoria e apenas categorias ativas).
     
-  ### Dash (abas):
+  #### Dash (abas):
   
     - Top 10 categorias
       - Valor financeiro em negócios cadastrados no ano (n4)
@@ -55,7 +55,7 @@ Subdividido em:
   
   Nesta dash eu uso um pequeno "truque", para organizar a aba de Idade dos negócios, eu acabo usando uma sidebar ({.sidebar}) já que a lib usada (flexdashboard) é limitada nas opções de montar a dash em si. Também uso valueBox (pequenas caixas com título e valores) para apresentar algumas informações.
   
-  ### Tabelas:
+  #### Tabelas:
   
   Usa as tabelas negocio, vendedor, negócio_produto (valores de cada negócio), historico_negocio_situacao (filtrar negócios apenas por última alteração), produto (nome do produto).
   
@@ -73,10 +73,10 @@ Subdividido em:
 
   Scripts e gráficos referentes as propostas.
   
-  ### Tabelas:
+  #### Tabelas:
     
   Usa as tabelas proposta, negocio, vendedor, proposta_pagamento (para pegar modo e forma de pagamento, além do valor da proposta), negócio_produto (valores de cada negócio), produto (nome do produto), proposta_produto (pega a id da proposta, id do produto e as quantidades/valores), categorias (nome das categorias), proposta_modo_forma (usado pra filtrar a empresa).
-  ### Dash (abas):
+  #### Dash (abas):
       - Valor Financeiro de propostas
         - Ticket médio das propostas (p3 só novos, p4 novos e usados), temos as barras mostrando das categorias, e uma linha com pontos (lines+markers) mostrando o ticket médio de toda a empresa
         - Instituição financeira (proporção do valor financeiro, p6, modos de pagamento, pizza)
@@ -92,10 +92,10 @@ Subdividido em:
   
   Esta dash apresenta mapas, esses mapas usam a API openstreemap através da biblioteca leaflet.
   
-  ### Tabelas:
+  #### Tabelas:
   Usa as tabelas visita_cliente (já filtrado por ano, usado para medir número de visitas), visita_resultado (nome do resultado da visita), visita_resultado_empresa (para filtrar as empresas), visita_status (pegar nome do status), visita_status_empresa (combinar com visita_status para ter nome do status da visita), vendedor, clientes (pegar informações de data de cadastro, empresa e última visita), negócio (contar negócios feitos vendedor no ano, quantas visitas cada cliente que teve negócios recebeu e quantas visitas cada cliente que não teve negócios recebeu -> histograma de distirbuição clientes por visitas, clientes com negócios (clientes com visitas em anat)).   
       
-  ### Dash (abas):
+  #### Dash (abas):
       - Volume de visitas
         - Distribuição dos motivos das visitas por status, por vendedor no ano atual (v0)
         - Distribuição dos resultados das visitas por status, por vendedor no ano atual (v1)
