@@ -425,8 +425,11 @@ fat_tot_categorias <- fat_tot_categorias %>%
   mutate(med_emp = media_empresa)
 
 ##Adicionando coluna com os valores já em texto para plot
-fat_tot_categorias <- fat_tot_categorias %>% rowwise() %>%
-  mutate(fat_med_t = func_fmt_din(fat_med))
+##Adicionando coluna com os valores já em texto para plot
+if(nrow(fat_tot_categorias) > 0){
+  fat_tot_categorias <- fat_tot_categorias %>% rowwise() %>%
+    mutate(fat_med_t = func_fmt_din(fat_med))
+}
 
 ### Gráfico p3 - Ticket médio novos
 if(nrow(fat_tot_categorias) > 0){

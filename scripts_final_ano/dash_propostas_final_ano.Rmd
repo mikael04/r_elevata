@@ -100,7 +100,7 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 16
+  empresa = 1
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -425,8 +425,11 @@ fat_tot_categorias <- fat_tot_categorias %>%
   mutate(med_emp = media_empresa)
 
 ##Adicionando coluna com os valores já em texto para plot
-fat_tot_categorias <- fat_tot_categorias %>% rowwise() %>%
-  mutate(fat_med_t = func_fmt_din(fat_med))
+if(nrow(fat_tot_categorias) > 0){
+  fat_tot_categorias <- fat_tot_categorias %>% rowwise() %>%
+    mutate(fat_med_t = func_fmt_din(fat_med))
+}
+
 
 ### Gráfico p3 - Ticket médio novos
 if(nrow(fat_tot_categorias) > 0){

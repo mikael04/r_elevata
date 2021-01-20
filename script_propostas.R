@@ -76,7 +76,7 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 16
+empresa = 1
 
 ###########################################################################################################
 ###########################################################################################################
@@ -160,7 +160,7 @@ prop_ij_neg_ij_vend_ij_propag_anat$proposta_status <- with(prop_ij_neg_ij_vend_i
 prop_ij_neg_cont_vend_a_ij_propag_anat <- prop_ij_neg_ij_vend_ij_propag_anat %>%
   filter(vendedor_ativo == T)
 
-### Gráfico p0 - Número propostas, por tipo, por vendedor (total)
+### Gráfico p0 - Número propostas, por tipo, por vendedor em anat(total)
 if(nrow(prop_ij_neg_cont_vend_a_ij_propag_anat) > 0){
   p0 <- plot_ly(prop_ij_neg_cont_vend_a_ij_propag_anat, type = 'bar', orientation = 'h', x = ~cont_status , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
                 color = ~proposta_status,
@@ -200,7 +200,7 @@ if(nrow(prop_ij_neg_ij_propag_cont_anat) > 0){
                                '<br>',
                                'Valor financeiro: ', func_fmt_din(sum_valor_v),
                                '<br>',
-                               "Nº de propostas", cont_status_v),
+                               "Nº de propostas: ", cont_status_v),
                 hoverinfo = "text",
                 # hovertemplate = ~paste0("%{label}: ",
                 #                         "<br>",
@@ -398,8 +398,10 @@ fat_tot_categorias <- fat_tot_categorias %>%
   mutate(med_emp = media_empresa)
 
 ##Adicionando coluna com os valores já em texto para plot
-fat_tot_categorias <- fat_tot_categorias %>% rowwise() %>%
-  mutate(fat_med_t = func_fmt_din(fat_med))
+if(nrow(fat_tot_categorias) > 0){
+  fat_tot_categorias <- fat_tot_categorias %>% rowwise() %>%
+    mutate(fat_med_t = func_fmt_din(fat_med))
+}
 
 ### Gráfico p3 - Ticket médio novos
 if(nrow(fat_tot_categorias) > 0){
@@ -535,7 +537,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
   
   fat_tot_categorias_n_us <- full_join(fat_tot_categorias, fat_tot_categorias_us, by=("categoria_nome")) %>%
     select(-produto_categoria_id_us)
-  ### Gráfico p4 - Ticket médio usados
+  ### Gráfico p4 - Ticket médio de novos e usados (se for apenas novos, vai usar p3)
   if(nrow(fat_tot_categorias_us) > 0){
     ax <- list(
       autotick = TRUE,
