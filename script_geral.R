@@ -61,8 +61,8 @@ if(!teste){
   }
 }else{
   ##Teste setando dia
-  # data <- lubridate::today()
-  data <- lubridate::ymd("2020-12-31")
+  data <- lubridate::today()
+  # data <- lubridate::ymd("2020-12-31")
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
   ####Variavel global c/ mês atual (para comparação)
@@ -195,7 +195,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$tot
       showlegend = FALSE
     )
 }else {
-  n9 <- include_graphics(s_dados_path)
+  n9 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   n9
@@ -309,7 +309,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0 && sum(ng_ij_hist_ij_ven_funi
                                          "<extra></extra>"),
                  marker = list(colors = ~cor))
 }else {
-  n10 <- include_graphics(s_dados_path)
+  n10 <- knitr::include_graphics(s_dados_path)
 }
 
 if(dash == F){
@@ -368,7 +368,7 @@ if (nrow(ng_ij_hist_ij_ven_fec_mes_ant) > 0 && sum(ng_ij_hist_ij_ven_fec_mes_ant
                                          "<extra></extra>"),
                  marker = list(colors = colors_pie))
 }else {
-  n11 <- include_graphics(s_dados_path)
+  n11 <- knitr::include_graphics(s_dados_path)
 }
 
 
@@ -405,7 +405,6 @@ for (i in (1:max(ym_aux))){
     ym[i] <- paste("0", ym[i], sep="")
   }
 }
-
 
 fat_anat_mes_aux <-data.frame(ym)
 fat_anat_mes <- ng_ij_hist_ij_ven_anat_fat %>%
@@ -850,7 +849,7 @@ if (nrow(vend_cli_vis_neg) > 0){
            xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
            yaxis = list(title = ''))
 }else {
-  c0 <- include_graphics(s_dados_path)
+  c0 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   c0
@@ -915,7 +914,7 @@ if (sum(cli_c_s_ng$n_anat) > 0){
                                         "<extra></extra>"),
                 marker = list(colors = colors_pie))
 }else {
-  c2 <- include_graphics(s_dados_path)
+  c2 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   c2
