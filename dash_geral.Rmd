@@ -197,33 +197,13 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
   ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
     arrange(negocio_negocio_situacao_id)
 }
-
+################################################
 ### Gráfico n9 - Funil agrupado por faturamento
-if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$total_faturado) > 0){
-  n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat) %>%
-    add_trace(
-      type ="funnelarea",
-      values = ng_ij_hist_ij_ven_funil_fat$total_faturado,
-      text = ng_ij_hist_ij_ven_funil_fat$nome_cat_valor_fat,
-      textinfo = "text",
-      hovertemplate = paste0 ("%{text} <br>",
-                              "Equivalente a %{percent}",
-                              "<extra></extra>"),
-      marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")),
-      showlegend = FALSE
-    )
-}else {
-  n9 <- include_graphics(s_dados_path)
-}
-if(dash == F){
-  n9
-}
-
-
+################################################
 
 if (teste == F){
   #tabelas
-  rm(neg_ij_ven_ij_np, ng_ij_hist_ij_ven_funil_ab, ng_ij_hist_ij_ven_funil_fat)
+  rm(neg_ij_ven_ij_np, ng_ij_hist_ij_ven_funil_ab)
   #variáveis
   rm(st_a, status)
 }
@@ -956,6 +936,26 @@ Column {data-width=350}
 ### Funil da empresa em valor financeiro, por status do negócio
 ```{r}
 ### Gráfico n9 - Funil agrupado por status do negócio
+### Gráfico n9 - Funil agrupado por faturamento
+if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$total_faturado) > 0){
+  n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat) %>%
+    add_trace(
+      type ="funnelarea",
+      values = ng_ij_hist_ij_ven_funil_fat$total_faturado,
+      text = ng_ij_hist_ij_ven_funil_fat$nome_cat_valor_fat,
+      textinfo = "text",
+      hovertemplate = paste0 ("%{text} <br>",
+                              "Equivalente a %{percent}",
+                              "<extra></extra>"),
+      marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")),
+      showlegend = FALSE
+    )
+}else {
+  n9 <- include_graphics(s_dados_path)
+}
+if(dash == F){
+  n9
+}
 n9
 ```
 

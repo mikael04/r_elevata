@@ -198,32 +198,13 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
     arrange(negocio_negocio_situacao_id)
 }
 
-### Gráfico n9 - Funil agrupado por faturamento
-if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$total_faturado) > 0){
-  n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat) %>%
-    add_trace(
-      type ="funnelarea",
-      values = ng_ij_hist_ij_ven_funil_fat$total_faturado,
-      text = ng_ij_hist_ij_ven_funil_fat$nome_cat_valor_fat,
-      textinfo = "text",
-      hovertemplate = paste0 ("%{text} <br>",
-                              "Equivalente a %{percent}",
-                              "<extra></extra>"),
-      marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")),
-      showlegend = FALSE
-    )
-}else {
-  n9 <- include_graphics(s_dados_path)
-}
-if(dash == F){
-  n9
-}
-
-
+################################################
+### Gráfico n9 - Funil agrupado por status do negócio
+################################################
 
 if (teste == F){
   #tabelas
-  rm(neg_ij_ven_ij_np, ng_ij_hist_ij_ven_funil_ab, ng_ij_hist_ij_ven_funil_fat)
+  rm(neg_ij_ven_ij_np, ng_ij_hist_ij_ven_funil_ab)
   #variáveis
   rm(st_a, status)
 }
@@ -234,6 +215,7 @@ if (teste == F){
 st_f = c(4,5,6,7)
 status_f = c("Faturado", "Financiamento não aprovado", "Desistencia do cliente", "Perdemos para concorrência")
 
+#ordenar negócios por data e ficar apenas com as últimas alterações
 historico_negocio_situacao <- fread("Tabelas/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_negocio_id = "character")) %>%
   select(historico_negocio_situacao_data, historico_negocio_situacao_negocio_id, historico_negocio_situacao_situacao_id)
 
@@ -998,7 +980,26 @@ Column
 
 ### Funil da empresa em valor financeiro, por status do negócio
 ```{r}
-### Gráfico n9 - Funil agrupado por faturamento
+### Gráfico n9 - Funil agrupado por status do negócio
+if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$total_faturado) > 0){
+  n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat) %>%
+    add_trace(
+      type ="funnelarea",
+      values = ng_ij_hist_ij_ven_funil_fat$total_faturado,
+      text = ng_ij_hist_ij_ven_funil_fat$nome_cat_valor_fat,
+      textinfo = "text",
+      hovertemplate = paste0 ("%{text} <br>",
+                              "Equivalente a %{percent}",
+                              "<extra></extra>"),
+      marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")),
+      showlegend = FALSE
+    )
+}else {
+  n9 <- include_graphics(s_dados_path)
+}
+if(dash == F){
+  n9
+}
 n9
 ```
 
@@ -1019,14 +1020,24 @@ Column
 
 ```{r}
 ### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em 2020
+##list -> gráfico plotly, senão for (pode ser character) será o knit e não deve alterar propriedades
+if(typeof(n12) == "list"){
+  n12 <- n12 %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 n12
-
 ```
 
 `r paste("### Distribuição do cadastro de clientes, visitas e negócios no ano", ano)`
 
 ```{r}
 ### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em 2020
+if(typeof(c3) == "list"){
+  c3 <- c3 %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 c3
 
 ```
@@ -1042,8 +1053,12 @@ Column
 ```{r, fig.height=7, fig.width=7.5}
 
 ### Grafico c0 - Distribuicao de clientes (total), visitas (2020) e negocios (2020) cadastrados por vendedor
+if(typeof(c0) == "list"){
+  c0 <- c0 %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 c0
-
 ```
 
 ### Distribuição de clientes com ou sem negócios
@@ -1051,6 +1066,10 @@ c0
 ```{r}
 
 ### Grafico c1 - Clientes cadastrados que possuem negocio (pizza)
+if(typeof(c1_c2) == "list"){
+  c1_c2 <- c1_c2 %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 c1_c2
-
 ```

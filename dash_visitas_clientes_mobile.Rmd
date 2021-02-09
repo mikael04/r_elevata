@@ -597,10 +597,14 @@ Column {data-width=550}
 `r paste("### Distribuição dos motivos das visitas por vendedor em", ano)`
 
 ```{r}
-
 ### Gráfico v0 - Motivo das visitas (status) por vendedor em 2020
+##list -> gráfico plotly, senão for (pode ser character) será o knit e não deve alterar propriedades
+if(typeof(v0) == "list"){
+  v0 <- v0 %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 v0
-
 ```
 
 Column {data-width=550}
@@ -610,6 +614,11 @@ Column {data-width=550}
 
 ```{r}
 ### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
+if(typeof(v1) == "list"){
+  v1 <- v1 %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 v1
 
 ```
@@ -629,6 +638,11 @@ Column {data-width=350}
 `r paste0("### Distribuição de clientes por número de visitas clientes sem negócios em ", ano)`
 ```{r, fig.height=3, fig.width=4}
 ### Gráfico c4_c5 - Ambos histogramas anteriores (c4 e c5)
+if(typeof(c5) == "list"){
+  c5 <- c5 %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 c5
 
 ```
@@ -637,6 +651,11 @@ c5
 
 ```{r, fig.height=3, fig.width=4}
 ### Gráfico c4_c5 - Ambos histogramas anteriores (c4 e c5)
+if(typeof(c4) == "list"){
+  c4 <- c4 %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 c4
 
 ```
@@ -651,6 +670,11 @@ Column {data-width=450}
 
 ```{r}
 ### Gráfico c6 - Distribuição dos clientes nas categorias (por tempo de visita)
+if(typeof(c6) == "list"){
+  c6 <- c6 %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 c6
 
 ```

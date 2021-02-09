@@ -582,7 +582,7 @@ Column
 `r paste("###  Valor Financeiro de Negócios Cadastrados, por categoria em", ano)`
 
 ```{r}
-### Gráfico hc_n4 - Valor financeiro de negócios em 2020  (por categoria)
+### Gráfico n4 - Valor financeiro de negócios em 2020  (por categoria)
 n4
 
 ```
@@ -590,7 +590,7 @@ n4
 `r paste("### Valor Financeiro de Negócios Faturados, por categoria em", ano)`
 
 ```{r}
-### Gráfico hc_n5 - Máquinas faturadas em 2020 (por categoria)
+### Gráfico n5 - Máquinas faturadas em 2020 (por categoria)
 n5
 
 ```
@@ -604,6 +604,12 @@ Column
 ### Distribuição das marcas
 ```{r}
 ### Gráfico m2 de distribuição das marcas da komatsu
+##list -> gráfico plotly, senão for (pode ser character) será o knit e não deve alterar propriedades
+if(typeof(m2_t) == "list"){
+  m2_t <- m2_t %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 m2_t
 
 ```

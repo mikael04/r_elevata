@@ -877,9 +877,20 @@ Column {data-width=650}
 
 ```{r, fig.height=6, fig.width=4}
 ### Gráfico p3 ou p4 - Ticket médio novos (p3), Ticket médio novos e usados (p4)
+##list -> gráfico plotly, senão for (pode ser character) será o knit e não deve alterar propriedades
 if (flag_ticket_usados){
+  if(typeof(p4) == "list"){
+    p4 <- p4 %>%
+      layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+      config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+  }
   p4
 }else{
+  if(typeof(p3) == "list"){
+    p3 <- p3 %>%
+      layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+      config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+  }
   p3
 }
 
@@ -913,6 +924,11 @@ Column
 
 ```{r, fig.height=6, fig.width=4}
 ### Gráfico p0 - Número propostas, por tipo, por vendedor (total)
+if(typeof(p0) == "list"){
+  p0 <- p0 %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 p0
 
 ```
@@ -924,6 +940,11 @@ Column
 
 ```{r, fig.height=3, fig.width=4}
 ### Gráfico p1 - Número propostas, por tipo em 2020 (total)
+if(typeof(p1) == "list"){
+  p1 <- p1 %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 p1
 
 ```

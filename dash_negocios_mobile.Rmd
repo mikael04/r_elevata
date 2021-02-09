@@ -501,14 +501,24 @@ Column
 
 ```{r, fig.height=7, fig.width=6}
 ### Gráfico n0 - Número de clientes por vendedor
+##list -> gráfico plotly, senão for (pode ser character) será o knit e não deve alterar propriedades
+if(typeof(n0) == "list"){
+  n0 <- n0 %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 n0
-
 ```
 
 `r paste0("### Valor financeiro de todos os negócios que foram fechados em ", ano)`
 
 ```{r, fig.height=7, fig.width=6}
 ### Gráfico n3 - Faturamento de negócios fechados em 2020
+if(typeof(n3) == "list"){
+  n3 <- n3 %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 n3
 
 ```
@@ -551,6 +561,11 @@ valueBox(ng_cad_fin[4,2], icon = "fa-calendar", color="#DE0D26")
 ### Idade dos negócios abertos por vendedor
 ```{r}
 ### Gráfico n6 - Idade dos negócios abertos, por vendedor, por idade do negocio
+if(typeof(n6) == "list"){
+  n6 <- n6 %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 n6
 ```
 
@@ -559,6 +574,11 @@ n6
 ### Negócios abertos da empresa
 ```{r}
 ### Gráfico n7 - Negócios abertos da empresa, pizza
+if(typeof(n7) == "list"){
+  n7 <- n7 %>%
+    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+}
 n7
 ```
 
