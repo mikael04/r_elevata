@@ -850,12 +850,16 @@ if (teste == 0) {
 ######################
 
 library(gt)
-prop_ate_1ano_ant <- p_ij_n_ij_pp_ij_prod %>%
+prop_ate_1ano_ant <- p_ij_n_ij_v_ij_pp_n %>%
   filter(proposta_data_cadastro > ano_atual - years(1)) %>%
+  filter(proposta_status != 4) %>%
   gt () %>%
   tab_header(
     title = "Propostas",
-    subtitle = glue::glue("{start_date} to {end_date}")
+    subtitle = paste0("De ", ano_atual-years(1), " até hoje")
   )
 
 prop_ate_1ano_ant
+
+
+

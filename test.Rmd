@@ -906,6 +906,7 @@ prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
 
 prop_ate_1ano_ant 
 
+library(DT)
 tabela <- prop_ate_1ano_ant %>%
   DT::datatable(rownames = F,
                 escape = F,
@@ -917,9 +918,29 @@ tabela <- prop_ate_1ano_ant %>%
                                                  c(10,25,50,"All"))))
 
 
+tabela2 <- prop_ate_1ano_ant %>%
+  DT::datatable(rownames = F,
+                escape = F,
+                options = list(columnDefs = list(list(className = 'dt-center', targets = c(0,1,2,3,4,5,6))),
+                               searchHighlight = TRUE,
+                               search = list(caseInsensitive = T)),
+                filter = 'top',
+                extensions = list('Responsive'))
 
-
-
+tabela3 <- prop_ate_1ano_ant %>%
+  DT::datatable(rownames = F,
+                escape = F,
+                extensions = 'Buttons',
+                options = list(columnDefs = list(list(className = 'dt-center', targets = c(0,1,2,3,4,5,6))),
+                               searchHighlight = TRUE,
+                               search = list(caseInsensitive = T),
+                               dom = 'Blfrtip',
+                               buttons = list('copy', 'print', list(
+                                 extend = 'collection',
+                                 buttons = c('csv', 'excel', 'pdf'),
+                                 text = 'Download'
+                                        )))
+  )
 ```
 
 
@@ -933,6 +954,6 @@ Column
 
 ```{r, fig.height=6, fig.width=4}
 
-tabela
+tabela3
 
 ```
