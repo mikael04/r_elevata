@@ -875,7 +875,7 @@ if (teste == 0) {
 ######################
 
 library(DT)
-
+#https://letmegooglethat.com/?q= 2020012416165952745
 prop_ate_1ano_ant <- p_ij_n_ij_v_ij_pp_n %>%
   dplyr::filter(proposta_data_cadastro > ano_atual - years(1)) %>%
   dplyr::filter(proposta_status == 0) %>%
@@ -886,23 +886,22 @@ prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
   dplyr::mutate (valor_proposta = sum(pp_valor_tot)) %>%
   dplyr::select(-pp_valor_tot) %>%
   dplyr::distinct(proposta_id, .keep_all = T) %>%
-  dplyr::ungroup ()
+  dplyr::ungroup () %>%
+  
+  #Selecionando colunas e alterando nomes
+  dplyr::select(-proposta_id, vendedor_nome, valor_proposta) %>%
+  dplyr::rename(Vendedor = vendedor_nome, Valor = valor_proposta) %>%
 
-#https://letmegooglethat.com/?q= 2020012416165952745
-prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
-  dplyr::rename(Proposta = proposta_id, Vendedor = vendedor_nome, Valor = valor_proposta)
-
-
-prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
-  dplyr::mutate('Tipo de Negócio' = dplyr::if_else(negocio_tipo_negocio == "N", "Novo", "Usado")) %>%
+  #Selecionando colunas (com if e alterando tipo de data) e alterando nomes
   dplyr::select(-negocio_tipo_negocio) %>%
-  dplyr::mutate('Data de Cadastro' = lubridate::date(proposta_data_cadastro))%>%
+  dplyr::mutate('Data de Cadastro' = lubridate::date(proposta_data_cadastro)) %>%
+  dplyr::arrange(desc(proposta_data_cadastro)) %>%
   dplyr::mutate('Status' = dplyr::if_else(proposta_status == 0, 'Pendente', 'Revisada')) %>%
-  dplyr::select(Proposta, 'Data de Cadastro', Status, Vendedor, Valor, 'Tipo de Negócio')
+  dplyr::select(Vendedor, Valor, Status, 'Data de Cadastro')
 
 #'<a href="http://rstudio.com">RStudio</a>'
-prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
-  dplyr::mutate(Link = paste0('<a href="', paste0("https://letmegooglethat.com/?q=", Proposta),'", target=\"_blank\">Link da proposta</a>'))
+#prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
+#  dplyr::mutate(Link = paste0('<a href="', paste0("https://letmegooglethat.com/?q=", 'Data de Cadastro'),'", #target=\"_blank\">Link da proposta</a>'))
 
 prop_ate_1ano_ant 
 
@@ -921,7 +920,7 @@ tabela <- prop_ate_1ano_ant %>%
 tabela2 <- prop_ate_1ano_ant %>%
   DT::datatable(rownames = F,
                 escape = F,
-                options = list(columnDefs = list(list(className = 'dt-center', targets = c(0,1,2,3,4,5,6))),
+                options = list(columnDefs = list(list(className = 'dt-center', targets = c(0,1,2,3,4))),
                                searchHighlight = TRUE,
                                search = list(caseInsensitive = T)),
                 filter = 'top',
@@ -930,8 +929,9 @@ tabela2 <- prop_ate_1ano_ant %>%
 tabela3 <- prop_ate_1ano_ant %>%
   DT::datatable(rownames = F,
                 escape = F,
+                filter = 'top',
                 extensions = 'Buttons',
-                options = list(columnDefs = list(list(className = 'dt-center', targets = c(0,1,2,3,4,5,6))),
+                options = list(columnDefs = list(list(className = 'dt-center', targets = c(0,1,2,3,4))),
                                searchHighlight = TRUE,
                                search = list(caseInsensitive = T),
                                dom = 'Blfrtip',
@@ -941,19 +941,73 @@ tabela3 <- prop_ate_1ano_ant %>%
                                  text = 'Download'
                                         )))
   )
+
+
+#vendedor, cliente, produto e valor, status, data de cadastro (ordem de cadastro, mais novas primeiro), atualização,
+
+library(reactable)
+
+table_reac <- reactable(prop_ate_1ano_ant, details = function(index) {
+  htmltools::div(
+    "Detalhes: ", index,
+    htmltools::tags$pre(paste(capture.output(iris[index, ]), collapse = "\n"))
+  )
+})
+
+table_reac_2 <- reactable(prop_ate_1ano_ant, filterable = T, details = colDef(
+  name = "More",
+  details = JS("function(rowInfo) {
+    return 'Detalhes da linha: ' + rowInfo.index +
+      '<pre>' + JSON.stringify(rowInfo.row, null, 2) + '</pre>'
+  }"),
+  html = TRUE,
+  width = 60
+))
+
+### Propostas abertas 3
+
+## ```{r, fig.height=6, fig.width=4}
+
+## tabela3
+
+## ```
+
+### Propostas abertas reac
+
+## ```{r, fig.height=6, fig.width=4}
+
+## table_reac
+
+## ```
+
+### Propostas abertas reac
+
+## ```{r, fig.height=6, fig.width=4}
+
+## table_reac_2
+
+## ```
+
+
+library(htmlTable)
+
+htmlTable::htmlTable(prop_ate_1ano_ant)
+
+
+library(tableHTML)
+
+
+tableHTML::tableHTML(prop_ate_1ano_ant)
 ```
 
 
-Propostas
-=======================================================================
 
-Column
------------------------------------------------------------------------
 
-### Propostas abertas
+### Tabela HTML
 
 ```{r, fig.height=6, fig.width=4}
 
-tabela3
+tableHTML::tableHTML(prop_ate_1ano_ant)
 
 ```
+
