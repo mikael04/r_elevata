@@ -143,3 +143,10 @@ for(i in (1:x)){
   invisible(TRUE)
 }
 #############################################################
+## Gerar arquivo com horário de última atualização
+#############################################################
+
+# data <- paste0("Gráficos: ", format(Sys.time(), "%d/%m/%Y %H:%M:%S"))
+# writeLines(data, "update_time.txt") 
+
+#############################################################
