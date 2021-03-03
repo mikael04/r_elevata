@@ -381,7 +381,6 @@ pr_top5_fat_aux <- pr_top5_fat_aux[!is.na(pr_top5_fat_aux$categoria_nome),]
 ##Aqui só renomeio pra ver que a categoria outros tem um * representando a soma de todas as outras categorias também
 #pr_top5_fat_aux$categoria_nome[(pr_top5_fat_aux$categoria_nome == "OUTRA")] <- "OUTRA *" #Não mais necessário pq já tneho que adicionar a categoria outra então já faço com nome que quero
 
-
 ## Aqui já estõu fazendo a média das categorias
 pr_top5_fat_med <- pr_top5_fat_aux %>%
   select(categoria_nome, produto_categoria_id, fat, n) %>%

@@ -1,148 +1,96 @@
 rm(list = ls())
-library(purrr)
-library(data.table)
-library(dplyr)
 
-setwd("E:\\Mikael\\OneDrive\\Projetos\\Scripts_R\\r_elevata")
-teste = F
-#Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")
-##Usado para super e komatsu
-##renderiza dash_negocios_propostas e dash_visitas_mapas
+prop_ate_1ano_ant <- data.table::fread("Testes/propostas_pendentes.csv")
+library(tableHTML)
+tableHTML::write_tableHTML(tableHTML::tableHTML(prop_ate_1ano_ant), file = 'Testes/example_table.html')
 
-# geral
-# marcas
-# marcas_k
-# negocios
-# propostas
-# visitas_clientes
+# Now create an ugly but minimalish HTML output from the Rmd ------------------
+knitr::knit2html(
+  input = "Testes/example_table.html",
+  output = "Testes/outputs/exemplo_minimalista.html",
+  ##Adicionando um css em branco para não pegar o default
+  stylesheet = "Testes/style_blank.css",
+  header = "Testes/header.txt",
+)
 
+##########################################################
+## Funcao para substituir
+library(xfun)
 
-empresas_ativas <- fread("Tabelas/empresas_ativas_id.csv") %>%
-  select(empresa_id)
+##########################################################
+## Substituindo a tabela por tabela comum css irá mexer nessa classe
 
-params_list_i <- empresas_ativas$empresa_id
-params_list <- as.list(params_list_i)
-## 0 -> indica que estamos rodando para o dia atual
-num_dias_list <- as.list(0)
-x <- length(params_list)
-####################################
-####################################
-########################################################
-###Teste
-# params_test <- list(78)
-# template <- "dash_marcas_k.Rmd"
-# out_file <- sprintf("Dashs/Marcas_%s", params_test[1])
-# parameters <- list(variable1 = params_list[i])
-# 
-# rmarkdown::render(template,
-#                   output_file = out_file,
-#                   params = parameters)
-########################################################
-## Gerando dashs geral ##Funcionando, apenas comentada pra facilitar teste das marcas
-# for(i in (1:x)){
-#   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'num_dias_list')))
-#   template <- "dash_geral.Rmd"
-#   #Teste (nome da empresa, mais fácil de analisar)
-#   # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
-#   if(teste){
-#     print(i)
-#     print(params_list[i])
-#     #print(params_list[[i]])
-#     #print(as.list(params_list[[i]]))
-#   }
-#   out_file <- sprintf("Dashs/Geral_%s", params_list[i])
-#   ##Final de ano
-#   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
-#   
-#   rmarkdown::render(template,
-#                     output_file = out_file,
-#                     params = parameters)
-#   invisible(TRUE)
-# }
-# ## Gerando dashs marcas
-# for(i in (1:x)){
-#   if (params_list[i] != 78 & params_list[i] != 79)
-#   {
-#     rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'num_dias_list')))
-#     template <- "dash_marcas.Rmd"
-#     if(teste){
-#       print(i)
-#       print(params_list[i])
-#       print(params_list[[i]])
-#       print(as.list(params_list[[i]]))
-#     }
-#     out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
-#     parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
-#     
-#     rmarkdown::render(template,
-#                       output_file = out_file,
-#                       params = parameters)
-#     invisible(TRUE)
-#   }else{ ##########Caso seja a komatsu, marcas diferentes
-#     template <- "dash_marcas_k.Rmd"
-#     out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
-#     parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
-#     
-#     rmarkdown::render(template,
-#                       output_file = out_file,
-#                       params = parameters)
-#     invisible(TRUE)
-#   }
-# }
-# ## Gerando dash negocios
-# for(i in (1:x)){
-#   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'num_dias_list')))
-#   template <- "dash_negocios.Rmd"
-#   if(teste){
-#     print(i)
-#     print(params_list[i])
-#     print(params_list[[i]])
-#     print(as.list(params_list[[i]]))
-#   }
-#   out_file <- sprintf("Dashs/Negocios_%s", params_list[i])
-#   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
-#   
-#   rmarkdown::render(template,
-#                     output_file = out_file,
-#                     params = parameters)
-#   invisible(TRUE)
-# }
-# ## Gerando dash propostas
-# for(i in (1:x)){
-#   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'num_dias_list')))
-#   template <- "dash_propostas.Rmd"
-#   if(teste){
-#     print(i)
-#     print(params_list[i])
-#     print(params_list[[i]])
-#     print(as.list(params_list[[i]]))
-#   }
-#   out_file <- sprintf("Dashs/Propostas_%s", params_list[i])
-#   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
-#   
-#   rmarkdown::render(template,
-#                     output_file = out_file,
-#                     params = parameters)
-#   invisible(TRUE)
-# }
-# ## Gerando dash visitas_clientes
-# for(i in (1:x)){
-#   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'num_dias_list')))
-#   template <- "dash_visitas_clientes.Rmd"
-#   if(teste){
-#     print(i)
-#     print(params_list[i])
-#     print(params_list[[i]])
-#     print(as.list(params_list[[i]]))
-#   }
-#   out_file <- sprintf("Dashs/Visitas_Clientes_%s", params_list[i])
-#   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
-#   
-#   rmarkdown::render(template,
-#                     output_file = out_file,
-#                     params = parameters)
-#   invisible(TRUE)
-# }
-#############################################################
-data <- paste0("Gráficos: ", format(Sys.time(), "%d/%m/%Y %H:%M:%S"))
-writeLines(data, "update_time.txt")
+f_table <- ('<table style="border-collapse:collapse;" class=table_\\d\\d\\d\\d border=1>')
+r_table <- ('<table class="table">')
+
+gsub_dir(dir = "Testes/outputs/", pattern = f_table, replacement = r_table)
+##########################################################
+
+##########################################################
+## Substituindo headers da tabela (thead) (assim ele transforma em hide e não mostra o header)
+th_head <- ('<thead>')
+gsub_dir(dir = "Testes/outputs/", pattern = th_head, replacement = '<thead class="hide">')
+##########################################################
+
+##########################################################
+## Substituindo headers (table header, para não aparecer) e id por classe
+
+f_th <- c("id=", "tableHTML_header_1", "tableHTML_header_2",
+          "tableHTML_header_3", "tableHTML_header_4", "tableHTML_header_5", "tableHTML_header_6")
+r_th <- c("class=", "hide", "hide",
+          "hide", "hide", "hide", "hide")
+
+## Replace id and header
+for (i in 1:length(f_th)){
+  gsub_dir(dir = "Testes/outputs/", pattern = f_th[i], replacement = r_th[i])
+}
+##########################################################
+
+##########################################################
+## Substituindo nomes das colunas pelos nomes corretos (css lida com a formatação)
+
+f_tb <- c('class="tableHTML_rownames"', 'class="tableHTML_column_1"', 'class="tableHTML_column_2"', 'class="tableHTML_column_3"',
+          'class="tableHTML_column_4"', 'class="tableHTML_column_5"')
+r_tb <- c('class="hide" data-heading="ID"', 'class="table_content" data-heading="Vendedor"', 'class="table_content" data-heading="Cliente"', 'class="table_content" data-heading="Produto - Valor"', 'class="table_content_hide" data-heading="Status"', 'class="table_content_hide" data-heading="Data"')
+## Replace id and header
+for (i in 1:length(f_tb)){
+  gsub_dir(dir = "Testes/outputs/", pattern = f_tb[i], replacement = r_tb[i])
+}
+##########################################################/mnt/data/Mikael/Projetos/Scripts_R/r_elevata/Testes/outputs/exemplo_minimalista.html
+
+##########################################################
+## Substituindo th pela classe do css e separando por tabelas individualmente
+f_tab <- c('<tr>', '</tr>')
+r_tab <- c('<table class="table">\n<tr class="table__row">', '</tr> </table>')
+for (i in 1:length(f_tab)){
+  gsub_dir(dir = "Testes/outputs/", pattern = f_tab[i], replacement = r_tab[i])
+}
+##########################################################
+
+##########################################################
+## Adicionando linha que terá botão para mais informações
+gsub_dir(dir = "Testes/outputs/", pattern = '<td class="table_content_hide" data-heading="Status"',
+         replacement = '</tr>
+        <tr class="header">
+          <th class="mais_infos">Mais informações <span>+</span></th>
+        </tr>
+        <tr class="hide">
+          <td class="table_content_hide" data-heading="Status"')
+
+##########################################################
+
+##########################################################
+## SAdicionando script jquery para clicar no botão
+script_end <- ("<script>
+      $('tr.header').click(function(){
+        $(this).find('span').text(function(_, value){return value=='-'?'+':'-'});
+        $(this).nextUntil('tr.table__row').css('display', function(i,v){
+            return this.style.display === 'table-row' ? 'none' : 'table-row';
+        });
+      });
+    </script>
+  </body>")
+  
+gsub_dir(dir = "Testes/outputs/", pattern = '</body>', replacement = script_end)
+##########################################################
+

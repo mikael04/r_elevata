@@ -118,7 +118,7 @@ proposta <- fread("Tabelas/proposta.csv", colClasses = c(proposta_id = "characte
 
 ##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
 negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
-  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id)
+  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id, negocio_cliente_id)
 
 
 ##coleta todos os vendedores
@@ -149,7 +149,7 @@ proposta_pagamento <- fread("Tabelas/proposta_pagamento.csv", colClasses = c(pp_
 
 ##junção de proposta com negócio
 prop_ij_neg <- inner_join(proposta, negocio, by=c("proposta_negocio_id" = "negocio_id")) %>%
-  select (proposta_id, proposta_data_cadastro, proposta_status, proposta_negocio_id, negocio_data_cadastro, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_usado, negocio_produto_id)
+  select (proposta_id, proposta_data_cadastro, proposta_status, proposta_negocio_id, negocio_data_cadastro, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_usado, negocio_produto_id, negocio_cliente_id)
 
 ##removendo os campos onde um ID de proposta não corresponde a um ID de negócio (erro no banco?)/Acho que era erro na junção (inner parece ter resolvido)
 #prop_ij_neg <- prop_ij_neg[!is.na(prop_ij_neg$negocio_vendedor_id),]
@@ -870,134 +870,8 @@ if (teste == 0) {
   #rm(list=ls())
 }
 
-######################
-## Criação das tabelas
-######################
-
-library(DT)
-#https://letmegooglethat.com/?q= 2020012416165952745
-prop_ate_1ano_ant <- p_ij_n_ij_v_ij_pp_n %>%
-  dplyr::filter(proposta_data_cadastro > ano_atual - years(1)) %>%
-  dplyr::filter(proposta_status == 0) %>%
-  dplyr::select(proposta_id, proposta_data_cadastro, proposta_status, vendedor_nome, pp_valor_tot, negocio_tipo_negocio)
-
-prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
-  dplyr::group_by(proposta_id) %>%
-  dplyr::mutate (valor_proposta = sum(pp_valor_tot)) %>%
-  dplyr::select(-pp_valor_tot) %>%
-  dplyr::distinct(proposta_id, .keep_all = T) %>%
-  dplyr::ungroup () %>%
-  
-  #Selecionando colunas e alterando nomes
-  dplyr::select(-proposta_id, vendedor_nome, valor_proposta) %>%
-  dplyr::rename(Vendedor = vendedor_nome, Valor = valor_proposta) %>%
-
-  #Selecionando colunas (com if e alterando tipo de data) e alterando nomes
-  dplyr::select(-negocio_tipo_negocio) %>%
-  dplyr::mutate('Data de Cadastro' = lubridate::date(proposta_data_cadastro)) %>%
-  dplyr::arrange(desc(proposta_data_cadastro)) %>%
-  dplyr::mutate('Status' = dplyr::if_else(proposta_status == 0, 'Pendente', 'Revisada')) %>%
-  dplyr::select(Vendedor, Valor, Status, 'Data de Cadastro')
-
-#'<a href="http://rstudio.com">RStudio</a>'
-#prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
-#  dplyr::mutate(Link = paste0('<a href="', paste0("https://letmegooglethat.com/?q=", 'Data de Cadastro'),'", #target=\"_blank\">Link da proposta</a>'))
-
-prop_ate_1ano_ant 
-
-library(DT)
-tabela <- prop_ate_1ano_ant %>%
-  DT::datatable(rownames = F,
-                escape = F,
-                class = 'cell-border stripe',
-                extensions = list('Buttons', 'Responsive'),
-                options = list(dom = 'Blfrtip',
-                               buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-                               lengthMenu = list(c(10,25,50,-1),
-                                                 c(10,25,50,"All"))))
 
 
-tabela2 <- prop_ate_1ano_ant %>%
-  DT::datatable(rownames = F,
-                escape = F,
-                options = list(columnDefs = list(list(className = 'dt-center', targets = c(0,1,2,3,4))),
-                               searchHighlight = TRUE,
-                               search = list(caseInsensitive = T)),
-                filter = 'top',
-                extensions = list('Responsive'))
-
-tabela3 <- prop_ate_1ano_ant %>%
-  DT::datatable(rownames = F,
-                escape = F,
-                filter = 'top',
-                extensions = 'Buttons',
-                options = list(columnDefs = list(list(className = 'dt-center', targets = c(0,1,2,3,4))),
-                               searchHighlight = TRUE,
-                               search = list(caseInsensitive = T),
-                               dom = 'Blfrtip',
-                               buttons = list('copy', 'print', list(
-                                 extend = 'collection',
-                                 buttons = c('csv', 'excel', 'pdf'),
-                                 text = 'Download'
-                                        )))
-  )
-
-
-#vendedor, cliente, produto e valor, status, data de cadastro (ordem de cadastro, mais novas primeiro), atualização,
-
-library(reactable)
-
-table_reac <- reactable(prop_ate_1ano_ant, details = function(index) {
-  htmltools::div(
-    "Detalhes: ", index,
-    htmltools::tags$pre(paste(capture.output(iris[index, ]), collapse = "\n"))
-  )
-})
-
-table_reac_2 <- reactable(prop_ate_1ano_ant, filterable = T, details = colDef(
-  name = "More",
-  details = JS("function(rowInfo) {
-    return 'Detalhes da linha: ' + rowInfo.index +
-      '<pre>' + JSON.stringify(rowInfo.row, null, 2) + '</pre>'
-  }"),
-  html = TRUE,
-  width = 60
-))
-
-### Propostas abertas 3
-
-## ```{r, fig.height=6, fig.width=4}
-
-## tabela3
-
-## ```
-
-### Propostas abertas reac
-
-## ```{r, fig.height=6, fig.width=4}
-
-## table_reac
-
-## ```
-
-### Propostas abertas reac
-
-## ```{r, fig.height=6, fig.width=4}
-
-## table_reac_2
-
-## ```
-
-
-library(htmlTable)
-
-htmlTable::htmlTable(prop_ate_1ano_ant)
-
-
-library(tableHTML)
-
-
-tableHTML::tableHTML(prop_ate_1ano_ant)
 ```
 
 
@@ -1007,7 +881,7 @@ tableHTML::tableHTML(prop_ate_1ano_ant)
 
 ```{r, fig.height=6, fig.width=4}
 
-tableHTML::tableHTML(prop_ate_1ano_ant)
+
 
 ```
 
