@@ -1,4 +1,4 @@
-# rm(list = ls())
+rm(list = ls())
 #Lib q será futuramente usada pros painéis interativos
 #library(shiny)
 #Lib pra conexão com o banco
@@ -23,13 +23,14 @@ library(dplyr) #Contido no tidyverse
 library(knitr)
 source("fct_tempo.R")
 source("fct_fmt_din.R")
+source("fct_fmt_data.R")
 source("fct_fmt_nome.R")
 
 
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
 dash = T
 
@@ -71,11 +72,7 @@ if(!teste){
 s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
-if(params$variable1 == 'emp_par'){
   empresa = 16
-}else{
-  empresa = as.integer(params$variable1)
-}
 
 ###################################################################################
 ## Gerando tabela
@@ -163,7 +160,6 @@ p_ij_n_ij_pp_ij_prod <- dplyr::inner_join (p_ij_n_ij_v_ij_pp_n, produto, by= c('
 p_ij_n_ij_pp_ij_prod_cli <- dplyr::inner_join (p_ij_n_ij_pp_ij_prod, cliente, by= c('negocio_cliente_id' = 'cliente_id')) %>%
   dplyr::select(-negocio_cliente_id)
 
-#https://letmegooglethat.com/?q= 2020012416165952745
 prop_ate_1ano_ant <- p_ij_n_ij_pp_ij_prod_cli %>%
   dplyr::filter(proposta_data_cadastro > ano_atual - years(1)) %>%
   dplyr::filter(proposta_status == 0) %>%
@@ -171,25 +167,27 @@ prop_ate_1ano_ant <- p_ij_n_ij_pp_ij_prod_cli %>%
 
 prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
   dplyr::group_by(proposta_id) %>%
-  dplyr::mutate (valor_proposta = sum(pp_valor_tot)) %>%
-  dplyr::mutate('Produto + Valor' = paste(produto_nome, format(valor_proposta, scientific = F), sep = "  - R$")) %>%
+  ##somo e já converto para impressão (usando a funçao pra formatar o dinheiro)
+  dplyr::mutate (valor_proposta = func_fmt_din(sum(pp_valor_tot))) %>%
+  ##formato a data para impressão
+  dplyr::mutate ('Data de Cadastro' = func_fmt_data_d_m_Y(proposta_data_cadastro)) %>%
+  dplyr::mutate('Produto + Valor' = paste(produto_nome, valor_proposta, sep = "  - ")) %>%
   # dplyr::select(-pp_valor_tot) %>%
   dplyr::distinct(proposta_id, .keep_all = T) %>%
   dplyr::ungroup () %>%
   
   #Selecionando colunas e alterando nomes
-  dplyr::select(-proposta_id, -valor_proposta) %>%
+  dplyr::select(-proposta_id, -valor_proposta, proposta_data_cadastro) %>%
   dplyr::rename(Vendedor = vendedor_nome, Cliente = cliente_nome) %>%
   
   #Selecionando colunas (com if e alterando tipo de data) e alterando nomes
   dplyr::select(-negocio_tipo_negocio) %>%
-  dplyr::mutate('Data de Cadastro' = lubridate::date(proposta_data_cadastro)) %>%
   dplyr::arrange(desc(proposta_data_cadastro)) %>%
   dplyr::mutate('Status' = dplyr::if_else(proposta_status == 0, 'Pendente', 'Revisada')) %>%
   dplyr::select(Vendedor, Cliente, 'Produto + Valor', Status, 'Data de Cadastro')
 
-#'<a href="http://rstudio.com">RStudio</a>'
-#prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
+
 #  dplyr::mutate(Link = paste0('<a href="', paste0("https://letmegooglethat.com/?q=", 'Data de Cadastro'),'", #target=\"_blank\">Link da proposta</a>'))
 
+## Escrevendo a tabela resultante em csv
 data.table::fwrite(prop_ate_1ano_ant, "Testes/propostas_pendentes.csv")
