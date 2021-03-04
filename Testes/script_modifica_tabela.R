@@ -69,43 +69,17 @@ f_tb <- c('class="tableHTML_rownames"',
           'class="tableHTML_column_3"',
           'class="tableHTML_column_4"',
           'class="tableHTML_column_5"')
-r_tb <- c('class="hide"><div class="row"><div class="column">ID:</div><div class="value"',
-          'class="table_content"><div class="row"><div class="column">Vendedor:</div><div class="value"', 
-          'class="table_content"><div class="row"><div class="column">Cliente:</div><div class="value"',
-          'class="table_content"><div class="row"><div class="column">Produto - Valor:</div><div class="value"',
-          'class="table_content"><div class="row"><div class="column">Status:</div><div class="value"',
-          'class="table_content"><div class="row"><div class="column">Data:</div><div class="value"')
+r_tb <- c('class="hide"',
+          'class="table_content"', 
+          'class="table_content"',
+          'class="table_content"',
+          'class="table_content"',
+          'class="table_content"')
 ## Replace id and header
 for (i in 1:length(f_tb)){
   gsub_dir(dir = "Testes/outputs/", pattern = f_tb[i], replacement = r_tb[i])
 }
-gsub_dir(dir = "Testes/outputs/", pattern = '</td>', replacement = "</td></div></div>")
+gsub_dir(dir = "Testes/outputs/", pattern = '</td>', replacement = "</td>")
 
-##########################################################
-
-##########################################################
-## Adicionando linha que terá botão para mais informações
-gsub_dir(dir = "Testes/outputs/", pattern = '<td class="table_content"><div class="row"><div class="column">Status:</div><div class="value"',
-         replacement = '<td class="header">
-          <div class="mais_infos">Mais informações <span>+</span></div>
-        </tr>
-        <div class="hide">
-          <td class="table_content"><div class="row"><div class="column">Status:</div><div class="value"')
-
-##########################################################
-
-##########################################################
-## Adicionando script jquery para clicar no botão
-script_end <- ("<script>
-      $('tr.header').click(function(){
-        $(this).find('span').text(function(_, value){return value=='-'?'+':'-'});
-        $(this).nextUntil('tr.table__row').css('display', function(i,v){
-            return this.style.display === 'table-row' ? 'none' : 'table-row';
-        });
-      });
-    </script>
-  </body>")
-
-gsub_dir(dir = "Testes/outputs/", pattern = '</body>', replacement = script_end)
 ##########################################################
 
