@@ -42,11 +42,6 @@ tr.hide{
    user-select: all;
    text-align: left;
  }
- .table_content_hide {
-    display: block;
-    padding: 0.5rem 0;
-    user-select: all;
-  }
 .table__row {
   font-size:12px;
   border: 0;
