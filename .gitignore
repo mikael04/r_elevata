@@ -45,7 +45,6 @@ test.Rmd
 negocios_vendedores_negocio_produto.csv
 propostas_c_forma_pagamento.csv
 propostas_c_modo_pagamento.csv
-Testes
 Dashs_exemplo
 Dashs_final_ano
 m1_c.html
@@ -63,3 +62,4 @@ test_table_html.Rmd
 example_table.html
 example_table.txt
 html_tabelas_propostas.html
+*.html

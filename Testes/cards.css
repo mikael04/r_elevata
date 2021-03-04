@@ -1,0 +1,203 @@
+.collapsible-body{
+    font-size:12px;
+}
+.card {
+    font-size:12px; 
+    border: 0;
+    margin-bottom: 30px;
+    /*margin-top: 30px;*/
+    border-radius: 6px;
+    color: #333;
+    background: #fff;
+    width: 100%;
+}
+.card [class*=card-header-] {
+    margin: 0 15px;
+    padding: 0;
+    position: relative;
+}.card .card-header {
+    z-index: 3!important;
+}.card .card-header {
+    border-bottom: none;
+    background: 0 0;
+}.card-header:first-child {
+    border-radius: calc(.25rem - 1px) calc(.25rem - 1px) 0 0;
+}.card .card-header .title, .card [class*=card-header-], .card [class*=card-header-] .card-title, .card [class*=card-header-] .card-title a, .card [class*=card-header-] .icon i, .card[class*=bg-], .card[class*=bg-] .card-title, .card[class*=bg-] .card-title a, .card[class*=bg-] .icon i {
+    color: #fff;
+}
+.card [class*=card-header-] .card-icon, .card [class*=card-header-] .card-text {
+    border-radius: 3px;
+    background-color: #999;
+    padding: 15px;
+    margin-top: -20px;
+    margin-right: 15px;
+    float: left;
+}.card .card-header-success .card-icon, .card .card-header-success .card-text, .card .card-header-success:not(.card-header-icon):not(.card-header-text) {
+    box-shadow: 0 4px 20px 0 rgba(0,0,0,.14), 0 7px 10px -5px rgba(76,175,80,.4);
+}.card-stats .card-header .card-category:not([class*=text-]) {
+    color: #999;
+    font-size: 14px;
+}.card-stats .card-header.card-header-icon .card-category, .card-stats .card-header.card-header-icon .card-title, .card-stats .card-header.card-header-text .card-category, .card-stats .card-header.card-header-text .card-title {
+    margin: 0;
+}.card-stats .card-header .card-icon+.card-category, .card-stats .card-header .card-icon+.card-title {
+    padding-top: 10px;
+}.card-stats .card-header.card-header-icon .card-category, .card-stats .card-header.card-header-icon .card-title, .card-stats .card-header.card-header-text .card-category, .card-stats .card-header.card-header-text .card-title {
+    margin: 0;
+}.card .card-header.card-header-icon .card-title, .card .card-header.card-header-text .card-title {
+    margin-top: 15px;
+    color: #3C4858;
+}.card .card-header-success .card-icon, .card .card-header-success .card-text, .card .card-header-success:not(.card-header-icon):not(.card-header-text), .card.bg-success, .card.card-rotate.bg-success .back, .card.card-rotate.bg-success .front {
+    background: linear-gradient(60deg,#66bb6a,#43a047);
+}
+.card .card-header-rose .card-icon, .card .card-header-rose .card-text, .card .card-header-rose:not(.card-header-icon):not(.card-header-text), .card.bg-rose, .card.card-rotate.bg-rose .back, .card.card-rotate.bg-rose .front {
+    background: linear-gradient(60deg,#ec407a,#d81b60);
+}.card-stats .card-header+.card-footer {
+    border-top: 1px solid #eee;
+    margin-top: 10px;
+    padding-bottom:10px;
+}
+.card .card-body+.card-footer, .card .card-footer {
+    padding: 10px 0 0;
+    margin: 0 15px 10px;
+    border-radius: 0;
+    justify-content: space-between;
+    align-items: center;
+}
+.card .card-footer {
+    display: flex;
+    background-color: transparent;
+    border: 0;
+}.card .card-body+.card-footer .stats, .card .card-footer .stats {
+    color: #999;
+    font-size: 12px;
+    line-height: 22px;
+}
+.card .card-footer .author, .card .card-footer .stats {
+    display: inline-flex;
+}
+.card .card-category:not([class*=text-]), .card .card-footer .stats {
+    color: #999;
+}
+html * {
+    -webkit-font-smoothing: antialiased;   
+}
+* {
+    -webkit-tap-highlight-color: rgba(255,255,255,0);
+    -webkit-tap-highlight-color: transparent;
+}
+*, ::after, ::before {
+    box-sizing: border-box;
+}
+.card .card-body+.card-footer, .card .card-footer {
+    padding: 10px 0 0;
+    margin: 0 15px 10px;
+    border-radius: 0;
+    justify-content: space-between;
+    align-items: center;
+}.card-stats .card-header .card-category:not([class*=text-]) {
+    color: #999;
+    font-size: 14px;
+}
+.card-stats .card-header.card-header-icon .card-category, .card-stats .card-header.card-header-icon .card-title, .card-stats .card-header.card-header-text .card-category, .card-stats .card-header.card-header-text .card-title {
+    margin: 0;
+}
+.card-stats .card-header .card-icon+.card-category, .card-stats .card-header .card-icon+.card-title {
+    padding-top: 10px;
+}.card .card-body+.card-footer, .card .card-footer {
+    padding: 10px 0 0;
+    margin: 0 15px 10px;
+    border-radius: 0;
+    justify-content: space-between;
+    align-items: center;
+}
+ .card .card-header-warning .card-icon, .card .card-header-warning .card-text, .card .card-header-warning:not(.card-header-icon):not(.card-header-text) {
+    box-shadow: 0 4px 20px 0 rgba(0,0,0,.14), 0 7px 10px -5px rgba(255,152,0,.4);
+}
+ .card .card-header-warning .card-icon, .card .card-header-warning .card-text, .card .card-header-warning:not(.card-header-icon):not(.card-header-text), .card.bg-warning, .card.card-rotate.bg-warning .back, .card.card-rotate.bg-warning .front {
+    background: linear-gradient(60deg,#ffc107,#ffc107);
+}
+ .card .card-header-info .card-icon, .card .card-header-info .card-text, .card .card-header-info:not(.card-header-icon):not(.card-header-text) {
+    box-shadow: 0 4px 20px 0 rgba(0,0,0,.14), 0 7px 10px -5px rgba(0,188,212,.4);
+}
+.card .card-header-info .card-icon, .card .card-header-info .card-text, .card .card-header-info:not(.card-header-icon):not(.card-header-text), .card.bg-info, .card.card-rotate.bg-info .back, .card.card-rotate.bg-info .front {
+    background: linear-gradient(60deg,#2196f3,#2196f3);
+}
+.card .card-header-rose .card-icon, .card .card-header-rose .card-text, .card .card-header-rose:not(.card-header-icon):not(.card-header-text) {
+    box-shadow: 0 4px 20px 0 rgba(0,0,0,.14), 0 7px 10px -5px rgba(233,30,99,.4);
+}
+.card .card-header-rose .card-icon, .card .card-header-rose .card-text, .card .card-header-rose:not(.card-header-icon):not(.card-header-text), .card.bg-rose, .card.card-rotate.bg-rose .back, .card.card-rotate.bg-rose .front {
+    background: linear-gradient(60deg,#ec407a,#d81b60);
+}
+.card .card-header-brown .card-icon, .card .card-header-brown .card-text, .card .card-header-brown:not(.card-header-icon):not(.card-header-text), .card.bg-brown, .card.card-rotate.bg-brown .back, .card.card-rotate.bg-brown .front {
+    background: linear-gradient(60deg,#795548,#795548 );
+}
+.card .card-header-red .card-icon, .card .card-header-red .card-text, .card .card-header-red:not(.card-header-icon):not(.card-header-text), .card.bg-red, .card.card-rotate.bg-red .back, .card.card-rotate.bg-red .front {
+    background: linear-gradient(60deg,#f44336 ,#f44336  );
+}
+.scroll-horizontal {
+ overflow-x: auto;
+ white-space: nowrap;
+}
+
+.scroll-vertical{
+    max-width: 400px;
+    overflow: hidden;
+}
+.full-button {
+width:100%;
+margin-bottom:5px;
+margin-top:5px;
+margin-left:0;
+margin-right:0;
+padding-left:0;
+padding-right:0;
+display:block;
+text-align:center; /*This will result in centering the link text, which is probably what you want -brianjohnsondesign.com*/
+}
+.margin-top-20{
+    margin-top:20px;
+}
+.left-10{
+    padding-left:10px;
+}
+.pnl-modelos{
+    background-color:#fafafa ;
+    border-radius:6px 6px;
+}
+ul.sidenav.sidenav-fixed > li:last-child{
+    margin-bottom: 70px;
+}
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey; 
+  border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: grey; 
+  border-radius: 10px;
+}
+.h5-header{
+    font-size:16px;
+}
+.margin-top-10{
+    margin-top:10px;
+}
+.margin-bottom-10{
+    margin-bottom:10px;
+}
+.margin-top-0{
+    margin-top:0px;
+}
+.margin-bottom-0{
+    margin-bottom:0px;
+}
+.font-temp{
+    font-size:12px;
+}
