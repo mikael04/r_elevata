@@ -184,7 +184,7 @@ prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
   dplyr::select(-negocio_tipo_negocio) %>%
   dplyr::arrange(desc(proposta_data_cadastro)) %>%
   dplyr::mutate('Status' = dplyr::if_else(proposta_status == 0, 'Pendente', 'Revisada')) %>%
-  dplyr::select(Vendedor, Cliente, 'Produto + Valor', Status, 'Data de Cadastro')
+  dplyr::select(Cliente, Vendedor, 'Produto + Valor', 'Data de Cadastro')
 
 
 #  dplyr::mutate(Link = paste0('<a href="', paste0("https://letmegooglethat.com/?q=", 'Data de Cadastro'),'", #target=\"_blank\">Link da proposta</a>'))

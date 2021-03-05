@@ -9,7 +9,7 @@ tableHTML::write_tableHTML(tableHTML::tableHTML(prop_ate_1ano_ant), file = 'Test
 # Now create an ugly but minimalish HTML output from the Rmd ------------------
 knitr::knit2html(
   input = "Testes/example_table.html",
-  output = "Testes/outputs/exemplo_minimalista.html",
+  output = "Testes/outputs/manipulacao/exemplo_minimalista.html",
   ##Adicionando um css em branco para não pegar o default
   stylesheet = "Testes/style_blank.css",
   header = "Testes/header.txt",
@@ -25,7 +25,7 @@ library(xfun)
 f_table <- c('<table style="border-collapse:collapse;" class=table_\\d\\d\\d\\d border=1>', '</table>')
 r_table <- c('<table class="table">', '</table>')
 for (i in 1:length(f_table)){ 
-  gsub_dir(dir = "Testes/outputs/", pattern = f_table[i], replacement = r_table[i])
+  gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_table[i], replacement = r_table[i])
 }
 ##########################################################
 
@@ -34,7 +34,7 @@ for (i in 1:length(f_table)){
 f_tab <- c('<tr>', '</tr>')
 r_tab <- c('<tr class="column">', '</tr>')
 for (i in 1:length(f_tab)){
-  gsub_dir(dir = "Testes/outputs/", pattern = f_tab[i], replacement = r_tab[i])
+  gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_tab[i], replacement = r_tab[i])
 }
 ##########################################################
 
@@ -49,15 +49,23 @@ for (i in 1:length(f_tab)){
 
 f_th <- c("id=",
           'th class="tableHTML_header_1">',
-          "tableHTML_header_2", "tableHTML_header_3", "tableHTML_header_4", "tableHTML_header_5", "tableHTML_header_6")
+          "tableHTML_header_2", "tableHTML_header_3", "tableHTML_header_4", "tableHTML_header_5")
 r_th <- c("class=",
-          "th class = 'title'>Propostas",
-          "hide", "hide", "hide", "hide", "hide")
+          "th class = 'title'> Filtro de Propostas<br><br>
+              <p style='font-weight:400'>Digite um filtro que esteja buscando</p><br>
+              <input id='myInput'' type='text'' placeholder='Procurando...'>
+              <br>",
+          "hide", "hide", "hide", "hide")
 
 ## Replace id and header
 for (i in 1:length(f_th)){
-  gsub_dir(dir = "Testes/outputs/", pattern = f_th[i], replacement = r_th[i])
+  gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_th[i], replacement = r_th[i])
 }
+##########################################################
+
+##########################################################
+## Adicionando classe ao tbody (para busca)
+gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = '<tbody>', replacement = '<tbody id=myTable>')
 ##########################################################
 
 ##########################################################
@@ -67,19 +75,19 @@ f_tb <- c('class="tableHTML_rownames"',
           'class="tableHTML_column_1"', 
           'class="tableHTML_column_2"',
           'class="tableHTML_column_3"',
-          'class="tableHTML_column_4"',
-          'class="tableHTML_column_5"')
+          'class="tableHTML_column_4"')
 r_tb <- c('class="hide"',
           'class="table_content"', 
-          'class="table_content"',
           'class="table_content"',
           'class="table_content"',
           'class="table_content"')
 ## Replace id and header
 for (i in 1:length(f_tb)){
-  gsub_dir(dir = "Testes/outputs/", pattern = f_tb[i], replacement = r_tb[i])
+  gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_tb[i], replacement = r_tb[i])
 }
-gsub_dir(dir = "Testes/outputs/", pattern = '</td>', replacement = "</td>")
+gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = '</td>', replacement = "</td>")
 
 ##########################################################
+
+file.copy(from="Testes/outputs/manipulacao/exemplo_minimalista.html", to="Testes/outputs", overwrite = T, recursive = F, copy.mode = T)
 

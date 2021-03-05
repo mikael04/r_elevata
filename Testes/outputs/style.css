@@ -9,6 +9,7 @@
 
 body {
   font-weight: 400;
+  width: 100%;
   background-color: #F5F5F5;
 }
 
@@ -17,14 +18,16 @@ td, th {
 }
 .column {
   box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
-  border-spacing: 1rem 1rem;
   background-color: #FFFFFF;
   /*margin-bottom: 20px;*/
 }
 .table {
-  margin: 1rem;
-  border-spacing: 1rem 1rem;
+  border-spacing: 0rem 1rem;
   border-collapse: separate;
+  margin: auto;
+  margin-top: 10px;
+  width: 95%;
+  padding: 1rem;
 }
 
  .table_content {
@@ -40,4 +43,13 @@ td, th {
   text-align: center;
   font-size: 1rem;
   font-weight: 800;
+}
+
+#myInput {
+  background-image: url('img/searchicon.png');
+  background-position: 10px 10px;
+  background-repeat: no-repeat;
+  width: 100%;
+  padding: 12px 20px 12px 40px;
+  border: 1px solid #ddd;
 }
