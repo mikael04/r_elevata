@@ -1,0 +1,22 @@
+{
+    "name": "Gráficos",
+    "short_name": "Gráficos",
+    "theme_color": "#000",
+    "background_color": "#fff",
+    "display": "browser",
+    "Scope": "/",
+    "start_url": "",
+    "orientation" : "portrait",
+    "display": "standalone",
+    "icons": [
+      {
+        "src": "src/192x192.png",
+        "sizes": "192x192"
+      },
+      {
+        "src": "src/512x512.png",
+        "sizes": "512x512"
+      }
+    ],
+    "splash_pages": null
+}

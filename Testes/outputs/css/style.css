@@ -1,0 +1,55 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1rem;
+}
+
+body {
+  font-weight: 400;
+  width: 100%;
+  background-color: #F5F5F5;
+}
+
+td, th {
+  padding: 0.5em;
+}
+.column {
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+  background-color: #FFFFFF;
+  /*margin-bottom: 20px;*/
+}
+.table {
+  border-spacing: 0rem 1rem;
+  border-collapse: separate;
+  margin: auto;
+  margin-top: 10px;
+  width: 95%;
+  padding: 1rem;
+}
+
+ .table_content {
+   display: block;
+   user-select: all;
+   text-align: left;
+ }
+.hide {
+  display:none;
+}
+
+.title {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+#myInput {
+  background-image: url('img/searchicon.png');
+  background-position: 10px 10px;
+  background-repeat: no-repeat;
+  width: 100%;
+  padding: 12px 20px 12px 40px;
+  border: 1px solid #ddd;
+}

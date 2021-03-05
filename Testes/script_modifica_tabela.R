@@ -2,6 +2,7 @@ rm(list = ls())
 
 ## Le a tabela salva (já organizada)
 prop_ate_1ano_ant <- data.table::fread("Testes/propostas_pendentes.csv")
+
 library(tableHTML)
 ## imprime em HTML (para facilitar modificação)
 tableHTML::write_tableHTML(tableHTML::tableHTML(prop_ate_1ano_ant), file = 'Testes/example_table.html')
@@ -12,7 +13,7 @@ knitr::knit2html(
   output = "Testes/outputs/manipulacao/exemplo_minimalista.html",
   ##Adicionando um css em branco para não pegar o default
   stylesheet = "Testes/style_blank.css",
-  header = "Testes/header.txt",
+  header = "Testes/header.html",
 )
 
 ##########################################################
@@ -39,23 +40,17 @@ for (i in 1:length(f_tab)){
 ##########################################################
 
 ##########################################################
-# ## Substituindo headers da tabela (thead) (assim ele transforma em hide e não mostra o header)
-# th_head <- ('<thead>')
-# gsub_dir(dir = "Testes/outputs/", pattern = th_head, replacement = '<thead class="hide">')
-# ##########################################################
-
-##########################################################
 ## Substituindo headers (table header, para não aparecer) e id por classe
 
 f_th <- c("id=",
           'th class="tableHTML_header_1">',
-          "tableHTML_header_2", "tableHTML_header_3", "tableHTML_header_4", "tableHTML_header_5")
+          "tableHTML_header_2", "tableHTML_header_3", "tableHTML_header_4", "tableHTML_header_5", "tableHTML_header_6")
 r_th <- c("class=",
           "th class = 'title'> Filtro de Propostas<br><br>
-              <p style='font-weight:400'>Digite um filtro que esteja buscando</p><br>
+              <p style='font-weight:400'>Digite um filtro para busca</p><br>
               <input id='myInput'' type='text'' placeholder='Procurando...'>
               <br>",
-          "hide", "hide", "hide", "hide")
+          "hide", "hide", "hide", "hide", "hide")
 
 ## Replace id and header
 for (i in 1:length(f_th)){
@@ -75,19 +70,39 @@ f_tb <- c('class="tableHTML_rownames"',
           'class="tableHTML_column_1"', 
           'class="tableHTML_column_2"',
           'class="tableHTML_column_3"',
-          'class="tableHTML_column_4"')
+          'class="tableHTML_column_4"',
+          'class="tableHTML_column_5"')
 r_tb <- c('class="hide"',
-          'class="table_content"', 
-          'class="table_content"',
-          'class="table_content"',
-          'class="table_content"')
+          'class="table_content"> <span id="clientes"', 
+          'class="table_content"> <span id="vendedores"',
+          'class="table_content"> <span id="produtos"',
+          'class="table_content"> <span id="datas"',
+          'class="table_content"> <span id="links"')
 ## Replace id and header
 for (i in 1:length(f_tb)){
   gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_tb[i], replacement = r_tb[i])
 }
-gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = '</td>', replacement = "</td>")
+gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = '</td>', replacement = "</span></td>")
 
 ##########################################################
 
+##########################################################
+## Substituindo os caractéres especiais do link
+f_link <- c('&#60;',
+            '&ldquo;&quot;',
+            '&rdquo;&ldquo;',
+            '&#62;')
+r_link <- c('<',
+            '"',
+            '"',
+            '>')
+## Replace id and header
+for (i in 1:length(f_link)){
+  gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_link[i], replacement = r_link[i])
+}
+##########################################################
+
+##########################################################
+## Copiando o arquivo para lugar que está o css (estou fazendo isso pois as substituições precisam ser feitas numa pasta vazia) 
 file.copy(from="Testes/outputs/manipulacao/exemplo_minimalista.html", to="Testes/outputs", overwrite = T, recursive = F, copy.mode = T)
 

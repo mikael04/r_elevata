@@ -167,27 +167,28 @@ prop_ate_1ano_ant <- p_ij_n_ij_pp_ij_prod_cli %>%
 
 prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
   dplyr::group_by(proposta_id) %>%
-  ##somo e já converto para impressão (usando a funçao pra formatar o dinheiro)
+  ## somo e já converto para impressão (usando a funçao pra formatar o dinheiro)
   dplyr::mutate (valor_proposta = func_fmt_din(sum(pp_valor_tot))) %>%
-  ##formato a data para impressão
+  ## formato o link
+  dplyr::mutate(Link = paste0('<a href="', paste0("https://letmegooglethat.com/?q=", proposta_data_cadastro),'", #target=\"_blank\">Link da proposta</a>')) %>%
+  ## formato a data para impressão
   dplyr::mutate ('Data de Cadastro' = func_fmt_data_d_m_Y(proposta_data_cadastro)) %>%
   dplyr::mutate('Produto + Valor' = paste(produto_nome, valor_proposta, sep = "  - ")) %>%
   # dplyr::select(-pp_valor_tot) %>%
   dplyr::distinct(proposta_id, .keep_all = T) %>%
+  ## Organizando tabela
+  dplyr::arrange(desc(proposta_data_cadastro)) %>%
   dplyr::ungroup () %>%
   
-  #Selecionando colunas e alterando nomes
-  dplyr::select(-proposta_id, -valor_proposta, proposta_data_cadastro) %>%
+  ## Selecionando colunas e alterando nomes
+  dplyr::select(-proposta_id, -valor_proposta, -proposta_data_cadastro) %>%
   dplyr::rename(Vendedor = vendedor_nome, Cliente = cliente_nome) %>%
   
-  #Selecionando colunas (com if e alterando tipo de data) e alterando nomes
+  ## Selecionando colunas (com if e alterando tipo de data) e alterando nomes
   dplyr::select(-negocio_tipo_negocio) %>%
-  dplyr::arrange(desc(proposta_data_cadastro)) %>%
   dplyr::mutate('Status' = dplyr::if_else(proposta_status == 0, 'Pendente', 'Revisada')) %>%
-  dplyr::select(Cliente, Vendedor, 'Produto + Valor', 'Data de Cadastro')
-
-
-#  dplyr::mutate(Link = paste0('<a href="', paste0("https://letmegooglethat.com/?q=", 'Data de Cadastro'),'", #target=\"_blank\">Link da proposta</a>'))
+  dplyr::select(Cliente, Vendedor, 'Produto + Valor', 'Data de Cadastro', Link) %>%
+  dplyr::ungroup ()
 
 ## Escrevendo a tabela resultante em csv
 data.table::fwrite(prop_ate_1ano_ant, "Testes/propostas_pendentes.csv")

@@ -1,0 +1,8 @@
+Testando no PC (chrome debug, modo iPhone, service workers)
+
+Online/offline -> Funcionando offline.
+
+Atualização de cache -> 
+    /*Se eu atualizo o index.html (alterando o arquivo do frame) ele atualiza assim que dou um f5 (atualizando).
+    Se eu atualizo o service workers (sw.js) quando dou um f5 ele manda uma notificação, avisando que tem atualização, e se clico na atualização ele atualiza.*/
+    Agora terá um botão de update, ao clicar no botão, caso esteja online, a página será recarregada (o relógio mostrará isso pelo horário em cima). Se estiver offline, ele receberá uma notificação de que está offline e os dados não serão atualizados.
