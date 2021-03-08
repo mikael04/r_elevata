@@ -71,13 +71,13 @@ f_tb <- c('class="tableHTML_rownames"',
           'class="tableHTML_column_2"',
           'class="tableHTML_column_3"',
           'class="tableHTML_column_4"',
-          'class="tableHTML_column_5"')
+          'class="tableHTML_column_5">')
 r_tb <- c('class="hide"',
           'class="table_content"> <span id="clientes"', 
           'class="table_content"> <span id="vendedores"',
           'class="table_content"> <span id="produtos"',
           'class="table_content"> <span id="datas"',
-          'class="table_content"> <span id="links"')
+          'class="table_content"> <span id="links" ')
 ## Replace id and header
 for (i in 1:length(f_tb)){
   gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_tb[i], replacement = r_tb[i])
@@ -91,10 +91,16 @@ gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = '</td>', replacement = "
 f_link <- c('&#60;',
             '&ldquo;&quot;',
             '&rdquo;&ldquo;',
+            '&lsquo;&#62;',
+            '&lsquo;',
+            '&rsquo;',
             '&#62;')
 r_link <- c('<',
             '"',
             '"',
+            '">',
+            "'",
+            "'",
             '>')
 ## Replace id and header
 for (i in 1:length(f_link)){

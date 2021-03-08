@@ -52,3 +52,40 @@ td, th {
   padding: 12px 20px 12px 40px;
   border: 1px solid #ddd;
 }
+#clientes {
+  font-size: 1.25rem;
+}
+
+#vendedores {
+  font-size: 0.75rem;
+}
+#vendedores::after {
+  content: "(Vendedor)";
+  display: inline-block;
+  width: 5rem;
+  margin-left: 0.5rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+#produtos {
+  font-size: 0.75rem;
+}
+
+#datas {
+  font-size: 0.75rem;
+}
+
+#datas::after {
+  content: "(Data de cadastro)";
+  display: inline-block;
+  width: 10rem;
+  margin-left: 0.5rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+#links {
+  color: blue;
+  text-decoration: underline;
+}
