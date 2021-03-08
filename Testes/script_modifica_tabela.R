@@ -104,5 +104,5 @@ for (i in 1:length(f_link)){
 
 ##########################################################
 ## Copiando o arquivo para lugar que está o css (estou fazendo isso pois as substituições precisam ser feitas numa pasta vazia) 
-file.copy(from="Testes/outputs/manipulacao/exemplo_minimalista.html", to="Testes/outputs", overwrite = T, recursive = F, copy.mode = T)
+file.copy(from="Testes/outputs/manipulacao/lista_propostas.html", to="Testes/outputs", overwrite = T, recursive = F, copy.mode = T)
 
