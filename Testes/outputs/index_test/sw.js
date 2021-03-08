@@ -1,6 +1,6 @@
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.0.2/workbox-sw.js');
 
-const cacheVersion = "v6";
+const cacheVersion = "v1";
 
 const {registerRoute} = workbox.routing;
 const {NetworkFirst, StaleWhileRevalidate, CacheFirst, } = workbox.strategies;

@@ -160,6 +160,7 @@ p_ij_n_ij_pp_ij_prod <- dplyr::inner_join (p_ij_n_ij_v_ij_pp_n, produto, by= c('
 p_ij_n_ij_pp_ij_prod_cli <- dplyr::inner_join (p_ij_n_ij_pp_ij_prod, cliente, by= c('negocio_cliente_id' = 'cliente_id')) %>%
   dplyr::select(-negocio_cliente_id)
 
+#20200424101033959723
 prop_ate_1ano_ant <- p_ij_n_ij_pp_ij_prod_cli %>%
   dplyr::filter(proposta_data_cadastro > ano_atual - years(1)) %>%
   dplyr::filter(proposta_status == 0) %>%
@@ -169,6 +170,7 @@ prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
   dplyr::group_by(proposta_id) %>%
   ## somo e já converto para impressão (usando a funçao pra formatar o dinheiro)
   dplyr::mutate (valor_proposta = func_fmt_din(sum(pp_valor_tot))) %>%
+  dplyr::mutate (Produtos = paste0(produto_nome, collapse = " --- ")) %>%
   ## formato o link
   ##  onclick="window.open('http://google.com', '_blank')">LINK DA PROPOSTA
   
@@ -189,7 +191,7 @@ prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
   ## Selecionando colunas (com if e alterando tipo de data) e alterando nomes
   dplyr::select(-negocio_tipo_negocio) %>%
   dplyr::mutate('Status' = dplyr::if_else(proposta_status == 0, 'Pendente', 'Revisada')) %>%
-  dplyr::select(Cliente, Vendedor, 'Produto + Valor', 'Data de Cadastro', Link) %>%
+  dplyr::select(Cliente, Vendedor, Produtos, 'Data de Cadastro', Link) %>%
   dplyr::ungroup ()
 
 ## Escrevendo a tabela resultante em csv

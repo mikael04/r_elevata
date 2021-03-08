@@ -109,6 +109,11 @@ for (i in 1:length(f_link)){
 ##########################################################
 
 ##########################################################
+## Adicionando nova linha as propostas com mais de um produto
+gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = '&mdash;', replacement = '<br>')
+##########################################################
+
+##########################################################
 ## Copiando o arquivo para lugar que está o css (estou fazendo isso pois as substituições precisam ser feitas numa pasta vazia) 
 file.copy(from="Testes/outputs/manipulacao/exemplo_minimalista.html", to="Testes/outputs/lista_proposta.html", overwrite = T, recursive = F, copy.mode = T)
 
