@@ -170,7 +170,7 @@ prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
   ## somo e já converto para impressão (usando a funçao pra formatar o dinheiro)
   dplyr::mutate (valor_proposta = func_fmt_din(sum(pp_valor_tot))) %>%
   ## formato o link
-  dplyr::mutate(Link = paste0('<a href="', paste0("https://letmegooglethat.com/?q=", proposta_data_cadastro),'", #target=\"_blank\">Link da proposta</a>')) %>%
+  dplyr::mutate(Link = paste0('<a href="', paste0("https://letmegooglethat.com/?q=", proposta_data_cadastro),'" #target=\"_blank\">Link da proposta</a>')) %>%
   ## formato a data para impressão
   dplyr::mutate ('Data de Cadastro' = func_fmt_data_d_m_Y(proposta_data_cadastro)) %>%
   dplyr::mutate('Produto + Valor' = paste(produto_nome, valor_proposta, sep = "  - ")) %>%
