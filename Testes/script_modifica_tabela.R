@@ -46,11 +46,7 @@ f_th <- c("id=",
           'th class="tableHTML_header_1">',
           "tableHTML_header_2", "tableHTML_header_3", "tableHTML_header_4", "tableHTML_header_5", "tableHTML_header_6")
 r_th <- c("class=",
-          "th class = 'title'> Filtro de Propostas<br><br>
-              <p style='font-weight:400'>Digite um filtro para busca</p><br>
-              <input id='myInput'' type='text'' placeholder='Procurando...'>
-              <br>",
-          "hide", "hide", "hide", "hide", "hide")
+          "hide", "hide", "hide", "hide", "hide", "hide")
 
 ## Replace id and header
 for (i in 1:length(f_th)){
@@ -72,12 +68,12 @@ f_tb <- c('class="tableHTML_rownames"',
           'class="tableHTML_column_3"',
           'class="tableHTML_column_4"',
           'class="tableHTML_column_5">')
-r_tb <- c('class="hide"',
-          'class="table_content"> <span id="clientes"', 
-          'class="table_content"> <span id="vendedores"',
-          'class="table_content"> <span id="produtos"',
-          'class="table_content"> <span id="datas"',
-          'class="table_content"> <span id="links" ')
+r_tb <- c('class="hide"> <span class="id"',
+          'class="table-content"> <span class="clientes"', 
+          'class="table-content"> <span class="vendedores"',
+          'class="table-content"> <span class="produtos"',
+          'class="table-content"> <span class="datas"',
+          'class="table-content"> <span class="links" ')
 ## Replace id and header
 for (i in 1:length(f_tb)){
   gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_tb[i], replacement = r_tb[i])

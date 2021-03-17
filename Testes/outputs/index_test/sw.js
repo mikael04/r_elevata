@@ -1,4 +1,4 @@
-importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.0.2/workbox-sw.js');
+importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.1.1/workbox-sw.js');
 
 const cacheVersion = "v1";
 
@@ -70,6 +70,34 @@ registerRoute(
       }),
     ],
   }),
+);
+
+registerRoute(
+  // Check to see if the request is a navigation to a new page
+  ({ request }) =>
+    request.mode === 'navigate'||
+    request.destination === 'worker',
+  // Use a Network First caching strategy
+  new NetworkFirst({
+    // Put all cached files in a cache named 'pages'
+    cacheName: 'pages',
+    plugins: [
+      // Ensure that only requests that result in a 200 status are cached
+      new CacheableResponse({
+        statuses: [200],
+      }),
+      new ExpirationPlugin({
+        maxAgeSeconds: 20,
+      })
+    ],
+  }),
+);
+
+registerRoute(
+  ({url}) => url.pathname.startsWith('/sync_time/'),
+  new NetworkFirst({
+    cacheName: 'sync'
+  })
 );
 
 registerRoute(

@@ -163,7 +163,6 @@ p_ij_n_ij_pp_ij_prod_cli <- dplyr::inner_join (p_ij_n_ij_pp_ij_prod, cliente, by
 #20200424101033959723
 prop_ate_1ano_ant <- p_ij_n_ij_pp_ij_prod_cli %>%
   dplyr::filter(proposta_data_cadastro > ano_atual - years(1)) %>%
-  dplyr::filter(proposta_status == 0) %>%
   dplyr::select(proposta_id, vendedor_nome, cliente_nome, proposta_data_cadastro, proposta_status, pp_valor_tot, produto_nome, negocio_tipo_negocio)
 
 prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
@@ -190,7 +189,6 @@ prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
   
   ## Selecionando colunas (com if e alterando tipo de data) e alterando nomes
   dplyr::select(-negocio_tipo_negocio) %>%
-  dplyr::mutate('Status' = dplyr::if_else(proposta_status == 0, 'Pendente', 'Revisada')) %>%
   dplyr::select(Cliente, Vendedor, Produtos, 'Data de Cadastro', Link) %>%
   dplyr::ungroup ()
 
