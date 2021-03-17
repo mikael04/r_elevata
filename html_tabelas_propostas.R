@@ -193,4 +193,4 @@ prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
   dplyr::ungroup ()
 
 ## Escrevendo a tabela resultante em csv
-data.table::fwrite(prop_ate_1ano_ant, "Testes/propostas_pendentes.csv")
+data.table::fwrite(prop_ate_1ano_ant, "Testes/propostas_pendentes.csv", bom = T)

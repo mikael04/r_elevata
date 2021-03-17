@@ -2,6 +2,12 @@ rm(list = ls())
 
 ## Le a tabela salva (já organizada)
 prop_ate_1ano_ant <- data.table::fread("Testes/propostas_pendentes.csv")
+Encoding(prop_ate_1ano_ant$Vendedor) <- 'UTF-8'
+
+vendedores <- prop_ate_1ano_ant %>%
+  dplyr::select(Vendedor) %>%
+  dplyr::distinct(Vendedor) %>%
+  dplyr::arrange(Vendedor)
 
 library(tableHTML)
 ## imprime em HTML (para facilitar modificação)
@@ -54,9 +60,43 @@ for (i in 1:length(f_th)){
 }
 ##########################################################
 
+
+##########################################################
+## Vai depois de substituir todos os "ids" por classes, para não substituir o id do filter_Div
+## Substituindo o <body> para criar título, filtros e busca
+
+f_body <- ('<body>')
+r_body_top <- '
+    <body>
+      <div class="top" id="filter-Div">
+        <h1 class="title"> Filtro de Propostas<br><br> </h1>
+        <p class="table-select">Primeiramente, selecione um nome de vendedor</p> <br>
+        <select class="mySel" id="1">
+          <option value="NENHUM">Selecione um vendedor</option>'
+nrow(vendedores)
+r_body_vendedores <- "\n\t\t\t\t\t"
+for(i in 1:nrow(vendedores)){
+  r_body_vendedores <- paste0(r_body_vendedores, "<option value='", vendedores[i], "'>", vendedores[i], "</option> \n\t\t\t\t\t")
+}
+gsub("'", '"', r_body_vendedores)
+r_body_bottom <- 
+          '
+          <option value="TODOS">TODOS</option>
+        </select>
+        <br><br>
+        <p class="table-search-description">Agora, caso queira fazer uma busca de um produto ou cliente deste vendedor,
+          digite um trecho do item buscado (pelo menos 3 letras)</p><br>
+        <input type="text" class="myInput" id="0" placeholder="Procurando..."/>
+      </div>'
+
+r_body <- paste0(r_body_top, r_body_vendedores, r_body_bottom)
+
+gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_body, replacement = r_body)
+##########################################################
+
 ##########################################################
 ## Adicionando classe ao tbody (para busca)
-gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = '<tbody>', replacement = '<tbody id=myTable>')
+gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = '<tbody>', replacement = '<tbody id="myTable">')
 ##########################################################
 
 ##########################################################
