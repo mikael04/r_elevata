@@ -96,7 +96,7 @@ vendedor_a <- vendedor %>%
   dplyr::filter (vendedor_ativo == T)
 
 #Arrumando encoding
-Encoding(vendedor$vendedor_nome) <- 'latin1'
+Encoding(vendedor$vendedor_nome) <- 'UTF-8'
 vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
 
 if(empresa == 16){
@@ -148,11 +148,14 @@ cliente <- fread("Tabelas/cliente.csv") %>%
   dplyr::filter (cliente_empresa_id == empresa)
 
 #Arrumando encoding
-Encoding(cliente$cliente_nome) <- 'latin1'
+Encoding(cliente$cliente_nome) <- 'UTF-8'
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
 produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
   dplyr::select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
+
+#Arrumando encoding
+Encoding(produto$produto_nome) <- 'UTF-8'
 
 ## vendedor, cliente, produto e valor, status, data de cadastro (ordem de cadastro, mais novas primeiro), atualização
 p_ij_n_ij_pp_ij_prod <- dplyr::inner_join (p_ij_n_ij_v_ij_pp_n, produto, by= c('pp_produto_id' = 'produto_id')) %>%
@@ -192,5 +195,7 @@ prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
   dplyr::select(Cliente, Vendedor, Produtos, 'Data de Cadastro', Link) %>%
   dplyr::ungroup ()
 
+Encoding(prop_ate_1ano_ant$Cliente) <- 'UTF-8'
+Encoding(prop_ate_1ano_ant$Produtos) <- 'UTF-8'
 ## Escrevendo a tabela resultante em csv
 data.table::fwrite(prop_ate_1ano_ant, "Testes/propostas_pendentes.csv", bom = T)

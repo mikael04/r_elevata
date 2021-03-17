@@ -2,7 +2,14 @@ rm(list = ls())
 
 ## Le a tabela salva (já organizada)
 prop_ate_1ano_ant <- data.table::fread("Testes/propostas_pendentes.csv")
-Encoding(prop_ate_1ano_ant$Vendedor) <- 'UTF-8'
+
+## Função para resolver acentuaçȧo e caractéres especiais
+fix_encoding <- function(x) {
+  Encoding(x) <- "latin1"
+  return(x)
+}
+# prop_ate_1ano_ant <- prop_ate_1ano_ant %>% 
+#   mutate_if(is.character,fix_encoding)
 
 vendedores <- prop_ate_1ano_ant %>%
   dplyr::select(Vendedor) %>%
@@ -25,6 +32,15 @@ knitr::knit2html(
 ##########################################################
 ## Funcao para substituir
 library(xfun)
+
+##########################################################
+## Substituindo o meta cagado
+
+f_meta <- '<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>'
+r_meta <- ''
+gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_meta, replacement = r_meta)
+##########################################################
+
 
 ##########################################################
 ## Substituindo a tabela por tabela comum css irá mexer nessa classe
@@ -148,6 +164,28 @@ for (i in 1:length(f_link)){
 ## Adicionando nova linha as propostas com mais de um produto
 gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = '&mdash;', replacement = '<br>')
 ##########################################################
+
+##########################################################
+## Substituindo os caractéres especiais dos nomes
+f_spec <- c('<c0>', '<c1>', '<c2>', '<c3>',
+            '<c8>', '<c9>', '<ca>', 
+            '<cc>', '<cd>', '<ce>',
+            '<c9>', '<cd>', '<d5>',
+            '<c7>',
+            '<a0>', '<aa>')
+r_spec <- c('Ã', 'Á', 'Â', 'Ã',
+            'È', 'É', 'Ê',
+            'Ì', 'Í', 'Î',
+            'Õ', 'Ó', 'Ô',
+            'Ũ', 'Ú', 'Û',
+            'Ç',
+            ' ', 'ª')
+## Replace id and header
+for (i in 1:length(f_link)){
+  #gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_link[i], replacement = r_link[i])
+}
+##########################################################
+
 
 ##########################################################
 ## Copiando o arquivo para lugar que está o css (estou fazendo isso pois as substituições precisam ser feitas numa pasta vazia) 
