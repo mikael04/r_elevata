@@ -1,13 +1,13 @@
 rm(list = ls())
-
+library(dplyr)
 ## Le a tabela salva (já organizada)
 prop_ate_1ano_ant <- data.table::fread("Testes/propostas_pendentes.csv")
 
 ## Função para resolver acentuaçȧo e caractéres especiais
-fix_encoding <- function(x) {
-  Encoding(x) <- "latin1"
-  return(x)
-}
+# fix_encoding <- function(x) {
+#   Encoding(x) <- "latin1"
+#   return(x)
+# }
 # prop_ate_1ano_ant <- prop_ate_1ano_ant %>% 
 #   mutate_if(is.character,fix_encoding)
 
@@ -65,10 +65,11 @@ for (i in 1:length(f_tab)){
 ## Substituindo headers (table header, para não aparecer) e id por classe
 
 f_th <- c("id=",
-          'th class="tableHTML_header_1">',
+          '"tableHTML_header_1">',
           "tableHTML_header_2", "tableHTML_header_3", "tableHTML_header_4", "tableHTML_header_5", "tableHTML_header_6")
 r_th <- c("class=",
-          "hide", "hide", "hide", "hide", "hide", "hide")
+          "'hide'>ID",
+          "hide", "hide", "hide", "hide", "hide")
 
 ## Replace id and header
 for (i in 1:length(f_th)){
@@ -170,19 +171,29 @@ gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = '&mdash;', replacement =
 f_spec <- c('<c0>', '<c1>', '<c2>', '<c3>',
             '<c8>', '<c9>', '<ca>', 
             '<cc>', '<cd>', '<ce>',
-            '<c9>', '<cd>', '<d5>',
+            '<c3>', '<d4>', '<d5>',
+            '<d9>', '<da>', '<db>',
             '<c7>',
-            '<a0>', '<aa>')
-r_spec <- c('Ã', 'Á', 'Â', 'Ã',
-            'È', 'É', 'Ê',
-            'Ì', 'Í', 'Î',
-            'Õ', 'Ó', 'Ô',
-            'Ũ', 'Ú', 'Û',
-            'Ç',
-            ' ', 'ª')
+            '<a0>', '<aa>', '<b0>', '<ba>')
+r_spec <- c('&#192;', '&#193;', '&#194;', '&#195;',
+            '&#200;', '&#201;', '&#202;',
+            '&#204;', '&#205;', '&#206;',
+            '&#211;', '&#212;', '&#213;',
+            '&#218;', '&#219;', '&#220;',
+            '&#199;',
+            '&#160;', '&#170;', '&#176;', '&#186;')
+
+          # c('A c/ crase', 'A c/ acento agudo', 'A c/ acento circunflexo', 'A c/ til',
+          #   'E c/ crase', 'E c/ acento agudo', 'E c/ acento circunflexo',
+          #   'I c/ crase', 'I c/ acento agudo', 'I c/ acento circunflexo',
+          #   'O c/ acento agudo', 'O c/ acento circunflexo', 'O c/ til',
+          #   'U c/ crase', 'U c/ acento agudo', 'U c/ acento circunflexo',
+          #   'C cedilha',
+          #   'espaço', ' a ordinal', 'o grau', 'o ordinal')
+
 ## Replace id and header
-for (i in 1:length(f_link)){
-  #gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_link[i], replacement = r_link[i])
+for (i in 1:length(f_spec)){
+  gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_spec[i], replacement = r_spec[i])
 }
 ##########################################################
 
