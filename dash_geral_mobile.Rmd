@@ -969,6 +969,17 @@ if(teste == F){
   rm(n_cli_cneg, n_cli_cneg_anat, n_clientes, n_clientes_anat, colors_pie);
 }
 ####################################
+## Removendo outras variáveis não mais usadas (testar se diminui o tamanho do arquivo)
+if(teste == F){
+  rm(cli_ij_ng, cliente, cliente_mes, clientes_mes_aux, historico_negocio_situacao, historico_negocio_situacao_anat,
+     negocio, negocio_ij_historico_ij_vendedor_anat, negocio_ij_vendedor, negocio_produto, negocios_mes, negocios_mes_aux,
+     ng_ij_emp, ng_ij_hist_ij_ven_anat, vc_ij_emp, vc_ij_vse, vendedor, vendedor_a, vis_st_emp, visita_cliente,
+     visita_status, visita_status_empresa, visitas_mes, visitas_mes_aux
+     ##n9
+     ##,ng_ij_hist_ij_ven_funil_fat
+     )
+}
+####################################
 
 ```
 
@@ -1021,11 +1032,11 @@ Column
 ```{r}
 ### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em 2020
 ##list -> gráfico plotly, senão for (pode ser character) será o knit e não deve alterar propriedades
-if(typeof(n12) == "list"){
-  n12 <- n12 %>%
-    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
-    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
-}
+# if(typeof(n12) == "list"){
+#   n12 <- n12 %>%
+#     layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+#     config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+# }
 n12
 ```
 
@@ -1033,11 +1044,11 @@ n12
 
 ```{r}
 ### Gráfico n12_c3 - Faturamento anual (ano atual + dois anteriores) + distribuição de cadastro dos clientes, visitas e negócios em 2020
-if(typeof(c3) == "list"){
-  c3 <- c3 %>%
-    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
-    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
-}
+# if(typeof(c3) == "list"){
+#   c3 <- c3 %>%
+#     layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+#     config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+# }
 c3
 
 ```
@@ -1053,11 +1064,11 @@ Column
 ```{r, fig.height=7, fig.width=7.5}
 
 ### Grafico c0 - Distribuicao de clientes (total), visitas (2020) e negocios (2020) cadastrados por vendedor
-if(typeof(c0) == "list"){
-  c0 <- c0 %>%
-    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
-    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
-}
+# if(typeof(c0) == "list"){
+#   c0 <- c0 %>%
+#     layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+#     config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+# }
 c0
 ```
 
@@ -1066,10 +1077,10 @@ c0
 ```{r}
 
 ### Grafico c1 - Clientes cadastrados que possuem negocio (pizza)
-if(typeof(c1_c2) == "list"){
-  c1_c2 <- c1_c2 %>%
-    layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
-    config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
-}
+# if(typeof(c1_c2) == "list"){
+#   c1_c2 <- c1_c2 %>%
+#     layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>%
+#     config(modeBarButtonsToRemove = c("zoom2d","zoomIn2d", "zoomOut2d", "pan2d", "select2d", "lasso2d", "toggleSpikelines"))
+# }
 c1_c2
 ```

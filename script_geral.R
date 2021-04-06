@@ -840,7 +840,7 @@ vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_v
 
 ### Grafico c0 - Distribuicao de clientes (total), visitas (anat) e negocios (anat) cadastrados por vendedor
 if (nrow(vend_cli_vis_neg) > 0){
-  c0 <- plot_ly(vend_cli_vis_neg, y = ~vendedor_nome, x= ~n_clientes, type = 'bar',
+  c0 <- plot_ly(vend_cli_vis_neg, y = ~reorder(vendedor_nome, desc(vendedor_nome)), x= ~n_clientes, type = 'bar',
                 name = 'Clientes (total)')
   c0 <- c0 %>%
     add_trace(x= ~n_visitas, name =  paste('Visitas', ano))
