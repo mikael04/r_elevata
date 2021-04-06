@@ -83,7 +83,7 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 16
+empresa = 1
 ###################################
 
 #################################################################################
@@ -179,6 +179,9 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
   ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
     arrange(negocio_negocio_situacao_id)
 }
+################################################
+### Gráfico n9 - Funil agrupado por faturamento
+################################################
 
 ### Gráfico n9 - Funil agrupado por faturamento
 if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$total_faturado) > 0){
@@ -195,17 +198,15 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$tot
       showlegend = FALSE
     )
 }else {
-  n9 <- knitr::include_graphics(s_dados_path)
+  n9 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   n9
 }
 
-
-
 if (teste == F){
   #tabelas
-  rm(neg_ij_ven_ij_np, ng_ij_hist_ij_ven_funil_ab, ng_ij_hist_ij_ven_funil_fat)
+  rm(neg_ij_ven_ij_np, ng_ij_hist_ij_ven_funil_ab)
   #variáveis
   rm(st_a, status)
 }
@@ -309,7 +310,7 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0 && sum(ng_ij_hist_ij_ven_funi
                                          "<extra></extra>"),
                  marker = list(colors = ~cor))
 }else {
-  n10 <- knitr::include_graphics(s_dados_path)
+  n10 <- include_graphics(s_dados_path)
 }
 
 if(dash == F){
@@ -368,7 +369,7 @@ if (nrow(ng_ij_hist_ij_ven_fec_mes_ant) > 0 && sum(ng_ij_hist_ij_ven_fec_mes_ant
                                          "<extra></extra>"),
                  marker = list(colors = colors_pie))
 }else {
-  n11 <- knitr::include_graphics(s_dados_path)
+  n11 <- include_graphics(s_dados_path)
 }
 
 
@@ -405,6 +406,7 @@ for (i in (1:max(ym_aux))){
     ym[i] <- paste("0", ym[i], sep="")
   }
 }
+
 
 fat_anat_mes_aux <-data.frame(ym)
 fat_anat_mes <- ng_ij_hist_ij_ven_anat_fat %>%
@@ -838,18 +840,20 @@ vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_v
 
 ### Grafico c0 - Distribuicao de clientes (total), visitas (anat) e negocios (anat) cadastrados por vendedor
 if (nrow(vend_cli_vis_neg) > 0){
-  c0 <- plot_ly(vend_cli_vis_neg, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
+  c0 <- plot_ly(vend_cli_vis_neg, y = ~vendedor_nome, x= ~n_clientes, type = 'bar',
                 name = 'Clientes (total)')
   c0 <- c0 %>%
-    add_trace(y= ~n_visitas, name =  paste('Visitas', ano))
+    add_trace(x= ~n_visitas, name =  paste('Visitas', ano))
   c0 <- c0 %>%
-    add_trace(y= ~n_negocios, name = paste('Negócios', ano))
+    add_trace(x= ~n_negocios, name = paste('Negócios', ano))
   c0 <- c0 %>%
     layout(barmode = 'grouped',
            xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
-           yaxis = list(title = ''))
+           yaxis = list(title = ''),
+           legend = list(orientation = 'h',
+                         xanchor = "bottom"))
 }else {
-  c0 <- knitr::include_graphics(s_dados_path)
+  c0 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   c0
@@ -914,7 +918,7 @@ if (sum(cli_c_s_ng$n_anat) > 0){
                                         "<extra></extra>"),
                 marker = list(colors = colors_pie))
 }else {
-  c2 <- knitr::include_graphics(s_dados_path)
+  c2 <- include_graphics(s_dados_path)
 }
 if(dash == F){
   c2
