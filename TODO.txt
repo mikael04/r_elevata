@@ -1,0 +1,5 @@
+- Atualizar dashs de final de ano e final de ano mobile (scripts base foram modifiacdos)
+- Nas dashs de final de ano, setar a data para o final do ano
+- Limpar lixos
+- Documentar os arquivos (atualizar alguma parte de documentação)
+- Verificar códificação (encoding errado)
