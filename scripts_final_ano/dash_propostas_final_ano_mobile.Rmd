@@ -18,9 +18,10 @@ params:
 #Lib para ler (mais rapidamente) os csvs
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
-library(tidyverse)
+#library(tidyverse)
+library(stringr)
 #Libs pra trabalhar com a base (cortes e funções similares ao SQL)
-#library(dplyr) #Contido no tidyverse
+library(dplyr) #Contido no tidyverse
 #lib pros gráficos mais "interativos"
 library(plotly)
 #library(htmlwidgets)
@@ -94,7 +95,7 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 16
+  empresa = 1
 }else{
   empresa = as.integer(params$variable1)
 }

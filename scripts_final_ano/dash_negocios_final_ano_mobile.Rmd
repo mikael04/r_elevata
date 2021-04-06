@@ -100,7 +100,7 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 16
+  empresa = 1
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -272,8 +272,11 @@ ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
   collect ()
 
 #usando função pra criar outra coluna com número formatado (em Real, com pontos)
-ng_ij_vn_ij_np_fech_fat <- ng_ij_vn_ij_np_fech_fat %>%
+#usando função pra criar outra coluna com número formatado (em Real, com pontos)
+if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
+  ng_ij_vn_ij_np_fech_fat <- ng_ij_vn_ij_np_fech_fat %>% rowwise() %>%
   mutate(total_fat_t = func_fmt_din(total_fat))
+}
 
 ### Gráfico n3 - Faturamento de negócios fechados em anat
 #########################################################
