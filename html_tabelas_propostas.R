@@ -72,7 +72,7 @@ if(!teste){
 s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
-  empresa = 16
+  empresa = 1
 
 ###################################################################################
 ## Gerando tabela
