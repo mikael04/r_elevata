@@ -1,14 +1,14 @@
 rm(list = ls())
 library(dplyr)
 ## Le a tabela salva (já organizada)
-prop_ate_1ano_ant <- data.table::fread("Testes/propostas_pendentes.csv")
+prop_ate_1ano_ant <- data.table::fread("Gerador_tabelas_html/propostas_pendentes.csv")
 
 ## Função para resolver acentuaçȧo e caractéres especiais
 # fix_encoding <- function(x) {
 #   Encoding(x) <- "latin1"
 #   return(x)
 # }
-# prop_ate_1ano_ant <- prop_ate_1ano_ant %>% 
+# prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
 #   mutate_if(is.character,fix_encoding)
 
 vendedores <- prop_ate_1ano_ant %>%
@@ -18,15 +18,15 @@ vendedores <- prop_ate_1ano_ant %>%
 
 library(tableHTML)
 ## imprime em HTML (para facilitar modificação)
-tableHTML::write_tableHTML(tableHTML::tableHTML(prop_ate_1ano_ant), file = 'Testes/example_table.html')
+tableHTML::write_tableHTML(tableHTML::tableHTML(prop_ate_1ano_ant), file = 'Gerador_tabelas_html/example_table.html')
 
 # Now create an ugly but minimalish HTML output from the Rmd ------------------
 knitr::knit2html(
-  input = "Testes/example_table.html",
-  output = "Testes/outputs/manipulacao/exemplo_minimalista.html",
+  input = "Gerador_tabelas_html/example_table.html",
+  output = "Gerador_tabelas_html/outputs/manipulacao/exemplo_minimalista.html",
   ##Adicionando um css em branco para não pegar o default
-  stylesheet = "Testes/style_blank.css",
-  header = "Testes/header_lista_proposta.html",
+  stylesheet = "Gerador_tabelas_html/style_blank.css",
+  header = "Gerador_tabelas_html/header_lista_proposta.html",
 )
 
 ##########################################################
@@ -38,7 +38,7 @@ library(xfun)
 
 f_meta <- '<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>'
 r_meta <- ''
-gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_meta, replacement = r_meta)
+gsub_dir(dir = "Gerador_tabelas_html/outputs/manipulacao/", pattern = f_meta, replacement = r_meta)
 ##########################################################
 
 
@@ -47,8 +47,8 @@ gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_meta, replacement = r_
 
 f_table <- c('<table style="border-collapse:collapse;" class=table_\\d\\d\\d\\d border=1>', '</table>')
 r_table <- c('<table class="table">', '</table>')
-for (i in 1:length(f_table)){ 
-  gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_table[i], replacement = r_table[i])
+for (i in 1:length(f_table)){
+  gsub_dir(dir = "Gerador_tabelas_html/outputs/manipulacao/", pattern = f_table[i], replacement = r_table[i])
 }
 ##########################################################
 
@@ -57,7 +57,7 @@ for (i in 1:length(f_table)){
 f_tab <- c('<tr>', '</tr>')
 r_tab <- c('<tr class="column">', '</tr>')
 for (i in 1:length(f_tab)){
-  gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_tab[i], replacement = r_tab[i])
+  gsub_dir(dir = "Gerador_tabelas_html/outputs/manipulacao/", pattern = f_tab[i], replacement = r_tab[i])
 }
 ##########################################################
 
@@ -73,7 +73,7 @@ r_th <- c("class=",
 
 ## Replace id and header
 for (i in 1:length(f_th)){
-  gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_th[i], replacement = r_th[i])
+  gsub_dir(dir = "Gerador_tabelas_html/outputs/manipulacao/", pattern = f_th[i], replacement = r_th[i])
 }
 ##########################################################
 
@@ -96,7 +96,7 @@ for(i in 1:nrow(vendedores)){
   r_body_vendedores <- paste0(r_body_vendedores, "<option value='", vendedores[i], "'>", vendedores[i], "</option> \n\t\t\t\t\t")
 }
 gsub("'", '"', r_body_vendedores)
-r_body_bottom <- 
+r_body_bottom <-
           '
           <option value="TODOS">TODOS</option>
         </select>
@@ -108,34 +108,34 @@ r_body_bottom <-
 
 r_body <- paste0(r_body_top, r_body_vendedores, r_body_bottom)
 
-gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_body, replacement = r_body)
+gsub_dir(dir = "Gerador_tabelas_html/outputs/manipulacao/", pattern = f_body, replacement = r_body)
 ##########################################################
 
 ##########################################################
 ## Adicionando classe ao tbody (para busca)
-gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = '<tbody>', replacement = '<tbody id="myTable">')
+gsub_dir(dir = "Gerador_tabelas_html/outputs/manipulacao/", pattern = '<tbody>', replacement = '<tbody id="myTable">')
 ##########################################################
 
 ##########################################################
 ## Substituindo nomes das colunas pelos nomes corretos (css lida com a formatação)
 
 f_tb <- c('class="tableHTML_rownames"',
-          'class="tableHTML_column_1"', 
+          'class="tableHTML_column_1"',
           'class="tableHTML_column_2"',
           'class="tableHTML_column_3"',
           'class="tableHTML_column_4"',
           'class="tableHTML_column_5">')
 r_tb <- c('class="hide"> <span class="id"',
-          'class="table-content"> <span class="clientes"', 
+          'class="table-content"> <span class="clientes"',
           'class="table-content"> <span class="vendedores"',
           'class="table-content"> <span class="produtos"',
           'class="table-content"> <span class="datas"',
           'class="table-content"> <span class="links" ')
 ## Replace id and header
 for (i in 1:length(f_tb)){
-  gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_tb[i], replacement = r_tb[i])
+  gsub_dir(dir = "Gerador_tabelas_html/outputs/manipulacao/", pattern = f_tb[i], replacement = r_tb[i])
 }
-gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = '</td>', replacement = "</span></td>")
+gsub_dir(dir = "Gerador_tabelas_html/outputs/manipulacao/", pattern = '</td>', replacement = "</span></td>")
 
 ##########################################################
 
@@ -157,19 +157,19 @@ r_link <- c('<',
             '>')
 ## Replace id and header
 for (i in 1:length(f_link)){
-  gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_link[i], replacement = r_link[i])
+  gsub_dir(dir = "Gerador_tabelas_html/outputs/manipulacao/", pattern = f_link[i], replacement = r_link[i])
 }
 ##########################################################
 
 ##########################################################
 ## Adicionando nova linha as propostas com mais de um produto
-gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = '&mdash;', replacement = '<br>')
+gsub_dir(dir = "Gerador_tabelas_html/outputs/manipulacao/", pattern = '&mdash;', replacement = '<br>')
 ##########################################################
 
 ##########################################################
 ## Substituindo os caractéres especiais dos nomes
 f_spec <- c('<c0>', '<c1>', '<c2>', '<c3>',
-            '<c8>', '<c9>', '<ca>', 
+            '<c8>', '<c9>', '<ca>',
             '<cc>', '<cd>', '<ce>',
             '<c3>', '<d4>', '<d5>',
             '<d9>', '<da>', '<db>',
@@ -193,12 +193,12 @@ r_spec <- c('&#192;', '&#193;', '&#194;', '&#195;',
 
 ## Replace id and header
 for (i in 1:length(f_spec)){
-  gsub_dir(dir = "Testes/outputs/manipulacao/", pattern = f_spec[i], replacement = r_spec[i])
+  gsub_dir(dir = "Gerador_tabelas_html/outputs/manipulacao/", pattern = f_spec[i], replacement = r_spec[i])
 }
 ##########################################################
 
 
 ##########################################################
-## Copiando o arquivo para lugar que está o css (estou fazendo isso pois as substituições precisam ser feitas numa pasta vazia) 
-file.copy(from="Testes/outputs/manipulacao/exemplo_minimalista.html", to="Testes/outputs/lista_proposta.html", overwrite = T, recursive = F, copy.mode = T)
+## Copiando o arquivo para lugar que está o css (estou fazendo isso pois as substituições precisam ser feitas numa pasta vazia)
+file.copy(from="Gerador_tabelas_html/outputs/manipulacao/exemplo_minimalista.html", to="Gerador_tabelas_html/lista_proposta.html", overwrite = T, recursive = F, copy.mode = T)
 
