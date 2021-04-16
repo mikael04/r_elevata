@@ -971,7 +971,7 @@ if(teste == F){
 ####################################
 ## Removendo outras variáveis não mais usadas (testar se diminui o tamanho do arquivo)
 if(teste == F){
-  rm(cli_ij_ng, cliente, cliente_mes, clientes_mes_aux, historico_negocio_situacao, historico_negocio_situacao_anat,
+  rm(cli_ij_ng, cliente, clientes_mes, clientes_mes_aux, df_stat_cor, historico_negocio_situacao, historico_negocio_situacao_anat,
      negocio, negocio_ij_historico_ij_vendedor_anat, negocio_ij_vendedor, negocio_produto, negocios_mes, negocios_mes_aux,
      ng_ij_emp, ng_ij_hist_ij_ven_anat, vc_ij_emp, vc_ij_vse, vendedor, vendedor_a, vis_st_emp, visita_cliente,
      visita_status, visita_status_empresa, visitas_mes, visitas_mes_aux
