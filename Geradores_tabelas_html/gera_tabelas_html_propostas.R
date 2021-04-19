@@ -108,19 +108,19 @@ fct_gera_tabelas_propostas <- function(debug){
     dplyr::select(cliente_id, cliente_nome, cliente_empresa_id)
 
   #Arrumando encoding
-  Encoding(cliente$cliente_nome) <- 'UTF-8'
+  Encoding(cliente$cliente_nome) <- 'latin1'
 
   ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
   produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
     dplyr::select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
   #Arrumando encoding
-  Encoding(produto$produto_nome) <- 'UTF-8'
+  Encoding(produto$produto_nome) <- 'latin1'
 
   empresas_ativas <- fct_empresas_ativas ()
   for(i in (1:length(empresas_ativas))){
     if(teste || debug){
-      i = 33
+      #i = 3
       print(i)
       print(empresas_ativas[[i]])
     }
@@ -133,7 +133,7 @@ fct_gera_tabelas_propostas <- function(debug){
       dplyr::filter (vendedor_ativo == T)
 
     #Arrumando encoding
-    Encoding(vendedor$vendedor_nome) <- 'UTF-8'
+    Encoding(vendedor$vendedor_nome) <- 'latin1'
     vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
 
     if(empresas_ativas[[i]] == 16){
@@ -201,11 +201,11 @@ fct_gera_tabelas_propostas <- function(debug){
 
         ## Selecionando colunas (com if e alterando tipo de data) e alterando nomes
         dplyr::select(-negocio_tipo_negocio) %>%
-        dplyr::select(Cliente, Vendedor, Produtos, 'Data de Cadastro', Link) %>%
+        dplyr::select(Cliente, Vendedor, 'Produto + Valor' , 'Data de Cadastro', Link) %>%
         dplyr::ungroup ()
 
-      Encoding(prop_ate_1ano_ant$Cliente) <- 'UTF-8'
-      Encoding(prop_ate_1ano_ant$Produtos) <- 'UTF-8'
+      Encoding(prop_ate_1ano_ant$Cliente) <- 'latin1'
+      Encoding(prop_ate_1ano_ant$'Produto + Valor') <- 'latin1'
       ## Escrevendo a tabela resultante em csv
       data.table::fwrite(prop_ate_1ano_ant, paste0("Geradores_tabelas_html/propostas/empresas/propostas_", empresas_ativas[[i]], ".csv"), bom = T)
     }else{

@@ -26,5 +26,5 @@ for(i in 1:length(empresas_ativ)){
   fct_cria_tabelas_html(empresas_ativ[[i]], 'propostas', teste)
 }
 
-fct_alt_todas_html('propostas')
+fct_alt_todas_html('propostas', teste)
 #############################################################

@@ -2,13 +2,20 @@
 # empresa = 1
 # tabela_categoria = 'propostas'
 fct_cria_tabelas_html <- function(empresa, tabela_categoria, teste){
+  #options((encoding="native"))
+  # = T
+  if(teste_interno){
+    tabela_categoria = 'propostas'
+    empresa = 16
+    teste = T
+  }
   ## rm(list = ls())
   library(dplyr)
   ## Le a tabela salva (já organizada)
   if(file.exists(paste0("Geradores_tabelas_html/", tabela_categoria, "/empresas/",tabela_categoria, "_", empresa ,".csv"))){
     print("Arquivo Existe, será gerado o html:");
     print(paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresa , '.html'))
-    tabela_csv <- data.table::fread(paste0("Geradores_tabelas_html/", tabela_categoria, "/empresas/",tabela_categoria, "_", empresa ,".csv"))
+    tabela_csv <- data.table::fread(paste0("Geradores_tabelas_html/", tabela_categoria, "/empresas/",tabela_categoria, "_", empresa ,".csv"), encoding = 'Latin-1')
     ## Função para resolver acentuaçȧo e caractéres especiais
     # fix_encoding <- function(x) {
     #   Encoding(x) <- "latin1"
@@ -28,14 +35,16 @@ fct_cria_tabelas_html <- function(empresa, tabela_categoria, teste){
     tableHTML::write_tableHTML(tableHTML::tableHTML(tabela_csv), file = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresa , '.html'))
 
     ## Gerando HTML com header pronto
-
+    input_ = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresa , '.html')
+    output_ = paste0('Geradores_tabelas_html/', tabela_categoria, '/manipulacao/', tabela_categoria, '_', empresa , '.html')
     knitr::knit2html(
-      input = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresa , '.html'),
-      output = paste0('Geradores_tabelas_html/', tabela_categoria, '/manipulacao/', tabela_categoria, '_', empresa , '.html'),
+      input = input_,
+      output = output_,
       ##Adicionando um css em branco para não pegar o default
       stylesheet = "Gerador_tabelas_html/propostas/style_blank.css",
-      header = "Gerador_tabelas_html/propostas/header_lista_proposta.html",
+      header = "Gerador_tabelas_html/propostas/header_lista_proposta.html"
     )
+    paste0('Geradores_tabelas_html/', tabela_categoria, '/manipulacao/', tabela_categoria, '_', empresa , '.html')
   }else{
     if(teste){
       print("Arquivo não existe, possivelmente não usa essa funcionalidade ou algum outro erro");
