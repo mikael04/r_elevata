@@ -93,7 +93,7 @@ fct_gera_tabelas_avaliacoes <- function(){
     dplyr::select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
   #Arrumando encoding
-  Encoding(produto$produto_nome) <- 'UTF-8'
+  #Encoding(produto$produto_nome) <- 'UTF-8'
 
   neg_us_v_ij_prod <- inner_join(negocio_usado_v, produto, by=c("nu_produto_id"="produto_id")) %>%
     dplyr::select(nu_id, negocio_vendedor_id, negocio_cliente_id, nu_produto_id, nu_valor, nu_estado, nu_dt_cadastro,
@@ -104,7 +104,7 @@ fct_gera_tabelas_avaliacoes <- function(){
     dplyr::select(cliente_id, cliente_nome, cliente_empresa_id)
 
   #Arrumando encoding
-  Encoding(cliente$cliente_nome) <- 'UTF-8'
+  #Encoding(cliente$cliente_nome) <- 'UTF-8'
 
   neg_us_v_ij_prod_ij_cli <- inner_join(neg_us_v_ij_prod, cliente, by=c("negocio_cliente_id" = "cliente_id")) %>%
     dplyr::select(-nu_produto_id, -negocio_cliente_id)
@@ -113,7 +113,7 @@ fct_gera_tabelas_avaliacoes <- function(){
     dplyr::select(marca_id, marca_nome)
 
   #Arrumando encoding
-  Encoding(marcas$marca_nome) <- 'UTF-8'
+  #Encoding(marcas$marca_nome) <- 'UTF-8'
 
   neg_v__prod__cli_ij_mar <- inner_join(neg_us_v_ij_prod_ij_cli, marcas, by=c("produto_marca_id" = "marca_id")) %>%
     dplyr::select(-produto_marca_id)
@@ -137,7 +137,7 @@ fct_gera_tabelas_avaliacoes <- function(){
       dplyr::filter (vendedor_ativo == T)
 
     #Arrumando encoding
-    Encoding(vendedor$vendedor_nome) <- 'UTF-8'
+    #Encoding(vendedor$vendedor_nome) <- 'latin1'
     vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
 
     if(empresas_ativas[[i]] == 16){
@@ -147,48 +147,44 @@ fct_gera_tabelas_avaliacoes <- function(){
     }
 
 
-      ## negocio usado, produto, cliente, marcas (filtrando empresa para facilitar o join)
-      neg_v__prod__cli__mar_empresa <- neg_v__prod__cli_ij_mar %>%
-        dplyr::filter(cliente_empresa_id == empresas_ativas[[i]])
+    ## negocio usado, produto, cliente, marcas (filtrando empresa para facilitar o join)
+    neg_v__prod__cli__mar_empresa <- neg_v__prod__cli_ij_mar %>%
+      dplyr::filter(cliente_empresa_id == empresas_ativas[[i]])
 
-      ## junção com vendedor
-      neg_v__prod__cli__mar__vend_empresa <- inner_join(neg_v__prod__cli__mar_empresa, vendedor, by=c("negocio_vendedor_id" = "vendedor_id")) %>%
-        dplyr::select(-negocio_vendedor_id, vendedor_empresa_id, vendedor_ativo)
-
-      ## criar tabela como deverá ser apresentada
-      ## Cliente, vendedor, produtos, data, link no final
-
-      prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
-        dplyr::group_by(proposta_id) %>%
-        ## somo e já converto para impressão (usando a funçao pra formatar o dinheiro)
-        dplyr::mutate (valor_proposta = func_fmt_din(sum(pp_valor_tot))) %>%
-        dplyr::mutate (Produtos = paste0(produto_nome, collapse = " --- ")) %>%
+    ## junção com vendedor
+    neg_v__prod__cli__mar__vend_empresa <- inner_join(neg_v__prod__cli__mar_empresa, vendedor, by=c("negocio_vendedor_id" = "vendedor_id")) %>%
+      dplyr::select(-negocio_vendedor_id, vendedor_empresa_id, vendedor_ativo)
+    
+    ## criar tabela como deverá ser apresentada
+    ## Cliente, vendedor, produtos, data, link no final
+    
+    ## Contando valores únicos
+    ##length(unique(neg_v__prod__cli__mar__vend_empresa$nu_id))
+    if(nrow(neg_v__prod__cli__mar__vend_empresa) > 0){
+      tabela_final_avaliacoes <- neg_v__prod__cli__mar__vend_empresa %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(valor_negocio = func_fmt_din(nu_valor)) %>%
+        ##dplyr::select(nu_id, nu_valor, valor_negocio) ## Usado para verificar se todas as linhas foram convertidas corretamente
         ## formato o link
         ##  onclick="window.open('http://google.com', '_blank')">LINK DA PROPOSTA
-
-        dplyr::mutate(Link = paste0('onclick="', "window.open('", paste0("https://letmegooglethat.com/?q=", proposta_data_cadastro, "'"), ", '_blank')'", '>LINK DA PROPOSTA')) %>%
+        dplyr::mutate(Link = paste0('onclick="', "window.open('", paste0("https://letmegooglethat.com/?q=", nu_dt_cadastro, "'"), ", '_blank')'", '>LINK DA PROPOSTA')) %>%
         ## formato a data para impressão
-        dplyr::mutate ('Data de Cadastro' = func_fmt_data_d_m_Y(proposta_data_cadastro)) %>%
-        dplyr::mutate('Produto + Valor' = paste(produto_nome, valor_proposta, sep = "  - ")) %>%
-        # dplyr::select(-pp_valor_tot) %>%
-        dplyr::distinct(proposta_id, .keep_all = T) %>%
+        dplyr::mutate ('Data de Cadastro' = func_fmt_data_d_m_Y(nu_dt_cadastro)) %>%
+        
+        dplyr::mutate('Produto + Valor' = paste(produto_nome, valor_negocio, sep = "  - ")) %>%
         ## Organizando tabela
-        dplyr::arrange(desc(proposta_data_cadastro)) %>%
-        dplyr::ungroup () %>%
-
+        dplyr::arrange(desc(nu_dt_cadastro)) %>%
+        
         ## Selecionando colunas e alterando nomes
-        dplyr::select(-proposta_id, -valor_proposta, -proposta_data_cadastro) %>%
-        dplyr::rename(Vendedor = vendedor_nome, Cliente = cliente_nome) %>%
-
-        ## Selecionando colunas (com if e alterando tipo de data) e alterando nomes
-        dplyr::select(-negocio_tipo_negocio) %>%
-        dplyr::select(Cliente, Vendedor, Produtos, 'Data de Cadastro', Link) %>%
-        dplyr::ungroup ()
-
-      Encoding(prop_ate_1ano_ant$Cliente) <- 'UTF-8'
-      Encoding(prop_ate_1ano_ant$Produtos) <- 'UTF-8'
+        dplyr::select(cliente_nome, vendedor_nome, 'Produto + Valor' , 'Data de Cadastro', Link) %>%
+        dplyr::rename(Vendedor = vendedor_nome, Cliente = cliente_nome)
+      
+      Encoding(tabela_final_avaliacoes$Cliente) <- 'UTF-8'
+      Encoding(tabela_final_avaliacoes$Vendedor) <- 'UTF-8'
+      Encoding(tabela_final_avaliacoes$'Produto + Valor') <- 'UTF-8'
       ## Escrevendo a tabela resultante em csv
-      data.table::fwrite(prop_ate_1ano_ant, paste0("Geradores_tabelas_html/propostas/empresas/propostas_", empresas_ativas[[i]], ".csv"), bom = T)
+      data.table::fwrite(tabela_final_avaliacoes, paste0("Geradores_tabelas_html/avaliacoes/empresas/avaliacoes_", empresas_ativas[[i]], ".csv"), bom = T)
+    }
   }
 }
 
