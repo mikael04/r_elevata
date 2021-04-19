@@ -118,6 +118,7 @@ fct_gera_tabelas_avaliacoes <- function(){
   neg_v__prod__cli_ij_mar <- inner_join(neg_us_v_ij_prod_ij_cli, marcas, by=c("produto_marca_id" = "marca_id")) %>%
     dplyr::select(-produto_marca_id)
 
+  ## Gera uma lista com códigos das empresas ativas
   empresas_ativas <- fct_empresas_ativas ()
   if(teste){
     length(empresas_ativas)
@@ -154,10 +155,10 @@ fct_gera_tabelas_avaliacoes <- function(){
     ## junção com vendedor
     neg_v__prod__cli__mar__vend_empresa <- inner_join(neg_v__prod__cli__mar_empresa, vendedor, by=c("negocio_vendedor_id" = "vendedor_id")) %>%
       dplyr::select(-negocio_vendedor_id, vendedor_empresa_id, vendedor_ativo)
-    
+
     ## criar tabela como deverá ser apresentada
     ## Cliente, vendedor, produtos, data, link no final
-    
+
     ## Contando valores únicos
     ##length(unique(neg_v__prod__cli__mar__vend_empresa$nu_id))
     if(nrow(neg_v__prod__cli__mar__vend_empresa) > 0){
@@ -170,15 +171,15 @@ fct_gera_tabelas_avaliacoes <- function(){
         dplyr::mutate(Link = paste0('onclick="', "window.open('", paste0("https://letmegooglethat.com/?q=", nu_dt_cadastro, "'"), ", '_blank')'", '>LINK DA PROPOSTA')) %>%
         ## formato a data para impressão
         dplyr::mutate ('Data de Cadastro' = func_fmt_data_d_m_Y(nu_dt_cadastro)) %>%
-        
+
         dplyr::mutate('Produto + Valor' = paste(produto_nome, valor_negocio, sep = "  - ")) %>%
         ## Organizando tabela
         dplyr::arrange(desc(nu_dt_cadastro)) %>%
-        
+
         ## Selecionando colunas e alterando nomes
         dplyr::select(cliente_nome, vendedor_nome, 'Produto + Valor' , 'Data de Cadastro', Link) %>%
         dplyr::rename(Vendedor = vendedor_nome, Cliente = cliente_nome)
-      
+
       Encoding(tabela_final_avaliacoes$Cliente) <- 'UTF-8'
       Encoding(tabela_final_avaliacoes$Vendedor) <- 'UTF-8'
       Encoding(tabela_final_avaliacoes$'Produto + Valor') <- 'UTF-8'

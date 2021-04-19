@@ -1,5 +1,6 @@
 
-fct_gera_tabelas_propostas <- function(){
+fct_gera_tabelas_propostas <- function(debug){
+  debug = T
   #Lib q será futuramente usada pros painéis interativos
   #library(shiny)
   #Lib pra conexão com o banco
@@ -104,8 +105,7 @@ fct_gera_tabelas_propostas <- function(){
 
   ##coleta todos os clientes
   cliente <- fread("Tabelas/cliente.csv") %>%
-    dplyr::select(cliente_id, cliente_nome, cliente_empresa_id) %>%
-    dplyr::filter (cliente_empresa_id == empresas_ativas[[i]])
+    dplyr::select(cliente_id, cliente_nome, cliente_empresa_id)
 
   #Arrumando encoding
   Encoding(cliente$cliente_nome) <- 'UTF-8'
@@ -118,9 +118,9 @@ fct_gera_tabelas_propostas <- function(){
   Encoding(produto$produto_nome) <- 'UTF-8'
 
   empresas_ativas <- fct_empresas_ativas ()
-  length(empresas_ativas)
   for(i in (1:length(empresas_ativas))){
-    if(teste){
+    if(teste || debug){
+      i = 33
       print(i)
       print(empresas_ativas[[i]])
     }
@@ -151,6 +151,11 @@ fct_gera_tabelas_propostas <- function(){
     ##Juntando com vendedor pra obter o nome do vendedor
     prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
     if(nrow(prop_ij_neg_ij_vend) > 0){
+      if(debug || teste){
+        print("Debug ou teste ativo")
+        print(paste0("Empresa = ", empresas_ativas[[i]]))
+        print(paste0("Número de linhas = ", nrow(prop_ij_neg_ij_vend)))
+      }
 
       p_ij_n_ij_v_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_produto, by = c("proposta_id" = "pp_proposta_id"))
 
@@ -203,6 +208,12 @@ fct_gera_tabelas_propostas <- function(){
       Encoding(prop_ate_1ano_ant$Produtos) <- 'UTF-8'
       ## Escrevendo a tabela resultante em csv
       data.table::fwrite(prop_ate_1ano_ant, paste0("Geradores_tabelas_html/propostas/empresas/propostas_", empresas_ativas[[i]], ".csv"), bom = T)
+    }else{
+      if(debug || teste){
+        print("Debug ou teste ativo")
+        print(paste0("Empresa não  = ", empresas_ativas[[i]]))
+        print(paste0("Número de linhas = ", nrow(prop_ij_neg_ij_vend)))
+      }
     }
   }
 }
