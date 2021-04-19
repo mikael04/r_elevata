@@ -3,3 +3,5 @@
 - Limpar lixos
 - Documentar os arquivos (atualizar alguma parte de documentação)
 - Verificar códificação (encoding errado)
+
+PAREI AQUI -> ENCODING DO INFERNO (tendo problema no knit2html por causa de encoding)
