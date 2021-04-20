@@ -1,4 +1,3 @@
-
 fct_gera_tabelas_propostas <- function(debug){
   debug = T
   #Lib q será futuramente usada pros painéis interativos
@@ -108,14 +107,14 @@ fct_gera_tabelas_propostas <- function(debug){
     dplyr::select(cliente_id, cliente_nome, cliente_empresa_id)
 
   #Arrumando encoding
-  Encoding(cliente$cliente_nome) <- 'latin1'
+  #Encoding(cliente$cliente_nome) <- 'latin1'
 
   ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
   produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
     dplyr::select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
-  #Arrumando encoding
-  Encoding(produto$produto_nome) <- 'latin1'
+  #Arrumando #Encoding
+  #Encoding(produto$produto_nome) <- 'latin1'
 
   empresas_ativas <- fct_empresas_ativas ()
   for(i in (1:length(empresas_ativas))){
@@ -132,8 +131,8 @@ fct_gera_tabelas_propostas <- function(debug){
     vendedor_a <- vendedor %>%
       dplyr::filter (vendedor_ativo == T)
 
-    #Arrumando encoding
-    Encoding(vendedor$vendedor_nome) <- 'latin1'
+    #Arrumando #Encoding
+    #Encoding(vendedor$vendedor_nome) <- 'latin1'
     vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
 
     if(empresas_ativas[[i]] == 16){
@@ -204,8 +203,8 @@ fct_gera_tabelas_propostas <- function(debug){
         dplyr::select(Cliente, Vendedor, 'Produto + Valor' , 'Data de Cadastro', Link) %>%
         dplyr::ungroup ()
 
-      Encoding(prop_ate_1ano_ant$Cliente) <- 'latin1'
-      Encoding(prop_ate_1ano_ant$'Produto + Valor') <- 'latin1'
+      #Encoding(prop_ate_1ano_ant$Cliente) <- 'latin1'
+      #Encoding(prop_ate_1ano_ant$'Produto + Valor') <- 'latin1'
       ## Escrevendo a tabela resultante em csv
       data.table::fwrite(prop_ate_1ano_ant, paste0("Geradores_tabelas_html/propostas/empresas/propostas_", empresas_ativas[[i]], ".csv"), bom = T)
     }else{
@@ -217,4 +216,3 @@ fct_gera_tabelas_propostas <- function(debug){
     }
   }
 }
-
