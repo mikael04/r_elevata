@@ -1,9 +1,15 @@
+## Função para resolver acentuaçȧo e caractéres especiais
+fix_encoding <- function(x) {
+  Encoding(x) <- "latin1"
+  return(x)
+}
+
 # if(teste)
 # empresa = 1
 # tabela_categoria = 'propostas'
 fct_cria_tabelas_html <- function(empresa, tabela_categoria, teste){
   #options((encoding="native"))
-  # = T
+  teste_interno = F
   if(teste_interno){
     tabela_categoria = 'propostas'
     empresa = 16
@@ -16,14 +22,10 @@ fct_cria_tabelas_html <- function(empresa, tabela_categoria, teste){
     print("Arquivo Existe, será gerado o html:");
     print(paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresa , '.html'))
     tabela_csv <- data.table::fread(paste0("Geradores_tabelas_html/", tabela_categoria, "/empresas/",tabela_categoria, "_", empresa ,".csv"), encoding = 'Latin-1')
-    ## Função para resolver acentuaçȧo e caractéres especiais
-    # fix_encoding <- function(x) {
-    #   Encoding(x) <- "latin1"
-    #   return(x)
-    # }
-    # prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
-    #   mutate_if(is.character,fix_encoding)
 
+    tabela_csv <- tabela_csv %>%
+      mutate_if(is.character,fix_encoding)
+    
     vendedores <- tabela_csv %>%
       dplyr::select(Vendedor) %>%
       dplyr::distinct(Vendedor) %>%
