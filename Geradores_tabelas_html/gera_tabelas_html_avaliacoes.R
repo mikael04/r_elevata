@@ -1,5 +1,6 @@
 
-fct_gera_tabelas_avaliacoes <- function(){
+fct_gera_tabelas_avaliacoes <- function(debug){
+  #debug = T
   #Lib q será futuramente usada pros painéis interativos
   #library(shiny)
   #Lib pra conexão com o banco
@@ -93,7 +94,7 @@ fct_gera_tabelas_avaliacoes <- function(){
     dplyr::select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
   #Arrumando encoding
-  #Encoding(produto$produto_nome) <- 'UTF-8'
+  Encoding(produto$produto_nome) <- 'UTF-8'
 
   neg_us_v_ij_prod <- inner_join(negocio_usado_v, produto, by=c("nu_produto_id"="produto_id")) %>%
     dplyr::select(nu_id, negocio_vendedor_id, negocio_cliente_id, nu_produto_id, nu_valor, nu_estado, nu_dt_cadastro,
@@ -104,7 +105,7 @@ fct_gera_tabelas_avaliacoes <- function(){
     dplyr::select(cliente_id, cliente_nome, cliente_empresa_id)
 
   #Arrumando encoding
-  #Encoding(cliente$cliente_nome) <- 'UTF-8'
+  Encoding(cliente$cliente_nome) <- 'UTF-8'
 
   neg_us_v_ij_prod_ij_cli <- inner_join(neg_us_v_ij_prod, cliente, by=c("negocio_cliente_id" = "cliente_id")) %>%
     dplyr::select(-nu_produto_id, -negocio_cliente_id)
@@ -113,18 +114,18 @@ fct_gera_tabelas_avaliacoes <- function(){
     dplyr::select(marca_id, marca_nome)
 
   #Arrumando encoding
-  #Encoding(marcas$marca_nome) <- 'UTF-8'
+  Encoding(marcas$marca_nome) <- 'UTF-8'
 
   neg_v__prod__cli_ij_mar <- inner_join(neg_us_v_ij_prod_ij_cli, marcas, by=c("produto_marca_id" = "marca_id")) %>%
     dplyr::select(-produto_marca_id)
 
   ## Gera uma lista com códigos das empresas ativas
   empresas_ativas <- fct_empresas_ativas ()
-  if(teste){
+  if(debug){
     length(empresas_ativas)
   }
   for(i in (1:length(empresas_ativas))){
-    if(teste){
+    if(debug){
       print(i)
       print(empresas_ativas[[i]])
       # i = 10
@@ -138,7 +139,7 @@ fct_gera_tabelas_avaliacoes <- function(){
       dplyr::filter (vendedor_ativo == T)
 
     #Arrumando encoding
-    #Encoding(vendedor$vendedor_nome) <- 'latin1'
+    Encoding(vendedor$vendedor_nome) <- 'UTF-8'
     vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
 
     if(empresas_ativas[[i]] == 16){
@@ -162,6 +163,11 @@ fct_gera_tabelas_avaliacoes <- function(){
     ## Contando valores únicos
     ##length(unique(neg_v__prod__cli__mar__vend_empresa$nu_id))
     if(nrow(neg_v__prod__cli__mar__vend_empresa) > 0){
+      if(debug){
+        print("Debug ativo")
+        print(paste0("Empresa = ", empresas_ativas[[i]]))
+        print(paste0("Número de linhas = ", nrow(neg_v__prod__cli__mar__vend_empresa)))
+      }
       tabela_final_avaliacoes <- neg_v__prod__cli__mar__vend_empresa %>%
         dplyr::rowwise() %>%
         dplyr::mutate(valor_negocio = func_fmt_din(nu_valor)) %>%
@@ -185,6 +191,11 @@ fct_gera_tabelas_avaliacoes <- function(){
       Encoding(tabela_final_avaliacoes$'Produto + Valor') <- 'UTF-8'
       ## Escrevendo a tabela resultante em csv
       data.table::fwrite(tabela_final_avaliacoes, paste0("Geradores_tabelas_html/avaliacoes/empresas/avaliacoes_", empresas_ativas[[i]], ".csv"), bom = T)
+    }else{
+      if(debug){
+        print(paste0("Empresa não tem funcionalidade  = ", empresas_ativas[[i]]))
+        print(paste0("Número de linhas = ", nrow(neg_v__prod__cli__mar__vend_empresa)))
+      }
     }
   }
 }

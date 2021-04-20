@@ -187,7 +187,7 @@ fct_gera_tabelas_propostas <- function(debug){
         dplyr::mutate(Link = paste0('onclick="', "window.open('", paste0("https://letmegooglethat.com/?q=", proposta_data_cadastro, "'"), ", '_blank')'", '>LINK DA PROPOSTA')) %>%
         ## formato a data para impressão
         dplyr::mutate ('Data de Cadastro' = func_fmt_data_d_m_Y(proposta_data_cadastro)) %>%
-        dplyr::mutate('Produto + Valor' = paste(produto_nome, valor_proposta, sep = "  - ")) %>%
+        #dplyr::mutate('Produto + Valor' = paste(Produtos, valor_proposta, sep = "  - ")) %>%
         # dplyr::select(-pp_valor_tot) %>%
         dplyr::distinct(proposta_id, .keep_all = T) %>%
         ## Organizando tabela
@@ -200,18 +200,17 @@ fct_gera_tabelas_propostas <- function(debug){
 
         ## Selecionando colunas (com if e alterando tipo de data) e alterando nomes
         dplyr::select(-negocio_tipo_negocio) %>%
-        dplyr::select(Cliente, Vendedor, 'Produto + Valor' , 'Data de Cadastro', Link) %>%
+        dplyr::select(Cliente, Vendedor, Produtos , 'Data de Cadastro', Link) %>%
         dplyr::ungroup ()
 
       Encoding(prop_ate_1ano_ant$Cliente) <- 'UTF-8'
-      Encoding(prop_ate_1ano_ant$'Produto + Valor') <- 'UTF-8'
+      Encoding(prop_ate_1ano_ant$Produtos) <- 'UTF-8'
       ## Escrevendo a tabela resultante em csv
       data.table::fwrite(prop_ate_1ano_ant, paste0("Geradores_tabelas_html/propostas/empresas/propostas_", empresas_ativas[[i]], ".csv"), bom = T)
     }else{
       if(debug){
-        print("Debug ou teste ativo")
-        print(paste0("Empresa não  = ", empresas_ativas[[i]]))
-        print(paste0("Número de linhas = ", nrow(prop_ij_neg_ij_vend)))
+        print(paste0("Empresa não tem funcionalidade  = ", empresas_ativas[[i]]))
+        print(paste0("Número de linhas = ", nrow(p_ij_n_ij_pp_ij_prod_cli)))
       }
     }
   }
