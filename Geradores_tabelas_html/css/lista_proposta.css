@@ -1,0 +1,113 @@
+
+* {
+  box-sizing: border-box;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1rem;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #F5F5F5;
+  font-weight: 300;
+  width: 100%;
+}
+
+td, th {
+  padding: 0.5em;
+}
+
+.busca{
+  background-color: #FFFFFF;
+  box-shadow: rgba(60, 64, 67, 0.3) 0 1px 2px 0, rgba(60, 64, 67, 0.15) 0 1px 3px 1px;
+}
+
+.clientes {
+  font-size: 1.25rem;
+}
+
+.column {
+  background-color: #FFFFFF;
+  box-shadow: rgba(60, 64, 67, 0.3) 0 1px 2px 0, rgba(60, 64, 67, 0.15) 0 1px 3px 1px;
+  display: none;
+}
+
+.datas {
+  font-size: 0.75rem;
+}
+
+.datas::after {
+  content: "(Data de cadastro)";
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  margin-left: 0.5rem;
+  width: 10rem;
+}
+
+.hide {
+  display: none;
+}
+
+.links {
+  color: blue;
+  text-decoration: underline;
+}
+
+.myInput {
+  background-image: url('img/searchicon.png');
+  background-position: 10px 10px;
+  background-repeat: no-repeat;
+  border: 1px solid #ddd;
+  padding: 12px 20px 12px 40px;
+  width: 100%;
+}
+
+.produtos {
+  font-size: 0.75rem;
+}
+
+.table {
+  border-collapse: separate;
+  border-spacing: 0 1rem;
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-right: auto;
+  margin-left: auto;
+  padding: 0.5rem;
+  width: 95%;
+}
+
+.table-content {
+  display: block;
+  text-align: left;
+  user-select: all;
+}
+
+.table-search-description{
+  font-weight: 300;
+}
+
+.top {
+  background-color: #FFFFFF;
+  box-shadow: rgba(60, 64, 67, 0.3) 0 1px 2px 0, rgba(60, 64, 67, 0.15) 0 1px 3px 1px;
+  margin-top: 1.5rem;
+  margin-bottom: 0;
+  margin-right: auto;
+  margin-left: auto;
+  padding: 0.5rem;
+  text-align: center;
+  width: 90%;
+}
+
+.vendedores {
+  font-size: 0.75rem;
+}
+.vendedores::after {
+  content: "(Vendedor)";
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  margin-left: 0.5rem;
+  width: 5rem;
+}
