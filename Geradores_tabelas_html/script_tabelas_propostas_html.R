@@ -6,7 +6,7 @@ source("Geradores_tabelas_html/gera_tabelas_html_propostas.R")
 source("Geradores_tabelas_html/propostas/script_modifica_tabela_propostas.R")
 
 ## setwd("E:\\Mikael\\OneDrive\\Projetos\\Scripts_R\\r_elevata")
-teste = F
+debug = F
 #Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")
 ##Usado para super e komatsu
 ##renderiza dash_negocios_propostas e dash_visitas_mapas
@@ -25,18 +25,18 @@ num_dias_list <- as.list(0)
 
 ## Gerando as tabelas (lendo tabelas base, fazendo manipulação e salvando em csv tabelas prontas)
 ## arquivos salvos em Geradores_tabelas_html/propostas/empresas/
-fct_gera_tabelas_propostas(teste)
+fct_gera_tabelas_propostas(debug)
 
 ## Pega as tabelas em csv, e gera o html intermediário (que será alterado, para que tenha o html final)
 ## Arquivos salvos em Geradores_tabelas_html/propostas/html_intermed (intermediário, primeira impressão html) e
 ## Geradores_tabelas_html/propostas/htmls_final (html que será alterado, "final")
 vendedores_empresa = NULL
 for(i in 1:length(empresas_ativ)){
-  vendedores_empresa[i] = fct_cria_tabelas_html(empresas_ativ[[i]], 'propostas', teste)
+  vendedores_empresa[i] = fct_cria_tabelas_html(empresas_ativ[[i]], 'propostas', debug)
   #print(list[[i]])
 }
 # print(vendedores_empresa)
 ## Manipula todas as tabelas, adicionando itens de html/css necessários para formatação,
 ## arquivos permanecem em html_final
-fct_alt_todas_html('propostas', teste, vendedores_empresa, empresas_ativas)
+fct_alt_todas_html('propostas', vendedores_empresa, empresas_ativas, debug)
 #############################################################

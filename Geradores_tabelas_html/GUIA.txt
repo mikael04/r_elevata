@@ -1,0 +1,31 @@
+# Pequeno guia de como funciona a geração de tabelas html
+
+################################################################################################################
+Propostas
+
+Dentro da pasta principal existe: 
+    - Arquivos com funções que leem do banco, manipulam e geram tabelas .csv que serão utilizadas para criação da tabela final
+        + gera_tabelas_html (função: fct_gera_tabelas_propostas)
+            * fct_gera_tabelas_propostas: recebe apenas parâmetro se está testando ou não (debug)
+    - Arquivos que farão a leitura das tabelas csv, escrita de uma tabela em html intermediária e tabela em html final, após modificações executadas (quase tudo é feito de modo genérico a todas as empresas, apenas uma das funções, que adicionará os vendedors como filtro, é feita individualmente por empresa;
+        + script_modifica_tabela (funções: fct_cria_tabelas_html e fct_alt_todas_html)
+            * fct_cria_tabelas_html: Recebe:
+                ~ Empresa que irá gerar o html (método interno da função mãe) por parâmetror
+                ~ O tipo de categoria usada (ex:propostas, avaliacoes, etc)
+                ~ Parâmetro de debug
+                Retorna:
+                ~ Vendedores daquela empresa (em lista, de todos, caso não tenha aquela funcionalidade, ex: proposta, a lista sera NULL)
+            * fct_alt_todas_html: Recebe:
+                ~ O tipo de categoria usada (ex:propostas, avaliacoes, ect)
+                ~ Uma lista com todos os vendedores de todas as empresas (vendedores_empresa[[i]] -> cada empresa, vendedores_empresa[[i]][j] -> cada vendedor
+                ~ Lista de empresas ativas (para poder identificar qual é a empresa que está lidando)
+                ~ Parâmetro de debug
+    - Arquivo que fará toda a criação (gera_tabelas_html) e manipulação, até a saída do html final (script_modifica_tabela), esse script executa os outros dois scripts anteriores
+        + script_tabelas_propostas_html
+            * Puxa banco de dados para saber empresas ativas;
+            * Chama as demais funções, em ordem:
+                ~ fct_gera_tabelas_propostas -> Gerando tabelas
+                ~ for (i in 1:length(empresas_ativ)) fct_cria_tabelas_html -> Recebendo vendedores de cada empresa, lendo csvs, gerando htmls intermediários e finais
+                ~ fct_alt_todas_html -> Fazendo alterações nos htmls finais
+                
+################################################################################################################
