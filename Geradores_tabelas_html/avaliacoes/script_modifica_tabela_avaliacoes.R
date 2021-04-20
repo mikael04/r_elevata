@@ -66,7 +66,7 @@ fct_cria_tabelas_html <- function(empresa, tabela_categoria, debug){
 ####################################################################################################################
 
 ####################################################################################################################
-fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_ativas, debug){
+fct_alt_todas_html <- function(tabela_categoria, debug, vendedores_empresa, empresas_ativas){
   # debug_interno = T
   # if(debug_interno){
   #   tabela_categoria = 'propostas'
