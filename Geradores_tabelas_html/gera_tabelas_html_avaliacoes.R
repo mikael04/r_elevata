@@ -81,13 +81,14 @@ fct_gera_tabelas_avaliacoes <- function(debug){
 
   ##-> Collect cria o dataframe resultado da query, negocio_usado será a tabela na qual estou lendo (FROM cliente)
   negocio_usado <- fread("Tabelas/negocio_usado.csv", colClasses = c(nu_id = "character", nu_produto_id = "character", nu_negocio_id = "character")) %>%
-    dplyr::select(nu_id, nu_negocio_id, nu_produto_id, nu_valor, nu_estado, nu_dt_cadastro, nu_excluido) %>%
-    dplyr::filter(nu_excluido == FALSE)
+    dplyr::select(nu_id, nu_negocio_id, nu_produto_id, nu_valor, nu_estado, nu_dt_cadastro, nu_excluido, nu_ativo) %>%
+    dplyr::filter(nu_excluido == FALSE, nu_ativo == TRUE)
 
   ## Coleta todos os negocios (para puxar negocio_vendedor_id)
   negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_cliente_id = "character")) %>%
     dplyr::select(negocio_id, negocio_vendedor_id, negocio_cliente_id)
 
+  ## Junção de negócio com negócio uasdo
   negocio_usado_v <- inner_join(negocio_usado, negocio, by=c("nu_negocio_id" = "negocio_id"))
 
   ## Coleta todos os produtos
