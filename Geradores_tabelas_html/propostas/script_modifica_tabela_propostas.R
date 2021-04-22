@@ -73,6 +73,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   #   debug = T
   # }
   if(debug){
+    print("Começando função de alterar tabelas")
     print("tabela_categoria = ")
     print(tabela_categoria)
   }
@@ -82,7 +83,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
 
   ##########################################################
   ## Substituindo o meta cagado
-# 
+#
 #   f_meta <- '<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>'
 #   r_meta <- ''
 #   if(debug){
@@ -114,7 +115,9 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   </head>
   <body>
     <table class="table">'
-  r_table <- c(header, '\t\t</table>\n\t</body>\n</html>')
+  r_table <- c(header, '\t\t</table>\n
+		<!-- script de lista (filtro e busca) -->
+    <script src="../../js/lista_proposta.js"></script>\n\t</body>\n</html>')
   for (i in 1:length(f_table)){
     gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_table[i], replacement = r_table[i])
   }
@@ -208,14 +211,16 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
               '<c3>', '<d4>', '<d5>',
               '<d9>', '<da>', '<db>',
               '<c7>',
-              '<a0>', '<aa>', '<b0>', '<ba>')
+              '<a0>', '<aa>', '<b0>', '<ba>',
+              '""')
   r_spec <- c('&#192;', '&#193;', '&#194;', '&#195;',
               '&#200;', '&#201;', '&#202;',
               '&#204;', '&#205;', '&#206;',
               '&#211;', '&#212;', '&#213;',
               '&#218;', '&#219;', '&#220;',
               '&#199;',
-              '&#160;', '&#170;', '&#176;', '&#186;')
+              '&#160;', '&#170;', '&#176;', '&#186;',
+              '"')
 
   # c('A c/ crase', 'A c/ acento agudo', 'A c/ acento circunflexo', 'A c/ til',
   #   'E c/ crase', 'E c/ acento agudo', 'E c/ acento circunflexo',
@@ -223,7 +228,8 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   #   'O c/ acento agudo', 'O c/ acento circunflexo', 'O c/ til',
   #   'U c/ crase', 'U c/ acento agudo', 'U c/ acento circunflexo',
   #   'C cedilha',
-  #   'espaço', ' a ordinal', 'o grau', 'o ordinal')
+  #   'espaço', ' a ordinal', 'o grau', 'o ordinal'
+  #   '""' gerado no início da linha, por uma aspas simples, não funcionou substituir por &#034;)
 
   ## Replace id and header
   for (i in 1:length(f_spec)){
@@ -262,6 +268,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   for(i in 1:(length(vendedores_empresa))){
     if(!is.null(vendedores_empresa[[i]])){
       if(debug){
+        print("Subsituindo vendedores, for i")
         print(i)
         print(vendedores_empresa[[i]])
       }
@@ -269,6 +276,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
       #vendedores_empresa[[1]][1]
       for(j in (1:length(vendedores_empresa[[i]]))){
         if(debug){
+          print("Substituindo vendedores, for j")
           sprintf("i = %i", i)
           sprintf("j = %i", j)
           print(vendedores_empresa[[i]][j])
@@ -289,8 +297,17 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   ##########################################################
 
   ##########################################################
-  ## Copiando o arquivo para lugar que está o css (estou fazendo isso pois as substituições precisam ser feitas numa pasta vazia)
-  ##file.copy(from="Gerador_tabelas_html/outputs/htmls_intermed/exemplo_minimalista.html", to="Gerador_tabelas_html/lista_proposta.html", overwrite = T, recursive = F, copy.mode = T)
+  ## Copiando o arquivo após terminar de alterar para lugar final
+  for(i in 1:(length(vendedores_empresa))){
+    if(!is.null(vendedores_empresa[[i]])){
+      if(debug){
+        print("Copiando arquivos para pasta final")
+        print(i)
+        print(vendedores_empresa[[i]])
+      }
+      file.copy(from=paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresas_ativas[i], '.html'), to=paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/', tabela_categoria, '_', empresas_ativas[i], '.html'), overwrite = T, recursive = F, copy.mode = T)
+    }
+  }
 }
 
 fct_alt_vend_individual <- function(vendedor, empresa){

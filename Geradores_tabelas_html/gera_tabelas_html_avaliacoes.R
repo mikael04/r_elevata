@@ -174,7 +174,7 @@ fct_gera_tabelas_avaliacoes <- function(debug){
         ##dplyr::select(nu_id, nu_valor, valor_negocio) ## Usado para verificar se todas as linhas foram convertidas corretamente
         ## formato o link
         ##  onclick="window.open('http://google.com', '_blank')">LINK DA PROPOSTA
-        dplyr::mutate(Link = paste0('onclick="', "window.open('", paste0("https://letmegooglethat.com/?q=", nu_dt_cadastro, "'"), ", '_blank')'", '>LINK DA PROPOSTA')) %>%
+        dplyr::mutate(Link = paste0('onclick="', "window.open('", paste0("https://letmegooglethat.com/?q=", nu_dt_cadastro, "'"), ", '_blank')", '"', '>LINK DA PROPOSTA')) %>%
         ## formato a data para impressão
         dplyr::mutate ('Data de Cadastro' = func_fmt_data_d_m_Y(nu_dt_cadastro)) %>%
 

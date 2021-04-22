@@ -184,7 +184,7 @@ fct_gera_tabelas_propostas <- function(debug){
         ## formato o link
         ##  onclick="window.open('http://google.com', '_blank')">LINK DA PROPOSTA
 
-        dplyr::mutate(Link = paste0('onclick="', "window.open('", paste0("https://letmegooglethat.com/?q=", proposta_data_cadastro, "'"), ", '_blank')'", '>LINK DA PROPOSTA')) %>%
+        dplyr::mutate(Link = paste0('onclick="', "window.open('", paste0("https://letmegooglethat.com/?q=", proposta_data_cadastro, "'"), ", '_blank')", '"', '>LINK DA PROPOSTA')) %>%
         ## formato a data para impressão
         dplyr::mutate ('Data de Cadastro' = func_fmt_data_d_m_Y(proposta_data_cadastro)) %>%
         #dplyr::mutate('Produto + Valor' = paste(Produtos, valor_proposta, sep = "  - ")) %>%
