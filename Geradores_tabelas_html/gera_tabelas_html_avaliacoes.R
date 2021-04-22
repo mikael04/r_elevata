@@ -1,6 +1,6 @@
 
 fct_gera_tabelas_avaliacoes <- function(debug){
-  #debug = T
+  # debug = T
   #Lib q será futuramente usada pros painéis interativos
   #library(shiny)
   #Lib pra conexão com o banco
@@ -96,10 +96,10 @@ fct_gera_tabelas_avaliacoes <- function(debug){
     dplyr::select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
   #Arrumando encoding
-  Encoding(produto$produto_nome) <- 'UTF-8'
+  Encoding(produto$produto_nome) <- 'latin1' # 'UTF-8'
 
   neg_us_v_ij_prod <- inner_join(negocio_usado_v, produto, by=c("nu_produto_id"="produto_id")) %>%
-    dplyr::select(nu_id, negocio_vendedor_id, negocio_cliente_id, nu_produto_id, nu_valor, nu_estado, nu_dt_cadastro,
+    dplyr::select(nu_id, nu_negocio_id, negocio_vendedor_id, negocio_cliente_id, nu_produto_id, nu_valor, nu_estado, nu_dt_cadastro,
                   produto_nome, produto_marca_id)
 
   ## Coleta todos os clientes
@@ -107,7 +107,7 @@ fct_gera_tabelas_avaliacoes <- function(debug){
     dplyr::select(cliente_id, cliente_nome, cliente_empresa_id)
 
   #Arrumando encoding
-  Encoding(cliente$cliente_nome) <- 'UTF-8'
+  Encoding(cliente$cliente_nome) <- 'latin1' # 'UTF-8''
 
   neg_us_v_ij_prod_ij_cli <- inner_join(neg_us_v_ij_prod, cliente, by=c("negocio_cliente_id" = "cliente_id")) %>%
     dplyr::select(-nu_produto_id, -negocio_cliente_id)
@@ -116,20 +116,22 @@ fct_gera_tabelas_avaliacoes <- function(debug){
     dplyr::select(marca_id, marca_nome)
 
   #Arrumando encoding
-  Encoding(marcas$marca_nome) <- 'UTF-8'
+  Encoding(marcas$marca_nome) <- 'latin1' # 'UTF-8'
 
   neg_v__prod__cli_ij_mar <- inner_join(neg_us_v_ij_prod_ij_cli, marcas, by=c("produto_marca_id" = "marca_id")) %>%
     dplyr::select(-produto_marca_id)
 
   ## Gera uma lista com códigos das empresas ativas
   empresas_ativas <- fct_empresas_ativas ()
+  ## Gerando lista que salvará os vendedores (para retornar esta lista)
+  vendedores <- NULL
   if(debug){
     length(empresas_ativas)
   }
   for(i in (1:length(empresas_ativas))){
     ## Inicializando a lista de vendedores
-    vendedores <- NULL
     if(debug){
+      # i = 3
       print(i)
       print(empresas_ativas[[i]])
       # i = 10
@@ -143,7 +145,7 @@ fct_gera_tabelas_avaliacoes <- function(debug){
       dplyr::filter (vendedor_ativo == T)
 
     #Arrumando encoding
-    Encoding(vendedor$vendedor_nome) <- 'UTF-8'
+    Encoding(vendedor$vendedor_nome) <- 'latin1' # 'UTF-8'
     vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
 
     if(empresas_ativas[[i]] == 16){
@@ -172,9 +174,21 @@ fct_gera_tabelas_avaliacoes <- function(debug){
         print(paste0("Empresa = ", empresas_ativas[[i]]))
         print(paste0("Número de linhas = ", nrow(neg_v__prod__cli__mar__vend_empresa)))
       }
+      ## Ordenando e removendo colunas repetidas
       tabela_final_avaliacoes <- neg_v__prod__cli__mar__vend_empresa %>%
-        dplyr::rowwise() %>%
-        dplyr::mutate(valor_negocio = func_fmt_din(nu_valor)) %>%
+        group_by(nu_negocio_id, produto_nome, nu_valor) %>%
+        slice(c(which.max(nu_dt_cadastro))) %>%
+        ungroup ()
+
+      tabela_final_avaliacoes <- tabela_final_avaliacoes %>%
+        dplyr::group_by(nu_negocio_id) %>%
+        ## Deixarei o mutate pra valor, caso precise futuramente
+        # dplyr::mutate (valor_negocio = func_fmt_din(sum(nu_valor))) %>%
+        dplyr::mutate (Produto = paste0(produto_nome, collapse = " --- ")) %>%
+        ## Após agrupamento e adição de nova coluna com nome de todos os produtos, ficar apenas com uma das linhas
+        dplyr::slice(c(which.max(nu_id))) %>%
+        dplyr::ungroup () %>%
+
         ##dplyr::select(nu_id, nu_valor, valor_negocio) ## Usado para verificar se todas as linhas foram convertidas corretamente
         ## formato o link
         ##  onclick="window.open('http://google.com', '_blank')">LINK DA PROPOSTA
@@ -182,17 +196,16 @@ fct_gera_tabelas_avaliacoes <- function(debug){
         ## formato a data para impressão
         dplyr::mutate ('Data de Cadastro' = func_fmt_data_d_m_Y(nu_dt_cadastro)) %>%
 
-        dplyr::mutate('Produto + Valor' = paste(produto_nome, valor_negocio, sep = "  - ")) %>%
         ## Organizando tabela
         dplyr::arrange(desc(nu_dt_cadastro)) %>%
 
         ## Selecionando colunas e alterando nomes
-        dplyr::select(cliente_nome, vendedor_nome, 'Produto + Valor' , 'Data de Cadastro', Link) %>%
+        dplyr::select(cliente_nome, vendedor_nome, Produto , 'Data de Cadastro', Link) %>%
         dplyr::rename(Vendedor = vendedor_nome, Cliente = cliente_nome)
 
-      Encoding(tabela_final_avaliacoes$Cliente) <- 'UTF-8'
-      Encoding(tabela_final_avaliacoes$Vendedor) <- 'UTF-8'
-      Encoding(tabela_final_avaliacoes$'Produto + Valor') <- 'UTF-8'
+      # Encoding(tabela_final_avaliacoes$Cliente) <- 'latin1'
+      # Encoding(tabela_final_avaliacoes$Vendedor) <- 'latin1'
+      # Encoding(tabela_final_avaliacoes$'Produto + Valor') <- 'latin1'
 
       if(debug){
         print("Arquivo Existe, será gerado o html:");

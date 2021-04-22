@@ -22,18 +22,6 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   library(xfun)
 
   ##########################################################
-  ## Substituindo o meta cagado
-#
-#   f_meta <- '<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>'
-#   r_meta <- ''
-#   if(debug){
-#     print(paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'))
-#   }
-#   gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'), pattern = f_meta, replacement = r_meta)
-  ##########################################################
-
-
-  ##########################################################
   ## Substituindo a tabela por tabela comum css irá mexer nessa classe
 
   f_table <- c('<table style="border-collapse:collapse;" class=table_\\d\\d\\d\\d border=1>', '</table>')

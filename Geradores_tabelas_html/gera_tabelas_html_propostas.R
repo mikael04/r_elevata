@@ -123,7 +123,7 @@ fct_gera_tabelas_propostas <- function(debug){
     ## Inicializando a lista de vendedores
     vendedores <- NULL
     if(debug){
-      # i = 1
+      # i = 3
       print(i)
       print(empresas_ativas[[i]])
     }
