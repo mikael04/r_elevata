@@ -31,11 +31,13 @@ fct_gera_tabelas_avaliacoes <- function(debug){
 
 
   ###################################
-  ##Variáveis "Globais"
-  ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
+  ## Variáveis "Globais"
+  #### Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
   teste = T
-  ####Variável usada para não plotar os gráficos na dash
+  #### Variável usada para não plotar os gráficos na dash
   dash = T
+  #### Variável de categoria
+  tabela_categoria = 'avaliacoes'
 
   ### Tempo
   if(!teste){
@@ -125,6 +127,8 @@ fct_gera_tabelas_avaliacoes <- function(debug){
     length(empresas_ativas)
   }
   for(i in (1:length(empresas_ativas))){
+    ## Inicializando a lista de vendedores
+    vendedores <- NULL
     if(debug){
       print(i)
       print(empresas_ativas[[i]])
@@ -189,14 +193,36 @@ fct_gera_tabelas_avaliacoes <- function(debug){
       Encoding(tabela_final_avaliacoes$Cliente) <- 'UTF-8'
       Encoding(tabela_final_avaliacoes$Vendedor) <- 'UTF-8'
       Encoding(tabela_final_avaliacoes$'Produto + Valor') <- 'UTF-8'
-      ## Escrevendo a tabela resultante em csv
-      data.table::fwrite(tabela_final_avaliacoes, paste0("Geradores_tabelas_html/avaliacoes/empresas/avaliacoes_", empresas_ativas[[i]], ".csv"), bom = T)
+
+      if(debug){
+        print("Arquivo Existe, será gerado o html:");
+        print(paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresas_ativas[[i]] , '.html'))
+      }
+
+      # tabela_csv <- tabela_csv %>%
+      #   mutate_if(is.character,fix_encoding)
+      if(nrow(tabela_final_avaliacoes) > 0){
+        vendedores[i] <- tabela_final_avaliacoes %>%
+          dplyr::select(Vendedor) %>%
+          dplyr::distinct(Vendedor) %>%
+          dplyr::arrange(Vendedor) %>%
+          dplyr::mutate(Vendedor = `Encoding<-`(Vendedor, 'latin1'))
+      }else{
+        vendedores[i] <- NULL
+      }
+
+      library(tableHTML)
+      ## imprime em HTML (para facilitar modificação)
+      tableHTML::write_tableHTML(tableHTML::tableHTML(tabela_final_avaliacoes), file = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresas_ativas[[i]] , '.html'))
+
     }else{
       if(debug){
         print(paste0("Empresa não tem funcionalidade  = ", empresas_ativas[[i]]))
-        print(paste0("Número de linhas = ", nrow(neg_v__prod__cli__mar__vend_empresa)))
+        print(paste0("Número de linhas = ", nrow(tabela_final_avaliacoes)))
       }
     }
   }
+  ##########################################################
+  ## Retornando a lista (após rodar o for de todas as empresas) com os vendedores de cada empresa
+  return(vendedores)
 }
-

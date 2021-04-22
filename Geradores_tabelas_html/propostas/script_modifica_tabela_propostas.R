@@ -4,66 +4,6 @@
 # if(debug)
 # empresa = 1
 # tabela_categoria = 'propostas'
-fct_cria_tabelas_html <- function(empresa, tabela_categoria, debug){
-  #options((encoding="native"))
-  # debug_interno = F
-  # if(debug_interno){
-    # tabela_categoria = 'propostas'
-    # empresa = 16
-    # debug = T
-  # }
-  ## rm(list = ls())
-  library(dplyr)
-  ## Le a tabela salva (já organizada)
-  if(file.exists(paste0("Geradores_tabelas_html/", tabela_categoria, "/empresas/",tabela_categoria, "_", empresa ,".csv"))){
-    print("Arquivo Existe, será gerado o html:");
-    print(paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresa , '.html'))
-    tabela_csv <- data.table::fread(paste0("Geradores_tabelas_html/", tabela_categoria, "/empresas/",tabela_categoria, "_", empresa ,".csv"))
-
-    # tabela_csv <- tabela_csv %>%
-    #   mutate_if(is.character,fix_encoding)
-    if(nrow(tabela_csv) > 0){
-      vendedores <- tabela_csv %>%
-        dplyr::select(Vendedor) %>%
-        dplyr::distinct(Vendedor) %>%
-        dplyr::arrange(Vendedor) %>%
-        dplyr::mutate(Vendedor = `Encoding<-`(Vendedor, 'latin1'))
-    }else{
-      vendedores <- NULL
-    }
-
-    library(tableHTML)
-    ## imprime em HTML (para facilitar modificação)
-    #tableHTML::write_tableHTML(tableHTML::tableHTML(tabela_csv), file = 'Geradores_tabelas_html/propostas/example_table.html')
-    tableHTML::write_tableHTML(tableHTML::tableHTML(tabela_csv), file = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresa , '.html'))
-
-    # ## Gerando HTML com header pronto
-    # input_ = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresa , '.html')
-    # output_ = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/', tabela_categoria, '_', empresa , '.html')
-    # knitr::knit2html(
-    #   input = input_,
-    #   output = output_,
-    #   ##Adicionando um css em branco para não pegar o default
-    #   stylesheet = "Geradores_tabelas_html/style_blank.css",
-    #   header = "Geradores_tabelas_html/propostas/header_lista_proposta.html"
-    # )
-    # if (file.exists(paste0(tabela_categoria, '_', empresa, '.txt'))) {
-    #   #Delete file if it exists
-    #   file.remove(paste0(tabela_categoria, '_', empresa, '.txt'))
-    # }
-    #paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/', tabela_categoria, '_', empresa , '.html')
-  }else{
-    if(debug){
-      print("Arquivo não existe, possivelmente não usa essa funcionalidade ou algum outro erro");
-      print(paste0("Geradores_tabelas_html/", tabela_categoria, "/empresas/", tabela_categoria, "_", empresa,".csv"))
-    }
-    return(NULL)
-  }
-
-  ##########################################################
-  return(vendedores)
-}
-####################################################################################################################
 
 ####################################################################################################################
 fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_ativas, debug){

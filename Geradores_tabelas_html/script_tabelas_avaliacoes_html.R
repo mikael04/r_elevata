@@ -23,20 +23,15 @@ empresas_ativ <- as.list(params_list_i)
 ## 0 -> indica que estamos rodando para o dia atual
 num_dias_list <- as.list(0)
 
-## Gerando as tabelas (lendo tabelas base, fazendo manipulação e salvando em csv tabelas prontas)
+## Gerando as tabelas (lendo tabelas base e fazendo manipulação
+## Após manipulação, gera o html intermediário (que será alterado, para que a cópia dele seja adicionado a pasta html final)
 ## arquivos salvos em Geradores_tabelas_html/propostas/empresas/
-fct_gera_tabelas_avaliacoes(debug)
+vendedores_empresa <- fct_gera_tabelas_avaliacoes(debug)
 
-## Pega as tabelas em csv, e gera o html intermediário (que será alterado, para que tenha o html final)
-## Arquivos salvos em Geradores_tabelas_html/propostas/html_intermed (intermediário, primeira impressão html) e
-## Geradores_tabelas_html/propostas/htmls_final (html que será alterado, "final")
-vendedores_empresa = NULL
-for(i in 1:length(empresas_ativ)){
-  vendedores_empresa[i] = fct_cria_tabelas_html(empresas_ativ[[i]], 'avaliacoes', debug)
-  #print(list[[i]])
-}
-# print(vendedores_empresa)
+## Arquivos salvos em Geradores_tabelas_html/propostas/html_intermed, html que será alterado
+## Geradores_tabelas_html/propostas/htmls_final (, "final") -> com arquivo copiado final
+
 ## Manipula todas as tabelas, adicionando itens de html/css necessários para formatação,
-## arquivos permanecem em html_final
-#fct_alt_todas_html('propostas', vendedores_empresa, empresas_ativas, debug)
+## arquivos permanecem em html_intermed e são copiados para html_final
+fct_alt_todas_html('avaliacoes', vendedores_empresa, empresas_ativas, debug)
 #############################################################
