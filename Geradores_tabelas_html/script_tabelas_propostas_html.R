@@ -6,7 +6,7 @@ source("Geradores_tabelas_html/gera_tabelas_html_propostas.R")
 source("Geradores_tabelas_html/propostas/script_modifica_tabela_propostas.R")
 
 ## setwd("E:\\Mikael\\OneDrive\\Projetos\\Scripts_R\\r_elevata")
-debug = F
+debug = T
 #Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")
 ##Usado para super e komatsu
 ##renderiza dash_negocios_propostas e dash_visitas_mapas

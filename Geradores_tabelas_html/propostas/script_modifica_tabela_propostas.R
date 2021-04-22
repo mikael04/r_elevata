@@ -37,20 +37,20 @@ fct_cria_tabelas_html <- function(empresa, tabela_categoria, debug){
     #tableHTML::write_tableHTML(tableHTML::tableHTML(tabela_csv), file = 'Geradores_tabelas_html/propostas/example_table.html')
     tableHTML::write_tableHTML(tableHTML::tableHTML(tabela_csv), file = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresa , '.html'))
 
-    ## Gerando HTML com header pronto
-    input_ = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresa , '.html')
-    output_ = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/', tabela_categoria, '_', empresa , '.html')
-    knitr::knit2html(
-      input = input_,
-      output = output_,
-      ##Adicionando um css em branco para não pegar o default
-      stylesheet = "Geradores_tabelas_html/style_blank.css",
-      header = "Geradores_tabelas_html/propostas/header_lista_proposta.html"
-    )
-    if (file.exists(paste0(tabela_categoria, '_', empresa, '.txt'))) {
-      #Delete file if it exists
-      file.remove(paste0(tabela_categoria, '_', empresa, '.txt'))
-    }
+    # ## Gerando HTML com header pronto
+    # input_ = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresa , '.html')
+    # output_ = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/', tabela_categoria, '_', empresa , '.html')
+    # knitr::knit2html(
+    #   input = input_,
+    #   output = output_,
+    #   ##Adicionando um css em branco para não pegar o default
+    #   stylesheet = "Geradores_tabelas_html/style_blank.css",
+    #   header = "Geradores_tabelas_html/propostas/header_lista_proposta.html"
+    # )
+    # if (file.exists(paste0(tabela_categoria, '_', empresa, '.txt'))) {
+    #   #Delete file if it exists
+    #   file.remove(paste0(tabela_categoria, '_', empresa, '.txt'))
+    # }
     #paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/', tabela_categoria, '_', empresa , '.html')
   }else{
     if(debug){
@@ -113,7 +113,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
     <script src="../../js/jquery-3.6.0.min.js"></script>
   </head>
   <body>
-    <table class="table>'
+    <table class="table">'
   r_table <- c(header, '\t\t</table>\n\t</body>\n</html>')
   for (i in 1:length(f_table)){
     gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_table[i], replacement = r_table[i])
