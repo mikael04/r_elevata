@@ -30,28 +30,30 @@ fct_gera_tabelas_propostas <- function(debug){
 
 
   ###################################
-  ##Variáveis "Globais"
-  ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
+  ## Variáveis "Globais"
+  #### Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
   teste = T
-  ####Variável usada para não plotar os gráficos na dash
+  #### Variável usada para não plotar os gráficos na dash
   dash = T
+  #### Variável de categoria
+  tabela_categoria = 'propostas'
 
   ### Tempo
   if(!teste){
-    ##Teste se estou gerando via rstudio (knit)
+    ## Teste se estou gerando via rstudio (knit)
     if(as.integer(params$num_dias) == 0) {
-      ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+      #### Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
       ano_atual = fct_ano_atual()
-      ####Variavel global c/ mês atual (para comparação)
+      #### Variavel global c/ mês atual (para comparação)
       mes_atual = fct_mes_atual()
       ## Apenas ano, para gerar títulos
       ano <- year(ano_atual)
-      ##Execução normal, recebendo data do gerador de dashs
+      ## Execução normal, recebendo data do gerador de dashs
     }else{
       data <- (lubridate::today()-lubridate::days(params$num_dias))
-      ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+      #### Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
       ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
-      ####Variavel global c/ mês atual (para comparação)
+      #### Variavel global c/ mês atual (para comparação)
       mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
       ## Apenas ano, para gerar títulos
       ano <- lubridate::year(ano_atual)
@@ -107,17 +109,19 @@ fct_gera_tabelas_propostas <- function(debug){
     dplyr::select(cliente_id, cliente_nome, cliente_empresa_id)
 
   #Arrumando encoding
-  Encoding(cliente$cliente_nome) <- 'UTF-8'
+  Encoding(cliente$cliente_nome) <- 'latin1' #'UTF-8'
 
   ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
   produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
     dplyr::select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
   #Arrumando #Encoding
-  Encoding(produto$produto_nome) <- 'UTF-8'
+  Encoding(produto$produto_nome) <- 'latin1' #'UTF-8'
 
   empresas_ativas <- fct_empresas_ativas ()
   for(i in (1:length(empresas_ativas))){
+    ## Inicializando a lista de vendedores
+    vendedores <- NULL
     if(debug){
       # i = 3
       print(i)
@@ -132,7 +136,7 @@ fct_gera_tabelas_propostas <- function(debug){
       dplyr::filter (vendedor_ativo == T)
 
     #Arrumando #Encoding
-    Encoding(vendedor$vendedor_nome) <- 'UTF-8'
+    Encoding(vendedor$vendedor_nome) <- 'latin1' #'UTF-8'
     vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
 
     if(empresas_ativas[[i]] == 16){
@@ -151,7 +155,7 @@ fct_gera_tabelas_propostas <- function(debug){
     prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
     if(nrow(prop_ij_neg_ij_vend) > 0){
       if(debug){
-        print("Debug ou teste ativo")
+        print("Debug ativo")
         print(paste0("Empresa = ", empresas_ativas[[i]]))
         print(paste0("Número de linhas = ", nrow(prop_ij_neg_ij_vend)))
       }
@@ -184,7 +188,7 @@ fct_gera_tabelas_propostas <- function(debug){
         ## formato o link
         ##  onclick="window.open('http://google.com', '_blank')">LINK DA PROPOSTA
 
-        dplyr::mutate(Link = paste0('onclick="', "window.open('", paste0("https://letmegooglethat.com/?q=", proposta_data_cadastro, "'"), ", '_blank')'", '>LINK DA PROPOSTA')) %>%
+        dplyr::mutate(Link = paste0('onclick="', "window.open('", paste0("https://letmegooglethat.com/?q=", proposta_data_cadastro, "'"), ", '_blank')", '"', '>LINK DA PROPOSTA')) %>%
         ## formato a data para impressão
         dplyr::mutate ('Data de Cadastro' = func_fmt_data_d_m_Y(proposta_data_cadastro)) %>%
         #dplyr::mutate('Produto + Valor' = paste(Produtos, valor_proposta, sep = "  - ")) %>%
@@ -203,15 +207,37 @@ fct_gera_tabelas_propostas <- function(debug){
         dplyr::select(Cliente, Vendedor, Produtos , 'Data de Cadastro', Link) %>%
         dplyr::ungroup ()
 
-      Encoding(prop_ate_1ano_ant$Cliente) <- 'UTF-8'
-      Encoding(prop_ate_1ano_ant$Produtos) <- 'UTF-8'
-      ## Escrevendo a tabela resultante em csv
-      data.table::fwrite(prop_ate_1ano_ant, paste0("Geradores_tabelas_html/propostas/empresas/propostas_", empresas_ativas[[i]], ".csv"), bom = T)
+      #Encoding(prop_ate_1ano_ant$Cliente) <- 'latin1'
+      #Encoding(prop_ate_1ano_ant$Produtos) <- 'latin1'
+
+      if(debug){
+        print("Arquivo Existe, será gerado o html:");
+        print(paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresas_ativas[[i]] , '.html'))
+      }
+
+      # tabela_csv <- tabela_csv %>%
+      #   mutate_if(is.character,fix_encoding)
+      if(nrow(prop_ate_1ano_ant) > 0){
+        vendedores[i] <- prop_ate_1ano_ant %>%
+          dplyr::select(Vendedor) %>%
+          dplyr::distinct(Vendedor) %>%
+          dplyr::arrange(Vendedor) %>%
+          dplyr::mutate(Vendedor = `Encoding<-`(Vendedor, 'latin1'))
+      }else{
+        vendedores[i] <- NULL
+      }
+
+      library(tableHTML)
+      ## imprime em HTML (para facilitar modificação)
+      tableHTML::write_tableHTML(tableHTML::tableHTML(prop_ate_1ano_ant), file = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresas_ativas[[i]] , '.html'))
     }else{
       if(debug){
         print(paste0("Empresa não tem funcionalidade  = ", empresas_ativas[[i]]))
-        print(paste0("Número de linhas = ", nrow(p_ij_n_ij_pp_ij_prod_cli)))
+        print(paste0("Número de linhas = ", nrow(prop_ate_1ano_ant)))
       }
     }
   }
+  ##########################################################
+  ## Retornando a lista (após rodar o for de todas as empresas) com os vendedores de cada empresa
+  return(vendedores)
 }
