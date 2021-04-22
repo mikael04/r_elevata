@@ -8,9 +8,9 @@ fct_cria_tabelas_html <- function(empresa, tabela_categoria, debug){
   #options((encoding="native"))
   # debug_interno = F
   # if(debug_interno){
-  #   tabela_categoria = 'propostas'
-  #   empresa = 67
-  #   debug = T
+    # tabela_categoria = 'propostas'
+    # empresa = 16
+    # debug = T
   # }
   ## rm(list = ls())
   library(dplyr)
@@ -82,13 +82,13 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
 
   ##########################################################
   ## Substituindo o meta cagado
-
-  f_meta <- '<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>'
-  r_meta <- ''
-  if(debug){
-    print(paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'))
-  }
-  gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'), pattern = f_meta, replacement = r_meta)
+# 
+#   f_meta <- '<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>'
+#   r_meta <- ''
+#   if(debug){
+#     print(paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'))
+#   }
+#   gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'), pattern = f_meta, replacement = r_meta)
   ##########################################################
 
 
@@ -96,9 +96,27 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   ## Substituindo a tabela por tabela comum css irá mexer nessa classe
 
   f_table <- c('<table style="border-collapse:collapse;" class=table_\\d\\d\\d\\d border=1>', '</table>')
-  r_table <- c('<table class="table">', '</table>')
+  # r_table <- c('<table class="table">', '\t\t</table>')
+  header <- '<!DOCTYPE html>
+<html>
+\t<head>
+    <title> Lista de propostas </title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+
+    <!-- Fonte utilizada -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto&display=swap" rel="stylesheet">
+    <!-- CSS para lista -->
+    <link rel="stylesheet" href="../../css/lista_proposta.css">
+    <!-- lib para js jquery -->
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+  </head>
+  <body>
+    <table class="table>'
+  r_table <- c(header, '\t\t</table>\n\t</body>\n</html>')
   for (i in 1:length(f_table)){
-    gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'), pattern = f_table[i], replacement = r_table[i])
+    gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_table[i], replacement = r_table[i])
   }
   ##########################################################
 
@@ -107,7 +125,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   f_tab <- c('<tr>', '</tr>')
   r_tab <- c('<tr class="column">', '</tr>')
   for (i in 1:length(f_tab)){
-    gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'), pattern = f_tab[i], replacement = r_tab[i])
+    gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_tab[i], replacement = r_tab[i])
   }
   ##########################################################
 
@@ -123,13 +141,13 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
 
   ## Replace id and header
   for (i in 1:length(f_th)){
-    gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'), pattern = f_th[i], replacement = r_th[i])
+    gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_th[i], replacement = r_th[i])
   }
   ##########################################################
 
   ##########################################################
   ## Adicionando classe ao tbody (para busca)
-  gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'), pattern = '<tbody>', replacement = '<tbody id="myTable">')
+  gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = '<tbody>', replacement = '<tbody id="myTable">')
   ##########################################################
 
   ##########################################################
@@ -149,9 +167,9 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
             'class="table-content"> <span class="links" ')
   ## Replace id and header
   for (i in 1:length(f_tb)){
-    gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'), pattern = f_tb[i], replacement = r_tb[i])
+    gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_tb[i], replacement = r_tb[i])
   }
-  gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'), pattern = '</td>', replacement = "</span></td>")
+  gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = '</td>', replacement = "</span></td>")
 
   ##########################################################
 
@@ -173,13 +191,13 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
               '>')
   ## Replace id and header
   for (i in 1:length(f_link)){
-    gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'), pattern = f_link[i], replacement = r_link[i])
+    gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_link[i], replacement = r_link[i])
   }
   ##########################################################
 
   ##########################################################
   ## Adicionando nova linha as propostas com mais de um produto
-  gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'), pattern = '&mdash;', replacement = '<br>')
+  gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = '&mdash;', replacement = '<br>')
   ##########################################################
 
   ##########################################################
@@ -209,7 +227,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
 
   ## Replace id and header
   for (i in 1:length(f_spec)){
-    gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'), pattern = f_spec[i], replacement = r_spec[i])
+    gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_spec[i], replacement = r_spec[i])
   }
   ##########################################################
 
@@ -227,8 +245,8 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
           outros_vendedores
           final_filter_top"
 
-  # Primeira substituição (parte de cima e gerar palavras para substituir com outros)
-  gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'), pattern = f_top_filter_top, replacement = r_top_filter_top)
+  # Segunda substituição (parte de baixo)
+  gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_top_filter_top, replacement = r_top_filter_top)
   f_top_filter_bottom <- c('final_filter_top')
   r_top_filter_bottom <-"<option value='TODOS'>TODOS</option>
         </select>
@@ -238,7 +256,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
         <input type='text' class='myInput' id='0' placeholder='Procurando...'/>
       </div>'"
   # Segunda substituição (parte de baixo)
-  gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/'), pattern = f_top_filter_bottom, replacement = r_top_filter_bottom)
+  gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_top_filter_bottom, replacement = r_top_filter_bottom)
 
   # Terceira substituição, do meio (adicionando vendedores)
   for(i in 1:(length(vendedores_empresa))){
@@ -265,14 +283,14 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
       ## text_options vai ser uma string com todas as opções adicionadas, depois será feita a substituição, e isso vai rodar para cada arquivo
       ## i = empresa (as ativas)
       ## j = cada vendedor dentro da empresa
-      gsub_file(paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/', tabela_categoria, '_', empresas_ativas[i], '.html'), f_top_filter_med, r_top_filter_med)
+      gsub_file(paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresas_ativas[i], '.html'), f_top_filter_med, r_top_filter_med)
     }
   }
   ##########################################################
 
   ##########################################################
   ## Copiando o arquivo para lugar que está o css (estou fazendo isso pois as substituições precisam ser feitas numa pasta vazia)
-  ##file.copy(from="Gerador_tabelas_html/outputs/htmls_final/exemplo_minimalista.html", to="Gerador_tabelas_html/lista_proposta.html", overwrite = T, recursive = F, copy.mode = T)
+  ##file.copy(from="Gerador_tabelas_html/outputs/htmls_intermed/exemplo_minimalista.html", to="Gerador_tabelas_html/lista_proposta.html", overwrite = T, recursive = F, copy.mode = T)
 }
 
 fct_alt_vend_individual <- function(vendedor, empresa){
