@@ -146,13 +146,13 @@ fct_gera_tabelas_avaliacoes <- function(debug){
       dplyr::filter (vendedor_ativo == T)
 
     #Arrumando encoding
-    Encoding(vendedor$vendedor_nome) <- 'latin1' # 'UTF-8'
-    vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+    Encoding(vendedor_a$vendedor_nome) <- 'latin1' # 'UTF-8'
+    vendedor_a$vendedor_nome <- func_nome(vendedor_a$vendedor_nome)
 
     if(empresas_ativas[[i]] == 16){
-      vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
-      vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
-      vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
+      vendedor_a$vendedor_nome[vendedor_a$vendedor_id == 723] <- "BRUNO PE.";
+      vendedor_a$vendedor_nome[vendedor_a$vendedor_id == 812] <- "BRUNO PO.";
+      vendedor_a$vendedor_nome[vendedor_a$vendedor_id == 942] <- "LUCAS V. I.";
     }
 
 
@@ -161,7 +161,7 @@ fct_gera_tabelas_avaliacoes <- function(debug){
       dplyr::filter(cliente_empresa_id == empresas_ativas[[i]])
 
     ## junção com vendedor
-    neg_v__prod__cli__mar__vend_empresa <- inner_join(neg_v__prod__cli__mar_empresa, vendedor, by=c("negocio_vendedor_id" = "vendedor_id")) %>%
+    neg_v__prod__cli__mar__vend_empresa <- inner_join(neg_v__prod__cli__mar_empresa, vendedor_a, by=c("negocio_vendedor_id" = "vendedor_id")) %>%
       dplyr::select(-negocio_vendedor_id, vendedor_empresa_id, vendedor_ativo)
 
     ## criar tabela como deverá ser apresentada

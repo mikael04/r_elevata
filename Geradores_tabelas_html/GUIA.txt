@@ -3,7 +3,7 @@
 ################################################################################################################
 Propostas
 
-Dentro da pasta principal existe: 
+Dentro da pasta principal existe:
     - Arquivos com funções que leem do banco, manipulam e geram tabelas .csv que serão utilizadas para criação da tabela final
         + gera_tabelas_html (função: fct_gera_tabelas_propostas)
             * fct_gera_tabelas_propostas: recebe apenas parâmetro se está testando ou não (debug)
@@ -27,5 +27,22 @@ Dentro da pasta principal existe:
                 ~ fct_gera_tabelas_propostas -> Gerando tabelas
                 ~ for (i in 1:length(empresas_ativ)) fct_cria_tabelas_html -> Recebendo vendedores de cada empresa, lendo csvs, gerando htmls intermediários e finais
                 ~ fct_alt_todas_html -> Fazendo alterações nos htmls finais
-                
+
 ################################################################################################################
+
+TODO
+
+Listas
+    - Avaliações (1o) - OK
+        - Vai pela tabela de usados
+        - Montagem similar a proposta (link no final)
+
+    - Visitas (sem o link) (2o)
+        + Em visitas, filtro de data ()
+        + Em listas, reduzir entrelinhas (Vendedor, motivo e resultado juntos, data (ao invés de data de cadastro, texto), tirar espaços q der, pra caber mais texto)
+
+    - Negócios (3o)
+        + Vendedor (filtro), cliente, status (filtro), data de cadastro
+
+
+ESTOU EM VISITAS, GEROU, MAS VERIFICAR PORQUE NEM TODAS EMPRESAS GERAM HTMLS

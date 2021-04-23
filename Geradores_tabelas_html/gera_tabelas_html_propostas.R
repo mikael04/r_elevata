@@ -136,13 +136,13 @@ fct_gera_tabelas_propostas <- function(debug){
       dplyr::filter (vendedor_ativo == T)
 
     #Arrumando #Encoding
-    Encoding(vendedor$vendedor_nome) <- 'latin1' #'UTF-8'
-    vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+    Encoding(vendedor_a$vendedor_nome) <- 'latin1' #'UTF-8'
+    vendedor_a$vendedor_nome <- func_nome(vendedor_a$vendedor_nome)
 
     if(empresas_ativas[[i]] == 16){
-      vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
-      vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
-      vendedor$vendedor_nome[vendedor$vendedor_id == 942] <- "LUCAS V. I.";
+      vendedor_a$vendedor_nome[vendedor_a$vendedor_id == 723] <- "BRUNO PE.";
+      vendedor_a$vendedor_nome[vendedor_a$vendedor_id == 812] <- "BRUNO PO.";
+      vendedor_a$vendedor_nome[vendedor_a$vendedor_id == 942] <- "LUCAS V. I.";
     }
 
     ###################################
@@ -152,7 +152,7 @@ fct_gera_tabelas_propostas <- function(debug){
       dplyr::select (proposta_id, proposta_data_cadastro, proposta_status, proposta_negocio_id, negocio_data_cadastro, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_usado, negocio_produto_id, negocio_cliente_id)
 
     ##Juntando com vendedor pra obter o nome do vendedor
-    prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
+    prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor_a, by=c("negocio_vendedor_id" = "vendedor_id"))
     if(nrow(prop_ij_neg_ij_vend) > 0){
       if(debug){
         print("Debug ativo")
