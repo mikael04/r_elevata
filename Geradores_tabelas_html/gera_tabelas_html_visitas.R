@@ -1,5 +1,5 @@
 fct_gera_tabelas_propostas <- function(debug){
-  #debug = T
+  debug = T
   #Lib q será futuramente usada pros painéis interativos
   #library(shiny)
   #Lib pra conexão com o banco
@@ -78,31 +78,44 @@ fct_gera_tabelas_propostas <- function(debug){
   ###################################################################################
   ## Gerando tabela
 
-  ##-> Collect cria o dataframe resultado da query, proposta será a tabela na qual estou lendo (FROM cliente)
-  ##coleta todas as propostas
-  proposta <- fread("Tabelas/proposta.csv", colClasses = c(proposta_id = "character", proposta_negocio_id = "character")) %>%
-    dplyr::select(proposta_id, proposta_versao, proposta_negocio_id, proposta_data_cadastro, proposta_status)
+  ##Collect cria o df resultado da query, nesse caso, visitas_cliente, já filtrando apenas ano atual
+  visita_cliente <- fread("Tabelas/visita_cliente_obs.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
+    select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro, vc_observacao) %>%
+    filter (vc_data_cadastro >= ano_atual, vc_data_cadastro < (ano_atual+years(1)))
 
-  ##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
-  negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
-    dplyr::select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id, negocio_cliente_id)
+  #Arrumando encoding
+  Encoding(visita_cliente$vc_observacao) <- 'UTF-8'
 
-  ##coleta proposta_pagamento
-  proposta_pagamento <- fread("Tabelas/proposta_pagamento.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character")) %>%
-    dplyr::select(pp_id, pp_proposta_id, pp_modo_id, pp_forma_id, pp_valor, pp_ativo, pp_usado_id) %>%
-    dplyr::filter(pp_ativo == 1) %>%
-    dplyr::select(-pp_ativo)
+  ##Pra pegar o nome do resultado
+  visita_resultado <- fread("Tabelas/visita_resultado.csv") %>%
+    select(vr_id, vr_nome, vr_ativo) %>%
+    filter(vr_ativo == 1) %>% ##Ja sao todos ativos
+    select(-vr_ativo) %>%
+    rename (resultado = vr_nome)
 
-  ##coleta proposta_produto
-  proposta_produto <- fread("Tabelas/proposta_produto.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character", pp_produto_id = "character")) %>%
-    dplyr::select(pp_id, pp_proposta_id, pp_produto_id, pp_quantidade, pp_valor, pp_ativo) %>%
-    dplyr::filter (pp_ativo == 1) %>% #Filtrando pp_ativo = true
-    dplyr::select(-pp_ativo) %>%
-    dplyr::mutate (pp_valor_tot = pp_valor*pp_quantidade)
+  ##Pra filtrar os resultados da empresa
+  visita_resultado_empresa <- fread("Tabelas/visita_resultado_empresa.csv") %>%
+    select(vre_resultado_id, vre_empresa_id, vre_ativo) %>%
+    filter(vre_ativo == 1) %>% ##Ja sao todos ativos mas mantive pra manter o filtro, ja filtro a empresa
+    select(-vre_ativo)
+  #Arrumando encoding
+  Encoding(visita_resultado$resultado) <- 'latin1'
 
-  ##Vou puxar negócio novamente pra pegar a coluna de se é usado ou não (acho que é mais eficiente do que usar a tabela completa desde o início)
-  negocio_aux <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character")) %>%
-    dplyr::select(negocio_id, negocio_tipo_negocio)
+  ##Pra pegar o nome do status
+  visita_status <- fread("Tabelas/visita_status.csv") %>%
+    select(vs_id, vs_nome, vs_ativo) %>%
+    filter(vs_ativo == 1) %>%
+    select(-vs_ativo) %>%
+    rename (motivo = vs_nome)
+
+  ##Pra filtrar os status da empresa
+  visita_status_empresa <- fread("Tabelas/visita_status_empresa.csv") %>%
+    select(vse_status_id, vse_empresa_id, vse_ativo) %>%
+    filter(vse_ativo == 1) %>%
+    select(-vse_ativo)
+
+  #Arrumando encoding
+  Encoding(visita_status$motivo) <- 'latin1'
 
   ##coleta todos os clientes
   cliente <- fread("Tabelas/cliente.csv") %>%
@@ -111,19 +124,13 @@ fct_gera_tabelas_propostas <- function(debug){
   #Arrumando encoding
   Encoding(cliente$cliente_nome) <- 'latin1' #'UTF-8'
 
-  ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
-  produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
-    dplyr::select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
-
-  #Arrumando #Encoding
-  Encoding(produto$produto_nome) <- 'latin1' #'UTF-8'
 
   empresas_ativas <- fct_empresas_ativas ()
   for(i in (1:length(empresas_ativas))){
     ## Inicializando a lista de vendedores
     vendedores <- NULL
     if(debug){
-      # i = 3
+      i = 33
       print(i)
       print(empresas_ativas[[i]])
     }
@@ -147,22 +154,36 @@ fct_gera_tabelas_propostas <- function(debug){
 
     ###################################
 
-    ##junção de proposta com negócio
-    prop_ij_neg <- inner_join(proposta, negocio, by=c("proposta_negocio_id" = "negocio_id")) %>%
-      dplyr::select (proposta_id, proposta_data_cadastro, proposta_status, proposta_negocio_id, negocio_data_cadastro, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_usado, negocio_produto_id, negocio_cliente_id)
+    ##junta as duas tabelas (resultado e resultado_empresa) pra pegar o id da empresa (vre_empresa_id) e o nome do resultado (vr_nome)
+    vis_res_emp <- inner_join(visita_resultado, visita_resultado_empresa, by = c('vr_id'= 'vre_resultado_id')) %>%
+      dplyr::filter(vre_empresa_id == empresas_ativas[[i]])
+    ##junta as duas tabelas (status e status_empresa) pra pegar o id da empresa (vs_empresa_id) e o nome do status (vs_nome)
+    vis_st_emp <- inner_join(visita_status, visita_status_empresa, by = c('vs_id'= 'vse_status_id')) %>%
+      dplyr::filter(vse_empresa_id == empresas_ativas[[i]])
 
-    ##Juntando com vendedor pra obter o nome do vendedor
-    prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor_a, by=c("negocio_vendedor_id" = "vendedor_id"))
-    if(nrow(prop_ij_neg_ij_vend) > 0){
+    vis_res_st_emp <- inner_join(vis_res_emp, vis_st_emp, by = c('vre_empresa_id' = 'vse_empresa_id'))
+
+    ##Juntando visita_cliente com os resultados
+    vc_ij_vre_vse <- inner_join(visita_cliente, vis_res_st_emp, by = c('vc_resultado_id' = 'vr_id', 'vc_status_id' = 'vs_id')) %>%
+      dplyr::select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro, resultado, vc_observacao, motivo)
+
+    ## Juntando com vendedores
+    vc_ij_vre_vse_v <- inner_join(vc_ij_vre_vse, vendedor_a, by = c('vc_vendedor_id' = 'vendedor_id')) %>%
+      dplyr::select(-vendedor_ativo)
+
+    ## Filtrando apenas clientes desta empresa
+    cliente_emp <- cliente %>%
+      dplyr::filter(cliente_empresa_id == empresas_ativas[[i]])
+
+    ## Juntando com clientes
+    vc_ij_vre_vse_v_c <- inner_join(vc_ij_vre_vse_v, cliente_emp, by = c('vc_cliente_id' = 'cliente_id'))
+
+    if(nrow(vc_ij_vre_vse_v_c) > 0){
       if(debug){
         print("Debug ativo")
         print(paste0("Empresa = ", empresas_ativas[[i]]))
-        print(paste0("Número de linhas = ", nrow(prop_ij_neg_ij_vend)))
+        print(paste0("Número de linhas = ", nrow(vc_ij_vre_vse_v_c)))
       }
-
-      p_ij_n_ij_v_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_produto, by = c("proposta_id" = "pp_proposta_id"))
-
-      p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio_aux, by = c("proposta_negocio_id" = "negocio_id"))
 
       ###################################################################################
       ## Criação das tabelas
@@ -170,42 +191,20 @@ fct_gera_tabelas_propostas <- function(debug){
       ## joins e filtros adicionais
       #############################
 
-      ## vendedor, cliente, produto e valor, status, data de cadastro (ordem de cadastro, mais novas primeiro), atualização
-      p_ij_n_ij_pp_ij_prod <- dplyr::inner_join (p_ij_n_ij_v_ij_pp_n, produto, by= c('pp_produto_id' = 'produto_id')) %>%
-        dplyr::select(proposta_id, vendedor_nome, negocio_cliente_id, proposta_data_cadastro, proposta_status, pp_valor_tot, produto_nome, negocio_tipo_negocio)
-      p_ij_n_ij_pp_ij_prod_cli <- dplyr::inner_join (p_ij_n_ij_pp_ij_prod, cliente, by= c('negocio_cliente_id' = 'cliente_id')) %>%
-        dplyr::select(-negocio_cliente_id)
+      ## Pego a tabela e já seleciono apenas as colunas que utilizarei
+      tabela_final_avaliacoes <- vc_ij_vre_vse_v_c %>%
+        dplyr::select(vendedor_nome, cliente_nome, resultado, motivo, vc_data_cadastro, vc_observacao)
 
-      prop_ate_1ano_ant <- p_ij_n_ij_pp_ij_prod_cli %>%
-        dplyr::filter(proposta_data_cadastro > ano_atual - years(1)) %>%
-        dplyr::select(proposta_id, vendedor_nome, cliente_nome, proposta_data_cadastro, proposta_status, pp_valor_tot, produto_nome, negocio_tipo_negocio)
-
-      prop_ate_1ano_ant <- prop_ate_1ano_ant %>%
-        dplyr::group_by(proposta_id) %>%
-        ## somo e já converto para impressão (usando a funçao pra formatar o dinheiro)
-        dplyr::mutate (valor_proposta = func_fmt_din(sum(pp_valor_tot))) %>%
-        dplyr::mutate (Produtos = paste0(produto_nome, collapse = " --- ")) %>%
-        ## formato o link
-        ##  onclick="window.open('http://google.com', '_blank')">LINK DA PROPOSTA
-
-        dplyr::mutate(Link = paste0('onclick="', "window.open('", paste0("https://letmegooglethat.com/?q=", proposta_data_cadastro, "'"), ", '_blank')", '"', '>LINK DA PROPOSTA')) %>%
+      tabela_final_avaliacoes <- tabela_final_avaliacoes %>%
         ## formato a data para impressão
-        dplyr::mutate ('Data de Cadastro' = func_fmt_data_d_m_Y(proposta_data_cadastro)) %>%
-        #dplyr::mutate('Produto + Valor' = paste(Produtos, valor_proposta, sep = "  - ")) %>%
-        # dplyr::select(-pp_valor_tot) %>%
-        dplyr::distinct(proposta_id, .keep_all = T) %>%
+        dplyr::mutate ('Data de Cadastro' = func_fmt_data_d_m_Y(vc_data_cadastro)) %>%
         ## Organizando tabela
-        dplyr::arrange(desc(proposta_data_cadastro)) %>%
-        dplyr::ungroup () %>%
+        dplyr::arrange(desc(vc_data_cadastro)) %>%
 
         ## Selecionando colunas e alterando nomes
-        dplyr::select(-proposta_id, -valor_proposta, -proposta_data_cadastro) %>%
-        dplyr::rename(Vendedor = vendedor_nome, Cliente = cliente_nome) %>%
+        dplyr::rename(Vendedor = vendedor_nome, Cliente = cliente_nome, Resultado = resultado, Motivo = motivo,
+                      'Observação' = vc_observacao)
 
-        ## Selecionando colunas (com if e alterando tipo de data) e alterando nomes
-        dplyr::select(-negocio_tipo_negocio) %>%
-        dplyr::select(Cliente, Vendedor, Produtos , 'Data de Cadastro', Link) %>%
-        dplyr::ungroup ()
 
       #Encoding(prop_ate_1ano_ant$Cliente) <- 'latin1'
       #Encoding(prop_ate_1ano_ant$Produtos) <- 'latin1'
