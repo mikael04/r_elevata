@@ -43,3 +43,6 @@ Listas
 
     - Negócios (3o)
         + Vendedor (filtro), cliente, status (filtro), data de cadastro
+
+
+ESTOU EM VISITAS, GEROU, MAS VERIFICAR PORQUE NEM TODAS EMPRESAS GERAM HTMLS
