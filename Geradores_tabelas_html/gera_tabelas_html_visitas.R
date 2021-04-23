@@ -1,4 +1,4 @@
-fct_gera_tabelas_propostas <- function(debug){
+fct_gera_tabelas_visitas <- function(debug){
   debug = T
   #Lib q será futuramente usada pros painéis interativos
   #library(shiny)
@@ -36,7 +36,7 @@ fct_gera_tabelas_propostas <- function(debug){
   #### Variável usada para não plotar os gráficos na dash
   dash = T
   #### Variável de categoria
-  tabela_categoria = 'propostas'
+  tabela_categoria = 'visitas'
 
   ### Tempo
   if(!teste){
@@ -84,7 +84,7 @@ fct_gera_tabelas_propostas <- function(debug){
     filter (vc_data_cadastro >= ano_atual, vc_data_cadastro < (ano_atual+years(1)))
 
   #Arrumando encoding
-  Encoding(visita_cliente$vc_observacao) <- 'UTF-8'
+  Encoding(visita_cliente$vc_observacao) <- 'latin1'
 
   ##Pra pegar o nome do resultado
   visita_resultado <- fread("Tabelas/visita_resultado.csv") %>%
@@ -130,7 +130,7 @@ fct_gera_tabelas_propostas <- function(debug){
     ## Inicializando a lista de vendedores
     vendedores <- NULL
     if(debug){
-      i = 33
+      # i = 33
       print(i)
       print(empresas_ativas[[i]])
     }
@@ -203,7 +203,10 @@ fct_gera_tabelas_propostas <- function(debug){
 
         ## Selecionando colunas e alterando nomes
         dplyr::rename(Vendedor = vendedor_nome, Cliente = cliente_nome, Resultado = resultado, Motivo = motivo,
-                      'Observação' = vc_observacao)
+                      'Observação' = vc_observacao) %>%
+
+        ## Removendo colunas que não serão mostradas
+        dplyr::select(-vc_data_cadastro)
 
 
       #Encoding(prop_ate_1ano_ant$Cliente) <- 'latin1'
@@ -216,8 +219,8 @@ fct_gera_tabelas_propostas <- function(debug){
 
       # tabela_csv <- tabela_csv %>%
       #   mutate_if(is.character,fix_encoding)
-      if(nrow(prop_ate_1ano_ant) > 0){
-        vendedores[i] <- prop_ate_1ano_ant %>%
+      if(nrow(tabela_final_avaliacoes) > 0){
+        vendedores[i] <- tabela_final_avaliacoes %>%
           dplyr::select(Vendedor) %>%
           dplyr::distinct(Vendedor) %>%
           dplyr::arrange(Vendedor) %>%
@@ -228,11 +231,11 @@ fct_gera_tabelas_propostas <- function(debug){
 
       library(tableHTML)
       ## imprime em HTML (para facilitar modificação)
-      tableHTML::write_tableHTML(tableHTML::tableHTML(prop_ate_1ano_ant), file = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresas_ativas[[i]] , '.html'))
+      tableHTML::write_tableHTML(tableHTML::tableHTML(tabela_final_avaliacoes), file = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresas_ativas[[i]] , '.html'))
     }else{
       if(debug){
         print(paste0("Empresa não tem funcionalidade  = ", empresas_ativas[[i]]))
-        print(paste0("Número de linhas = ", nrow(prop_ate_1ano_ant)))
+        print(paste0("Número de linhas = ", nrow(vc_ij_vre_vse_v_c)))
       }
     }
   }
