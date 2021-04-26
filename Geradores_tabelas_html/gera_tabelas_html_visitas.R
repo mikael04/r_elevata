@@ -1,5 +1,5 @@
 fct_gera_tabelas_visitas <- function(debug){
-  debug = T
+  # debug = T
   #Lib q será futuramente usada pros painéis interativos
   #library(shiny)
   #Lib pra conexão com o banco
@@ -130,7 +130,7 @@ fct_gera_tabelas_visitas <- function(debug){
     ## Inicializando a lista de vendedores
     vendedores <- NULL
     if(debug){
-      # i = 33
+      # i = 36
       print(i)
       print(empresas_ativas[[i]])
     }
