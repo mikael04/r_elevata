@@ -498,27 +498,27 @@ cli_in_pm_cont_top_c_aux$long <- jitter(cli_in_pm_cont_top_c_aux$long, factor = 
 # marcas_ic_co <-read.csv("Icons/marcas_icon_txt.txt") %>%
 
 marcas_icon <- iconList(
-  '1' = makeIcon("Icons/NH_r.png", 23, 24),          ##Caso precise consultar, olhar o csv
-  '3' = makeIcon("Icons/CI_r.png", 28, 24),
-  '4' = makeIcon("Icons/JD_r.png", 26, 24),
-  '5' = makeIcon("Icons/MF_r.png", 34, 24),
-  '6' = makeIcon("Icons/agrale_r.png", 34, 24),
-  '11' = makeIcon("Icons/valtra_r.png", 26, 24),
-  '12' = makeIcon("Icons/yanmar_r.png", 44, 24),
-  '13' = makeIcon("Icons/jacto_r.png", 24, 24),
-  '120191031172113' = makeIcon("Icons/ponsse_r.png", 24, 24),
-  '120130518080852' = makeIcon("Icons/valmet_r.png", 26, 24),
-  '120120724031949' = makeIcon("Icons/ideal_r.png", 19, 24),
-  '120130802084245' = makeIcon("Icons/SLC_r.png", 26, 24),
-  '120130522055326' = makeIcon("Icons/CBT_r.png", 28, 28),
-  '120191031162533' = makeIcon("Icons/komatsu_r.png", 26, 24),
-  '120191031171837' = makeIcon("Icons/JD_r.png", 26, 20),
-  '120191031171708' = makeIcon("Icons/caterpillar_r.png", 38, 20),
-  '120191031171942' = makeIcon("Icons/logmax_r.png", 29, 20),
-  '120191031172239' = makeIcon("Icons/volvo_r.png", 24, 20),
-  '120191031171807' = makeIcon("Icons/hyundai_r.png", 45, 20),
-  '201912131603430251' = makeIcon("Icons/man_r.png", 41, 24),
-  '120190311052038' = makeIcon("Icons/vw_r.png", 32, 32)
+  '1' = makeIcon("Icons/NH_r.png","Icons/NH_r_23x24.png", 23, 24),          ##Caso precise consultar, olhar o csv
+  '3' = makeIcon("Icons/CI_r.png","Icons/CI_r_28x24.png", 28, 24),
+  '4' = makeIcon("Icons/JD_r.png","Icons/JD_r_26x24.png", 26, 24),
+  '5' = makeIcon("Icons/MF_r.png","Icons/MF_r_34x24.png", 34, 24),
+  '6' = makeIcon("Icons/agrale_r.png","Icons/agrale_r_34x24.png", 34, 24),
+  '11' = makeIcon("Icons/valtra_r.png","Icons/valtra_r_26x24.png", 26, 24),
+  '12' = makeIcon("Icons/yanmar_r.png","Icons/yanmar_r_44x24.png", 44, 24),
+  '13' = makeIcon("Icons/jacto_r.png","Icons/jacto_r_24x24.png", 24, 24),
+  '120191031172113' = makeIcon("Icons/ponsse_r.png","Icons/ponsse_r_24x24.png", 24, 24),
+  '120130518080852' = makeIcon("Icons/valmet_r.png","Icons/valmet_r_26x24.png", 26, 24),
+  '120120724031949' = makeIcon("Icons/ideal_r.png","Icons/ideal_r_19x24.png", 19, 24),
+  '120130802084245' = makeIcon("Icons/SLC_r.png","Icons/SLC_r_26x24.png", 26, 24),
+  '120130522055326' = makeIcon("Icons/CBT_r.png","Icons/CBT_r_28x28.png", 28, 28),
+  '120191031162533' = makeIcon("Icons/komatsu_r.png","Icons/komatsu_r_26x24.png", 26, 24),
+  '120191031171837' = makeIcon("Icons/JD_r.png","Icons/JD_r_26x20.png", 26, 20),
+  '120191031171708' = makeIcon("Icons/caterpillar_r.png","Icons/caterpillar_r_38x24.png", 38, 20),
+  '120191031171942' = makeIcon("Icons/logmax_r.png","Icons/logmax_r_29x20.png", 29, 20),
+  '120191031172239' = makeIcon("Icons/volvo_r.png","Icons/volvo_r_24x20.png", 24, 20),
+  '120191031171807' = makeIcon("Icons/hyundai_r.png","Icons/hyundai_r_45x20.png", 45, 20),
+  '201912131603430251' = makeIcon("Icons/man_r.png","Icons/man_r_41x24.png", 41, 24),
+  '120190311052038' = makeIcon("Icons/vw_r.png","Icons/vw_r_32x32.png", 32, 32)
 )
 
 ### Gráfico m1 de distribuição das marcas (top5) m1_t = tratores, m1_c = colheitadeiras
