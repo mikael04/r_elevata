@@ -1,8 +1,12 @@
 library(dplyr)
 library(leaflet)
+# iconUrl = "D:/VIDEOS_CANAL/HS/usuarios_qgis/data/qgisbr.png",
+#iconWidth = 30, iconHeight = 30
 oceanIcons <- iconList(
-  ship = makeIcon("ship.png", "ferry-18@2x.png", 18, 18),
-  pirate = makeIcon("pirate.png", "danger-24@2x.png", 24, 24)
+  ship = makeIcon(iconUrl = "Icons/leaf-green.png",
+                  iconWidth = 18, iconHeight = 18),
+  pirate = makeIcon(iconUrl = "Icons/leaf-red.png",
+                    iconWidth = 24, iconHeight = 24)
 )
 
 # Some fake data
@@ -25,12 +29,12 @@ quakes1 <- quakes[1:10,]
 
 leafIcons <- icons(
   iconUrl = ifelse(quakes1$mag < 4.6,
-                   "http://leafletjs.com/examples/custom-icons/leaf-green.png",
-                   "http://leafletjs.com/examples/custom-icons/leaf-red.png"
+                   "Icons/leaf-green.png",
+                   "Icons/leaf-red.png"
   ),
   iconWidth = 38, iconHeight = 95,
   iconAnchorX = 22, iconAnchorY = 94,
-  shadowUrl = "http://leafletjs.com/examples/custom-icons/leaf-shadow.png",
+  shadowUrl = "Icons/leaf-shadow.png",
   shadowWidth = 50, shadowHeight = 64,
   shadowAnchorX = 4, shadowAnchorY = 62
 )
