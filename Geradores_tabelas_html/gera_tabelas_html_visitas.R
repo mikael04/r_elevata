@@ -202,7 +202,7 @@ fct_gera_tabelas_visitas <- function(debug){
         dplyr::arrange(desc(vc_data_cadastro)) %>%
 
         ## Selecionando colunas e alterando nomes
-        dplyr::rename(Vendedor = vendedor_nome, Cliente = cliente_nome, Resultado = resultado, Motivo = motivo,
+        dplyr::rename(Vendedor = vendedor_nome, Cliente = cliente_nome, Motivo = motivo, Resultado = resultado,
                       'Observação' = vc_observacao) %>%
 
         ## Removendo colunas que não serão mostradas

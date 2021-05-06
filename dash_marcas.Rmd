@@ -95,7 +95,7 @@ s_dados_path <- "s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 16
+  empresa = 1
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -445,7 +445,9 @@ n_color <- nrow(cli_in_pm_cont_top_t_aux %>%
 
 #Usando nome da marca como factor
 cli_in_pm_cont_top_t_aux$marca_nome <- factor(cli_in_pm_cont_top_t_aux$marca_nome)
-
+## Teste de mapa csv
+# data.table::fwrite(cli_in_pm_cont_top_t_aux, "bd_leaflet.csv");
+# cli_in_pm_cont_top_t_aux <- data.table::fread("bd_leaflet.csv")
 ##Adicionando pequenas variações
 cli_in_pm_cont_top_t_aux$lat <- jitter(cli_in_pm_cont_top_t_aux$lat, factor = .1, amount = 0)
 cli_in_pm_cont_top_t_aux$long <- jitter(cli_in_pm_cont_top_t_aux$long, factor = .1, amount = 0)
@@ -539,6 +541,10 @@ if (nrow(cli_in_pm_cont_top_t_aux) > 0){
   ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
   m1_t <- include_graphics("s_dados_m.png")
 }
+
+## Teste de mapa csv
+# library(htmlwidgets)
+# saveWidget(m1_t, file="m1_t.html")
 
 if (nrow(cli_in_pm_cont_top_c_aux) > 0){
   m1_c<- leaflet(cli_in_pm_cont_top_c_aux) %>%

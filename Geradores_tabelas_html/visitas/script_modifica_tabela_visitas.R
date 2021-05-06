@@ -2,12 +2,12 @@
 ## Função para criação de htmls, lê csvs, salva como html (htmls_intermed), salva o nome dos vendedores (usado posteriormente), cria (com knit2html)
 ## novo html que será manipulado (htmls_final)
 # if(debug)
-# empresa = 1
-# tabela_categoria = 'propostas'
-
+#empresa = 16
+#tabela_categoria = 'visitas'
+#debug = T
 ####################################################################################################################
 fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_ativas, debug){
-  # debug_interno = T
+  debug_interno = T
   # if(debug_interno){
   #   tabela_categoria = 'propostas'
   #   debug = T
@@ -29,7 +29,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   header <- '<!DOCTYPE html>
 <html>
 \t<head>
-    <title> Lista de propostas </title>
+    <title> Lista de visitas </title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
@@ -53,7 +53,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
     <table class="table">'
   r_table <- c(header, '\t\t</table>\n
 		<!-- script de lista (filtro e busca) -->
-    <script src="../../js/lista_proposta.js"></script>\n\t</body>\n</html>')
+    <script src="../../../../js/lista_visitas.js"></script>\n\t</body>\n</html>')
   for (i in 1:length(f_table)){
     gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_table[i], replacement = r_table[i])
   }
@@ -73,10 +73,10 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
 
   f_th <- c("id=",
             '"tableHTML_header_1">',
-            "tableHTML_header_2", "tableHTML_header_3", "tableHTML_header_4", "tableHTML_header_5", "tableHTML_header_6")
+            "tableHTML_header_2", "tableHTML_header_3", "tableHTML_header_4", "tableHTML_header_5", "tableHTML_header_6",  "tableHTML_header_7",  "tableHTML_header_8")
   r_th <- c("class=",
             "'hide'>ID",
-            "hide", "hide", "hide", "hide", "hide")
+            "hide", "hide", "hide", "hide", "hide", "hide", "hide")
 
   ## Replace id and header
   for (i in 1:length(f_th)){
@@ -97,66 +97,41 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
             'class="tableHTML_column_2"',
             'class="tableHTML_column_3"',
             'class="tableHTML_column_4"',
-            'class="tableHTML_column_5">')
+            'class="tableHTML_column_5"',
+            'class="tableHTML_column_6"',
+            'class="tableHTML_column_7"')
   r_tb <- c('class="hide"> <span class="id"',
             'class="table-content"> <span class="clientes"',
             'class="table-content"> <span class="vendedores"',
-            'class="table-content"> <span class="produtos"',
-            'class="table-content"> <span class="datas"',
-            'class="table-content"> <span class="links" ')
+            'class="table-content"> <span class="resultado"',
+            'class="table-content"> <span class="motivo"',
+            'class="table-content"> <span class="observacao"',
+            'class="table-content"> <span class="datas"')
   ## Replace id and header
   for (i in 1:length(f_tb)){
     gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_tb[i], replacement = r_tb[i])
   }
   gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = '</td>', replacement = "</span></td>")
-
-  ##########################################################
-
-  ##########################################################
-  ## Substituindo os caractéres especiais do link
-  f_link <- c('&#60;',
-              '&ldquo;&quot;',
-              '&rdquo;&ldquo;',
-              '&lsquo;&#62;',
-              '&lsquo;',
-              '&rsquo;',
-              '&#62;')
-  r_link <- c('<',
-              '"',
-              '"',
-              '">',
-              "'",
-              "'",
-              '>')
-  ## Replace id and header
-  for (i in 1:length(f_link)){
-    gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_link[i], replacement = r_link[i])
-  }
-  ##########################################################
-
-  ##########################################################
-  ## Adicionando nova linha as propostas com mais de um produto
-  gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = '&mdash;', replacement = '<br>')
   ##########################################################
 
   ##########################################################
   ## Substituindo os caractéres especiais dos nomes
-  f_spec <- c('<c0>', '<c1>', '<c2>', '<c3>',
-              '<c 8>', '<c9>', '<ca>',
-              '<cc>', '<cd>', '<ce>',
-              '<c3>', '<d4>', '<d5>',
-              '<d9>', '<da>', '<db>',
-              '<c7>',
-              '<a0>', '<aa>', '<b0>', '<ba>',
-              '""')
-  r_spec <- c('&#192;', '&#193;', '&#194;', '&#195;',
-              '&#200;', '&#201;', '&#202;',
-              '&#204;', '&#205;', '&#206;',
-              '&#211;', '&#212;', '&#213;',
-              '&#218;', '&#219;', '&#220;',
-              '&#199;',
-              '&#160;', '&#170;', '&#176;', '&#186;',
-              '"')
+  # f_spec <- c('<c0>', '<c1>', '<c2>', '<c3>',
+  #             '<c 8>', '<c9>', '<ca>',
+  #             '<cc>', '<cd>', '<ce>',
+  #             '<c3>', '<d4>', '<d5>',
+  #             '<d9>', '<da>', '<db>',
+  #             '<c7>',
+  #             '<a0>', '<aa>', '<b0>', '<ba>',
+  #             '""')
+  # r_spec <- c('&#192;', '&#193;', '&#194;', '&#195;',
+  #             '&#200;', '&#201;', '&#202;',
+  #             '&#204;', '&#205;', '&#206;',
+  #             '&#211;', '&#212;', '&#213;',
+  #             '&#218;', '&#219;', '&#220;',
+  #             '&#199;',
+  #             '&#160;', '&#170;', '&#176;', '&#186;',
+  #             '"')
 
   # c('A c/ crase', 'A c/ acento agudo', 'A c/ acento circunflexo', 'A c/ til',
   #   'E c/ crase', 'E c/ acento agudo', 'E c/ acento circunflexo',
@@ -167,10 +142,10 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   #   'espaço', ' a ordinal', 'o grau', 'o ordinal'
   #   '""' gerado no início da linha, por uma aspas simples, não funcionou substituir por &#034;)
 
-  ## Replace id and header
-  for (i in 1:length(f_spec)){
-    gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_spec[i], replacement = r_spec[i])
-  }
+  # ## Replace id and header
+  # for (i in 1:length(f_spec)){
+  #   gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_spec[i], replacement = r_spec[i])
+  # }
   ##########################################################
 
   ##########################################################
@@ -180,7 +155,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   f_top_filter_top <- c('<body>')
   r_top_filter_top = "<body>
       <div class='top' id='filter-Div'>
-        <h1 class='title'> Filtro de Propostas<br><br> </h1>
+        <h1 class='title'> Filtro de Visitas<br><br> </h1>
         <p class='table-select'>Primeiramente, selecione um nome de vendedor</p> <br>
         <select class='mySel' id='1'>
           <option value='NENHUM'>Selecione um vendedor</option>
