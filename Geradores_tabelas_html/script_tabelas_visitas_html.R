@@ -3,7 +3,7 @@ rm(list = ls())
 library(data.table)
 library(dplyr)
 source("Geradores_tabelas_html/gera_tabelas_html_visitas.R")
-# source("Geradores_tabelas_html/avaliacoes/script_modifica_tabela_visitas.R")
+source("Geradores_tabelas_html/visitas/script_modifica_tabela_visitas.R")
 
 ## setwd("E:\\Mikael\\OneDrive\\Projetos\\Scripts_R\\r_elevata")
 debug = T

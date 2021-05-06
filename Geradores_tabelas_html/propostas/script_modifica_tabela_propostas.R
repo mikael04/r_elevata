@@ -5,7 +5,7 @@
 # empresa = 1
 # tabela_categoria = 'propostas'
 
-####################################################################################################################
+###################################################################################################################
 fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_ativas, debug){
   # debug_interno = T
   # if(debug_interno){
@@ -193,19 +193,19 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   r_top_filter_bottom <-'<option value="TODOS">TODOS</option>
         </select>
         <br><br>
-        <p class="table-search-description">Agora, caso queira fazer uma busca de cliente, resultado ou motivo das visitas deste vendedor,
+        <p class="table-search-description">Agora, caso queira fazer uma busca de cliente ou produto de uma proposta deste vendedor,
           digite um trecho do item buscado (pelo menos 3 letras)</p><br>
-        <input type="text" class="myInput" id="0" placeholder="Procurando..."/>
-        <div class="data-filtro"></div>
-          <div class="col-md-2">
-            <h4>Data Inicial</h4>
+        <input type="text" class="myInput" id="0" placeholder="Procurando..."/><br><br>
+        <div class="data-filtro contentcenter">
+          <div class="col-md-2 contentleft">
+            <h4>Data Inicial</h4><br>
             <input id="dataInicial" type="text" name="timepicker" class="form-control"
-            placeholder="Informe a data" data-orientation="top">
+                    placeholder="" data-orientation="top">
           </div>
-          <div class="col-md-3">
-            <h4>Data final</h4>
+          <div class="col-md-3 contentright">
+            <h4>Data Final</h4><br>
             <input id="dataFinal" type="text" name="timepicker" class="form-control"
-            placeholder="Informe a data" data-orientation="top">
+                    placeholder="" data-orientation="top">
           </div>
         </div>
       </div>'

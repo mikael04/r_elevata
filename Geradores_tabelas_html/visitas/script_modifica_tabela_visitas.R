@@ -2,14 +2,14 @@
 ## Função para criação de htmls, lê csvs, salva como html (htmls_intermed), salva o nome dos vendedores (usado posteriormente), cria (com knit2html)
 ## novo html que será manipulado (htmls_final)
 # if(debug)
-#empresa = 16
-#tabela_categoria = 'visitas'
-#debug = T
+# empresa = 16
+# tabela_categoria = 'visitas'
+# debug = T
 ####################################################################################################################
 fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_ativas, debug){
   debug_interno = T
   # if(debug_interno){
-  #   tabela_categoria = 'propostas'
+  #   tabela_categoria = 'visitas'
   #   debug = T
   # }
   if(debug){
@@ -170,17 +170,17 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
         <br><br>
         <p class="table-search-description">Agora, caso queira fazer uma busca de cliente, resultado ou motivo das visitas deste vendedor,
           digite um trecho do item buscado (pelo menos 3 letras)</p><br>
-        <input type="text" class="myInput" id="0" placeholder="Procurando..."/>
-        <div class="data-filtro"></div>
-          <div class="col-md-2">
-            <h4>Data Inicial</h4>
+        <input type="text" class="myInput" id="0" placeholder="Procurando..."/><br><br>
+        <div class="data-filtro contentcenter">
+          <div class="col-md-2 contentleft">
+            <h4>Data Inicial</h4><br>
             <input id="dataInicial" type="text" name="timepicker" class="form-control"
-            placeholder="Informe a data" data-orientation="top">
+                    placeholder="" data-orientation="top">
           </div>
-          <div class="col-md-3">
-            <h4>Data final</h4>
+          <div class="col-md-3 contentright">
+            <h4>Data Final</h4><br>
             <input id="dataFinal" type="text" name="timepicker" class="form-control"
-            placeholder="Informe a data" data-orientation="top">
+                    placeholder="" data-orientation="top">
           </div>
         </div>
       </div>'

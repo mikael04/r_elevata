@@ -124,11 +124,10 @@ fct_gera_tabelas_visitas <- function(debug){
   #Arrumando encoding
   Encoding(cliente$cliente_nome) <- 'latin1' #'UTF-8'
 
-
+  ## Inicializando a lista de vendedores
+  vendedores <- NULL
   empresas_ativas <- fct_empresas_ativas ()
   for(i in (1:length(empresas_ativas))){
-    ## Inicializando a lista de vendedores
-    vendedores <- NULL
     if(debug){
       # i = 36
       print(i)
@@ -202,7 +201,7 @@ fct_gera_tabelas_visitas <- function(debug){
         dplyr::arrange(desc(vc_data_cadastro)) %>%
 
         ## Selecionando colunas e alterando nomes
-        dplyr::rename(Vendedor = vendedor_nome, Cliente = cliente_nome, Motivo = motivo, Resultado = resultado,
+        dplyr::rename(Cliente = cliente_nome, Vendedor = vendedor_nome, Motivo = motivo, Resultado = resultado,
                       'Observação' = vc_observacao) %>%
 
         ## Removendo colunas que não serão mostradas

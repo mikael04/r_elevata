@@ -36,15 +36,23 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
     <!-- Fonte utilizada -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto&display=swap" rel="stylesheet">
     <!-- CSS para lista -->
-    <link rel="stylesheet" href="../../css/lista_proposta.css">
+    <link rel="stylesheet" href="../../../../css/lista_proposta.css">
     <!-- lib para js jquery -->
-    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script src="../../../../js/jquery-3.6.0.min.js"></script>
+    <!-- lib para date picker -->
+    <!--<script src="../../../../js/jquery-ui.js"></script>-->
+    <script src="../../../../js/jquery-ui.min.js"></script>
+    <script src="../../../../js/jquery-ui.datepicker-pt-BR.js"></script>
+		<!--<link href="../../../../css/jquery-ui.css" rel="stylesheet">-->
+    <link href="../../../../css/jquery-ui.min.css" rel="stylesheet">
+    <!-- lib para manipular data-->
+    <script src="../../../../js/luxon.min.js"></script>
   </head>
   <body>
     <table class="table">'
   r_table <- c(header, '\t\t</table>\n
 		<!-- script de lista (filtro e busca) -->
-    <script src="../../js/lista_proposta.js"></script>\n\t</body>\n</html>')
+    <script src="../../../../js/lista_propostas.js"></script>\n\t</body>\n</html>')
   for (i in 1:length(f_table)){
     gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_table[i], replacement = r_table[i])
   }
@@ -171,13 +179,25 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   # Primeira substituição (parte de cima e gerar palavras para substituir com outros)
   gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_top_filter_top, replacement = r_top_filter_top)
   f_top_filter_bottom <- c('final_filter_top')
-  r_top_filter_bottom <-"<option value='TODOS'>TODOS</option>
+  r_top_filter_bottom <-'<option value="TODOS">TODOS</option>
         </select>
         <br><br>
-        <p class='table-search-description'>Agora, caso queira fazer uma busca de um produto ou cliente deste vendedor,
+        <p class="table-search-description">Agora, caso queira fazer uma busca de cliente ou produto de avaliações deste vendedor,
           digite um trecho do item buscado (pelo menos 3 letras)</p><br>
-        <input type='text' class='myInput' id='0' placeholder='Procurando...'/>
-      </div>'"
+        <input type="text" class="myInput" id="0" placeholder="Procurando..."/><br><br>
+        <div class="data-filtro contentcenter">
+          <div class="col-md-2 contentleft">
+            <h4>Data Inicial</h4><br>
+            <input id="dataInicial" type="text" name="timepicker" class="form-control"
+                    placeholder="" data-orientation="top">
+          </div>
+          <div class="col-md-3 contentright">
+            <h4>Data Final</h4><br>
+            <input id="dataFinal" type="text" name="timepicker" class="form-control"
+                    placeholder="" data-orientation="top">
+          </div>
+        </div>
+      </div>'
   # Segunda substituição (parte de baixo)
   gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_top_filter_bottom, replacement = r_top_filter_bottom)
 

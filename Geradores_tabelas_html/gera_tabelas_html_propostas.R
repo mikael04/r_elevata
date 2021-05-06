@@ -119,9 +119,9 @@ fct_gera_tabelas_propostas <- function(debug){
   Encoding(produto$produto_nome) <- 'latin1' #'UTF-8'
 
   empresas_ativas <- fct_empresas_ativas ()
+  ## Inicializando a lista de vendedores
+  vendedores <- NULL
   for(i in (1:length(empresas_ativas))){
-    ## Inicializando a lista de vendedores
-    vendedores <- NULL
     if(debug){
       # i = 3
       print(i)
