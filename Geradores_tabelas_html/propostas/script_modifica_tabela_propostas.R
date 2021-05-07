@@ -51,7 +51,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
     <table class="table">'
   r_table <- c(header, '\t\t</table>\n
 		<!-- script de lista (filtro e busca) -->
-    <script src="../../js/lista_propostas.js"></script>\n\t</body>\n</html>')
+    <script src="../../../../js/lista_propostas.js"></script>\n\t</body>\n</html>')
   for (i in 1:length(f_table)){
     gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_table[i], replacement = r_table[i])
   }
