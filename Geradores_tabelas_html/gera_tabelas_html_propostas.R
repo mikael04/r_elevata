@@ -221,8 +221,7 @@ fct_gera_tabelas_propostas <- function(debug){
         vendedores[i] <- prop_ate_1ano_ant %>%
           dplyr::select(Vendedor) %>%
           dplyr::distinct(Vendedor) %>%
-          dplyr::arrange(Vendedor) %>%
-          dplyr::mutate(Vendedor = `Encoding<-`(Vendedor, 'latin1'))
+          dplyr::arrange(Vendedor)
       }else{
         vendedores[i] <- NULL
       }

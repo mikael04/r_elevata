@@ -37,14 +37,12 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
     <!-- Fonte utilizada -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto&display=swap" rel="stylesheet">
     <!-- CSS para lista -->
-    <link rel="stylesheet" href="../../../../css/lista_proposta.css">
+    <link rel="stylesheet" href="../../../../css/listas_iframe.css">
     <!-- lib para js jquery -->
     <script src="../../../../js/jquery-3.6.0.min.js"></script>
     <!-- lib para date picker -->
-    <!--<script src="../../../../js/jquery-ui.js"></script>-->
     <script src="../../../../js/jquery-ui.min.js"></script>
     <script src="../../../../js/jquery-ui.datepicker-pt-BR.js"></script>
-		<!--<link href="../../../../css/jquery-ui.css" rel="stylesheet">-->
     <link href="../../../../css/jquery-ui.min.css" rel="stylesheet">
     <!-- lib para manipular data-->
     <script src="../../../../js/luxon.min.js"></script>
@@ -193,9 +191,6 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   r_top_filter_bottom <-'<option value="TODOS">TODOS</option>
         </select>
         <br><br>
-        <p class="table-search-description">Agora, caso queira fazer uma busca de cliente ou produto de uma proposta deste vendedor,
-          digite um trecho do item buscado (pelo menos 3 letras)</p><br>
-        <input type="text" class="myInput" id="0" placeholder="Procurando..."/><br><br>
         <div class="data-filtro contentcenter">
           <div class="col-md-2 contentleft">
             <h4>Data Inicial</h4><br>
@@ -208,6 +203,10 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
                     placeholder="" data-orientation="top">
           </div>
         </div>
+        <br>
+        <p class="table-search-description">Agora, caso queira fazer uma busca de cliente ou produto de uma proposta deste vendedor,
+          digite um trecho do item buscado (pelo menos 3 letras)</p><br>
+        <input type="text" class="myInput" id="0" placeholder="Procurando..."/>
       </div>'
   # Segunda substituição (parte de baixo)
   gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = f_top_filter_bottom, replacement = r_top_filter_bottom)

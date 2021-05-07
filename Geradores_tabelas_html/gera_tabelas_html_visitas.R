@@ -129,7 +129,7 @@ fct_gera_tabelas_visitas <- function(debug){
   empresas_ativas <- fct_empresas_ativas ()
   for(i in (1:length(empresas_ativas))){
     if(debug){
-      # i = 36
+      # i = 33
       print(i)
       print(empresas_ativas[[i]])
     }
@@ -203,10 +203,8 @@ fct_gera_tabelas_visitas <- function(debug){
         ## Selecionando colunas e alterando nomes
         dplyr::rename(Cliente = cliente_nome, Vendedor = vendedor_nome, Motivo = motivo, Resultado = resultado,
                       'Observação' = vc_observacao) %>%
-
-        ## Removendo colunas que não serão mostradas
-        dplyr::select(-vc_data_cadastro)
-
+        ## Ordena e seleciona colunas que serão mostradas
+        dplyr::select(Cliente, Vendedor, Motivo, Resultado, 'Observação' , 'Data de Cadastro', -vc_data_cadastro)
 
       #Encoding(prop_ate_1ano_ant$Cliente) <- 'latin1'
       #Encoding(prop_ate_1ano_ant$Produtos) <- 'latin1'
@@ -222,8 +220,7 @@ fct_gera_tabelas_visitas <- function(debug){
         vendedores[i] <- tabela_final_avaliacoes %>%
           dplyr::select(Vendedor) %>%
           dplyr::distinct(Vendedor) %>%
-          dplyr::arrange(Vendedor) %>%
-          dplyr::mutate(Vendedor = `Encoding<-`(Vendedor, 'latin1'))
+          dplyr::arrange(Vendedor)
       }else{
         vendedores[i] <- NULL
       }

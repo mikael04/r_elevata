@@ -132,7 +132,7 @@ fct_gera_tabelas_avaliacoes <- function(debug){
   for(i in (1:length(empresas_ativas))){
     ## Inicializando a lista de vendedores
     if(debug){
-      # i = 3
+      # i = 1
       print(i)
       print(empresas_ativas[[i]])
       # i = 10
@@ -219,8 +219,7 @@ fct_gera_tabelas_avaliacoes <- function(debug){
         vendedores[i] <- tabela_final_avaliacoes %>%
           dplyr::select(Vendedor) %>%
           dplyr::distinct(Vendedor) %>%
-          dplyr::arrange(Vendedor) %>%
-          dplyr::mutate(Vendedor = `Encoding<-`(Vendedor, 'latin1'))
+          dplyr::arrange(Vendedor)
       }else{
         vendedores[i] <- NULL
       }
