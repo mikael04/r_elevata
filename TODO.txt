@@ -9,6 +9,7 @@ A FAZER
 - Limpar lixos
 - Documentar os arquivos (atualizar alguma parte de documentação)
 - Editar nome dos painéis (no Geral, trocar para visão do gestor, ou no de negócios, alterar para Painel de Negócios)
+- Bug no treemap de marcas (clica uma vez, quando volta não reaparece os nomes)
 
 
 DEPOIS:
