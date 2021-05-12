@@ -2,8 +2,8 @@ rm(list = ls())
 
 library(data.table)
 library(dplyr)
-source("Geradores_tabelas_html/gera_tabelas_html_propostas.R")
-source("Geradores_tabelas_html/negocios/script_modifica_tabela_propostas.R")
+source("Geradores_tabelas_html/gera_tabelas_html_negocios.R")
+source("Geradores_tabelas_html/negocios/script_modifica_tabela_negocios.R")
 
 ## setwd("E:\\Mikael\\OneDrive\\Projetos\\Scripts_R\\r_elevata")
 debug = T
