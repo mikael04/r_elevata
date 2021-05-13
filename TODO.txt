@@ -16,3 +16,5 @@ DEPOIS:
 
 - Verificar se knit2html é a melhor forma ou markdownToHTML é melhor;
 - Verificar se não é melhor, no gráfico de faturamento ano a ano, mostrar apenas meses fechados (não mostrar mês atual, porque ele está "incompleto" e leva a uma conclusão de que o mês não está indo bem, dependendo da semana que estamos)
+
+Verificar IDs negócio: 20200619113041895736 e 20181011124642976832

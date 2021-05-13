@@ -85,7 +85,7 @@ fct_gera_tabelas_propostas <- function(debug){
 
   ##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
   negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
-    dplyr::select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id, negocio_cliente_id)
+    dplyr::select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id, negocio_cliente_id, negocio_tipo_negocio)
 
   ##coleta proposta_pagamento
   proposta_pagamento <- fread("Tabelas/proposta_pagamento.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character")) %>%
@@ -99,10 +99,6 @@ fct_gera_tabelas_propostas <- function(debug){
     dplyr::filter (pp_ativo == 1) %>% #Filtrando pp_ativo = true
     dplyr::select(-pp_ativo) %>%
     dplyr::mutate (pp_valor_tot = pp_valor*pp_quantidade)
-
-  ##Vou puxar negócio novamente pra pegar a coluna de se é usado ou não (acho que é mais eficiente do que usar a tabela completa desde o início)
-  negocio_aux <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character")) %>%
-    dplyr::select(negocio_id, negocio_tipo_negocio)
 
   ##coleta todos os clientes
   cliente <- fread("Tabelas/cliente.csv") %>%
@@ -118,7 +114,11 @@ fct_gera_tabelas_propostas <- function(debug){
   #Arrumando #Encoding
   Encoding(produto$produto_nome) <- 'latin1' #'UTF-8'
 
-  empresas_ativas <- fct_empresas_ativas ()
+  ##junção de proposta com negócio
+  prop_ij_neg <- inner_join(proposta, negocio, by=c("proposta_negocio_id" = "negocio_id")) %>%
+    dplyr::select (proposta_id, proposta_data_cadastro, proposta_status, proposta_negocio_id, negocio_data_cadastro, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_usado, negocio_produto_id, negocio_cliente_id)
+
+    empresas_ativas <- fct_empresas_ativas ()
   ## Inicializando a lista de vendedores
   vendedores <- NULL
   for(i in (1:length(empresas_ativas))){
@@ -147,11 +147,7 @@ fct_gera_tabelas_propostas <- function(debug){
 
     ###################################
 
-    ##junção de proposta com negócio
-    prop_ij_neg <- inner_join(proposta, negocio, by=c("proposta_negocio_id" = "negocio_id")) %>%
-      dplyr::select (proposta_id, proposta_data_cadastro, proposta_status, proposta_negocio_id, negocio_data_cadastro, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_usado, negocio_produto_id, negocio_cliente_id)
-
-    ##Juntando com vendedor pra obter o nome do vendedor
+   ##Juntando com vendedor pra obter o nome do vendedor
     prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor_a, by=c("negocio_vendedor_id" = "vendedor_id"))
     if(nrow(prop_ij_neg_ij_vend) > 0){
       if(debug){
@@ -161,8 +157,6 @@ fct_gera_tabelas_propostas <- function(debug){
       }
 
       p_ij_n_ij_v_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_produto, by = c("proposta_id" = "pp_proposta_id"))
-
-      p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio_aux, by = c("proposta_negocio_id" = "negocio_id"))
 
       ###################################################################################
       ## Criação das tabelas

@@ -3,13 +3,13 @@
 ## novo html que será manipulado (htmls_final)
 # if(debug)
 # empresa = 1
-# tabela_categoria = 'propostas'
+# tabela_categoria = 'negocios'
 
 ###################################################################################################################
 fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_ativas, debug){
   # debug_interno = T
   # if(debug_interno){
-  #   tabela_categoria = 'propostas'
+  #   tabela_categoria = 'negocios'
   #   debug = T
   # }
   if(debug){
@@ -29,7 +29,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   header <- '<!DOCTYPE html>
 <html>
 \t<head>
-    <title> Lista de propostas </title>
+    <title> Lista de negocios </title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
@@ -133,7 +133,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   ##########################################################
 
   ##########################################################
-  ## Adicionando nova linha as propostas com mais de um produto
+  ## Adicionando nova linha as negocios com mais de um produto
   gsub_dir(dir = paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/'), pattern = '&mdash;', replacement = '<br>')
   ##########################################################
 
@@ -178,7 +178,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
   f_top_filter_top <- c('<body>')
   r_top_filter_top = "<body>
       <div class='top' id='filter-Div'>
-        <h1 class='title'> Filtro de Propostas<br><br> </h1>
+        <h1 class='title'> Filtro de Negócios<br><br> </h1>
         <p class='table-select'>Primeiramente, selecione um nome de vendedor</p> <br>
         <select class='mySel' id='1'>
           <option value='NENHUM'>Selecione um vendedor</option>
@@ -204,7 +204,7 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
           </div>
         </div>
         <br>
-        <p class="table-search-description">Agora, caso queira fazer uma busca de cliente ou produto de uma proposta deste vendedor,
+        <p class="table-search-description">Agora, caso queira fazer uma busca de cliente ou produto de um negócio deste vendedor,
           digite um trecho do item buscado (pelo menos 3 letras)</p><br>
         <input type="text" class="myInput" id="0" placeholder="Procurando..."/>
       </div>'
