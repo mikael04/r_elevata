@@ -224,8 +224,9 @@ fct_alt_todas_html <- function(tabela_categoria, vendedores_empresa, empresas_at
     if(!is.null(vendedores_empresa[[i]])){
       if(debug){
         print("Copiando arquivos para pasta final")
-        print(i)
-        print(vendedores_empresa[[i]])
+        print(paste0("Iteração = ", i))
+        print(paste0("Empresa = ", empresas_ativas[i]))
+        print(paste0("Vendedores da empresa: ", vendedores_empresa[[i]]))
       }
       file.copy(from=paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_intermed/', tabela_categoria, '_', empresas_ativas[i], '.html'), to=paste0('Geradores_tabelas_html/', tabela_categoria, '/htmls_final/', tabela_categoria, '_', empresas_ativas[i], '.html'), overwrite = T, recursive = F, copy.mode = T)
     }
