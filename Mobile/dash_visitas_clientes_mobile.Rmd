@@ -37,9 +37,9 @@ library(leaflet)
 #library(scales)
 #lib para plotar a imagem (s_dados)
 library(knitr)
-source("fct_tempo.R")
-source("fct_fmt_din.R")
-source("fct_fmt_nome.R")
+source("../fct_tempo.R")
+source("../fct_fmt_din.R")
+source("../fct_fmt_nome.R")
 
 
 ###################################
@@ -91,12 +91,12 @@ if(!teste){
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
-s_dados_path <- "s_dados.png"
-s_dados_m_path <- "s_dados_m.png"
+s_dados_path <- "../s_dados.png"
+s_dados_m_path <- "../s_dados_m.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 78
+  empresa = 86
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -105,19 +105,19 @@ if(params$variable1 == 'emp_par'){
 ##Começando script visitas_clientes
 
 ##Collect cria o df resultado da query, nesse caso, visitas_cliente, já filtrando apenas ano atual
-visita_cliente <- fread("Tabelas/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
+visita_cliente <- fread("../Tabelas/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
   select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
   filter (vc_data_cadastro >= ano_atual, vc_data_cadastro < (ano_atual+years(1)))
 
 ##Pra pegar o nome do resultado
-visita_resultado <- fread("Tabelas/visita_resultado.csv") %>%
+visita_resultado <- fread("../Tabelas/visita_resultado.csv") %>%
   select(vr_id, vr_nome, vr_ativo) %>%
   filter(vr_ativo == 1) %>% ##Ja sao todos ativos
   select(-vr_ativo) %>%
   rename (resultado = vr_nome)
 
 ##Pra filtrar os resultados da empresa
-visita_resultado_empresa <- fread("Tabelas/visita_resultado_empresa.csv") %>%
+visita_resultado_empresa <- fread("../Tabelas/visita_resultado_empresa.csv") %>%
   select(vre_resultado_id, vre_empresa_id, vre_ativo) %>%
   filter(vre_ativo == 1, vre_empresa_id == empresa) %>% ##Ja sao todos ativos mas mantive pra manter o filtro, ja filtro a empresa
   select(-vre_ativo)
@@ -128,14 +128,14 @@ Encoding(visita_resultado$resultado) <- 'latin1'
 vis_res_emp <- inner_join(visita_resultado, visita_resultado_empresa, by = c('vr_id'= 'vre_resultado_id'))
 
 ##Pra pegar o nome do status
-visita_status <- fread("Tabelas/visita_status.csv") %>%
+visita_status <- fread("../Tabelas/visita_status.csv") %>%
   select(vs_id, vs_nome, vs_ativo) %>%
   filter(vs_ativo == 1) %>%
   select(-vs_ativo) %>%
   rename (motivo = vs_nome)
 
 ##Pra filtrar os status da empresa
-visita_status_empresa <- fread("Tabelas/visita_status_empresa.csv") %>%
+visita_status_empresa <- fread("../Tabelas/visita_status_empresa.csv") %>%
   select(vse_status_id, vse_empresa_id, vse_ativo) %>%
   filter(vse_ativo == 1, vse_empresa_id == empresa) %>%
   select(-vse_ativo)
@@ -144,7 +144,7 @@ visita_status_empresa <- fread("Tabelas/visita_status_empresa.csv") %>%
 Encoding(visita_status$motivo) <- 'latin1'
 
 ##coleta todos os vendedores
-vendedor <- fread("Tabelas/vendedor.csv") %>%
+vendedor <- fread("../Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
   filter (vendedor_empresa_id == empresa)
 #Arrumando encoding
@@ -298,7 +298,7 @@ if(dash == F){
 ################################################################################################
 ### Tabelas e graficos de Clientes
 
-cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
+cliente <- fread("../Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
   select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_ultima_visita) %>%
   filter(cliente_empresa_id == empresa)
 
@@ -329,7 +329,7 @@ vend_cli_vis <- left_join(cli_p_v_ij_vend, vc_ij_vse_ij_v_count, by = c("cliente
   select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas)
 
 ##Contar quantos negócios são feitos por vendedor em 2020
-negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character", negocio_cliente_id = "character")) %>%
+negocio <- fread("../Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character", negocio_cliente_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_cliente_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_produto_id)
 
 ##Juncao pra pegar a empresa do negócio (e vendedor)
@@ -377,7 +377,7 @@ cli_c_neg_ij_vis_cont <- cli_c_neg_ij_vis %>%
   ungroup()
 
 ### Histogramas
-if(nrow(cli_c_neg_ij_vis_cont > 0)){
+if(nrow(cli_c_neg_ij_vis_cont) > 0){
   
   ### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios (clientes com visitas em 2020)
   c5 <- plot_ly() %>%
@@ -448,15 +448,15 @@ if(nrow(cli_c_neg_ij_vis_cont > 0)){
 #########################################################################################################
 
 ##Distribuição de clientes, mostrando no label nome do cliente, nome do vendedor e última visita
-cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
+cliente <- fread("../Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
   select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_vendedor_id, cliente_empresa_id)
 #Arrumando encoding
 Encoding(cliente$cliente_nome) <- 'latin1'
 
-visita_cliente <- fread("Tabelas/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
+visita_cliente <- fread("../Tabelas/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
   select (vc_id, vc_vendedor_id, vc_cliente_id, vc_data_cadastro)
 
-vendedor <- fread("Tabelas/vendedor.csv") %>%
+vendedor <- fread("../Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
   filter(vendedor_ativo == 1, vendedor_empresa_id == empresa) %>%
   select(-vendedor_ativo)

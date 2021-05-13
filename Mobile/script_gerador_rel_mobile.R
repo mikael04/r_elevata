@@ -2,8 +2,10 @@ library(purrr)
 library(data.table)
 library(dplyr)
 
-setwd("E:\\Mikael\\OneDrive\\Projetos\\Scripts_R\\r_elevata")
+#setwd("E:\\Mikael\\OneDrive\\Projetos\\Scripts_R\\r_elevata")
 teste = F
+path_to_dashs = "/mnt/dados/Mikael/Projetos/Scripts_R/r_elevata/"
+path_to_mobile = "Dashs_mobile/"
 #Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")
 ##Usado para super e komatsu
 ##renderiza dash_negocios_propostas e dash_visitas_mapas
@@ -49,7 +51,7 @@ for(i in (1:x)){
     #print(params_list[[i]])
     #print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs_mobile/Geral_%s", params_list[i])
+  out_file <- sprintf("/mnt/dados/Mikael/Projetos/Scripts_R/r_elevata/Dashs_mobile/Geral_%s", params_list[i])
   ##Final de ano
   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
 
@@ -70,7 +72,7 @@ for(i in (1:x)){
       print(params_list[[i]])
       print(as.list(params_list[[i]]))
     }
-    out_file <- sprintf("Dashs_mobile/Marcas_%s", params_list[i])
+    out_file <- sprintf("/mnt/dados/Mikael/Projetos/Scripts_R/r_elevata/Dashs_mobile/Marcas_%s", params_list[i])
     parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
 
     rmarkdown::render(template,
@@ -79,7 +81,7 @@ for(i in (1:x)){
     invisible(TRUE)
   }else{ ##########Caso seja a komatsu, marcas diferentes
     template <- "Mobile/dash_marcas_k_mobile.Rmd"
-    out_file <- sprintf("Dashs_mobile/Marcas_%s", params_list[i])
+    out_file <- sprintf("/mnt/dados/Mikael/Projetos/Scripts_R/r_elevata/Dashs_mobile/Marcas_%s", params_list[i])
     parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
 
     rmarkdown::render(template,
@@ -98,7 +100,7 @@ for(i in (1:x)){
     print(params_list[[i]])
     print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs_mobile/Negocios_%s", params_list[i])
+  out_file <- sprintf("/mnt/dados/Mikael/Projetos/Scripts_R/r_elevata/Dashs_mobile/Negocios_%s", params_list[i])
   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
 
   rmarkdown::render(template,
@@ -116,7 +118,7 @@ for(i in (1:x)){
     print(params_list[[i]])
     print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs_mobile/Propostas_%s", params_list[i])
+  out_file <- sprintf("/mnt/dados/Mikael/Projetos/Scripts_R/r_elevata/Dashs_mobile/Propostas_%s", params_list[i])
   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
 
   rmarkdown::render(template,
@@ -134,7 +136,7 @@ for(i in (1:x)){
     print(params_list[[i]])
     print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs_mobile/Visitas_Clientes_%s", params_list[i])
+  out_file <- sprintf("/mnt/dados/Mikael/Projetos/Scripts_R/r_elevata/Dashs_mobile/Visitas_Clientes_%s", params_list[i])
   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
 
   rmarkdown::render(template,

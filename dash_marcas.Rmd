@@ -92,6 +92,7 @@ if(!teste){
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
 s_dados_path <- "s_dados.png"
+s_dados_m_path <- "s_dados_m.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
@@ -560,7 +561,7 @@ if (nrow(cli_in_pm_cont_top_t_aux) > 0){
                group = "Ícones")
 }else {
   ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
-  m1_t <- include_graphics("s_dados_m.png")
+  m1_t <- include_graphics(s_dados_m_path)
 }
 
 ## Teste de mapa csv
@@ -580,7 +581,7 @@ if (nrow(cli_in_pm_cont_top_c_aux) > 0){
                group = "Ícones")
 }else {
   ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
-  m1_c <- include_graphics("s_dados_m.png")
+  m1_c <- include_graphics(s_dados_m_path)
 }
 
 if(teste == F){
