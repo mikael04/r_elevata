@@ -32,7 +32,7 @@ x <- length(params_list)
 # template <- "dash_marcas_k.Rmd"
 # out_file <- sprintf("Dashs/Marcas_%s", params_test[1])
 # parameters <- list(variable1 = params_list[i])
-# 
+#
 # rmarkdown::render(template,
 #                   output_file = out_file,
 #                   params = parameters)
@@ -52,7 +52,7 @@ for(i in (1:x)){
   out_file <- sprintf("Dashs/Geral_%s", params_list[i])
   ##Final de ano
   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
-  
+
   rmarkdown::render(template,
                     output_file = out_file,
                     params = parameters)
@@ -72,7 +72,7 @@ for(i in (1:x)){
     }
     out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
     parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
-    
+
     rmarkdown::render(template,
                       output_file = out_file,
                       params = parameters)
@@ -81,7 +81,7 @@ for(i in (1:x)){
     template <- "dash_marcas_k.Rmd"
     out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
     parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
-    
+
     rmarkdown::render(template,
                       output_file = out_file,
                       params = parameters)
@@ -100,7 +100,7 @@ for(i in (1:x)){
   }
   out_file <- sprintf("Dashs/Negocios_%s", params_list[i])
   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
-  
+
   rmarkdown::render(template,
                     output_file = out_file,
                     params = parameters)
@@ -118,7 +118,7 @@ for(i in (1:x)){
   }
   out_file <- sprintf("Dashs/Propostas_%s", params_list[i])
   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
-  
+
   rmarkdown::render(template,
                     output_file = out_file,
                     params = parameters)
@@ -136,7 +136,7 @@ for(i in (1:x)){
   }
   out_file <- sprintf("Dashs/Visitas_Clientes_%s", params_list[i])
   parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
-  
+
   rmarkdown::render(template,
                     output_file = out_file,
                     params = parameters)
@@ -147,6 +147,6 @@ for(i in (1:x)){
 #############################################################
 
 # data <- paste0("Gráficos: ", format(Sys.time(), "%d/%m/%Y %H:%M:%S"))
-# writeLines(data, "update_time.txt") 
+# writeLines(data, "update_time.txt")
 
 #############################################################

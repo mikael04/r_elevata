@@ -372,7 +372,7 @@ cli_c_neg_ij_vis_cont <- cli_c_neg_ij_vis %>%
   ungroup()
 
 ### Histogramas
-if(nrow(cli_c_neg_ij_vis_cont > 0)){
+if(nrow(cli_c_neg_ij_vis_cont) > 0){
   
   ### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios (clientes com visitas em anat)
   c5 <- plot_ly() %>%
