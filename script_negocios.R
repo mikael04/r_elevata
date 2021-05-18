@@ -76,7 +76,9 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 64
+
+empresa = 78
+vend_id = 1058
 ###################################
 
 ###Começando scripts negocio_scripts
@@ -90,7 +92,8 @@ negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character",
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa)
+  filter (vendedor_empresa_id == empresa) %>%
+  dplyr::filter(vendedor_id == vend_id)
 
 
 #Arrumando encoding

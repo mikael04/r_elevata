@@ -33,11 +33,11 @@ library(RColorBrewer)
 #library(waffle)
 #usada para converter números em moeda
 #library(scales)
-#lib para plotar a imagem (s_dados)
+#lib para plotar a imagem (../s_dados)
 library(knitr)
-source("fct_tempo.R")
-source("fct_fmt_din.R")
-source("fct_fmt_nome.R")
+source("../fct_tempo.R")
+source("../fct_fmt_din.R")
+source("../fct_fmt_nome.R")
 
 
 ###################################
@@ -95,11 +95,12 @@ if(!teste){
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
-s_dados_path <- "s_dados.png"
+s_dados_path <- "../s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 16
+  empresa = 78
+  vend_id = 1058
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -111,11 +112,11 @@ if(params$variable1 == 'emp_par'){
 ### Funil de vendas (vendas abertas)
 ########################################################################
 
-negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
+negocio <- fread("../Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id)
 
 ##coleta todos os vendedores
-vendedor <- fread("Tabelas/vendedor.csv") %>%
+vendedor <- fread("../Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
   filter (vendedor_empresa_id == empresa)
 
@@ -130,15 +131,16 @@ if(empresa == 16){
 }
 
 vendedor_a <- vendedor %>%
-  filter(vendedor_ativo == T)
+  dplyr::filter(vendedor_ativo == T) %>%
+  dplyr::filter(vendedor_id == vend_id)
 
 ##negocio_produto para pegar os valores de cada negócio
-negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
+negocio_produto <- fread("../Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
   select(np_id, np_negocio_id, np_produto_id, np_quantidade, np_ativo, np_valor) %>%
   filter (np_ativo == T)
 
 ##join de negocios e vendedores
-negocio_ij_vendedor <- inner_join(negocio, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
+negocio_ij_vendedor <- inner_join(negocio, vendedor_a, by=c("negocio_vendedor_id" = "vendedor_id"))
 
 ########## Para o funil e para agrupar por faturamento
 #### Vou alterar o agrupamento de número de negócios para faturamento, portanto precisarei da tabela negocio_produto
@@ -215,7 +217,7 @@ st_f = c(4,5,6,7)
 status_f = c("Faturado", "Financiamento não aprovado", "Desistencia do cliente", "Perdemos para concorrência")
 
 #ordenar negócios por data e ficar apenas com as últimas alterações
-historico_negocio_situacao <- fread("Tabelas/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_negocio_id = "character")) %>%
+historico_negocio_situacao <- fread("../Tabelas/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_negocio_id = "character")) %>%
   select(historico_negocio_situacao_data, historico_negocio_situacao_negocio_id, historico_negocio_situacao_situacao_id)
 
 ##filtrando apenas ano atual
@@ -258,7 +260,7 @@ ng_ij_hist_ij_ven_ij_np_anat <- inner_join(ng_ij_hist_ij_ven_anat, negocio_produ
 ng_ij_hist_ij_ven_fec_anat <- ng_ij_hist_ij_ven_ij_np_anat %>%
   filter(historico_negocio_situacao_situacao_id %in% st_f)
 
-##Funil já filtrou (na verdade ng_ij_hist_ij_ven_anat já filtrou) vendedor ativo e empresa = 16
+##Funil já filtrou (na verdade ng_ij_hist_ij_ven_anat já filtrou) vendedor_a ativo e empresa = 16
 
 #Criando nova coluna para não perder o id status (ao mudar pra string)
 ng_ij_hist_ij_ven_fec_anat <- ng_ij_hist_ij_ven_fec_anat %>%
@@ -610,25 +612,27 @@ if (teste == F){
 ###Contar clientes/visitas/negocios cadastrados por mês -> vem do script visita_clientes
 ####################################
 
-cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
+cliente <- fread("../Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
   select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_ultima_visita) %>%
-  filter(cliente_empresa_id == empresa)
+  filter(cliente_empresa_id == empresa) %>%
+  dplyr::filter(cliente_vendedor_id == vend_id)
 
 
 ##Collect cria o df resultado da query, nesse caso, visitas_cliente, já filtrando apenas ano atual
-visita_cliente <- fread("Tabelas/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
+visita_cliente <- fread("../Tabelas/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
   select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
-  filter (vc_data_cadastro >= ano_atual)
+  filter (vc_data_cadastro >= ano_atual)%>%
+  dplyr::filter(vc_vendedor_id == vend_id)
 
 ##Pra pegar o nome do status
-visita_status <- fread("Tabelas/visita_status.csv") %>%
+visita_status <- fread("../Tabelas/visita_status.csv") %>%
   select(vs_id, vs_nome, vs_ativo) %>%
   filter(vs_ativo == 1) %>%
   select(-vs_ativo) %>%
   rename (motivo = vs_nome)
 
 ##Pra filtrar os status da empresa
-visita_status_empresa <- fread("Tabelas/visita_status_empresa.csv") %>%
+visita_status_empresa <- fread("../Tabelas/visita_status_empresa.csv") %>%
   select(vse_status_id, vse_empresa_id, vse_ativo) %>%
   filter(vse_ativo == 1, vse_empresa_id == empresa) %>%
   select(-vse_ativo)
@@ -657,7 +661,7 @@ clientes_mes <- left_join(clientes_mes_aux, clientes_mes, by = c("ym")) %>%
   mutate (flag_cli = if_else(is.na(n_cli), T, F))
 #clientes_mes$n_cli[is.na(clientes_mes$n_cli)] <- 0
 
-##Visita precisa juntar com visita_status ou _resultado () pra obter empresa_id ##poderia ser vendedor, mas a tabela vis_st_emp (status c/ status_empresa) já está pronta
+##Visita precisa juntar com visita_status ou _resultado () pra obter empresa_id ##poderia ser vendedor_a, mas a tabela vis_st_emp (status c/ status_empresa) já está pronta
 ##vis_st_emp já vem filtrada pela empresa (var global)
 vc_ij_emp <- inner_join(visita_cliente, vis_st_emp, by = c("vc_status_id" = "vs_id")) %>%
   #select(vc_id, vc_status_id, vc_data_cadastro) ##Sem empresa_id
@@ -677,9 +681,9 @@ visitas_mes <- left_join(visitas_mes_aux, visitas_mes, by = c("ym")) %>%
   mutate (flag_vis = if_else(is.na(n_vis), T, F))
 #visitas_mes$n_vis[is.na(visitas_mes$n_vis)] <- 0
 
-##Negocio precisa juntar com vendedor pra obter empresa_id ##Poderia ser cliente também, mas a tabela vendedor é menor
-##vendedor já vem filtrado pela empresa (var global)
-ng_ij_emp <- inner_join(negocio, vendedor, by = c("negocio_vendedor_id" = "vendedor_id")) %>%
+##Negocio precisa juntar com vendedor_a pra obter empresa_id ##Poderia ser cliente também, mas a tabela vendedor_a é menor
+##vendedor_a já vem filtrado pela empresa (var global)
+ng_ij_emp <- inner_join(negocio, vendedor_a, by = c("negocio_vendedor_id" = "vendedor_id")) %>%
   #select(negocio_id, negocio_vendedor_id, negocio_data_cadastro)%>% ##Sem empresa_id
   select(negocio_id, negocio_vendedor_id, negocio_data_cadastro, vendedor_empresa_id)
 
@@ -772,18 +776,18 @@ if(teste == F){
 vc_ij_vse <- inner_join(visita_cliente, vis_st_emp, by = c('vc_status_id' = 'vs_id'))%>%
   select (vc_id, vc_vendedor_id, vc_status_id, motivo)
 
-##juntando com vendedor pra separar por vendedor
+##juntando com vendedor_a pra separar por vendedor_a
 vc_ij_vse_ij_v <- inner_join(vc_ij_vse, vendedor_a, by = c('vc_vendedor_id' = 'vendedor_id')) %>%
   select (vc_id, vc_vendedor_id, vendedor_nome, vc_status_id, motivo)
 
-##Agrupando por vendedor e por motivo (vc_status_id, depois mostrar so motivo)
+##Agrupando por vendedor_a e por motivo (vc_status_id, depois mostrar so motivo)
 vc_ij_vse_ij_v <- vc_ij_vse_ij_v %>%
   group_by(vc_vendedor_id, vc_status_id) %>%
   mutate(motivo_n = n()) %>%
   distinct(vc_vendedor_id, .keep_all = T) %>%
   ungroup()
 
-##Clientes cadastrados por vendedor
+##Clientes cadastrados por vendedor_a
 cli_p_v <- cliente %>%
   group_by(cliente_vendedor_id) %>%
   mutate(n_clientes = n()) %>%
@@ -794,7 +798,7 @@ cli_p_v <- cliente %>%
 
 cli_p_v$n_clientes[is.na(cli_p_v$n_clientes)] <- 0
 
-##Juncao pra pegar nome do vendedor
+##Juncao pra pegar nome do vendedor_a
 cli_p_v_ij_vend <- inner_join(cli_p_v, vendedor_a, by = c('cliente_vendedor_id' = 'vendedor_id')) %>%
   select(cliente_vendedor_id, vendedor_nome, n_clientes)
 
@@ -809,15 +813,15 @@ vc_ij_vse_ij_v_count <- vc_ij_vse_ij_v %>%
 
 vc_ij_vse_ij_v_count$n_visitas[is.na(vc_ij_vse_ij_v_count$n_visitas)] <- 0
 
-##Distribuição de clientes total, visita e negócios em anat por vendedor
+##Distribuição de clientes total, visita e negócios em anat por vendedor_a
 vend_cli_vis <- left_join(cli_p_v_ij_vend, vc_ij_vse_ij_v_count, by = c("cliente_vendedor_id" = "vc_vendedor_id")) %>%
   select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas)
 
-##Contar quantos negócios são feitos por vendedor em anat
-negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character", negocio_cliente_id = "character")) %>%
+##Contar quantos negócios são feitos por vendedor_a em anat
+negocio <- fread("../Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character", negocio_cliente_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_cliente_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_produto_id)
 
-##Juncao pra pegar a empresa do negócio (e vendedor)
+##Juncao pra pegar a empresa do negócio (e vendedor_a)
 neg_ij_vend <- inner_join(negocio, vendedor_a, by = c('negocio_vendedor_id' = 'vendedor_id')) %>%
   select(negocio_id, negocio_vendedor_id, negocio_data_cadastro)
 
@@ -835,7 +839,7 @@ vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_v
   select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas, n_negocios) %>%
   dplyr::arrange(vendedor_nome)
 
-### Grafico c0 - Distribuicao de clientes (total), visitas (anat) e negocios (anat) cadastrados por vendedor
+### Grafico c0 - Distribuicao de clientes (total), visitas (anat) e negocios (anat) cadastrados por vendedor_a
 if (nrow(vend_cli_vis_neg) > 0){
   c0 <- plot_ly(vend_cli_vis_neg, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
                 name = 'Clientes (total)')
@@ -864,7 +868,7 @@ if(teste == F){
 ### Gráficos de pizza de clientes com e sem negócio
 ##Contando número de clientes geral e em anat
 n_clientes <- nrow(cliente)
-##Clientes cadastrados em anat por vendedor
+##Clientes cadastrados em anat por vendedor_a
 cliente_anat <- cliente %>%
   filter(cliente_data_cadastro >= ano_atual)
 n_clientes_anat <- nrow(cliente_anat)
@@ -999,7 +1003,7 @@ Column {data-width=750}
 
 ```{r}
 
-### Grafico c0 - Distribuicao de clientes (total), visitas (anat) e negocios (anat) cadastrados por vendedor
+### Grafico c0 - Distribuicao de clientes (total), visitas (anat) e negocios (anat) cadastrados por ../Tabelas/
 c0
 
 ```

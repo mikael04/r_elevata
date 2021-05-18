@@ -41,11 +41,11 @@ library(RColorBrewer)
 library(ggplot2)
 #Lib usada para os quadros
 library(emojifont)
-#lib para plotar a imagem (s_dados)
+#lib para plotar a imagem (../s_dados)
 library(knitr)
-source("fct_tempo.R")
-source("fct_fmt_din.R")
-source("fct_fmt_nome.R")
+source("../fct_tempo.R")
+source("../fct_fmt_din.R")
+source("../fct_fmt_nome.R")
 
 
 ###################################
@@ -96,7 +96,7 @@ if(!teste){
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
-s_dados_path <- "s_dados.png"
+s_dados_path <- "../s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
@@ -113,16 +113,16 @@ if(params$variable1 == 'emp_par'){
 
 ##-> Collect cria o dataframe resultado da query, proposta será a tabela na qual estou lendo (FROM cliente)
 ##coleta todas as propostas
-proposta <- fread("Tabelas/proposta.csv", colClasses = c(proposta_id = "character", proposta_negocio_id = "character")) %>%
+proposta <- fread("../Tabelas/proposta.csv", colClasses = c(proposta_id = "character", proposta_negocio_id = "character")) %>%
   select(proposta_id, proposta_versao, proposta_negocio_id, proposta_data_cadastro, proposta_status)
 
 ##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
-negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
+negocio <- fread("../Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id)
 
 
 ##coleta todos os vendedores
-vendedor <- fread("Tabelas/vendedor.csv") %>%
+vendedor <- fread("../Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
   filter (vendedor_empresa_id == empresa)
 
@@ -140,7 +140,7 @@ if(empresa == 16){
 }
 
 ##coleta proposta_pagamento
-proposta_pagamento <- fread("Tabelas/proposta_pagamento.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character")) %>%
+proposta_pagamento <- fread("../Tabelas/proposta_pagamento.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character")) %>%
   select(pp_id, pp_proposta_id, pp_modo_id, pp_forma_id, pp_valor, pp_ativo, pp_usado_id) %>%
   filter(pp_ativo == 1) %>%
   select(-pp_ativo)
@@ -202,8 +202,8 @@ if(nrow(prop_ij_neg_cont_vend_a_ij_propag_anat) > 0){
            legend = list(traceorder = 'normal', orientation = 'h'))
   
 }else {
-  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  #p0 <- s_dados
+  ##Caso não haja informações do período, plotar gráfico ../s_dados (texto informando que não há informações p/ o período)
+  #p0 <- ../s_dados
   p0 <- include_graphics(s_dados_path)
 }
 if(dash == F){
@@ -244,8 +244,8 @@ if(nrow(prop_ij_neg_ij_propag_cont_anat) > 0){
            legend = list(traceorder = 'normal'))
   
 }else {
-  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  #p1 <- s_dados
+  ##Caso não haja informações do período, plotar gráfico ../s_dados (texto informando que não há informações p/ o período)
+  #p1 <- ../s_dados
   p1 <- include_graphics(s_dados_path)
 }
 
@@ -292,8 +292,8 @@ if(nrow(prop_ij_neg_ij_vend_cont_us) > 0){
                                        "Equivalente a %{percent} do total",
                                        "<extra></extra>"))
 }else {
-  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  #p2 <- s_dados
+  ##Caso não haja informações do período, plotar gráfico ../s_dados (texto informando que não há informações p/ o período)
+  #p2 <- ../s_dados
   p2 <- include_graphics(s_dados_path)
 }
 if(dash == F){
@@ -311,15 +311,15 @@ if(teste == F){
 
 #################################################
 ##negocio_produto para pegar os valores de cada negócio
-negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
+negocio_produto <- fread("../Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
   select(np_id, np_negocio_id, np_produto_id, np_quantidade, np_ativo, np_valor)
 
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
-produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
+produto <- fread("../Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
   select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
-proposta_produto <- fread("Tabelas/proposta_produto.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character", pp_produto_id = "character")) %>%
+proposta_produto <- fread("../Tabelas/proposta_produto.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character", pp_produto_id = "character")) %>%
   select(pp_id, pp_proposta_id, pp_produto_id, pp_quantidade, pp_valor, pp_ativo) %>%
   filter (pp_ativo == 1) %>% #Filtrando pp_ativo = true
   select(-pp_ativo) %>%
@@ -330,7 +330,7 @@ proposta_produto <- fread("Tabelas/proposta_produto.csv", colClasses = c(pp_id =
 p_ij_n_ij_v_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_produto, by = c("proposta_id" = "pp_proposta_id"))
 
 ##Vou puxar negócio novamente pra pegar a coluna de se é usado ou não (acho que é mais eficiente do que usar a tabela completa desde o início)
-negocio_aux <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character")) %>%
+negocio_aux <- fread("../Tabelas/negocio.csv", colClasses = c(negocio_id = "character")) %>%
   select(negocio_id, negocio_tipo_negocio)
 
 
@@ -372,7 +372,7 @@ pr_top5_fat <- p_ij_n_ij_pp_ij_prod %>%
 top5_fat <- head.matrix(pr_top5_fat, n=5)
 
 ##Vou fazer um join pra pegar os nomes de cada categoria
-categoria <- fread("Tabelas/categoria.csv", colClasses = c(categoria_id = "character")) %>%
+categoria <- fread("../Tabelas/categoria.csv", colClasses = c(categoria_id = "character")) %>%
   select(categoria_id, categoria_nome)
 
 
@@ -466,8 +466,8 @@ if(nrow(fat_tot_categorias) > 0){
       ##aqui eu ajusto onde quero que apareça a legenda
       legend = list(traceorder = 'normal', x = 0.7, y = 0.8))
 }else {
-  ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-  #p3 <- s_dados
+  ##Caso não haja informações do período, plotar gráfico ../s_dados (texto informando que não há informações p/ o período)
+  #p3 <- ../s_dados
   p3 <- include_graphics(s_dados_path)
 }
 if(dash == F){
@@ -622,8 +622,8 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
                       xanchor = "center",
                       traceorder = 'normal'))
   }else {
-    ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-    #p4 <- s_dados
+    ##Caso não haja informações do período, plotar gráfico ../s_dados (texto informando que não há informações p/ o período)
+    #p4 <- ../s_dados
     p4 <- include_graphics(s_dados_path)
   }
 } else{
@@ -693,7 +693,7 @@ if(nrow(p_ij_n_ij_pp_sum_cat) > 0){
   p5 <- p5 %>%
     layout(barmode = 'identity', xaxis = ax, yaxis = ax)
 }else {
-  #p5 <- s_dados
+  #p5 <- ../s_dados
   p5 <- include_graphics(s_dados_path)
 }
 
@@ -712,7 +712,7 @@ if(teste == F){
 ##Vou selecionar só o que for usar para contar tipos de pagamentos
 
 ##Já faço o filtro da empresa aqui na hora de puxar do banco
-proposta_modo_forma <- fread("Tabelas/proposta_modo_forma.csv") %>%
+proposta_modo_forma <- fread("../Tabelas/proposta_modo_forma.csv") %>%
   select (pmf_id, pmf_nome, pmf_ativo, PMF_EMPRESA_ID) %>%
   filter (pmf_ativo == 1 & PMF_EMPRESA_ID == empresa) %>%
   select (-pmf_ativo, -PMF_EMPRESA_ID)
@@ -829,7 +829,7 @@ if(nrow(p_ij_ppa_sum_modo_ij_pmf) > 0){
             name = '') %>%
     layout(legend = list(orientation = 'h'))
 }else {
-  #p6 <- s_dados
+  #p6 <- ../s_dados
   p6 <- include_graphics(s_dados_path)
 }
 if(dash == F){
@@ -850,7 +850,7 @@ if(nrow(p_ij_ppa_sum_forma_ij_pmf) > 0){
             name = '') %>%
     layout(legend = list(orientation = 'h'))
 }else {
-  #p7 <- s_dados
+  #p7 <- ../s_dados
   p7 <- include_graphics(s_dados_path)
 }
 
