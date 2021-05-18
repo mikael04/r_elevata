@@ -100,7 +100,8 @@ s_dados_path <- "../s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 16
+  empresa = 78
+  vend_id = 1058
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -124,7 +125,8 @@ negocio <- fread("../Tabelas/negocio.csv", colClasses = c(negocio_id = "characte
 ##coleta todos os vendedores
 vendedor <- fread("../Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa)
+  filter (vendedor_empresa_id == empresa) %>%
+  dplyr::filter(vendedor_id == vend_id)
 
 vendedor_a <- vendedor %>%
   filter (vendedor_ativo == T)
