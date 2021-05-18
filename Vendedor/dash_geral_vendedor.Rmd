@@ -113,16 +113,17 @@ if(params$variable1 == 'emp_par'){
 ########################################################################
 
 negocio <- fread("../Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
-  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id)
+  dplyr::select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id)
 
 ##coleta todos os vendedores
 vendedor <- fread("../Tabelas/vendedor.csv") %>%
-  select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa)
+  dplyr::select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
+  dplyr::filter (vendedor_empresa_id == empresa) %>%
+  dplyr::filter(vendedor_id == vend_id)
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+vendedor$vendedor_nome <- sapply(vendedor$vendedor_nome, func_nome)
 
 if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
@@ -131,8 +132,7 @@ if(empresa == 16){
 }
 
 vendedor_a <- vendedor %>%
-  dplyr::filter(vendedor_ativo == T) %>%
-  dplyr::filter(vendedor_id == vend_id)
+  dplyr::filter(vendedor_ativo == T)
 
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("../Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
@@ -937,7 +937,7 @@ Funil de vendas
 
 Column {data-width=350}
 -----------------------------------------------------------------------
-### Funil da empresa em valor financeiro, por status do negócio
+### Funil do vendedor em valor financeiro, por status do negócio
 ```{r}
 ### Gráfico n9 - Funil agrupado por status do negócio
 ### Gráfico n9 - Funil agrupado por faturamento

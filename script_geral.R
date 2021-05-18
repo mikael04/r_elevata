@@ -51,7 +51,7 @@ if(!teste){
   }else{
     data <- (lubridate::today()-lubridate::days(num_dias))
     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
     ####Variavel global c/ mês atual (para comparação)
     mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
     ## Apenas ano, para gerar títulos
@@ -83,7 +83,7 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 1
+empresa = 78
 ###################################
 
 #################################################################################
@@ -103,8 +103,7 @@ vendedor <- fread("Tabelas/vendedor.csv") %>%
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
-
+vendedor$vendedor_nome <- sapply(vendedor$vendedor_nome, func_nome)
 if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
   vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
@@ -160,30 +159,27 @@ if (teste == T){
   ###Testando e imprimindo tabela para envio
   #negocio_print <- ng_ij_hist_ij_ven_funil_ab %>%
   #  select (negocio_id, negocio_vendedor_id, vendedor_nome, negocio_status, negocio_data_cadastro, negocio_usado, negocio_produto_id, np_quantidade, np_valor)
-  
+
   #write_excel_csv(negocio_print, "negocios_vendedores_negocio_produto.csv", delim = ";")
-  
+
 }
 
 ##conversão de faturamento para texto
 if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
-  ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%	rowwise() %>%	
+  ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%	rowwise() %>%
     mutate(tot_fat_t = func_fmt_din(total_faturado))
-  
+
   ##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
   ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
     mutate(nome_cat_valor_fat = paste(negocio_status, "\n", tot_fat_t))
-  
+
   ##Vou converter o id de situação pra 0, pra poder ordenar (intenção seria o status 0, é o primeiro)
   ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id[ng_ij_hist_ij_ven_funil_fat$negocio_negocio_situacao_id == 10] <- 0
   ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
     arrange(negocio_negocio_situacao_id)
 }
 ################################################
-### Gráfico n9 - Funil agrupado por faturamento
-################################################
-
-### Gráfico n9 - Funil agrupado por faturamento
+### Gráfico n9 - Funil agrupado por status do negócio
 if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$total_faturado) > 0){
   n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat) %>%
     add_trace(
@@ -203,7 +199,6 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$tot
 if(dash == F){
   n9
 }
-
 if (teste == F){
   #tabelas
   rm(neg_ij_ven_ij_np, ng_ij_hist_ij_ven_funil_ab)
@@ -287,7 +282,7 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %
 
 
 if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){
-  ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%	rowwise() %>%	
+  ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%	rowwise() %>%
     mutate(total_fat_t = func_fmt_din(total_faturado))
 }
 
@@ -350,7 +345,7 @@ ng_ij_hist_ij_ven_fec_mes_ant  <- ng_ij_hist_ij_ven_fec_mes_ant  %>%
 
 #criando uma coluna nova para usar como texto dentro do gráfico
 if (nrow(ng_ij_hist_ij_ven_fec_mes_ant) > 0) {
-  ng_ij_hist_ij_ven_fec_mes_ant <- ng_ij_hist_ij_ven_fec_mes_ant %>%	rowwise() %>%	
+  ng_ij_hist_ij_ven_fec_mes_ant <- ng_ij_hist_ij_ven_fec_mes_ant %>%	rowwise() %>%
     mutate(total_fat_t = func_fmt_din(total_faturado))
 }
 
@@ -470,7 +465,7 @@ if(anos_ant > 1){
       group_by (ym) %>%
       summarize(ym_sum_2ant = sum(np_valor), .groups = 'drop')%>%
       ungroup ()
-    
+
     fat_1ant_mes <- ng_ij_hist_ij_ven_ij_np_1ant_fat %>%
       mutate (ym = format(historico_negocio_situacao_data, '%m')) %>%
       group_by (ym) %>%
@@ -525,12 +520,12 @@ fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%
                    labels = meses))
 if(anos_ant > 0) {
   fat_anat_1ant_2ant_mes$ym_sum_1ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_1ant)] <- 0
-  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%	
+  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%
     dplyr::mutate(ym_sum_fat_1ant = func_fmt_din(ym_sum_1ant))
 }
 if(anos_ant > 1) {
   fat_anat_1ant_2ant_mes$ym_sum_2ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_2ant)] <- 0
-  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%	
+  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%
     dplyr::mutate(ym_sum_fat_2ant = func_fmt_din(ym_sum_2ant))
 }
 
@@ -551,7 +546,7 @@ if(flag_fat == T && anos_ant == 0) {
   fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%
     dplyr::mutate(ym_sum_fat_anat = paste0("R$0"))
 } else{
-  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%	
+  fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%
     dplyr::mutate(ym_sum_fat_anat = func_fmt_din(ym_sum))
 }
 
@@ -835,23 +830,20 @@ neg_ij_vend_count <- neg_ij_vend %>%
 neg_ij_vend_count$n_negocios[is.na(neg_ij_vend_count$n_negocios)] <- 0
 
 vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_vendedor_id" = "negocio_vendedor_id")) %>%
-  select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas, n_negocios) %>%
-  dplyr::arrange(vendedor_nome)
+  dplyr::select(cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas, n_negocios)
 
 ### Grafico c0 - Distribuicao de clientes (total), visitas (anat) e negocios (anat) cadastrados por vendedor
 if (nrow(vend_cli_vis_neg) > 0){
-  c0 <- plot_ly(vend_cli_vis_neg, y = ~reorder(vendedor_nome, desc(vendedor_nome)), x= ~n_clientes, type = 'bar',
+  c0 <- plot_ly(vend_cli_vis_neg, x = ~vendedor_nome, y= ~n_clientes, type = 'bar',
                 name = 'Clientes (total)')
   c0 <- c0 %>%
-    add_trace(x= ~n_visitas, name =  paste('Visitas', ano))
+    add_trace(y= ~n_visitas, name =  paste('Visitas', ano))
   c0 <- c0 %>%
-    add_trace(x= ~n_negocios, name = paste('Negócios', ano))
+    add_trace(y= ~n_negocios, name = paste('Negócios', ano))
   c0 <- c0 %>%
     layout(barmode = 'grouped',
            xaxis = list(title = '', tickangle = 30, tickfont = list(size = 12)),
-           yaxis = list(title = ''),
-           legend = list(orientation = 'h',
-                         xanchor = "bottom"))
+           yaxis = list(title = ''))
 }else {
   c0 <- include_graphics(s_dados_path)
 }

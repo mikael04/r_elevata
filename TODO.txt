@@ -10,6 +10,8 @@ A FAZER
 - Documentar os arquivos (atualizar alguma parte de documentação)
 - Editar nome dos painéis (no Geral, trocar para visão do gestor, ou no de negócios, alterar para Painel de Negócios)
 - Bug no treemap de marcas (clica uma vez, quando volta não reaparece os nomes)
+- Corrigir cores inst financeira e forma de pagamento (Outra e Outros estão com cores diferentes caso não tenha uma das opções (ex: só dinheiro e Outros, outros não fica azul))
+- Aplicar funções fmt_din e fmt_tempo c/ lapply/sapply
 
 
 DEPOIS:
@@ -17,4 +19,3 @@ DEPOIS:
 - Verificar se knit2html é a melhor forma ou markdownToHTML é melhor;
 - Verificar se não é melhor, no gráfico de faturamento ano a ano, mostrar apenas meses fechados (não mostrar mês atual, porque ele está "incompleto" e leva a uma conclusão de que o mês não está indo bem, dependendo da semana que estamos)
 
-Verificar IDs negócio: 20200619113041895736 e 20181011124642976832

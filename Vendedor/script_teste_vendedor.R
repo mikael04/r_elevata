@@ -1,31 +1,15 @@
----
-title: "Painel de Negócios"
-output:
-  flexdashboard::flex_dashboard:
-    orientation: rows
-    vertical_layout: scroll
-params:
-  variable1: "emp_par"
-  num_dias: 0
----
-
-```{r setup, include=FALSE}
-#rm(list = ls())
-#Lib q será futuramente usada pros painéis interativos
+rm(list = ls())
+#Lib q ser? futuramente usada pros pain?is interativos
 #library(shiny)
-#lib para valuebox
-library(flexdashboard)
-#Lib pra conexão com o banco
+#Lib pra conex?o com o banco
 #library(odbc)
 #Lib para ler (mais rapidamente) os csvs
 library(data.table)
 #lib com uma cacetada de outras libs para manipular dados
 #library(tidyverse)
-#Libs pra trabalhar com a base (cortes e funções similares ao SQL)
+#Libs pra trabalhar com a base (cortes e fun??es similares ao SQL)
 library(dplyr) #Contido no tidyverse
-#lib para lidar com as palavras
-#library(stringr)
-#lib pros gráficos mais "interativos"
+#lib pros gr?ficos mais "interativos"
 library(plotly)
 #library(htmlwidgets)
 #Lib pra usar paletas de cores
@@ -35,14 +19,10 @@ library(RColorBrewer)
 #library(treemap)
 #Lib usada pros waffles
 #library(waffle)
-#usada para converter números em moeda
+#usada para converter n?meros em moeda
 #library(scales)
-#Lib usada para emojis/fonts/box de valores
-library(ggplot2)
-#Lib usada para os quadros
-library(emojifont)
-#lib para plotar a imagem (s_dados)
-library(knitr)
+#Lib para lidar com o tempo
+library(lubridate)
 source("fct_tempo.R")
 source("fct_fmt_din.R")
 source("fct_fmt_nome.R")
@@ -51,29 +31,25 @@ source("fct_fmt_nome.R")
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = F
+teste = T
 ####Variável usada para não plotar os gráficos na dash
-dash = T
-# ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-# ano_atual = fct_ano_atual()
-# ####Variavel global c/ mês atual (para comparação)
-# mes_atual = fct_mes_atual()
-# ## Apenas ano, para gerar títulos
-# ano <- year(ano_atual)
+dash = F
+####Variável para testar dias anteriores
+num_dias <- 0
 if(!teste){
   ##Teste se estou gerando via rstudio (knit)
-  if(as.integer(params$num_dias) == 0) {
+  if(as.integer(num_dias) == 0) {
     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
     ano_atual = fct_ano_atual()
     ####Variavel global c/ mês atual (para comparação)
     mes_atual = fct_mes_atual()
     ## Apenas ano, para gerar títulos
     ano <- year(ano_atual)
-  ##Execução normal, recebendo data do gerador de dashs
+    ##Execução normal, recebendo data do gerador de dashs
   }else{
-    data <- (lubridate::today()-lubridate::days(params$num_dias))
+    data <- (lubridate::today()-lubridate::days(num_dias))
     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
     ####Variavel global c/ mês atual (para comparação)
     mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
     ## Apenas ano, para gerar títulos
@@ -81,8 +57,7 @@ if(!teste){
   }
 }else{
   ##Teste setando dia
-  #data <- lubridate::ymd("2020-12-31")
-  data <- lubridate::today()
+  data <- lubridate::ymd("2020-12-31")
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
   ####Variavel global c/ mês atual (para comparação)
@@ -91,19 +66,18 @@ if(!teste){
   ano <- lubridate::year(ano_atual)
 }
 
-####Variável global para ver se tem usados Ainda não usada
+##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
+####Vari?vel global para ver se tem usados Ainda n?o usada
 #usados = T
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
 s_dados_path <- "s_dados.png"
 
-##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
-if(params$variable1 == 'emp_par'){
-  empresa = 78
-}else{
-  empresa = as.integer(params$variable1)
-}
+#empresa = params$variable1
+#teste
+empresa = 78
+vend_id = 1058
 
 ###Começando scripts negocio_scripts
 ###########################################################################################################
@@ -116,7 +90,8 @@ negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character",
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa)
+  filter (vendedor_empresa_id == empresa) %>%
+  dplyr::filter(vendedor_id == vend_id)
 
 
 #Arrumando encoding
@@ -197,12 +172,12 @@ if (nrow(ng_ij_vn_ij_np_fat) > 0 && sum(ng_ij_vn_ij_np_fat$total_fat) > 0){
                 showlegend = TRUE
   )
   n0 <- n0 %>%
-    layout(barmode = 'stack',
-           xaxis = list(title = ''),
-           yaxis = list(title = ''),
-           legend = list(orientation = "h", x = 0.5,
-                         xanchor = "center",
-                         traceorder = 'normal'))
+    layout(
+      xaxis = list(title = ''),
+      yaxis = list(title = ''),
+      legend = list(orientation = "h", x = 0.5,
+                    xanchor = "center",
+                    traceorder = 'normal'))
 }else {
   n0 <- include_graphics(s_dados_path)
 }
@@ -274,7 +249,7 @@ ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
 #usando função pra criar outra coluna com número formatado (em Real, com pontos)
 if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
   ng_ij_vn_ij_np_fech_fat <- ng_ij_vn_ij_np_fech_fat %>% rowwise() %>%
-  mutate(total_fat_t = func_fmt_din(total_fat))
+    mutate(total_fat_t = func_fmt_din(total_fat))
 }
 
 ### Gráfico n3 - Faturamento de negócios fechados em anat
@@ -286,9 +261,9 @@ if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
                 name = ~negocio_status,
                 showlegend = T
   )
-  
+
   n3 <- n3 %>%
-    layout(barmode = 'stack',
+    layout(barmode = 'grouped',
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(orientation = "h", x = 0.5,
@@ -360,9 +335,9 @@ if (nrow(ng_ij_hist_ij_ven_num) > 0){
   n6 <- plot_ly(ng_ij_hist_ij_ven_num, type = 'bar', orientation = 'h', x=~num_negocios_idades , y=~reorder(vendedor_nome, desc(vendedor_nome)),
                 color = ~idade_cat,
                 colors = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"))
-  
+
   n6 <- n6 %>%
-    layout(barmode = 'stack',
+    layout(barmode = 'grouped',
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(orientation = "v",
@@ -490,81 +465,3 @@ if (teste == F){
   #variáveis
   rm()
 }
-```
-
-Valor financeiro de negócios
-=======================================================================
-
-Column 
------------------------------------------------------------------------
-`r paste("### Valor financeiro dos negócios cadastrados em ", ano, "por vendedor  (Status atual)")`
-
-```{r, fig.height=7, fig.width=6}
-### Gráfico n0 - Valor financeiro dos negócios cadastrados por vendedor no ano atual (separados por status atual do negócio)
-n0
-
-```
-
-`r paste0("### Valor financeiro de todos os negócios que foram fechados em ", ano)`
-
-```{r, fig.height=7, fig.width=6}
-### Gráfico n3 - Faturamento de negócios fechados no ano atual
-n3
-
-```
-
-
-Idade dos negócios
-=======================================================================
-
-Column {.sidebar data-width=750 data-padding=10}
--------------------------------------
-```{r, fig.height=7, fig.width=7.5}
-### Gráfico n6 - Idade dos negócios abertos, por vendedor, por idade do negocio
-n6
-```
-
-Row {data-height=150}
-------------------------------------
-
-### Tempo médio p/ faturado
-```{r, fig.height=2, fig.width=4}
-colors <- c("#32CD32", "#FFD700" , "orange" , "#DE0D26")
-
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[1,2], icon = "fa-calendar", color="#32CD32")
-```
-
-
-### Tempo médio p/ fin. não aprovado
-```{r, fig.height=2, fig.width=4}
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[2,2], icon = "fa-calendar", color="#FFD700")
-
-```
-
-Row {data-height=150}
-------------------------------------
-
-### Tempo médio p/ des. do cliente
-```{r, fig.height=2, fig.width=4}
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[3,2], icon = "fa-calendar", color="#FFA500")
-
-```
-
-### Tempo médio p/ perd. p/ concorrência
-```{r, fig.height=2, fig.width=4}
-### Gráfico n13 - Tempo de vida médio de um negócio faturado (status = faturado)
-valueBox(ng_cad_fin[4,2], icon = "fa-calendar", color="#DE0D26")
-
-```
-
-Row {data-height=300}
-------------------------------------
-
-### Negócios abertos da empresa
-```{r, fig.height=4, fig.width=4}
-### Gráfico n7 - Negócios abertos da empresa, pizza
-n7
-```
