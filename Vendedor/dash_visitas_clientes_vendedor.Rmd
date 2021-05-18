@@ -5,7 +5,8 @@ output:
     orientation: columns
     vertical_layout: scroll
 params:
-  variable1: "emp_par"
+  empresa: "emp_par"
+  vendedor: "vend_par"
   num_dias: 0
 ---
 
@@ -95,12 +96,14 @@ s_dados_path <- "s_dados.png"
 s_dados_m_path <- "s_dados_m.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
-if(params$variable1 == 'emp_par'){
+if(params$empresa == 'emp_par' && params$vendedor == 'vend_par'){
   empresa = 78
   vend_id = 1058
 }else{
-  empresa = as.integer(params$variable1)
+  empresa = as.integer(params$empresa)
+  vend_id = as.integer(params$vendedor)
 }
+
 
 #################################################################################
 ##Começando script visitas_clientes
