@@ -137,7 +137,7 @@ fct_gera_tabelas_propostas <- function(debug){
 
     #Arrumando #Encoding
     Encoding(vendedor_a$vendedor_nome) <- 'latin1' #'UTF-8'
-    vendedor_a$vendedor_nome <- func_nome(vendedor_a$vendedor_nome)
+    vendedor_a$vendedor_nome <- sapply(vendedor_a$vendedor_nome, func_nome)
 
     if(empresas_ativas[[i]] == 16){
       vendedor_a$vendedor_nome[vendedor_a$vendedor_id == 723] <- "BRUNO PE.";
