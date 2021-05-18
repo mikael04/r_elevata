@@ -71,7 +71,7 @@ for (i in (1:length(empresas_ativ))){
   }
 }
 length(empresas_ativ[[i]][[2]])
-empresas_ativ[[i]][[2]]
+empresas_ativ[[1]][[1]]
 ########################################################
 ## Funcionando, apenas comentada pra facilitar teste das marcas
 # params_test <- list(78)
