@@ -123,7 +123,7 @@ vendedor <- fread("../Tabelas/vendedor.csv") %>%
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+vendedor$vendedor_nome <- sapply(vendedor$vendedor_nome, func_nome)
 
 if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
@@ -199,7 +199,7 @@ if (nrow(ng_ij_vn_ij_np_fat) > 0 && sum(ng_ij_vn_ij_np_fat$total_fat) > 0){
                 showlegend = TRUE
   )
   n0 <- n0 %>%
-    layout(barmode = 'stack',
+    layout(
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(orientation = "h", x = 0.5,
@@ -290,7 +290,7 @@ if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
   )
   
   n3 <- n3 %>%
-    layout(barmode = 'stack',
+    layout(barmode = 'grouped',
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(orientation = "h", x = 0.5,
@@ -364,7 +364,7 @@ if (nrow(ng_ij_hist_ij_ven_num) > 0){
                 colors = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"))
   
   n6 <- n6 %>%
-    layout(barmode = 'stack',
+    layout(barmode = 'grouped',
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(orientation = "v",
@@ -565,7 +565,7 @@ valueBox(ng_cad_fin[4,2], icon = "fa-calendar", color="#DE0D26")
 Row {data-height=300}
 ------------------------------------
 
-### Negócios abertos da empresa
+### Negócios abertos do vendedor
 ```{r, fig.height=4, fig.width=4}
 ### Gráfico n7 - Negócios abertos da empresa, pizza
 n7

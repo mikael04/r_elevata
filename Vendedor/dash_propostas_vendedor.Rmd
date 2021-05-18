@@ -133,7 +133,7 @@ vendedor_a <- vendedor %>%
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+vendedor$vendedor_nome <- sapply(vendedor$vendedor_nome, func_nome)
 
 if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
@@ -198,7 +198,7 @@ if(nrow(prop_ij_neg_cont_vend_a_ij_propag_anat) > 0){
                 showlegend = TRUE
   )
   p0 <- p0 %>%
-    layout(barmode = 'stack',
+    layout(barmode = 'grouped',
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(traceorder = 'normal', orientation = 'h'))
@@ -240,7 +240,7 @@ if(nrow(prop_ij_neg_ij_propag_cont_anat) > 0){
                 showlegend = F
   )
   p1 <- p1 %>%
-    layout(barmode = 'stack',
+    layout(barmode = 'grouped',
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(traceorder = 'normal'))
@@ -729,6 +729,10 @@ Encoding(proposta_modo_forma$pmf_nome) <- 'latin1'
 p_ij_ppa <- inner_join(proposta, proposta_pagamento, by=c('proposta_id' = 'pp_proposta_id')) %>%
   select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id, pp_valor) %>%
   filter (pp_modo_id != 0, pp_forma_id != 0) #, proposta_data_cadastro > 'ano_atual) ##teste de ano atual
+
+p_ij_ppa <- inner_join(p_ij_ppa, negocio, by=c('proposta_negocio_id' = 'negocio_id')) %>%
+  dplyr::select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id, pp_valor, negocio_vendedor_id) %>%
+  dplyr::filter(negocio_vendedor_id == vend_id)
 
 if(teste == T){
   #####################

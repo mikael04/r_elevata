@@ -121,7 +121,7 @@ vendedor <- fread("Tabelas/vendedor.csv") %>%
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+vendedor$vendedor_nome <- sapply(vendedor$vendedor_nome, func_nome)
 
 if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
@@ -936,7 +936,6 @@ Column {data-width=350}
 ### Funil da empresa em valor financeiro, por status do negócio
 ```{r}
 ### Gráfico n9 - Funil agrupado por status do negócio
-### Gráfico n9 - Funil agrupado por faturamento
 if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$total_faturado) > 0){
   n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat) %>%
     add_trace(

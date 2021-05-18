@@ -147,10 +147,12 @@ Encoding(visita_status$motivo) <- 'latin1'
 ##coleta todos os vendedores
 vendedor <- fread("../Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa)
+  filter (vendedor_empresa_id == empresa) %>%
+  dplyr::filter(vendedor_id == vend_id)
+
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+vendedor$vendedor_nome <- sapply(vendedor$vendedor_nome, func_nome)
 
 if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
@@ -217,13 +219,13 @@ if(nrow(vc_ij_vse_ij_v) > 0){
                 name = ~motivo)
   if(n_vend > 15){
     v0 <- v0 %>%
-      layout(barmode = 'stack',
+      layout(barmode = 'grouped',
              xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
              yaxis = list(title = ''),
              legend = list(x = 100, y = 0.5))
   }else{
     v0 <- v0 %>%
-      layout(barmode = 'stack',
+      layout(barmode = 'grouped',
              xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
              yaxis = list(title = ''),
              legend = list(orientation = 'h'))
@@ -268,13 +270,13 @@ if(nrow(vc_ij_vre_ij_v) > 0){
                 name = ~resultado)
   if(n_vend > 15){
     v1 <- v1 %>%
-      layout(barmode = 'stack',
+      layout(barmode = 'grouped',
              xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
              yaxis = list(title = ''),
              legend = list(x = 150, y = 0.5))
   }else{
     v1 <- v1 %>%
-      layout(barmode = 'stack',
+      layout(barmode = 'grouped',
              xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
              yaxis = list(title = ''),
              legend = list(orientation = 'h'))
@@ -301,7 +303,8 @@ if(dash == F){
 
 cliente <- fread("../Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
   select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_ultima_visita) %>%
-  filter(cliente_empresa_id == empresa)
+  filter(cliente_empresa_id == empresa) %>%
+  dplyr::filter(cliente_vendedor_id == vend_id)
 
 ##Clientes cadastrados por vendedor
 cli_p_v <- cliente %>%
@@ -455,11 +458,12 @@ visita_cliente <- fread("../Tabelas/visita_cliente.csv", colClasses = c(vc_id = 
 vendedor <- fread("../Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
   filter(vendedor_ativo == 1, vendedor_empresa_id == empresa) %>%
-  select(-vendedor_ativo)
+  select(-vendedor_ativo) %>%
+  dplyr::filter(vendedor_id == vend_id)
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+vendedor$vendedor_nome <- sapply(vendedor$vendedor_nome, func_nome)
 
 ##Alterando os que não possuem latitude/longitude para 0 (que será filtrado depois)
 cliente$cliente_latitude[cliente$cliente_latitude == ''] <- '0'
