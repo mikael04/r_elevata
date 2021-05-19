@@ -92,8 +92,8 @@ if(!teste){
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
-s_dados_path <- "s_dados.png"
-s_dados_m_path <- "s_dados_m.png"
+s_dados_path <- "../s_dados.png"
+s_dados_m_path <- "../s_dados_m.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$empresa == 'emp_par' && params$vendedor == 'vend_par'){
