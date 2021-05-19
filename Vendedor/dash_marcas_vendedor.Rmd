@@ -38,9 +38,9 @@ library(leaflet)
 #library(scales)
 #lib para plotar a imagem (s_dados)
 library(knitr)
-source("fct_tempo.R")
-source("fct_fmt_din.R")
-source("fct_fmt_nome.R")
+source("../fct_tempo.R")
+source("../fct_fmt_din.R")
+source("../fct_fmt_nome.R")
 
 
 ###################################
@@ -92,8 +92,8 @@ if(!teste){
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
-s_dados_path <- "s_dados.png"
-s_dados_m_path <- "s_dados_m.png"
+s_dados_path <- "../s_dados.png"
+s_dados_m_path <- "../s_dados_m.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$empresa == 'emp_par' && params$vendedor == 'vend_par'){
@@ -109,12 +109,12 @@ if(params$empresa == 'emp_par' && params$vendedor == 'vend_par'){
 ###########################################################################################################
 
 ##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
-negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
+negocio <- fread("../Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
   select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id)
 
 
 ##coleta todos os vendedores
-vendedor <- fread("Tabelas/vendedor.csv") %>%
+vendedor <- fread("../Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_empresa_id, vendedor_ativo) %>%
   filter (vendedor_empresa_id == empresa)
 
@@ -122,13 +122,13 @@ vendedor_a <- vendedor %>%
   filter(vendedor_ativo == T)
 
 ##negocio_produto para pegar os valores de cada negócio
-negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
+negocio_produto <- fread("../Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
   select(np_id, np_negocio_id, np_produto_id, np_quantidade,np_ativo, np_valor) %>%
   mutate(np_valor_tot = np_valor*np_quantidade)
 
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
-produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
+produto <- fread("../Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
   select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
 ###########################################
@@ -143,7 +143,7 @@ neg_ij_ven_ij_np <- inner_join(negocio_ij_vendedor, negocio_produto, by=c("negoc
 neg_ij_ven_ij_np_anat <- neg_ij_ven_ij_np %>%
   filter(negocio_data_cadastro >= ano_atual, negocio_negocio_situacao_id != 0)
 
-historico_negocio_situacao <- fread("Tabelas/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_situacao_id = "character")) %>%
+historico_negocio_situacao <- fread("../Tabelas/historico_negocio_situacao.csv", colClasses = c(historico_negocio_situacao_situacao_id = "character")) %>%
   select(historico_negocio_situacao_data, historico_negocio_situacao_negocio_id, historico_negocio_situacao_situacao_id)
 
 historico_negocio_situacao_anat <- historico_negocio_situacao %>%
@@ -176,7 +176,7 @@ ng_ij_hist_ij_ven_ij_np_ij_pd <- inner_join(ng_ij_hist_ij_ven_ij_np_anat, produt
 
 
 ##Vou fazer um join pra pegar os nomes de cada categoria
-categoria <- fread("Tabelas/categoria.csv", colClasses = c(categoria_id = 'character')) %>%
+categoria <- fread("../Tabelas/categoria.csv", colClasses = c(categoria_id = 'character')) %>%
   select (categoria_id, categoria_nome, categoria_ativo) %>%
   filter(categoria_ativo == 1) %>% 
   select (-categoria_ativo)
@@ -373,7 +373,7 @@ if (teste == F) {
 #########################################################################################################
 
 ##Distribuição de clientes, mostrando no label nome do cliente, nome do vendedor e última visita
-cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
+cliente <- fread("../Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
   select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_vendedor_id, cliente_empresa_id)
 #Arrumando encoding
 Encoding(cliente$cliente_nome) <- 'latin1'
@@ -381,15 +381,15 @@ Encoding(cliente$cliente_nome) <- 'latin1'
 ##Parque de máquinas
 ##Mostrar distribuição de máquinas por categoria
 #######################################################################
-parque_maquina <- fread("Tabelas/parque_maquina.csv", colClasses = c(pm_id = 'character', pm_cliente_id = 'character', pm_produto_id = 'character')) %>%
+parque_maquina <- fread("../Tabelas/parque_maquina.csv", colClasses = c(pm_id = 'character', pm_cliente_id = 'character', pm_produto_id = 'character')) %>%
   select(pm_id, pm_cliente_id, pm_produto_id, pm_ano_modelo, pm_ativo) %>%
   filter (pm_ativo == 1)
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
-marca <- fread("Tabelas/marca.csv", colClasses = c(marca_id = 'character')) %>%
+marca <- fread("../Tabelas/marca.csv", colClasses = c(marca_id = 'character')) %>%
   select(marca_id, marca_nome)
 
-marca_categoria <- fread("Tabelas/marca_categoria.csv", colClasses = c(marca_categoria_marca_id = 'character',marca_categoria_categoria_id  = 'character'))
+marca_categoria <- fread("../Tabelas/marca_categoria.csv", colClasses = c(marca_categoria_marca_id = 'character',marca_categoria_categoria_id  = 'character'))
 
 ##Alterando os que não possuem latitude/longitude para 0 (que será filtrado depois)
 cliente$cliente_latitude[cliente$cliente_latitude == ''] <- '0'

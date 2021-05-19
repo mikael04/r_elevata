@@ -1,5 +1,5 @@
 ---
-title: "Visão do gestor"
+title: "Painel das Marcas"
 output:
   flexdashboard::flex_dashboard:
     orientation: columns
