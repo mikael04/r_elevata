@@ -1,0 +1,89 @@
+'1':
+  iconUrl: Icons/NH_r.png
+  iconWidth: 23.0
+  iconHeight: 24.0
+'3':
+  iconUrl: Icons/CI_r.png
+  iconWidth: 28.0
+  iconHeight: 24.0
+'4':
+  iconUrl: Icons/JD_r.png
+  iconWidth: 26.0
+  iconHeight: 24.0
+'5':
+  iconUrl: Icons/MF_r.png
+  iconWidth: 34.0
+  iconHeight: 24.0
+'6':
+  iconUrl: Icons/agrale_r.png
+  iconWidth: 34.0
+  iconHeight: 24.0
+'11':
+  iconUrl: Icons/valtra_r.png
+  iconWidth: 26.0
+  iconHeight: 24.0
+'12':
+  iconUrl: Icons/yanmar_r.png
+  iconWidth: 44.0
+  iconHeight: 24.0
+'13':
+  iconUrl: Icons/jacto_r.png
+  iconWidth: 24.0
+  iconHeight: 24.0
+'120191031172113':
+  iconUrl: Icons/ponsse_r.png
+  iconWidth: 24.0
+  iconHeight: 24.0
+'120130518080852':
+  iconUrl: Icons/valmet_r.png
+  iconWidth: 26.0
+  iconHeight: 24.0
+'120120724031949':
+  iconUrl: Icons/ideal_r.png
+  iconWidth: 19.0
+  iconHeight: 24.0
+'120130802084245':
+  iconUrl: Icons/SLC_r.png
+  iconWidth: 26.0
+  iconHeight: 24.0
+'120130522055326':
+  iconUrl: Icons/CBT_r.png
+  iconWidth: 28.0
+  iconHeight: 28.0
+'120191031162533':
+  iconUrl: Icons/komatsu_r.png
+  iconWidth: 26.0
+  iconHeight: 24.0
+'120191031171837':
+  iconUrl: Icons/JD_r.png
+  iconWidth: 26.0
+  iconHeight: 20.0
+'120191031171708':
+  iconUrl: Icons/caterpillar_r.png
+  iconWidth: 38.0
+  iconHeight: 20.0
+'120191031171942':
+  iconUrl: Icons/logmax_r.png
+  iconWidth: 29.0
+  iconHeight: 20.0
+'120191031172239':
+  iconUrl: Icons/volvo_r.png
+  iconWidth: 24.0
+  iconHeight: 20.0
+'120191031171807':
+  iconUrl: Icons/hyundai_r.png
+  iconWidth: 45.0
+  iconHeight: 20.0
+'201912131603430251':
+  iconUrl: Icons/man_r.png
+  iconWidth: 41.0
+  iconHeight: 24.0
+'120190311052038':
+  iconUrl: Icons/vw_r.png
+  iconWidth: 32.0
+  iconHeight: 32.0
+'120191031172146':
+  iconUrl: Icons/tigercat_r.png
+  iconWidth: 28.0
+  iconHeight: 36.0
+

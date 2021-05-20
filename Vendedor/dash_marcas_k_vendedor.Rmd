@@ -477,7 +477,7 @@ marcas_icon <- iconList(         ##Caso precise consultar, olhar o csv acima
   '11' = makeIcon(iconUrl = "../Icons/valtra_r.png",
                  iconWidth =  26, iconHeight = 24),
   '12' = makeIcon(iconUrl = "../Icons/yanmar_r.png",
-                  iconWidth = 44, iconHeight = 24),
+                  iconWidth = 34, iconHeight = 24),
   '13' = makeIcon(iconUrl = "../Icons/jacto_r.png",
                   iconWidth = 24, iconHeight = 24),
   '120191031172113' = makeIcon(iconUrl = "../Icons/ponsse_r.png",

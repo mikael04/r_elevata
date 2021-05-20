@@ -51,7 +51,7 @@ if(!teste){
   }else{
     data <- (lubridate::today()-lubridate::days(num_dias))
     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
     ####Variavel global c/ mês atual (para comparação)
     mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
     ## Apenas ano, para gerar títulos
@@ -124,7 +124,7 @@ historico_negocio_situacao <- fread("Tabelas/historico_negocio_situacao.csv", co
   select(historico_negocio_situacao_data, historico_negocio_situacao_negocio_id, historico_negocio_situacao_situacao_id)
 
 historico_negocio_situacao_anat <- historico_negocio_situacao %>%
-  filter(historico_negocio_situacao_data >= ano_atual)
+  filter(historico_negocio_situacao_data >= ano_atual, historico_negocio_situacao_data < (ano_atual + years(1)))
 
 ##Right join de negocios, vendedores com histórico pra ter apenas a última
 negocio_ij_historico_ij_vendedor_anat <- inner_join(negocio_ij_vendedor, historico_negocio_situacao_anat, by=c("negocio_id" = "historico_negocio_situacao_negocio_id"))
@@ -155,7 +155,7 @@ ng_ij_hist_ij_ven_ij_np_ij_pd <- inner_join(ng_ij_hist_ij_ven_ij_np_anat, produt
 ##Vou fazer um join pra pegar os nomes de cada categoria
 categoria <- fread("Tabelas/categoria.csv", colClasses = c(categoria_id = 'character')) %>%
   select (categoria_id, categoria_nome, categoria_ativo) %>%
-  filter(categoria_ativo == 1) %>% 
+  filter(categoria_ativo == 1) %>%
   select (-categoria_ativo)
 
 Encoding(categoria$categoria_nome) <- 'latin1'
@@ -210,10 +210,10 @@ ng_top_ag <- inner_join(ng_top10_ag, top10_ij, by=c("produto_categoria_id" = "pr
 
 #conversão de faturamento para texto
 if (nrow(ng_top_ag) > 0){
-  ng_top_ag <- ng_top_ag %>%
+  ng_top_ag <- ng_top_ag %>% rowwise() %>%
     mutate(fat_t = func_fmt_din(faturamento))
 }else{
-  
+
 }
 
 
@@ -238,16 +238,21 @@ if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
                 labels = ~categoria_nome,
                 textposition = "middle center",
                 parents = NA,
-                text = ~paste0(categoria_nome),
+                text = ~paste0("", categoria_nome ,"<br>",
+                               "", fat_t,
+                               "<br>",
+                               "", perc*100, "%",
+                               "<br>"),
                 textinfo = "text",
-                hovertemplate = paste0("%{text} <br>",
-                                       "", chart_ng_top_ag$fat_t,
-                                       "<br>",
-                                       "Equivalente à ", chart_ng_top_ag$perc*100, "%",
-                                       "<br>",
-                                       "<extra></extra>"),
+                hovertemplate = ~paste0("", categoria_nome ,
+                                        "<br>",
+                                        "", fat_t,
+                                        "<br>",
+                                        "Equivalente à ", perc*100, "%",
+                                        "<br>",
+                                        "<extra></extra>"),
                 values = ~faturamento,
-                marker = list(colors = pal_cores[chart_ng_top_ag$cat_cor+1])) 
+                marker = list(colors = pal_cores[chart_ng_top_ag$cat_cor+1]))
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   n4 <- include_graphics(s_dados_path)
@@ -255,8 +260,6 @@ if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
 if(dash == F){
   n4
 }
-
-
 
 #################################################
 
@@ -289,10 +292,10 @@ if (teste == F) {
 
 #conversão de faturamento para texto
 if (nrow(ng_top_ag_fat) > 0){
-  ng_top_ag_fat <- ng_top_ag_fat %>%
+  ng_top_ag_fat <- ng_top_ag_fat %>% rowwise() %>%
     mutate(fat_t = func_fmt_din(faturamento))
 }else{
-  
+
 }
 
 ##Chart gerado para o treemap de categorias por faturamento em anat
@@ -317,16 +320,21 @@ if (nrow(chart_ng_top_ag_fat) > 0 & sum(chart_ng_top_ag_fat$faturamento) > 0){
                 labels = ~categoria_nome,
                 textposition = "middle center",
                 parents = NA,
-                text = ~paste0(categoria_nome),
+                text = ~paste0("", categoria_nome ,"<br>",
+                               "", fat_t,
+                               "<br>",
+                               "", perc*100, "%",
+                               "<br>"),
                 textinfo = "text",
-                hovertemplate = paste0("%{text} <br>",
-                                       "", chart_ng_top_ag_fat$fat_t,
-                                       "<br>",
-                                       "Equivalente à ", chart_ng_top_ag_fat$perc*100, "%",
-                                       "<br>",
-                                       "<extra></extra>"),
+                hovertemplate = ~paste0("", categoria_nome ,
+                                        "<br>",
+                                        "", fat_t,
+                                        "<br>",
+                                        "Equivalente à ", perc*100, "%",
+                                        "<br>",
+                                        "<extra></extra>"),
                 values = ~faturamento,
-                marker = list(colors = pal_cores[chart_ng_top_ag_fat$cat_cor+1])) 
+                marker = list(colors = pal_cores[chart_ng_top_ag$cat_cor+1]))
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   n5 <- include_graphics(s_dados_path)
@@ -429,30 +437,81 @@ cli_in_pm_cont_top_t_aux$long <- jitter(cli_in_pm_cont_top_t_aux$long, factor = 
 ##Se precisar consultar ícones, tamanho do ícone, marcas e marcas_ids
 # marcas_ic_co <-read.csv("Icons/marcas_icon_csv.csv") %>%
 
-marcas_icon <- iconList(
-  '1' = makeIcon("Icons/NH_r.png", 23, 24),          ##Caso precise consultar, olhar o csv
-  '3' = makeIcon("Icons/CI_r.png", 28, 24),
-  '4' = makeIcon("Icons/JD_r.png", 26, 24),
-  '5' = makeIcon("Icons/MF_r.png", 34, 24),
-  '6' = makeIcon("Icons/agrale_r.png", 34, 24),
-  '11' = makeIcon("Icons/valtra_r.png", 26, 24),
-  '12' = makeIcon("Icons/yanmar_r.png", 44, 24),
-  '13' = makeIcon("Icons/jacto_r.png", 24, 24),
-  '120191031172113' = makeIcon("Icons/ponsse_r.png", 24, 24),
-  '120130518080852' = makeIcon("Icons/valmet_r.png", 26, 24),
-  '120120724031949' = makeIcon("Icons/ideal_r.png", 19, 24),
-  '120130802084245' = makeIcon("Icons/SLC_r.png", 26, 24),
-  '120130522055326' = makeIcon("Icons/CBT_r.png", 28, 28),
-  '120191031162533' = makeIcon("Icons/komatsu_r.png", 26, 24),
-  '120191031171837' = makeIcon("Icons/JD_r.png", 26, 20),
-  '120191031171708' = makeIcon("Icons/caterpillar_r.png", 38, 20),
-  '120191031171942' = makeIcon("Icons/logmax_r.png", 29, 20),
-  '120191031172239' = makeIcon("Icons/volvo_r.png", 24, 20),
-  '120191031171807' = makeIcon("Icons/hyundai_r.png", 45, 20),
-  '201912131603430251' = makeIcon("Icons/man_r.png", 37, 24),
-  '120190311052038' = makeIcon("Icons/vw_r.png", 26, 26)
+marcas_icon <- iconList(         ##Caso precise consultar, olhar o csv acima
+  '1' = makeIcon(iconUrl = "Icons/NH_r.png",
+                 iconWidth = 23, iconHeight = 24),
+  '3' = makeIcon(iconUrl = "Icons/CI_r.png",
+                 iconWidth = 28, iconHeight = 24),
+  '4' = makeIcon(iconUrl = "Icons/JD_r.png",
+                 iconWidth = 26, iconHeight = 24),
+  '5' = makeIcon(iconUrl = "Icons/MF_r.png",
+                 iconWidth = 34, iconHeight = 24),
+  '6' = makeIcon(iconUrl = "Icons/agrale_r.png",
+                 iconWidth = 34, iconHeight = 24),
+  '11' = makeIcon(iconUrl = "Icons/valtra_r.png",
+                  iconWidth =  26, iconHeight = 24),
+  '12' = makeIcon(iconUrl = "Icons/yanmar_r.png",
+                  iconWidth = 44, iconHeight = 24),
+  '13' = makeIcon(iconUrl = "Icons/jacto_r.png",
+                  iconWidth = 24, iconHeight = 24),
+  '120191031172113' = makeIcon(iconUrl = "Icons/ponsse_r.png",
+                               iconWidth = 24, iconHeight = 24),
+  '120130518080852' = makeIcon(iconUrl = "Icons/valmet_r.png",
+                               iconWidth = 26, iconHeight = 24),
+  '120120724031949' = makeIcon(iconUrl = "Icons/ideal_r.png",
+                               iconWidth = 19, iconHeight = 24),
+  '120130802084245' = makeIcon(iconUrl = "Icons/SLC_r.png",
+                               iconWidth = 26, iconHeight = 24),
+  '120130522055326' = makeIcon(iconUrl = "Icons/CBT_r.png",
+                               iconWidth = 28, iconHeight = 28),
+  '120191031162533' = makeIcon(iconUrl = "Icons/komatsu_r.png",
+                               iconWidth = 26, iconHeight = 24),
+  '120191031171837' = makeIcon(iconUrl = "Icons/JD_r.png",
+                               iconWidth = 26, iconHeight = 20),
+  '120191031171708' = makeIcon(iconUrl = "Icons/caterpillar_r.png",
+                               iconWidth = 38, iconHeight = 20),
+  '120191031171942' = makeIcon(iconUrl = "Icons/logmax_r.png",
+                               iconWidth = 29, iconHeight = 20),
+  '120191031172239' = makeIcon(iconUrl = "Icons/volvo_r.png",
+                               iconWidth = 24, iconHeight = 20),
+  '120191031171807' = makeIcon(iconUrl = "Icons/hyundai_r.png",
+                               iconWidth = 45, iconHeight = 20),
+  '201912131603430251' = makeIcon(iconUrl = "Icons/man_r.png",
+                                  iconWidth = 41, iconHeight = 24),
+  '120190311052038' = makeIcon(iconUrl = "Icons/vw_r.png",
+                               iconWidth = 32, iconHeight = 32)
 )
+marcas_icon$`1`
+myIcons <- list('1', '', 0, 0)
+class(myIcons) <- "leaflet_icon_set"
+##SSerá usado para ler os ícones salvos "/Icons/marcas_icon_csv.csv) e montar os ícones
+marcas_ic_co <-read.csv("Icons/marcas_icon_txt.txt")
+nrow(marcas_ic_co)
+as.character(marcas_ic_co[[1]][1])
+sapply(marcas_ic_co$marca_id_i, as.character)
+as.list(marcas_ic_co)
+marcas_icon_id[[23]][1]
+marcas_ic_co[[4]][1]
+as.character(marcas_icon_id[[2]])
 
+marcas_icon[[1]]
+
+marcas_ic_co_list
+for(i in (1:nrow(marcas_ic_co))){
+  marcas_ic_co_list[[]]
+}
+
+marcas_ic_yaml <- yaml::read_yaml("list.yaml")
+lapply(marcas_ic_yaml, class() <- "leaflet_icon_set")
+marcas_ic_yaml_2 <- sapply(marcas_ic_yaml, class())
+
+
+marcas_icon_apply <- list(lapply(marcas_ic_co$marca_id_i, as.character), lapply(marcas_ic_co$icon_path, as.character),
+                          lapply(marcas_ic_co$icon_size_x, as.numeric), lapply(marcas_ic_co$icon_size_y, as.numeric))
+
+
+
+marcas_ic_co$marca_id_i[21] == 201912131603430251
 ### Gráfico m1 de distribuição das marcas (top5) m1_t = tratores, m1_c = colheitadeiras
 ###################
 ##Tratores
@@ -528,7 +587,7 @@ if (nrow(cli_in_pm_cont_top_t) > 0){
                   color = ~marca_nome,     #Se quiser setar pela tabela, com join, senáo usar o factor como é feito acima
                   colors = cores_t,
                   showlegend = FALSE)
-  
+
   m2_t <- m2_t %>%
     layout(xaxis = list(title = ''),
            yaxis = list(title = ''))
