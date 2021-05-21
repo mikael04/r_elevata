@@ -358,7 +358,7 @@ if (nrow(ng_ij_hist_ij_ven_fec_mes_ant) > 0) {
 ### Gráfico n11 - Pizza fechados no último mês
 ##############################################
 
-colors_pie <- c("#32CD32", "yellow" , "orange" , "#DE0D26")
+ng_ij_hist_ij_ven_fec_mes_ant <- inner_join(ng_ij_hist_ij_ven_fec_mes_ant, df_stat_cor, by=c("negocio_status" = "status_f"))
 
 if (nrow(ng_ij_hist_ij_ven_fec_mes_ant) > 0 && sum(ng_ij_hist_ij_ven_fec_mes_ant$total_faturado) > 0){
   n11 <- plot_ly(ng_ij_hist_ij_ven_fec_mes_ant, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
@@ -368,7 +368,7 @@ if (nrow(ng_ij_hist_ij_ven_fec_mes_ant) > 0 && sum(ng_ij_hist_ij_ven_fec_mes_ant
                                          "%{text}<br>",
                                          "Equivalente a %{percent}",
                                          "<extra></extra>"),
-                 marker = list(colors = colors_pie))
+                 marker = list(colors = ~cor))
 }else {
   n11 <- include_graphics(s_dados_path)
 }
@@ -382,7 +382,7 @@ if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_funil_fat_fec_anat, ng_ij_hist_ij_ven_fec_mes_ant, ng_ij_hist_ij_ven_fec_anat)
   #variáveis
-  rm(colors_pie, st_f, status_f)
+  rm(st_f, status_f)
 }
 #####################################################################
 ### Faturamento anual (ano atual + dois anteriores se disponíveis)

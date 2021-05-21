@@ -104,6 +104,7 @@ vendedor <- fread("Tabelas/vendedor.csv") %>%
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
 vendedor$vendedor_nome <- sapply(vendedor$vendedor_nome, func_nome)
+
 if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
   vendedor$vendedor_nome[vendedor$vendedor_id == 812] <- "BRUNO PO.";
@@ -179,19 +180,26 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
     arrange(negocio_negocio_situacao_id)
 }
 ################################################
+### Gráfico n9 - Funil agrupado por faturamento
+################################################
+#adicionando as cores ao
+cores_funil <- c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")
+st_a_c <- as.character(st_a)
+df_stat_cor <- tibble(st_a_c, cores_funil)
+ng_ij_hist_ij_ven_funil_fat <- inner_join(ng_ij_hist_ij_ven_funil_fat, df_stat_cor,
+                                          by=c("negocio_negocio_situacao_id" = "st_a_c"))
 ### Gráfico n9 - Funil agrupado por status do negócio
 if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$total_faturado) > 0){
-  n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat) %>%
-    add_trace(
+  n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat,
       type ="funnelarea",
       values = ng_ij_hist_ij_ven_funil_fat$total_faturado,
+      #name = ~negocio_status,
       text = ng_ij_hist_ij_ven_funil_fat$nome_cat_valor_fat,
       textinfo = "text",
       hovertemplate = paste0 ("%{text} <br>",
                               "Equivalente a %{percent}",
                               "<extra></extra>"),
-      marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")),
-      showlegend = FALSE
+      marker = list(colors = ~cores_funil)
     )
 }else {
   n9 <- include_graphics(s_dados_path)
@@ -352,7 +360,7 @@ if (nrow(ng_ij_hist_ij_ven_fec_mes_ant) > 0) {
 ### Gráfico n11 - Pizza fechados no último mês
 ##############################################
 
-colors_pie <- c("#32CD32", "yellow" , "orange" , "#DE0D26")
+ng_ij_hist_ij_ven_fec_mes_ant <- inner_join(ng_ij_hist_ij_ven_fec_mes_ant, df_stat_cor, by=c("negocio_status" = "status_f"))
 
 if (nrow(ng_ij_hist_ij_ven_fec_mes_ant) > 0 && sum(ng_ij_hist_ij_ven_fec_mes_ant$total_faturado) > 0){
   n11 <- plot_ly(ng_ij_hist_ij_ven_fec_mes_ant, labels = ~negocio_status, values = ~total_faturado, type = 'pie', sort = F,
@@ -362,7 +370,7 @@ if (nrow(ng_ij_hist_ij_ven_fec_mes_ant) > 0 && sum(ng_ij_hist_ij_ven_fec_mes_ant
                                          "%{text}<br>",
                                          "Equivalente a %{percent}",
                                          "<extra></extra>"),
-                 marker = list(colors = colors_pie))
+                 marker = list(colors = ~cor))
 }else {
   n11 <- include_graphics(s_dados_path)
 }
@@ -376,7 +384,7 @@ if (teste == F){
   #tabelas
   rm(ng_ij_hist_ij_ven_funil_fat_fec_anat, ng_ij_hist_ij_ven_fec_mes_ant, ng_ij_hist_ij_ven_fec_anat)
   #variáveis
-  rm(colors_pie, st_f, status_f)
+  rm(st_f, status_f)
 }
 #####################################################################
 ### Faturamento anual (ano atual + dois anteriores se disponíveis)
@@ -830,7 +838,8 @@ neg_ij_vend_count <- neg_ij_vend %>%
 neg_ij_vend_count$n_negocios[is.na(neg_ij_vend_count$n_negocios)] <- 0
 
 vend_cli_vis_neg <- left_join(vend_cli_vis, neg_ij_vend_count, by = c("cliente_vendedor_id" = "negocio_vendedor_id")) %>%
-  dplyr::select(cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas, n_negocios)
+  select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas, n_negocios) %>%
+  dplyr::arrange(vendedor_nome)
 
 ### Grafico c0 - Distribuicao de clientes (total), visitas (anat) e negocios (anat) cadastrados por vendedor
 if (nrow(vend_cli_vis_neg) > 0){

@@ -102,7 +102,7 @@ s_dados_path <- "../s_dados.png"
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$empresa == 'emp_par' && params$vendedor == 'vend_par'){
   empresa = 78
-  vend_id = 1058
+  vend_id = 1060
 }else{
   empresa = as.integer(params$empresa)
   vend_id = as.integer(params$vendedor)
