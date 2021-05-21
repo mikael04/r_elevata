@@ -3,7 +3,7 @@ title: "Painel de Visitas e Clientes"
 output:
   flexdashboard::flex_dashboard:
     orientation: columns
-    vertical_layout: scroll
+    vertical_layout: fill
 params:
   variable1: "emp_par"
   num_dias: 0
