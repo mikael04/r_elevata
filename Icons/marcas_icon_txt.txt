@@ -1,4 +1,4 @@
-marca_id_i, marca, icon_path, icon_size_x, icon_size_y, cor
+marca_id_i, marca, iconUrl, iconWidth, iconHeight, cor
 -1,OUTRAS*,,0,0,#984DD5
 1,NEW HOLLAND,Icons/NH_r.png,23,24,#064485
 3,CASE IH,Icons/CI_r.png,28,24,#808080
@@ -22,4 +22,3 @@ marca_id_i, marca, icon_path, icon_size_x, icon_size_y, cor
 201912131603430251,MAN,Icons/man_r.png,41,24,#C8C9CB
 120190311052038,VW,Icons/vw_r.png,32,32,#274379
 120191031172146,TIGERCAT,Icons/tigercat_r.png,28,36,#FD7E09
-

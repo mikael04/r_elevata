@@ -28,6 +28,7 @@ library(knitr)
 source("fct_tempo.R")
 source("fct_fmt_din.R")
 source("fct_fmt_nome.R")
+source("fct_df_to_yaml.R")
 
 
 ###################################
@@ -436,89 +437,64 @@ cli_in_pm_cont_top_t_aux$long <- jitter(cli_in_pm_cont_top_t_aux$long, factor = 
 
 ##Se precisar consultar ícones, tamanho do ícone, marcas e marcas_ids
 # marcas_ic_co <-read.csv("Icons/marcas_icon_csv.csv") %>%
-
-marcas_icon <- iconList(         ##Caso precise consultar, olhar o csv acima
-  '1' = makeIcon(iconUrl = "Icons/NH_r.png",
-                 iconWidth = 23, iconHeight = 24),
-  '3' = makeIcon(iconUrl = "Icons/CI_r.png",
-                 iconWidth = 28, iconHeight = 24),
-  '4' = makeIcon(iconUrl = "Icons/JD_r.png",
-                 iconWidth = 26, iconHeight = 24),
-  '5' = makeIcon(iconUrl = "Icons/MF_r.png",
-                 iconWidth = 34, iconHeight = 24),
-  '6' = makeIcon(iconUrl = "Icons/agrale_r.png",
-                 iconWidth = 34, iconHeight = 24),
-  '11' = makeIcon(iconUrl = "Icons/valtra_r.png",
-                  iconWidth =  26, iconHeight = 24),
-  '12' = makeIcon(iconUrl = "Icons/yanmar_r.png",
-                  iconWidth = 44, iconHeight = 24),
-  '13' = makeIcon(iconUrl = "Icons/jacto_r.png",
-                  iconWidth = 24, iconHeight = 24),
-  '120191031172113' = makeIcon(iconUrl = "Icons/ponsse_r.png",
-                               iconWidth = 24, iconHeight = 24),
-  '120130518080852' = makeIcon(iconUrl = "Icons/valmet_r.png",
-                               iconWidth = 26, iconHeight = 24),
-  '120120724031949' = makeIcon(iconUrl = "Icons/ideal_r.png",
-                               iconWidth = 19, iconHeight = 24),
-  '120130802084245' = makeIcon(iconUrl = "Icons/SLC_r.png",
-                               iconWidth = 26, iconHeight = 24),
-  '120130522055326' = makeIcon(iconUrl = "Icons/CBT_r.png",
-                               iconWidth = 28, iconHeight = 28),
-  '120191031162533' = makeIcon(iconUrl = "Icons/komatsu_r.png",
-                               iconWidth = 26, iconHeight = 24),
-  '120191031171837' = makeIcon(iconUrl = "Icons/JD_r.png",
-                               iconWidth = 26, iconHeight = 20),
-  '120191031171708' = makeIcon(iconUrl = "Icons/caterpillar_r.png",
-                               iconWidth = 38, iconHeight = 20),
-  '120191031171942' = makeIcon(iconUrl = "Icons/logmax_r.png",
-                               iconWidth = 29, iconHeight = 20),
-  '120191031172239' = makeIcon(iconUrl = "Icons/volvo_r.png",
-                               iconWidth = 24, iconHeight = 20),
-  '120191031171807' = makeIcon(iconUrl = "Icons/hyundai_r.png",
-                               iconWidth = 45, iconHeight = 20),
-  '201912131603430251' = makeIcon(iconUrl = "Icons/man_r.png",
-                                  iconWidth = 41, iconHeight = 24),
-  '120190311052038' = makeIcon(iconUrl = "Icons/vw_r.png",
-                               iconWidth = 32, iconHeight = 32)
-)
-marcas_icon$`1`
-myIcons <- list('1', '', 0, 0)
-class(myIcons) <- "leaflet_icon_set"
-##SSerá usado para ler os ícones salvos "/Icons/marcas_icon_csv.csv) e montar os ícones
-marcas_ic_co <-read.csv("Icons/marcas_icon_txt.txt")
-nrow(marcas_ic_co)
-as.character(marcas_ic_co[[1]][1])
-sapply(marcas_ic_co$marca_id_i, as.character)
-as.list(marcas_ic_co)
-marcas_icon_id[[23]][1]
-marcas_ic_co[[4]][1]
-as.character(marcas_icon_id[[2]])
-
-marcas_icon[[1]]
-
-marcas_ic_co_list
-for(i in (1:nrow(marcas_ic_co))){
-  marcas_ic_co_list[[]]
-}
-
-marcas_ic_yaml <- yaml::read_yaml("list.yaml")
-lapply(marcas_ic_yaml, class() <- "leaflet_icon_set")
-marcas_ic_yaml_2 <- sapply(marcas_ic_yaml, class())
-
-
-marcas_icon_apply <- list(lapply(marcas_ic_co$marca_id_i, as.character), lapply(marcas_ic_co$icon_path, as.character),
-                          lapply(marcas_ic_co$icon_size_x, as.numeric), lapply(marcas_ic_co$icon_size_y, as.numeric))
-
-
-
-marcas_ic_co$marca_id_i[21] == 201912131603430251
+## Deprecado
+# marcas_icon <- iconList(         ##Caso precise consultar, olhar o csv acima
+#   '1' = makeIcon(iconUrl = "Icons/NH_r.png",
+#                  iconWidth = 23, iconHeight = 24),
+#   '3' = makeIcon(iconUrl = "Icons/CI_r.png",
+#                  iconWidth = 28, iconHeight = 24),
+#   '4' = makeIcon(iconUrl = "Icons/JD_r.png",
+#                  iconWidth = 26, iconHeight = 24),
+#   '5' = makeIcon(iconUrl = "Icons/MF_r.png",
+#                  iconWidth = 34, iconHeight = 24),
+#   '6' = makeIcon(iconUrl = "Icons/agrale_r.png",
+#                  iconWidth = 34, iconHeight = 24),
+#   '11' = makeIcon(iconUrl = "Icons/valtra_r.png",
+#                   iconWidth =  26, iconHeight = 24),
+#   '12' = makeIcon(iconUrl = "Icons/yanmar_r.png",
+#                   iconWidth = 44, iconHeight = 24),
+#   '13' = makeIcon(iconUrl = "Icons/jacto_r.png",
+#                   iconWidth = 24, iconHeight = 24),
+#   '120191031172113' = makeIcon(iconUrl = "Icons/ponsse_r.png",
+#                                iconWidth = 24, iconHeight = 24),
+#   '120130518080852' = makeIcon(iconUrl = "Icons/valmet_r.png",
+#                                iconWidth = 26, iconHeight = 24),
+#   '120120724031949' = makeIcon(iconUrl = "Icons/ideal_r.png",
+#                                iconWidth = 19, iconHeight = 24),
+#   '120130802084245' = makeIcon(iconUrl = "Icons/SLC_r.png",
+#                                iconWidth = 26, iconHeight = 24),
+#   '120130522055326' = makeIcon(iconUrl = "Icons/CBT_r.png",
+#                                iconWidth = 28, iconHeight = 28),
+#   '120191031162533' = makeIcon(iconUrl = "Icons/komatsu_r.png",
+#                                iconWidth = 26, iconHeight = 24),
+#   '120191031171837' = makeIcon(iconUrl = "Icons/JD_r.png",
+#                                iconWidth = 26, iconHeight = 20),
+#   '120191031171708' = makeIcon(iconUrl = "Icons/caterpillar_r.png",
+#                                iconWidth = 38, iconHeight = 20),
+#   '120191031171942' = makeIcon(iconUrl = "Icons/logmax_r.png",
+#                                iconWidth = 29, iconHeight = 20),
+#   '120191031172239' = makeIcon(iconUrl = "Icons/volvo_r.png",
+#                                iconWidth = 24, iconHeight = 20),
+#   '120191031171807' = makeIcon(iconUrl = "Icons/hyundai_r.png",
+#                                iconWidth = 45, iconHeight = 20),
+#   '201912131603430251' = makeIcon(iconUrl = "Icons/man_r.png",
+#                                   iconWidth = 41, iconHeight = 24),
+#   '120190311052038' = makeIcon(iconUrl = "Icons/vw_r.png",
+#                                iconWidth = 32, iconHeight = 32),
+#   '120191031172146' = makeIcon(iconUrl = "Icons/tigercat_r.png",
+#                                iconWidth = 28, iconHeight = 36)
+# )
+marcas_icon_txt <- fread("Icons/marcas_icon_txt.txt")
+marcas_icon_list <- func_conv_txt_to_yaml_icon(marcas_icon_txt)
+## Adicionando classe para o leaflet entender que é a classe dele de ícones
+class(marcas_icon_list) <- "leaflet_icon_set"
 ### Gráfico m1 de distribuição das marcas (top5) m1_t = tratores, m1_c = colheitadeiras
 ###################
 ##Tratores
 if (nrow(cli_in_pm_cont_top_t_aux) > 0){
   m1_t <- leaflet(cli_in_pm_cont_top_t_aux) %>%
     addTiles() %>%
-    addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon[produto_marca_id],
+    addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon_list[produto_marca_id],
                popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_t_aux$cliente_nome,
                               "<br>",
                               "Quantidade de máquinas ", cli_in_pm_cont_top_t_aux$marca_nome,
@@ -530,11 +506,14 @@ if (nrow(cli_in_pm_cont_top_t_aux) > 0){
   ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
   m1_t <- include_graphics(s_dados_path_m)
 }
+if(dash == F){
+  m1_t
+}
 if(teste == F){
   #tabelas
   rm(top5_t, top5_c, aux_c, aux_t, n_color, cli_in_pm_cont_c, cli_in_pm_cont_t, cliente_c_loc,
      cli_in_pm_cont_top_t_aux,parque_maquina, produto, marca, marca_categoria,
-     marcas_icon, categoria);
+     marcas_icon_list, categoria);
   #variáveis
   rm();
 }
@@ -569,11 +548,12 @@ cli_in_pm_cont_top_t$marca_nome <- reorder(cli_in_pm_cont_top_t$marca_nome, desc
 #   select (marca_id_i, cor)
 # marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
 ##Alterei para txt por causa do tamanho da coluna (número muito grande, era convertido para científico)
-marcas_ic_co <-read.csv("Icons/marcas_icon_txt.txt", colClasses = c(marca_id_i = "character")) %>%
+marcas_icon_txt <-read.csv("Icons/marcas_icon_txt.txt", colClasses = c(marca_id_i = "character")) %>%
   select (marca_id_i, cor)
-marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
+as.data.frame(marcas_ic_yaml)
+marcas_icon_txt$marca_id_i <- as.character(marcas_icon_txt$marca_id_i)
 #cores_t
-cli_in_pm_cont_top_t <- inner_join(cli_in_pm_cont_top_t, marcas_ic_co, by = c("produto_marca_id" = "marca_id_i"))
+cli_in_pm_cont_top_t <- inner_join(cli_in_pm_cont_top_t, marcas_icon_txt, by = c("produto_marca_id" = "marca_id_i"))
 cores_t <- as.vector(cli_in_pm_cont_top_t$cor)
 
 #############################################################################################
@@ -601,7 +581,7 @@ if(dash == F){
 if(teste == F){
   #tabelas
   rm(cli_in_pm_cont_top_t, cli_in_pm_in_p_in_m, cli_in_pm_in_p, cli_in_pm, top10_c, top10_t,
-     marcas_ic_co);
+     marcas_icon_txt);
   #variáveis
   rm(cores_c, cores_t);
 }
