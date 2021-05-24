@@ -49,7 +49,7 @@ if(!teste){
   }else{
     data <- (lubridate::today()-lubridate::days(num_dias))
     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
     ####Variavel global c/ mês atual (para comparação)
     mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
     ## Apenas ano, para gerar títulos
@@ -78,11 +78,9 @@ s_dados_path <- "s_dados.png"
 #teste
 empresa = 1
 
-###########################################################################################################
-###########################################################################################################
+######################################################################################
 ###Começando scripts proposta_scripts
-###########################################################################################################
-###########################################################################################################
+######################################################################################
 
 ##-> Collect cria o dataframe resultado da query, proposta será a tabela na qual estou lendo (FROM cliente)
 ##coleta todas as propostas
@@ -104,7 +102,7 @@ vendedor_a <- vendedor %>%
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+vendedor$vendedor_nome <- sapply(vendedor$vendedor_nome, func_nome)
 
 if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
@@ -173,7 +171,7 @@ if(nrow(prop_ij_neg_cont_vend_a_ij_propag_anat) > 0){
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(traceorder = 'normal', orientation = 'h'))
-  
+
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   #p0 <- s_dados
@@ -215,7 +213,7 @@ if(nrow(prop_ij_neg_ij_propag_cont_anat) > 0){
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(traceorder = 'normal'))
-  
+
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   #p1 <- s_dados
@@ -381,6 +379,7 @@ pr_top5_fat_aux <- pr_top5_fat_aux[!is.na(pr_top5_fat_aux$categoria_nome),]
 ##Aqui só renomeio pra ver que a categoria outros tem um * representando a soma de todas as outras categorias também
 #pr_top5_fat_aux$categoria_nome[(pr_top5_fat_aux$categoria_nome == "OUTRA")] <- "OUTRA *" #Não mais necessário pq já tneho que adicionar a categoria outra então já faço com nome que quero
 
+
 ## Aqui já estõu fazendo a média das categorias
 pr_top5_fat_med <- pr_top5_fat_aux %>%
   select(categoria_nome, produto_categoria_id, fat, n) %>%
@@ -397,9 +396,12 @@ fat_tot_categorias <- fat_tot_categorias %>%
   mutate(med_emp = media_empresa)
 
 ##Adicionando coluna com os valores já em texto para plot
+##Adicionando coluna com os valores já em texto para plot
 if(nrow(fat_tot_categorias) > 0){
   fat_tot_categorias <- fat_tot_categorias %>% rowwise() %>%
     mutate(fat_med_t = func_fmt_din(fat_med))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(fat_tot_categorias$fat_med_t) <- "UTF-8"
 }
 
 ### Gráfico p3 - Ticket médio novos
@@ -408,7 +410,7 @@ if(nrow(fat_tot_categorias) > 0){
     autotick = TRUE,
     title = "",
     showticklabels = TRUE)
-  
+
   p3 <- plot_ly(fat_tot_categorias, x = ~categoria_nome)
   p3 <- p3 %>%
     add_trace(type = "bar", y = ~fat_med,
@@ -420,7 +422,7 @@ if(nrow(fat_tot_categorias) > 0){
                              '<br>' ,
                              fat_med_t),
               hoverinfo = "text")
-  
+
   p3 <- p3 %>%
     add_trace(type = "scatter", mode = "markers+line", y = ~med_emp,
               name = 'Novos (média)',
@@ -460,22 +462,22 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
     group_by(proposta_id) %>%
     mutate (valor_proposta = sum(pp_valor_tot)) %>%
     ungroup ()
-  
+
   ##media geral da empresa
   total_empresa_us <- sum(p_ij_n_ij_pp_empresa_us$pp_valor_tot)
   n_empresa_us <- nrow(p_ij_n_ij_pp_empresa_us)
   media_empresa_us <- round((total_empresa_us/n_empresa_us), 2)
-  
-  
+
+
   ##Calculando ticket médio por categoria
-  
+
   p_ij_n_ij_pp_ij_prod_us <- inner_join (p_ij_n_ij_pp_empresa_us, produto, by= c('pp_produto_id' = 'produto_id')) %>%
     select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_produto_id, pp_quantidade, pp_valor_tot, produto_categoria_id, vendedor_empresa_id, negocio_tipo_negocio) %>%
     filter(proposta_status == 4, vendedor_empresa_id == empresa) #Proposta finalizada
-  
+
   ##Adicionar categoria pra ver se é isso mesmo
   p_ij_n_ij_pp_ij_prod_us <- inner_join(p_ij_n_ij_pp_ij_prod_us, categoria, by = c("produto_categoria_id" = "categoria_id"))
-  
+
   ## Primeira vez pra verificar quais são os top5
   pr_top5_fat_us <- p_ij_n_ij_pp_ij_prod_us %>%
     select(produto_categoria_id, pp_valor_tot) %>%
@@ -484,32 +486,32 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
     mutate(n = n()) %>%
     distinct (produto_categoria_id, .keep_all = TRUE) %>%
     ungroup ()
-  
-  
+
+
   #Arrumando encoding
   Encoding(categoria$categoria_nome) <- 'latin1'
-  
+
   ##Aqui estou juntando para agrupar primeiro através do na
   pr_top5_fat_aux <- left_join(pr_top5_fat_us, top5_fat_ij_cat, by=c("produto_categoria_id" = "produto_categoria_id"))
   pr_top5_fat_aux$produto_categoria_id[is.na(pr_top5_fat_aux$categoria_nome)] <- "-1"
   pr_top5_fat_aux$categoria_nome[is.na(pr_top5_fat_aux$categoria_nome)] <- "OUTRAS *"
-  
-  
+
+
   ##Depois de setar as linhas q tem nome de coluna = na (não estão no top5) e ter setado todas pra id = -1, faço a soma dos n e faturamentos
   n_out <- sum(pr_top5_fat_aux$n[which(pr_top5_fat_aux$produto_categoria_id=="-1")])
   fat_out <- sum(pr_top5_fat_aux$fat[which(pr_top5_fat_aux$produto_categoria_id=="-1")])
-  
+
   ##E então, repasso o valor de volta para a coluna "outros", de faturamento total (de todas as categorias menos as q estão no top5) e número de vezes que aparecem
   pr_top5_fat_aux$n[pr_top5_fat_aux$produto_categoria_id=='-1'] <- n_out
   pr_top5_fat_aux$fat[pr_top5_fat_aux$produto_categoria_id=='-1'] <- fat_out
-  
+
   ##E aqui removo as demais linhas, que já foram adicionadas a "Outros"
   pr_top5_fat_aux <- pr_top5_fat_aux[!is.na(pr_top5_fat_aux$categoria_nome),]
-  
+
   ##Aqui só renomeio pra ver que a categoria outros tem um * representando a soma de todas as outras categorias também
   #pr_top5_fat_aux$categoria_nome[(pr_top5_fat_aux$categoria_nome == "OUTRA")] <- "OUTRA *" #Não mais necessário pq já tneho que adicionar a categoria outra então já faço com nome que quero
-  
-  
+
+
   ## Aqui já estõu fazendo a média das categorias
   pr_top5_fat_med_us <- pr_top5_fat_aux %>%
     select(categoria_nome, produto_categoria_id, fat, n) %>%
@@ -517,11 +519,11 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
     mutate(fat_med = fat/n) %>%
     distinct (produto_categoria_id, .keep_all = TRUE) %>%
     ungroup ()
-  
-  
+
+
   fat_tot_categorias_us <- pr_top5_fat_med_us
-  
-  
+
+
   ##Adicionando a matriz pra poder exibir no gráfico ###########################################################################################################
   fat_tot_categorias_us <- fat_tot_categorias_us %>%
     mutate(med_emp_us = media_empresa_us) %>%
@@ -529,11 +531,16 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
   # rename(fat_us = fat) %>%
   # rename(fat_med_us = fat_med) %>%
   # rename(n_us = n)
-  
+
   ##Adicionando coluna com os valores já em texto para plot
-  fat_tot_categorias_us <- fat_tot_categorias_us %>% rowwise() %>%
-    mutate(fat_med_t_us = func_fmt_din(fat_med_us))
-  
+  if(nrow(fat_tot_categorias_us) > 0){
+    fat_tot_categorias_us <- fat_tot_categorias_us %>% rowwise() %>%
+      mutate(fat_med_t_us = func_fmt_din(fat_med_us))
+
+    ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+    Encoding(fat_tot_categorias_us$fat_med_t) <- "UTF-8"
+  }
+
   fat_tot_categorias_n_us <- full_join(fat_tot_categorias, fat_tot_categorias_us, by=("categoria_nome")) %>%
     select(-produto_categoria_id_us)
   ### Gráfico p4 - Ticket médio de novos e usados (se for apenas novos, vai usar p3)
@@ -553,7 +560,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
                                '<br>' ,
                                fat_med_t),
                 hoverinfo = "text")
-    
+
     p4 <- p4 %>%
       add_trace(type = "bar", y = ~fat_med_us,
                 name = 'Categorias usados',
@@ -564,8 +571,8 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
                                '<br>' ,
                                fat_med_t_us),
                 hoverinfo = "text")
-    
-    
+
+
     p4 <- p4 %>%
       add_trace(type = "scatter", mode = "markers+line", y = ~med_emp,
                 name = 'Novos (média)',
@@ -573,7 +580,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
                 text = ~paste0('Ticket médio novos<br>' , func_fmt_din(med_emp)),
                 hoverinfo = "text",
                 marker = list(color = 'red'))
-    
+
     p4 <- p4 %>%
       add_trace(type = "scatter", mode = "markers+line", y = ~med_emp_us,
                 name = 'Usados (média)',
@@ -581,7 +588,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
                 text = ~paste0('Ticket médio usados<br>' , func_fmt_din(med_emp_us)),
                 hoverinfo = "text",
                 marker = list(color = 'red'))
-    
+
     p4 <- p4 %>%
       layout(
         autosize = T,
@@ -651,6 +658,10 @@ p_ij_n_ij_pp_sum_cat$proposta_status <- with(p_ij_n_ij_pp_sum_cat, cut(proposta_
 
 ###Gráfico p5 - Faturamento de propostas por status (não usado)
 if(nrow(p_ij_n_ij_pp_sum_cat) > 0){
+  p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum_cat %>% rowwise() %>%
+    dplyr::mutate(valor_status_t = func_fmt_din(valor_status))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(p_ij_n_ij_pp_sum_cat$valor_status_t) <- "UTF-8"
   ax <- list(
     autotick = TRUE,
     title = "",
@@ -658,9 +669,9 @@ if(nrow(p_ij_n_ij_pp_sum_cat) > 0){
   p5 <- plot_ly(p_ij_n_ij_pp_sum_cat, x = ~proposta_status, y = ~valor_status, type = 'bar',
                 name = 'Faturamento por status',
                 marker = list(color = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32")),
-                text = ~paste(proposta_status,'<br>' , func_fmt_din(valor_status)),
+                text = ~paste(proposta_status,'<br>' , valor_status_t),
                 hoverinfo = "text")
-  
+
   p5 <- p5 %>%
     layout(barmode = 'identity', xaxis = ax, yaxis = ax)
 }else {
@@ -788,12 +799,16 @@ p_ij_ppa_sum_forma_ij_pmf <- p_ij_ppa_sum_forma_ij_pmf %>%
 
 ### Gráfico p6 - Modos de pagamento
 if(nrow(p_ij_ppa_sum_modo_ij_pmf) > 0){
+  p_ij_ppa_sum_modo_ij_pmf <- p_ij_ppa_sum_modo_ij_pmf %>% rowwise() %>%
+    dplyr::mutate(sum_modo_t = func_fmt_din(sum_modo))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(p_ij_ppa_sum_modo_ij_pmf$sum_modo_t) <- "UTF-8"
   p6 <- plot_ly()
   p6 <- p6 %>%
     add_pie(data = p_ij_ppa_sum_modo_ij_pmf, values = ~sum_modo, labels = ~Modo,
             hovertemplate = ~paste0("%{label}: ",
                                     "<br>",
-                                    "Valor financeiro: ", func_fmt_din(sum_modo),
+                                    "Valor financeiro: ", sum_modo_t,
                                     "<br>",
                                     "Nº de propostas: ", count_modo,
                                     "<br>"),
@@ -809,15 +824,19 @@ if(dash == F){
 
 ### Gráfico p7 - Formas de pagamento
 if(nrow(p_ij_ppa_sum_forma_ij_pmf) > 0){
+  p_ij_ppa_sum_forma_ij_pmf <- p_ij_ppa_sum_forma_ij_pmf %>% rowwise() %>%
+    dplyr::mutate(sum_forma_t = func_fmt_din(sum_forma))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(p_ij_ppa_sum_forma_ij_pmf$sum_forma_t) <- "UTF-8"
   p7 <- plot_ly()
   p7 <- p7 %>%
     add_pie(data = p_ij_ppa_sum_forma_ij_pmf, values = ~sum_forma, labels = ~Forma,
             hovertemplate = ~paste0("%{label}: ",
                                     "<br>",
-                                    "Valor financeiro: ", func_fmt_din(sum_forma),
+                                    "Valor financeiro: ", sum_forma_t,
                                     "<br>",
                                     "Nº de propostas: ", count_forma,
-                                    "<br>"), 
+                                    "<br>"),
             name = '') %>%
     layout(legend = list(orientation = 'h'))
 }else {

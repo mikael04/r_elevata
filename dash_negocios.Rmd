@@ -183,6 +183,8 @@ ng_ij_vn_ij_np_fat$negocio_status = factor(ng_ij_vn_ij_np_fat$negocio_status, le
 if (nrow(ng_ij_vn_ij_np_fat) > 0){
   ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>% rowwise() %>%
     mutate(total_fat_t = func_fmt_din(total_fat))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(ng_ij_vn_ij_np_fat$total_fat_t) <- "UTF-8"
 }
 
 
@@ -194,7 +196,13 @@ if (nrow(ng_ij_vn_ij_np_fat) > 0 && sum(ng_ij_vn_ij_np_fat$total_fat) > 0){
                 color = ~negocio_status,
                 colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"),
                 name = ~negocio_status,
-                showlegend = TRUE
+                showlegend = TRUE,
+                text = ~paste0("",
+                               '<br>' ,
+                               vendedor_nome,
+                               '<br>' ,
+                               total_fat_t),
+                hoverinfo = "text"
   )
   n0 <- n0 %>%
     layout(barmode = 'stack',
@@ -274,7 +282,9 @@ ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
 #usando função pra criar outra coluna com número formatado (em Real, com pontos)
 if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
   ng_ij_vn_ij_np_fech_fat <- ng_ij_vn_ij_np_fech_fat %>% rowwise() %>%
-  mutate(total_fat_t = func_fmt_din(total_fat))
+    mutate(total_fat_t = func_fmt_din(total_fat))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(ng_ij_vn_ij_np_fech_fat$total_fat_t) <- "UTF-8"
 }
 
 ### Gráfico n3 - Faturamento de negócios fechados em anat
@@ -284,9 +294,15 @@ if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
                 color = ~negocio_status,
                 colors = c("#32CD32", "yellow", "orange", "#DE0D26"),
                 name = ~negocio_status,
-                showlegend = T
+                showlegend = T,
+                text = ~paste0("",
+                               '<br>' ,
+                               vendedor_nome,
+                               '<br>' ,
+                               total_fat_t),
+                hoverinfo = "text"
   )
-  
+
   n3 <- n3 %>%
     layout(barmode = 'stack',
            xaxis = list(title = ''),

@@ -49,7 +49,7 @@ if(!teste){
   }else{
     data <- (lubridate::today()-lubridate::days(num_dias))
     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
     ####Variavel global c/ mês atual (para comparação)
     mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
     ## Apenas ano, para gerar títulos
@@ -77,7 +77,7 @@ s_dados_path <- "s_dados.png"
 #empresa = params$variable1
 #teste
 
-empresa = 78
+empresa = 1
 vend_id = 1058
 ###################################
 
@@ -92,13 +92,12 @@ negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character",
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa) %>%
-  dplyr::filter(vendedor_id == vend_id)
+  filter (vendedor_empresa_id == empresa)
 
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+vendedor$vendedor_nome <- sapply(vendedor$vendedor_nome, func_nome)
 
 if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
@@ -160,18 +159,26 @@ ng_ij_vn_ij_np_fat$negocio_status = factor(ng_ij_vn_ij_np_fat$negocio_status, le
 if (nrow(ng_ij_vn_ij_np_fat) > 0){
   ng_ij_vn_ij_np_fat <- ng_ij_vn_ij_np_fat %>% rowwise() %>%
     mutate(total_fat_t = func_fmt_din(total_fat))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(ng_ij_vn_ij_np_fat$total_fat_t) <- "UTF-8"
 }
 
 
 ##############################################
-### Gráfico n0 - Número de clientes por vendedor
+### Gráfico n0 - Valor financeiro dos negócios cadastrados por vendedor no ano atual (separados por status atual do negócio)
 if (nrow(ng_ij_vn_ij_np_fat) > 0 && sum(ng_ij_vn_ij_np_fat$total_fat) > 0){
   n0 <- plot_ly(ng_ij_vn_ij_np_fat,
                 type = 'bar', orientation = 'h', x = ~total_fat , y = ~reorder(vendedor_nome, desc(vendedor_nome)),
                 color = ~negocio_status,
                 colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF", "#32CD32", "yellow", "orange", "#DE0D26"),
                 name = ~negocio_status,
-                showlegend = TRUE
+                showlegend = TRUE,
+                text = ~paste0("",
+                               '<br>' ,
+                               vendedor_nome,
+                               '<br>' ,
+                               total_fat_t),
+                hoverinfo = "text"
   )
   n0 <- n0 %>%
     layout(barmode = 'stack',
@@ -252,6 +259,8 @@ ng_ij_vn_ij_np_fech_fat <- ng_ij_hist_ij_ven_anat_ij_np_fec %>%
 if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
   ng_ij_vn_ij_np_fech_fat <- ng_ij_vn_ij_np_fech_fat %>% rowwise() %>%
     mutate(total_fat_t = func_fmt_din(total_fat))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(ng_ij_vn_ij_np_fech_fat$total_fat_t) <- "UTF-8"
 }
 
 ### Gráfico n3 - Faturamento de negócios fechados em anat
@@ -261,9 +270,15 @@ if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
                 color = ~negocio_status,
                 colors = c("#32CD32", "yellow", "orange", "#DE0D26"),
                 name = ~negocio_status,
-                showlegend = T
+                showlegend = T,
+                text = ~paste0("",
+                               '<br>' ,
+                               vendedor_nome,
+                               '<br>' ,
+                               total_fat_t),
+                hoverinfo = "text"
   )
-  
+
   n3 <- n3 %>%
     layout(barmode = 'stack',
            xaxis = list(title = ''),
@@ -337,7 +352,7 @@ if (nrow(ng_ij_hist_ij_ven_num) > 0){
   n6 <- plot_ly(ng_ij_hist_ij_ven_num, type = 'bar', orientation = 'h', x=~num_negocios_idades , y=~reorder(vendedor_nome, desc(vendedor_nome)),
                 color = ~idade_cat,
                 colors = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"))
-  
+
   n6 <- n6 %>%
     layout(barmode = 'stack',
            xaxis = list(title = ''),
@@ -467,3 +482,4 @@ if (teste == F){
   #variáveis
   rm()
 }
+###########################################################################################################

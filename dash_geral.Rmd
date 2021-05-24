@@ -188,6 +188,10 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
   ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%	rowwise() %>%	
     mutate(tot_fat_t = func_fmt_din(total_faturado))
   
+  
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(ng_ij_hist_ij_ven_funil_fat$tot_fat_t) <- "UTF-8"
+  
   ##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
   ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
     mutate(nome_cat_valor_fat = paste(negocio_status, "\n", tot_fat_t))
@@ -307,8 +311,9 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %
 if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){
   ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%	rowwise() %>%	
     mutate(total_fat_t = func_fmt_din(total_faturado))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(ng_ij_hist_ij_ven_funil_fat_fec_anat$total_fat_t) <- "UTF-8"
 }
-
 ### Gráfico n10 - Pizza fechados do ano
 ##############################################
 
@@ -370,6 +375,8 @@ ng_ij_hist_ij_ven_fec_mes_ant  <- ng_ij_hist_ij_ven_fec_mes_ant  %>%
 if (nrow(ng_ij_hist_ij_ven_fec_mes_ant) > 0) {
   ng_ij_hist_ij_ven_fec_mes_ant <- ng_ij_hist_ij_ven_fec_mes_ant %>%	rowwise() %>%	
     mutate(total_fat_t = func_fmt_din(total_faturado))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(ng_ij_hist_ij_ven_fec_mes_ant$total_fat_t) <- "UTF-8"
 }
 
 ### Gráfico n11 - Pizza fechados no último mês
@@ -545,11 +552,15 @@ if(anos_ant > 0) {
   fat_anat_1ant_2ant_mes$ym_sum_1ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_1ant)] <- 0
   fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%	
     dplyr::mutate(ym_sum_fat_1ant = func_fmt_din(ym_sum_1ant))
+    ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(fat_anat_1ant_2ant_mes$ym_sum_fat_1ant) <- "UTF-8"
 }
 if(anos_ant > 1) {
   fat_anat_1ant_2ant_mes$ym_sum_2ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_2ant)] <- 0
   fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%	
     dplyr::mutate(ym_sum_fat_2ant = func_fmt_din(ym_sum_2ant))
+    ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(fat_anat_1ant_2ant_mes$ym_sum_fat_2ant) <- "UTF-8"
 }
 
 #######################################################################
@@ -571,8 +582,9 @@ if(flag_fat == T && anos_ant == 0) {
 } else{
   fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%	
     dplyr::mutate(ym_sum_fat_anat = func_fmt_din(ym_sum))
+    ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(fat_anat_1ant_2ant_mes$ym_sum_fat_anat) <- "UTF-8"
 }
-
 
 ###Assim estarei mostrando anat, 1ant e 2ant
 ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)

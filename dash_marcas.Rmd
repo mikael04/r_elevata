@@ -245,6 +245,7 @@ chart_ng_top_ag <- ng_top_ag %>%
   mutate(perc = round(faturamento/faturamento_tot, 4)) %>%
   mutate(cat_cor = round(perc,1)*10)
 
+
 ## Criando paleta de cores com 10 cores intermediárias
 pal <- colorRampPalette(c("lightblue", "blue"))
 pal_cores <- pal(11)
@@ -252,6 +253,8 @@ pal_cores <- pal(11)
 ### Gráfico n4 - Valor financeiro de negócios em anat  (por categoria)
 #################################################
 if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(chart_ng_top_ag$fat_t) <- "UTF-8"
   ### Gráfico n4 - Valor financeiro de negócios em anat  (por categoria)
   n4 <- plot_ly(chart_ng_top_ag,
                 type = 'treemap',
@@ -326,6 +329,7 @@ chart_ng_top_ag_fat <- ng_top_ag_fat %>%
   mutate(perc = round(faturamento/faturamento_tot, 4)) %>%
   mutate(cat_cor = round(perc,1)*10)
 
+
 ## Criando paleta de cores com 10 cores intermediárias
 pal <- colorRampPalette(c("lightgreen", "green"))
 pal_cores <- pal(11)
@@ -333,6 +337,9 @@ pal_cores <- pal(11)
 
 ### Gráfico n5 - Máquinas faturadas em anat (por categoria)
 if (nrow(chart_ng_top_ag_fat) > 0 & sum(chart_ng_top_ag_fat$faturamento) > 0){
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(chart_ng_top_ag_fat$fat_t) <- "UTF-8"
+  
   n5 <- plot_ly(chart_ng_top_ag_fat,
                 type = 'treemap',
                 labels = ~categoria_nome,

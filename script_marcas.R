@@ -78,7 +78,7 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 16
+empresa = 1
 ###################################
 
 ###Começando script marcas
@@ -112,7 +112,6 @@ produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character",
 ##join de negocios e vendedores
 negocio_ij_vendedor <- inner_join(negocio, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
 
-########## Para o funil e para agrupar por faturamento
 #### Vou alterar o agrupamento de número de negócios para faturamento, portanto precisarei da tabela negocio_produto
 neg_ij_ven_ij_np <- inner_join(negocio_ij_vendedor, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
 
@@ -212,6 +211,7 @@ ng_top_ag <- inner_join(ng_top10_ag, top10_ij, by=c("produto_categoria_id" = "pr
 if (nrow(ng_top_ag) > 0){
   ng_top_ag <- ng_top_ag %>% rowwise() %>%
     mutate(fat_t = func_fmt_din(faturamento))
+  Encoding()
 }else{
 
 }
@@ -225,6 +225,7 @@ chart_ng_top_ag <- ng_top_ag %>%
   mutate(perc = round(faturamento/faturamento_tot, 4)) %>%
   mutate(cat_cor = round(perc,1)*10)
 
+
 ## Criando paleta de cores com 10 cores intermediárias
 pal <- colorRampPalette(c("lightblue", "blue"))
 pal_cores <- pal(11)
@@ -232,6 +233,8 @@ pal_cores <- pal(11)
 ### Gráfico n4 - Valor financeiro de negócios em anat  (por categoria)
 #################################################
 if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(chart_ng_top_ag$fat_t) <- "UTF-8"
   ### Gráfico n4 - Valor financeiro de negócios em anat  (por categoria)
   n4 <- plot_ly(chart_ng_top_ag,
                 type = 'treemap',
@@ -259,8 +262,6 @@ if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
 if(dash == F){
   n4
 }
-
-
 
 #################################################
 
@@ -308,6 +309,7 @@ chart_ng_top_ag_fat <- ng_top_ag_fat %>%
   mutate(perc = round(faturamento/faturamento_tot, 4)) %>%
   mutate(cat_cor = round(perc,1)*10)
 
+
 ## Criando paleta de cores com 10 cores intermediárias
 pal <- colorRampPalette(c("lightgreen", "green"))
 pal_cores <- pal(11)
@@ -315,6 +317,9 @@ pal_cores <- pal(11)
 
 ### Gráfico n5 - Máquinas faturadas em anat (por categoria)
 if (nrow(chart_ng_top_ag_fat) > 0 & sum(chart_ng_top_ag_fat$faturamento) > 0){
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(chart_ng_top_ag_fat$fat_t) <- "UTF-8"
+
   n5 <- plot_ly(chart_ng_top_ag_fat,
                 type = 'treemap',
                 labels = ~categoria_nome,
@@ -429,7 +434,9 @@ n_color <- nrow(cli_in_pm_cont_top_t_aux %>%
 
 #Usando nome da marca como factor
 cli_in_pm_cont_top_t_aux$marca_nome <- factor(cli_in_pm_cont_top_t_aux$marca_nome)
-
+## Teste de mapa csv
+# data.table::fwrite(cli_in_pm_cont_top_t_aux, "bd_leaflet.csv");
+# cli_in_pm_cont_top_t_aux <- data.table::fread("bd_leaflet.csv")
 ##Adicionando pequenas variações
 cli_in_pm_cont_top_t_aux$lat <- jitter(cli_in_pm_cont_top_t_aux$lat, factor = .1, amount = 0)
 cli_in_pm_cont_top_t_aux$long <- jitter(cli_in_pm_cont_top_t_aux$long, factor = .1, amount = 0)
@@ -477,62 +484,66 @@ cli_in_pm_cont_top_c_aux$marca_nome <- factor(cli_in_pm_cont_top_c_aux$marca_nom
 cli_in_pm_cont_top_c_aux$lat <- jitter(cli_in_pm_cont_top_c_aux$lat, factor = .1, amount = 0)
 cli_in_pm_cont_top_c_aux$long <- jitter(cli_in_pm_cont_top_c_aux$long, factor = .1, amount = 0)
 
-
-##Se precisar consultar ícones, tamanho do ícone, marcas e marcas_ids
-# marcas_ic_co <-read.csv("Icons/marcas_icon_txt.txt") %>%
-
-marcas_icon <- iconList(         ##Caso precise consultar, olhar o csv acima
-  '1' = makeIcon(iconUrl = "Icons/NH_r.png",
-                 iconWidth = 23, iconHeight = 24),
-  '3' = makeIcon(iconUrl = "Icons/CI_r.png",
-                 iconWidth = 28, iconHeight = 24),
-  '4' = makeIcon(iconUrl = "Icons/JD_r.png",
-                 iconWidth = 26, iconHeight = 24),
-  '5' = makeIcon(iconUrl = "Icons/MF_r.png",
-                 iconWidth = 34, iconHeight = 24),
-  '6' = makeIcon(iconUrl = "Icons/agrale_r.png",
-                 iconWidth = 34, iconHeight = 24),
-  '11' = makeIcon(iconUrl = "Icons/valtra_r.png",
-                  iconWidth =  26, iconHeight = 24),
-  '12' = makeIcon(iconUrl = "Icons/yanmar_r.png",
-                  iconWidth = 44, iconHeight = 24),
-  '13' = makeIcon(iconUrl = "Icons/jacto_r.png",
-                  iconWidth = 24, iconHeight = 24),
-  '120191031172113' = makeIcon(iconUrl = "Icons/ponsse_r.png",
-                               iconWidth = 24, iconHeight = 24),
-  '120130518080852' = makeIcon(iconUrl = "Icons/valmet_r.png",
-                               iconWidth = 26, iconHeight = 24),
-  '120120724031949' = makeIcon(iconUrl = "Icons/ideal_r.png",
-                               iconWidth = 19, iconHeight = 24),
-  '120130802084245' = makeIcon(iconUrl = "Icons/SLC_r.png",
-                               iconWidth = 26, iconHeight = 24),
-  '120130522055326' = makeIcon(iconUrl = "Icons/CBT_r.png",
-                               iconWidth = 28, iconHeight = 28),
-  '120191031162533' = makeIcon(iconUrl = "Icons/komatsu_r.png",
-                               iconWidth = 26, iconHeight = 24),
-  '120191031171837' = makeIcon(iconUrl = "Icons/JD_r.png",
-                               iconWidth = 26, iconHeight = 20),
-  '120191031171708' = makeIcon(iconUrl = "Icons/caterpillar_r.png",
-                               iconWidth = 38, iconHeight = 20),
-  '120191031171942' = makeIcon(iconUrl = "Icons/logmax_r.png",
-                               iconWidth = 29, iconHeight = 20),
-  '120191031172239' = makeIcon(iconUrl = "Icons/volvo_r.png",
-                               iconWidth = 24, iconHeight = 20),
-  '120191031171807' = makeIcon(iconUrl = "Icons/hyundai_r.png",
-                               iconWidth = 45, iconHeight = 20),
-  '201912131603430251' = makeIcon(iconUrl = "Icons/man_r.png",
-                                  iconWidth = 41, iconHeight = 24),
-  '120190311052038' = makeIcon(iconUrl = "Icons/vw_r.png",
-                               iconWidth = 32, iconHeight = 32)
-)
-
+## Deprecado
+# marcas_icon <- iconList(         ##Caso precise consultar, olhar o csv acima
+#   '1' = makeIcon(iconUrl = "Icons/NH_r.png",
+#                  iconWidth = 23, iconHeight = 24),
+#   '3' = makeIcon(iconUrl = "Icons/CI_r.png",
+#                  iconWidth = 28, iconHeight = 24),
+#   '4' = makeIcon(iconUrl = "Icons/JD_r.png",
+#                  iconWidth = 26, iconHeight = 24),
+#   '5' = makeIcon(iconUrl = "Icons/MF_r.png",
+#                  iconWidth = 34, iconHeight = 24),
+#   '6' = makeIcon(iconUrl = "Icons/agrale_r.png",
+#                  iconWidth = 34, iconHeight = 24),
+#   '11' = makeIcon(iconUrl = "Icons/valtra_r.png",
+#                   iconWidth =  26, iconHeight = 24),
+#   '12' = makeIcon(iconUrl = "Icons/yanmar_r.png",
+#                   iconWidth = 44, iconHeight = 24),
+#   '13' = makeIcon(iconUrl = "Icons/jacto_r.png",
+#                   iconWidth = 24, iconHeight = 24),
+#   '120191031172113' = makeIcon(iconUrl = "Icons/ponsse_r.png",
+#                                iconWidth = 24, iconHeight = 24),
+#   '120130518080852' = makeIcon(iconUrl = "Icons/valmet_r.png",
+#                                iconWidth = 26, iconHeight = 24),
+#   '120120724031949' = makeIcon(iconUrl = "Icons/ideal_r.png",
+#                                iconWidth = 19, iconHeight = 24),
+#   '120130802084245' = makeIcon(iconUrl = "Icons/SLC_r.png",
+#                                iconWidth = 26, iconHeight = 24),
+#   '120130522055326' = makeIcon(iconUrl = "Icons/CBT_r.png",
+#                                iconWidth = 28, iconHeight = 28),
+#   '120191031162533' = makeIcon(iconUrl = "Icons/komatsu_r.png",
+#                                iconWidth = 26, iconHeight = 24),
+#   '120191031171837' = makeIcon(iconUrl = "Icons/JD_r.png",
+#                                iconWidth = 26, iconHeight = 20),
+#   '120191031171708' = makeIcon(iconUrl = "Icons/caterpillar_r.png",
+#                                iconWidth = 38, iconHeight = 20),
+#   '120191031171942' = makeIcon(iconUrl = "Icons/logmax_r.png",
+#                                iconWidth = 29, iconHeight = 20),
+#   '120191031172239' = makeIcon(iconUrl = "Icons/volvo_r.png",
+#                                iconWidth = 24, iconHeight = 20),
+#   '120191031171807' = makeIcon(iconUrl = "Icons/hyundai_r.png",
+#                                iconWidth = 45, iconHeight = 20),
+#   '201912131603430251' = makeIcon(iconUrl = "Icons/man_r.png",
+#                                   iconWidth = 41, iconHeight = 24),
+#   '120190311052038' = makeIcon(iconUrl = "Icons/vw_r.png",
+#                                iconWidth = 32, iconHeight = 32),
+#   '120191031172146' = makeIcon(iconUrl = "Icons/tigercat_r.png",
+#                                iconWidth = 28, iconHeight = 36)
+# )
+## Lê a tabela de marcas
+marcas_icon_txt <- fread("Icons/marcas_icon_txt.txt")
+## Converte para uma lista (transforma em yaml e de yaml pra lista)
+marcas_icon_list <- func_conv_txt_to_yaml_icon(marcas_icon_txt)
+## Adicionando classe para o leaflet entender que é a classe dele de ícones
+class(marcas_icon_list) <- "leaflet_icon_set"
 ### Gráfico m1 de distribuição das marcas (top5) m1_t = tratores, m1_c = colheitadeiras
 ###################
 ##Tratores
 if (nrow(cli_in_pm_cont_top_t_aux) > 0){
   m1_t <- leaflet(cli_in_pm_cont_top_t_aux) %>%
     addTiles() %>%
-    addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon[produto_marca_id],
+    addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon_list[produto_marca_id],
                popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_t_aux$cliente_nome,
                               "<br>",
                               "Quantidade de máquinas ", cli_in_pm_cont_top_t_aux$marca_nome,
@@ -542,14 +553,20 @@ if (nrow(cli_in_pm_cont_top_t_aux) > 0){
                group = "Ícones")
 }else {
   ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
-  m1_t <- include_graphics("s_dados_m.png")
+  m1_t <- include_graphics(s_dados_m_path)
 }
-m1_t
+if(dash == F){
+  m1_t
+}
+
+## Teste de mapa csv
+# library(htmlwidgets)
+# saveWidget(m1_t, file="m1_t.html")
 
 if (nrow(cli_in_pm_cont_top_c_aux) > 0){
   m1_c<- leaflet(cli_in_pm_cont_top_c_aux) %>%
     addTiles() %>%
-    addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon[produto_marca_id],
+    addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon_list[produto_marca_id],
                popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_c_aux$cliente_nome,
                               "<br>",
                               "Quantidade de máquinas ", cli_in_pm_cont_top_c_aux$marca_nome,
@@ -559,14 +576,17 @@ if (nrow(cli_in_pm_cont_top_c_aux) > 0){
                group = "Ícones")
 }else {
   ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
-  m1_c <- include_graphics("s_dados_m.png")
+  m1_c <- include_graphics(s_dados_m_path)
+}
+if(dash == F){
+  m1_c
 }
 
 if(teste == F){
   #tabelas
   rm(top5_t, top5_c, aux_c, aux_t, n_color, cli_in_pm_cont_c, cli_in_pm_cont_t, cliente_c_loc,
      cli_in_pm_cont_top_c_aux, cli_in_pm_cont_top_t_aux,parque_maquina, produto, marca, marca_categoria,
-     marcas_icon, categoria);
+     marcas_icon_list, categoria);
   #variáveis
   rm();
 }
@@ -599,7 +619,7 @@ cli_in_pm_cont_top_t <- cli_in_pm_cont_top_t %>%
 cli_in_pm_cont_top_t$marca_nome <- reorder(cli_in_pm_cont_top_t$marca_nome, desc(cli_in_pm_cont_top_t$sum))
 
 ##Alterei para txt por causa do tamanho da coluna (número muito grande, era convertido para científico)
-marcas_ic_co <-read.csv("Icons/marcas_icon_txt.txt", colClasses = c(marca_id_i = "character")) %>%
+marcas_ic_co <-marcas_icon_txt %>%
   select (marca_id_i, cor)
 marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
 #cores_t
