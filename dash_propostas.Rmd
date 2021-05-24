@@ -218,12 +218,15 @@ prop_ij_neg_ij_propag_cont_anat <- prop_ij_neg_ij_vend_ij_propag_anat %>%
 
 ### Gráfico p1 - Número propostas, por tipo em anat (total)
 if(nrow(prop_ij_neg_ij_propag_cont_anat) > 0){
+  prop_ij_neg_ij_propag_cont_anat <- prop_ij_neg_ij_propag_cont_anat %>%
+    dplyr::mutate(sum_valor_v_t = func_fmt_din(sum_valor_v))
+  Encoding(prop_ij_neg_ij_propag_cont_anat$sum_valor_v_t) <- "UTF-8"
   p1 <- plot_ly(prop_ij_neg_ij_propag_cont_anat, type = 'bar', x = ~proposta_status , y = ~sum_valor_v,
                 color = ~proposta_status,
                 colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
                 text = ~paste0(proposta_status,
                                '<br>',
-                               'Valor financeiro: ', func_fmt_din(sum_valor_v),
+                               'Valor financeiro: ', sum_valor_v_t,
                                '<br>',
                                "Nº de propostas: ", cont_status_v),
                 hoverinfo = "text",
