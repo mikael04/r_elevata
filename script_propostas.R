@@ -396,7 +396,7 @@ fat_tot_categorias <- pr_top5_fat_med
 
 ##Adicionando a matriz pra poder exibir no gráfico ###########################################################################################################
 fat_tot_categorias <- fat_tot_categorias %>%
-  dplyr::mutate(med_emp = media_empresa) %>%
+  dplyr::mutate(med_emp = media_empresa) %>% rowwise() %>%
   mutate(med_emp_t = func_fmt_din(med_emp))
 ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
 Encoding(fat_tot_categorias$med_emp_t) <- "UTF-8"
@@ -433,7 +433,7 @@ if(nrow(fat_tot_categorias) > 0){
     add_trace(type = "scatter", mode = "markers+line", y = ~med_emp,
               name = 'Novos (média)',
               line = list(color = '#21618c'),
-              text = ~paste0('Ticket médio novos<br>' , func_fmt_din(med_emp)),
+              text = ~paste0('Ticket médio novos<br>' , med_emp_t),
               hoverinfo = "text",
               marker = list(color = 'red'))
   p3 <- p3  %>%
@@ -532,9 +532,10 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
   
   ##Adicionando a matriz pra poder exibir no gráfico ###########################################################################################################
   fat_tot_categorias_us <- fat_tot_categorias_us %>%
-    mutate(med_emp_us = media_empresa_us) %>%
-    rename(produto_categoria_id_us = produto_categoria_id, fat_us = fat, n_us = n, fat_med_us = fat_med)## Se windows, elevata, precisa recodificar para UTF-8 na conversão
-  Encoding(fat_tot_categorias_us$med_emp_us) <- "UTF-8"
+    dplyr::mutate(med_emp_us = media_empresa_us) %>%
+    dplyr::mutate(med_emp_us_t = func_fmt_din(media_empresa_us)) %>%
+    dplyr::rename(produto_categoria_id_us = produto_categoria_id, fat_us = fat, n_us = n, fat_med_us = fat_med)## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(fat_tot_categorias_us$med_emp_us_t) <- "UTF-8"
   # rename(fat_us = fat) %>%
   # rename(fat_med_us = fat_med) %>%
   # rename(n_us = n)
@@ -542,328 +543,328 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
   ##Adicionando coluna com os valores já em texto para plot
   if(nrow(fat_tot_categorias_us) > 0){
     fat_tot_categorias_us <- fat_tot_categorias_us %>% rowwise() %>%
-      mutate(fat_med_t_us = func_fmt_din(fat_med_us))
+      mutate(fat_med_t_us_t = func_fmt_din(fat_med_us))
     
     ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
-    Encoding(fat_tot_categorias_us$fat_med_t) <- "UTF-8"
+    Encoding(fat_tot_categorias_us$fat_med_t_us_t) <- "UTF-8"
+  }
+    
+    fat_tot_categorias_n_us <- full_join(fat_tot_categorias, fat_tot_categorias_us, by=("categoria_nome")) %>%
+      select(-produto_categoria_id_us)
+    ### Gráfico p4 - Ticket médio de novos e usados (se for apenas novos, vai usar p3)
+    if(nrow(fat_tot_categorias_us) > 0){
+      ax <- list(
+        autotick = TRUE,
+        title = "",
+        showticklabels = TRUE)
+      p4 <- plot_ly(fat_tot_categorias_n_us, x = ~categoria_nome)
+      p4 <- p4 %>%
+        add_trace(type = "bar", y = ~fat_med,
+                  name = 'Categorias novos',
+                  marker = list(color = 'lightblue'),
+                  text = ~paste0("Categoria novos",
+                                 '<br>' ,
+                                 categoria_nome,
+                                 '<br>' ,
+                                 fat_med_t),
+                  hoverinfo = "text")
+      
+      p4 <- p4 %>%
+        add_trace(type = "bar", y = ~fat_med_us,
+                  name = 'Categorias usados',
+                  marker = list(color = '#DAA520'),
+                  text = ~paste0("Categoria usados",
+                                 '<br>' ,
+                                 categoria_nome,
+                                 '<br>' ,
+                                 fat_med_t_us),
+                  hoverinfo = "text")
+      
+      
+      p4 <- p4 %>%
+        add_trace(type = "scatter", mode = "markers+line", y = ~med_emp,
+                  name = 'Novos (média)',
+                  line = list(color = '#21618c'),
+                  text = ~paste0('Ticket médio novos<br>' , med_emp_t),
+                  hoverinfo = "text",
+                  marker = list(color = 'red'))
+      
+      p4 <- p4 %>%
+        add_trace(type = "scatter", mode = "markers+line", y = ~med_emp_us,
+                  name = 'Usados (média)',
+                  line = list(color = '#6e2c00'),
+                  text = ~paste0('Ticket médio usados<br>' , med_emp_us),
+                  hoverinfo = "text",
+                  marker = list(color = 'red'))
+      
+      p4 <- p4 %>%
+        layout(
+          autosize = T,
+          xaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = ''),
+          #range nos dois eixos iguais pra ficar na mesma proporção
+          yaxis = list(title = '', showgrid = TRUE, zeroline = T),
+          ##aqui eu ajusto onde quero que apareça a legenda
+          legend = list(orientation = "h", x = 0.5,
+                        xanchor = "center",
+                        traceorder = 'normal'))
+    }else {
+      ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
+      #p4 <- s_dados
+      p4 <- include_graphics(s_dados_path)
+    }
+  } else{
+    p4 <- NULL
+  }
+  if(dash == F){
+    p4
   }
   
-  fat_tot_categorias_n_us <- full_join(fat_tot_categorias, fat_tot_categorias_us, by=("categoria_nome")) %>%
-    select(-produto_categoria_id_us)
-  ### Gráfico p4 - Ticket médio de novos e usados (se for apenas novos, vai usar p3)
-  if(nrow(fat_tot_categorias_us) > 0){
+  if (dash == F){
+    subplot(p3, p4, shareX = T, shareY = T)
+  }
+  
+  if(teste == F){
+    #tabelas
+    rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_n_ij_pp_empresa_us, pr_top5_fat, pr_top5_fat_aux,
+       pr_top5_fat_med, proposta_produto, top5_fat, top5_fat_ij_cat, p_ij_n_ij_pp_ij_prod,
+       p_ij_n_ij_v_ij_pp, p_ij_n_ij_v_ij_pp_n, negocio_produto, negocio_aux, fat_tot_categorias_us, p_ij_n_ij_pp_ij_prod_us,
+       pr_top5_fat_med_us, pr_top5_fat_us)
+    #variáveis
+    rm(fat_out, media_empresa, n_out, total_empresa)
+  }
+  
+  ##################################################################
+  ### Faturamento de propostas em anat por status
+  
+  
+  ##Junção pra termos valor da proposta (preciso do negócio pra filtrar empresa e vendedores se preciso)
+  p_ij_n_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_pagamento, by = c("proposta_id" = "pp_proposta_id")) %>%
+    dplyr::arrange(pp_valor)
+  ##Aqui tenho a soma de faturamento da empresa dividido em categorias
+  p_ij_n_ij_pp_sum <- p_ij_n_ij_pp %>%
+    select (proposta_status, pp_valor) %>%
+    group_by(proposta_status) %>%
+    mutate (valor_proposta = sum(pp_valor)) %>%
+    distinct(proposta_status, .keep_all = TRUE) %>%
+    select (-pp_valor) %>%
+    ungroup ()
+  
+  ## Aqui agrupo as categorias
+  p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum %>%
+    select (proposta_status, valor_proposta) %>%
+    group_by(proposta_status) %>%
+    mutate (valor_status = sum(valor_proposta)) %>%
+    distinct(proposta_status, .keep_all = TRUE) %>%
+    dplyr::arrange(proposta_status) %>%
+    ungroup ()
+  
+  ##Usar pra renomear os status das propostas
+  status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
+  ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
+  p_ij_n_ij_pp_sum_cat$proposta_status <- with(p_ij_n_ij_pp_sum_cat, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
+                                                                         labels = status))
+  
+  ###Gráfico p5 - Faturamento de propostas por status (não usado)
+  if(nrow(p_ij_n_ij_pp_sum_cat) > 0){
+    p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum_cat %>% rowwise() %>%
+      dplyr::mutate(valor_status_t = func_fmt_din(valor_status))
+    ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+    Encoding(p_ij_n_ij_pp_sum_cat$valor_status_t) <- "UTF-8"
     ax <- list(
       autotick = TRUE,
       title = "",
       showticklabels = TRUE)
-    p4 <- plot_ly(fat_tot_categorias_n_us, x = ~categoria_nome)
-    p4 <- p4 %>%
-      add_trace(type = "bar", y = ~fat_med,
-                name = 'Categorias novos',
-                marker = list(color = 'lightblue'),
-                text = ~paste0("Categoria novos",
-                               '<br>' ,
-                               categoria_nome,
-                               '<br>' ,
-                               fat_med_t),
-                hoverinfo = "text")
+    p5 <- plot_ly(p_ij_n_ij_pp_sum_cat, x = ~proposta_status, y = ~valor_status, type = 'bar',
+                  name = 'Faturamento por status',
+                  marker = list(color = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32")),
+                  text = ~paste(proposta_status,'<br>' , valor_status_t),
+                  hoverinfo = "text")
     
-    p4 <- p4 %>%
-      add_trace(type = "bar", y = ~fat_med_us,
-                name = 'Categorias usados',
-                marker = list(color = '#DAA520'),
-                text = ~paste0("Categoria usados",
-                               '<br>' ,
-                               categoria_nome,
-                               '<br>' ,
-                               fat_med_t_us),
-                hoverinfo = "text")
-    
-    
-    p4 <- p4 %>%
-      add_trace(type = "scatter", mode = "markers+line", y = ~med_emp,
-                name = 'Novos (média)',
-                line = list(color = '#21618c'),
-                text = ~paste0('Ticket médio novos<br>' , func_fmt_din(med_emp)),
-                hoverinfo = "text",
-                marker = list(color = 'red'))
-    
-    p4 <- p4 %>%
-      add_trace(type = "scatter", mode = "markers+line", y = ~med_emp_us,
-                name = 'Usados (média)',
-                line = list(color = '#6e2c00'),
-                text = ~paste0('Ticket médio usados<br>' , func_fmt_din(med_emp_us)),
-                hoverinfo = "text",
-                marker = list(color = 'red'))
-    
-    p4 <- p4 %>%
-      layout(
-        autosize = T,
-        xaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = ''),
-        #range nos dois eixos iguais pra ficar na mesma proporção
-        yaxis = list(title = '', showgrid = TRUE, zeroline = T),
-        ##aqui eu ajusto onde quero que apareça a legenda
-        legend = list(orientation = "h", x = 0.5,
-                      xanchor = "center",
-                      traceorder = 'normal'))
+    p5 <- p5 %>%
+      layout(barmode = 'identity', xaxis = ax, yaxis = ax)
   }else {
-    ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-    #p4 <- s_dados
-    p4 <- include_graphics(s_dados_path)
+    #p5 <- s_dados
+    p5 <- include_graphics(s_dados_path)
   }
-} else{
-  p4 <- NULL
-}
-if(dash == F){
-  p4
-}
-
-if (dash == F){
-  subplot(p3, p4, shareX = T, shareY = T)
-}
-
-if(teste == F){
-  #tabelas
-  rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_n_ij_pp_empresa_us, pr_top5_fat, pr_top5_fat_aux,
-     pr_top5_fat_med, proposta_produto, top5_fat, top5_fat_ij_cat, p_ij_n_ij_pp_ij_prod,
-     p_ij_n_ij_v_ij_pp, p_ij_n_ij_v_ij_pp_n, negocio_produto, negocio_aux, fat_tot_categorias_us, p_ij_n_ij_pp_ij_prod_us,
-     pr_top5_fat_med_us, pr_top5_fat_us)
-  #variáveis
-  rm(fat_out, media_empresa, n_out, total_empresa)
-}
-
-##################################################################
-### Faturamento de propostas em anat por status
-
-
-##Junção pra termos valor da proposta (preciso do negócio pra filtrar empresa e vendedores se preciso)
-p_ij_n_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_pagamento, by = c("proposta_id" = "pp_proposta_id")) %>%
-  dplyr::arrange(pp_valor)
-##Aqui tenho a soma de faturamento da empresa dividido em categorias
-p_ij_n_ij_pp_sum <- p_ij_n_ij_pp %>%
-  select (proposta_status, pp_valor) %>%
-  group_by(proposta_status) %>%
-  mutate (valor_proposta = sum(pp_valor)) %>%
-  distinct(proposta_status, .keep_all = TRUE) %>%
-  select (-pp_valor) %>%
-  ungroup ()
-
-## Aqui agrupo as categorias
-p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum %>%
-  select (proposta_status, valor_proposta) %>%
-  group_by(proposta_status) %>%
-  mutate (valor_status = sum(valor_proposta)) %>%
-  distinct(proposta_status, .keep_all = TRUE) %>%
-  dplyr::arrange(proposta_status) %>%
-  ungroup ()
-
-##Usar pra renomear os status das propostas
-status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
-##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
-p_ij_n_ij_pp_sum_cat$proposta_status <- with(p_ij_n_ij_pp_sum_cat, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
-                                                                       labels = status))
-
-###Gráfico p5 - Faturamento de propostas por status (não usado)
-if(nrow(p_ij_n_ij_pp_sum_cat) > 0){
-  p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum_cat %>% rowwise() %>%
-    dplyr::mutate(valor_status_t = func_fmt_din(valor_status))
-  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
-  Encoding(p_ij_n_ij_pp_sum_cat$valor_status_t) <- "UTF-8"
-  ax <- list(
-    autotick = TRUE,
-    title = "",
-    showticklabels = TRUE)
-  p5 <- plot_ly(p_ij_n_ij_pp_sum_cat, x = ~proposta_status, y = ~valor_status, type = 'bar',
-                name = 'Faturamento por status',
-                marker = list(color = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32")),
-                text = ~paste(proposta_status,'<br>' , valor_status_t),
-                hoverinfo = "text")
   
-  p5 <- p5 %>%
-    layout(barmode = 'identity', xaxis = ax, yaxis = ax)
-}else {
-  #p5 <- s_dados
-  p5 <- include_graphics(s_dados_path)
-}
-
-
-if(dash == F){
-  p5
-}
-if(teste == F){
-  #tabelas
-  rm(ax, p_ij_n_ij_pp, p_ij_n_ij_pp_sum, p_ij_n_ij_pp_sum_cat, prop_ij_neg_ij_vend);
-  #variáveis
-  rm(status);
-}
-##############################################
-##Começando a distribuição de propostas por tipo de pagamento
-##Vou selecionar só o que for usar para contar tipos de pagamentos
-
-##Já faço o filtro da empresa aqui na hora de puxar do banco
-proposta_modo_forma <- fread("Tabelas/proposta_modo_forma.csv") %>%
-  select (pmf_id, pmf_nome, pmf_ativo, PMF_EMPRESA_ID) %>%
-  filter (pmf_ativo == 1 & PMF_EMPRESA_ID == empresa) %>%
-  select (-pmf_ativo, -PMF_EMPRESA_ID)
-
-
-#Arrumando encoding
-Encoding(proposta_modo_forma$pmf_nome) <- 'latin1'
-
-##Criada sem nome e pmf_empresa (não consegui fazer a junção duas vezes, provavelmente por já ter o tempo)
-#proposta_modo_forma_aux <-proposta_modo_forma[,1:2]
-
-p_ij_ppa <- inner_join(proposta, proposta_pagamento, by=c('proposta_id' = 'pp_proposta_id')) %>%
-  select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id, pp_valor) %>%
-  filter (pp_modo_id != 0, pp_forma_id != 0) #, proposta_data_cadastro > 'ano_atual) ##teste de ano atual
-
-if(teste == T){
-  #####################
-  ###Apenas para print
-  # p_ij_ppa_ij_pmf <- inner_join (p_ij_ppa, proposta_modo_forma, by = c("pp_modo_id" = "pmf_id")) %>%
-  #   select(proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_modo_id, pmf_nome) %>%
-  #   rename(Modo_pagamento = pmf_nome) %>%
-  #   dplyr::arrange(pp_modo_id)
-  # write_excel_csv(p_ij_ppa_ij_pmf, "propostas_c_modo_pagamento.csv", delim = ";")
-  #####################
-}
-if(teste == T){
-  #####################
-  ###Apenas para print
-  # p_ij_ppa_ij_pmf <- inner_join (p_ij_ppa, proposta_modo_forma, by = c("pp_forma_id" = "pmf_id")) %>%
-  #   select(proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_forma_id, pmf_nome) %>%
-  #   rename(Forma_pagamento = pmf_nome) %>%
-  #   dplyr::arrange(pp_forma_id)
-  # write_excel_csv(p_ij_ppa_ij_pmf, "propostas_c_forma_pagamento.csv", delim = ";")
-  #####################
-}
-##conta antes de substituir (provavelmente mais rápido lidar com int do que string) (1 contando modo) (conta todos, depois filtro através de proposta_modo_forma)
-p_ij_ppa_sum_modo <- p_ij_ppa %>%
-  select (pp_id, pp_modo_id, pp_valor) %>%
-  group_by(pp_modo_id) %>%
-  mutate(sum_modo_aux = sum(pp_valor)) %>%
-  mutate(count_modo_aux = n()) %>%
-  ungroup() %>%
-  distinct(pp_modo_id, .keep_all = T)
-
-p_ij_ppa_sum_modo_ij_pmf <- inner_join (p_ij_ppa_sum_modo, proposta_modo_forma, by = c("pp_modo_id" = "pmf_id")) %>%
-  select(pp_modo_id, pmf_nome, sum_modo_aux, count_modo_aux) %>%
-  rename(Modo = pmf_nome)
-
-##Vou calcular 5% e agrupar esses que forem menores que 5% em outra categoria (outros)
-n_total_modo <- sum(p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux)
-aux_3perc <- n_total_modo*0.05
-if (empresa == 16){
-  p_ij_ppa_sum_modo_ij_pmf$pp_modo_id[p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux < aux_3perc] <- 26
-  p_ij_ppa_sum_modo_ij_pmf$Modo[p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux < aux_3perc] <- "OUTRAS"
-}else if (empresa == 78){
-  p_ij_ppa_sum_modo_ij_pmf$pp_modo_id[p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux < aux_3perc] <- 52
-  p_ij_ppa_sum_modo_ij_pmf$Modo[p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux < aux_3perc] <- "OUTRA"
-}
-
-##Aqui eu estou refazendo a contagem pq já havia uma categoria "Outras", só estou adicionando os demais (com taxa <3%) nela
-p_ij_ppa_sum_modo_ij_pmf <- p_ij_ppa_sum_modo_ij_pmf %>%
-  select (pp_modo_id, Modo, sum_modo_aux, count_modo_aux) %>%
-  group_by(pp_modo_id) %>%
-  mutate(sum_modo = sum(sum_modo_aux)) %>%
-  mutate(count_modo = sum(count_modo_aux)) %>%
-  ungroup() %>%
-  distinct(pp_modo_id, .keep_all = T)
-
-
-#conta antes de substituir (provavelmente mais rápido lidar com int do que string) (2 contando forma) (conta todos, depois filtro através de proposta_modo_forma)
-p_ij_ppa_sum_forma <- p_ij_ppa %>%
-  select (pp_id, pp_forma_id, pp_valor) %>%
-  group_by(pp_forma_id) %>%
-  mutate(sum_forma_aux = sum(pp_valor)) %>%
-  mutate(count_forma_aux = n()) %>%
-  ungroup() %>%
-  distinct(pp_forma_id, .keep_all = T)
-
-p_ij_ppa_sum_forma_ij_pmf <- inner_join (p_ij_ppa_sum_forma, proposta_modo_forma, by = c("pp_forma_id" = "pmf_id")) %>%
-  select(pp_forma_id, pmf_nome, sum_forma_aux, count_forma_aux) %>%
-  rename(Forma = pmf_nome)
-
-##Vou calcular 5% e agrupar esses que forem menores que 5% em outra categoria (outros)
-n_total_forma <- sum(p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux)
-aux_3perc <- n_total_forma*0.05
-if (empresa == 16){##Super não tem forma Outras (usando -1 como valor)
-  p_ij_ppa_sum_forma_ij_pmf$pp_forma_id[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- -1
-  p_ij_ppa_sum_forma_ij_pmf$Forma[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- "OUTRAS"
-}else if (empresa == 78){
-  p_ij_ppa_sum_forma_ij_pmf$pp_forma_id[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- 50
-  p_ij_ppa_sum_forma_ij_pmf$Forma[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- "OUTROS"
-}
-
-##Aqui eu estou refazendo a contagem pq já havia uma categoria "Outras", só estou adicionando os demais (com taxa <3%) nela
-p_ij_ppa_sum_forma_ij_pmf <- p_ij_ppa_sum_forma_ij_pmf %>%
-  select (pp_forma_id, Forma, sum_forma_aux, count_forma_aux) %>%
-  group_by(pp_forma_id) %>%
-  mutate(sum_forma = sum(sum_forma_aux)) %>%
-  mutate(count_forma = sum(count_forma_aux)) %>%
-  ungroup() %>%
-  distinct(pp_forma_id, .keep_all = T)
-
-### Gráfico p6 - Modos de pagamento
-if(nrow(p_ij_ppa_sum_modo_ij_pmf) > 0){
-  p_ij_ppa_sum_modo_ij_pmf <- p_ij_ppa_sum_modo_ij_pmf %>% rowwise() %>%
-    dplyr::mutate(sum_modo_t = func_fmt_din(sum_modo))
-  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
-  Encoding(p_ij_ppa_sum_modo_ij_pmf$sum_modo_t) <- "UTF-8"
-  p6 <- plot_ly()
-  p6 <- p6 %>%
-    add_pie(data = p_ij_ppa_sum_modo_ij_pmf, values = ~sum_modo, labels = ~Modo,
-            hovertemplate = ~paste0("%{label}: ",
-                                    "<br>",
-                                    "Valor financeiro: ", sum_modo_t,
-                                    "<br>",
-                                    "Nº de propostas: ", count_modo,
-                                    "<br>"),
-            name = '') %>%
-    layout(legend = list(orientation = 'h'))
-}else {
-  #p6 <- s_dados
-  p6 <- include_graphics(s_dados_path)
-}
-if(dash == F){
-  p6
-}
-
-### Gráfico p7 - Formas de pagamento
-if(nrow(p_ij_ppa_sum_forma_ij_pmf) > 0){
-  p_ij_ppa_sum_forma_ij_pmf <- p_ij_ppa_sum_forma_ij_pmf %>% rowwise() %>%
-    dplyr::mutate(sum_forma_t = func_fmt_din(sum_forma))
-  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
-  Encoding(p_ij_ppa_sum_forma_ij_pmf$sum_forma_t) <- "UTF-8"
-  p7 <- plot_ly()
-  p7 <- p7 %>%
-    add_pie(data = p_ij_ppa_sum_forma_ij_pmf, values = ~sum_forma, labels = ~Forma,
-            hovertemplate = ~paste0("%{label}: ",
-                                    "<br>",
-                                    "Valor financeiro: ", sum_forma_t,
-                                    "<br>",
-                                    "Nº de propostas: ", count_forma,
-                                    "<br>"),
-            name = '') %>%
-    layout(legend = list(orientation = 'h'))
-}else {
-  #p7 <- s_dados
-  p7 <- include_graphics(s_dados_path)
-}
-
-if(dash == F){
-  p7
-}
-
-if(teste == F){
-  #tabelas
-  # rm(p_ij_ppa, proposta, proposta_modo_forma, p_ij_ppa_count_modo, p_ij_ppa_cont_modo_ij_pmf,
-  #    p_ij_ppa_count_forma, p_ij_ppa_cont_forma_ij_pmf, proposta_pagamento, media_empresa_us,
-  #    n_empresa, n_empresa_us, total_empresa_us);
-  #variáveis
-  # if(empresa == 16){rm(aux_3perc, n_outros_forma, n_total_modo)}
-}
-if (teste == 0) {
-  #rm(list=ls())
-}
-######################################################################################
+  
+  if(dash == F){
+    p5
+  }
+  if(teste == F){
+    #tabelas
+    rm(ax, p_ij_n_ij_pp, p_ij_n_ij_pp_sum, p_ij_n_ij_pp_sum_cat, prop_ij_neg_ij_vend);
+    #variáveis
+    rm(status);
+  }
+  ##############################################
+  ##Começando a distribuição de propostas por tipo de pagamento
+  ##Vou selecionar só o que for usar para contar tipos de pagamentos
+  
+  ##Já faço o filtro da empresa aqui na hora de puxar do banco
+  proposta_modo_forma <- fread("Tabelas/proposta_modo_forma.csv") %>%
+    select (pmf_id, pmf_nome, pmf_ativo, PMF_EMPRESA_ID) %>%
+    filter (pmf_ativo == 1 & PMF_EMPRESA_ID == empresa) %>%
+    select (-pmf_ativo, -PMF_EMPRESA_ID)
+  
+  
+  #Arrumando encoding
+  Encoding(proposta_modo_forma$pmf_nome) <- 'latin1'
+  
+  ##Criada sem nome e pmf_empresa (não consegui fazer a junção duas vezes, provavelmente por já ter o tempo)
+  #proposta_modo_forma_aux <-proposta_modo_forma[,1:2]
+  
+  p_ij_ppa <- inner_join(proposta, proposta_pagamento, by=c('proposta_id' = 'pp_proposta_id')) %>%
+    select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id, pp_valor) %>%
+    filter (pp_modo_id != 0, pp_forma_id != 0) #, proposta_data_cadastro > 'ano_atual) ##teste de ano atual
+  
+  if(teste == T){
+    #####################
+    ###Apenas para print
+    # p_ij_ppa_ij_pmf <- inner_join (p_ij_ppa, proposta_modo_forma, by = c("pp_modo_id" = "pmf_id")) %>%
+    #   select(proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_modo_id, pmf_nome) %>%
+    #   rename(Modo_pagamento = pmf_nome) %>%
+    #   dplyr::arrange(pp_modo_id)
+    # write_excel_csv(p_ij_ppa_ij_pmf, "propostas_c_modo_pagamento.csv", delim = ";")
+    #####################
+  }
+  if(teste == T){
+    #####################
+    ###Apenas para print
+    # p_ij_ppa_ij_pmf <- inner_join (p_ij_ppa, proposta_modo_forma, by = c("pp_forma_id" = "pmf_id")) %>%
+    #   select(proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_forma_id, pmf_nome) %>%
+    #   rename(Forma_pagamento = pmf_nome) %>%
+    #   dplyr::arrange(pp_forma_id)
+    # write_excel_csv(p_ij_ppa_ij_pmf, "propostas_c_forma_pagamento.csv", delim = ";")
+    #####################
+  }
+  ##conta antes de substituir (provavelmente mais rápido lidar com int do que string) (1 contando modo) (conta todos, depois filtro através de proposta_modo_forma)
+  p_ij_ppa_sum_modo <- p_ij_ppa %>%
+    select (pp_id, pp_modo_id, pp_valor) %>%
+    group_by(pp_modo_id) %>%
+    mutate(sum_modo_aux = sum(pp_valor)) %>%
+    mutate(count_modo_aux = n()) %>%
+    ungroup() %>%
+    distinct(pp_modo_id, .keep_all = T)
+  
+  p_ij_ppa_sum_modo_ij_pmf <- inner_join (p_ij_ppa_sum_modo, proposta_modo_forma, by = c("pp_modo_id" = "pmf_id")) %>%
+    select(pp_modo_id, pmf_nome, sum_modo_aux, count_modo_aux) %>%
+    rename(Modo = pmf_nome)
+  
+  ##Vou calcular 5% e agrupar esses que forem menores que 5% em outra categoria (outros)
+  n_total_modo <- sum(p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux)
+  aux_3perc <- n_total_modo*0.05
+  if (empresa == 16){
+    p_ij_ppa_sum_modo_ij_pmf$pp_modo_id[p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux < aux_3perc] <- 26
+    p_ij_ppa_sum_modo_ij_pmf$Modo[p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux < aux_3perc] <- "OUTRAS"
+  }else if (empresa == 78){
+    p_ij_ppa_sum_modo_ij_pmf$pp_modo_id[p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux < aux_3perc] <- 52
+    p_ij_ppa_sum_modo_ij_pmf$Modo[p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux < aux_3perc] <- "OUTRA"
+  }
+  
+  ##Aqui eu estou refazendo a contagem pq já havia uma categoria "Outras", só estou adicionando os demais (com taxa <3%) nela
+  p_ij_ppa_sum_modo_ij_pmf <- p_ij_ppa_sum_modo_ij_pmf %>%
+    select (pp_modo_id, Modo, sum_modo_aux, count_modo_aux) %>%
+    group_by(pp_modo_id) %>%
+    mutate(sum_modo = sum(sum_modo_aux)) %>%
+    mutate(count_modo = sum(count_modo_aux)) %>%
+    ungroup() %>%
+    distinct(pp_modo_id, .keep_all = T)
+  
+  
+  #conta antes de substituir (provavelmente mais rápido lidar com int do que string) (2 contando forma) (conta todos, depois filtro através de proposta_modo_forma)
+  p_ij_ppa_sum_forma <- p_ij_ppa %>%
+    select (pp_id, pp_forma_id, pp_valor) %>%
+    group_by(pp_forma_id) %>%
+    mutate(sum_forma_aux = sum(pp_valor)) %>%
+    mutate(count_forma_aux = n()) %>%
+    ungroup() %>%
+    distinct(pp_forma_id, .keep_all = T)
+  
+  p_ij_ppa_sum_forma_ij_pmf <- inner_join (p_ij_ppa_sum_forma, proposta_modo_forma, by = c("pp_forma_id" = "pmf_id")) %>%
+    select(pp_forma_id, pmf_nome, sum_forma_aux, count_forma_aux) %>%
+    rename(Forma = pmf_nome)
+  
+  ##Vou calcular 5% e agrupar esses que forem menores que 5% em outra categoria (outros)
+  n_total_forma <- sum(p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux)
+  aux_3perc <- n_total_forma*0.05
+  if (empresa == 16){##Super não tem forma Outras (usando -1 como valor)
+    p_ij_ppa_sum_forma_ij_pmf$pp_forma_id[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- -1
+    p_ij_ppa_sum_forma_ij_pmf$Forma[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- "OUTRAS"
+  }else if (empresa == 78){
+    p_ij_ppa_sum_forma_ij_pmf$pp_forma_id[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- 50
+    p_ij_ppa_sum_forma_ij_pmf$Forma[p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux < aux_3perc] <- "OUTROS"
+  }
+  
+  ##Aqui eu estou refazendo a contagem pq já havia uma categoria "Outras", só estou adicionando os demais (com taxa <3%) nela
+  p_ij_ppa_sum_forma_ij_pmf <- p_ij_ppa_sum_forma_ij_pmf %>%
+    select (pp_forma_id, Forma, sum_forma_aux, count_forma_aux) %>%
+    group_by(pp_forma_id) %>%
+    mutate(sum_forma = sum(sum_forma_aux)) %>%
+    mutate(count_forma = sum(count_forma_aux)) %>%
+    ungroup() %>%
+    distinct(pp_forma_id, .keep_all = T)
+  
+  ### Gráfico p6 - Modos de pagamento
+  if(nrow(p_ij_ppa_sum_modo_ij_pmf) > 0){
+    p_ij_ppa_sum_modo_ij_pmf <- p_ij_ppa_sum_modo_ij_pmf %>% rowwise() %>%
+      dplyr::mutate(sum_modo_t = func_fmt_din(sum_modo))
+    ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+    Encoding(p_ij_ppa_sum_modo_ij_pmf$sum_modo_t) <- "UTF-8"
+    p6 <- plot_ly()
+    p6 <- p6 %>%
+      add_pie(data = p_ij_ppa_sum_modo_ij_pmf, values = ~sum_modo, labels = ~Modo,
+              hovertemplate = ~paste0("%{label}: ",
+                                      "<br>",
+                                      "Valor financeiro: ", sum_modo_t,
+                                      "<br>",
+                                      "Nº de propostas: ", count_modo,
+                                      "<br>"),
+              name = '') %>%
+      layout(legend = list(orientation = 'h'))
+  }else {
+    #p6 <- s_dados
+    p6 <- include_graphics(s_dados_path)
+  }
+  if(dash == F){
+    p6
+  }
+  
+  ### Gráfico p7 - Formas de pagamento
+  if(nrow(p_ij_ppa_sum_forma_ij_pmf) > 0){
+    p_ij_ppa_sum_forma_ij_pmf <- p_ij_ppa_sum_forma_ij_pmf %>% rowwise() %>%
+      dplyr::mutate(sum_forma_t = func_fmt_din(sum_forma))
+    ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+    Encoding(p_ij_ppa_sum_forma_ij_pmf$sum_forma_t) <- "UTF-8"
+    p7 <- plot_ly()
+    p7 <- p7 %>%
+      add_pie(data = p_ij_ppa_sum_forma_ij_pmf, values = ~sum_forma, labels = ~Forma,
+              hovertemplate = ~paste0("%{label}: ",
+                                      "<br>",
+                                      "Valor financeiro: ", sum_forma_t,
+                                      "<br>",
+                                      "Nº de propostas: ", count_forma,
+                                      "<br>"),
+              name = '') %>%
+      layout(legend = list(orientation = 'h'))
+  }else {
+    #p7 <- s_dados
+    p7 <- include_graphics(s_dados_path)
+  }
+  
+  if(dash == F){
+    p7
+  }
+  
+  if(teste == F){
+    #tabelas
+    # rm(p_ij_ppa, proposta, proposta_modo_forma, p_ij_ppa_count_modo, p_ij_ppa_cont_modo_ij_pmf,
+    #    p_ij_ppa_count_forma, p_ij_ppa_cont_forma_ij_pmf, proposta_pagamento, media_empresa_us,
+    #    n_empresa, n_empresa_us, total_empresa_us);
+    #variáveis
+    # if(empresa == 16){rm(aux_3perc, n_outros_forma, n_total_modo)}
+  }
+  if (teste == 0) {
+    #rm(list=ls())
+  }
+  ######################################################################################

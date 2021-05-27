@@ -559,9 +559,10 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
   
   ##Adicionando a matriz pra poder exibir no gráfico ###########################################################################################################
   fat_tot_categorias_us <- fat_tot_categorias_us %>%
-    mutate(med_emp_us = media_empresa_us) %>%
-    rename(produto_categoria_id_us = produto_categoria_id, fat_us = fat, n_us = n, fat_med_us = fat_med)## Se windows, elevata, precisa recodificar para UTF-8 na conversão
-    Encoding(fat_tot_categorias_us$med_emp_us) <- "UTF-8"
+    dplyr::mutate(med_emp_us = media_empresa_us) %>%
+    dplyr::mutate(med_emp_us_t = func_fmt_din(media_empresa_us)) %>%
+    dplyr::rename(produto_categoria_id_us = produto_categoria_id, fat_us = fat, n_us = n, fat_med_us = fat_med)## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+    Encoding(fat_tot_categorias_us$med_emp_us_t) <- "UTF-8"
   # rename(fat_us = fat) %>%
   # rename(fat_med_us = fat_med) %>%
   # rename(n_us = n)
@@ -569,11 +570,10 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
   ##Adicionando coluna com os valores já em texto para plot
   if(nrow(fat_tot_categorias_us) > 0){
     fat_tot_categorias_us <- fat_tot_categorias_us %>% rowwise() %>%
-      mutate(fat_med_t_us = func_fmt_din(fat_med_us))
+      mutate(fat_med_t_us_t = func_fmt_din(fat_med_us))
     
     ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
-    Encoding(fat_tot_categorias_us$fat_med_t_us) <- "UTF-8"
-  }
+    Encoding(fat_tot_categorias_us$fat_med_t_us_t) <- "UTF-8"
   
   fat_tot_categorias_n_us <- full_join(fat_tot_categorias, fat_tot_categorias_us, by=("categoria_nome")) %>%
     select(-produto_categoria_id_us)
@@ -619,7 +619,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
       add_trace(type = "scatter", mode = "markers+line", y = ~med_emp_us,
                 name = 'Usados (média)',
                 line = list(color = '#6e2c00'),
-                text = ~paste0('Ticket médio usados<br>' , func_fmt_din(med_emp_us)),
+                text = ~paste0('Ticket médio usados<br>' , med_emp_us),
                 hoverinfo = "text",
                 marker = list(color = 'red'))
     
