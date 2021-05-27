@@ -100,7 +100,7 @@ s_dados_path <- "../s_dados.png"
 
 ##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
 if(params$variable1 == 'emp_par'){
-  empresa = 78
+  empresa = 80
 }else{
   empresa = as.integer(params$variable1)
 }
@@ -215,12 +215,14 @@ prop_ij_neg_ij_propag_cont_anat <- prop_ij_neg_ij_vend_ij_propag_anat %>%
   mutate(cont_status_v = sum(cont_status)) %>%
   mutate(sum_valor_v = sum(sum_valor)) %>%
   distinct(proposta_status, .keep_all = T) %>%
-  select (-negocio_vendedor_id, -vendedor_nome, -vendedor_ativo, -cont_status, sum_valor) %>%
+  select (-negocio_vendedor_id, -vendedor_nome, -vendedor_ativo, -cont_status, -sum_valor) %>%
   ungroup ()
+
+
 
 ### Gráfico p1 - Número propostas, por tipo em anat (total)
 if(nrow(prop_ij_neg_ij_propag_cont_anat) > 0){
-  prop_ij_neg_ij_propag_cont_anat <- prop_ij_neg_ij_propag_cont_anat %>%
+  prop_ij_neg_ij_propag_cont_anat <- prop_ij_neg_ij_propag_cont_anat %>% dplyr::rowwise() %>%
     dplyr::mutate(sum_valor_v_t = func_fmt_din(sum_valor_v))
   Encoding(prop_ij_neg_ij_propag_cont_anat$sum_valor_v_t) <- "UTF-8"
   p1 <- plot_ly(prop_ij_neg_ij_propag_cont_anat, type = 'bar', x = ~proposta_status , y = ~sum_valor_v,
@@ -423,20 +425,19 @@ pr_top5_fat_med <- pr_top5_fat_aux %>%
 
 fat_tot_categorias <- pr_top5_fat_med
 
-##Adicionando a matriz pra poder exibir no gráfico ###########################################################################################################
-fat_tot_categorias <- fat_tot_categorias %>%
-  dplyr::mutate(med_emp = media_empresa) %>%
-  mutate(med_emp_t = func_fmt_din(med_emp))
-  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
-  Encoding(fat_tot_categorias$med_emp_t) <- "UTF-8"
-
-##Adicionando coluna com os valores já em texto para plot
+## Adicionando coluna com os valores já em texto para plot
 if(nrow(fat_tot_categorias) > 0){
-  fat_tot_categorias <- fat_tot_categorias %>% rowwise() %>%
-    mutate(fat_med_t = func_fmt_din(fat_med))
+  ##Adicionando a matriz pra poder exibir no gráfico ###########################################################################################################
+  fat_tot_categorias <- fat_tot_categorias %>%
+    dplyr::mutate(med_emp = media_empresa) %>% dplyr::rowwise() %>%
+    mutate(fat_med_t = func_fmt_din(fat_med)) %>% 
+    mutate(med_emp_t = func_fmt_din(med_emp))
   ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
   Encoding(fat_tot_categorias$fat_med_t) <- "UTF-8"
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(fat_tot_categorias$med_emp_t) <- "UTF-8"
 }
+
 
 ### Gráfico p3 - Ticket médio novos
 if(nrow(fat_tot_categorias) > 0){
@@ -558,19 +559,23 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
   
   
   fat_tot_categorias_us <- pr_top5_fat_med_us
-  
-  
-  ##Adicionando a matriz pra poder exibir no gráfico ###########################################################################################################
-  fat_tot_categorias_us <- fat_tot_categorias_us %>%
-    mutate(med_emp_us = media_empresa_us) %>%
-    rename(produto_categoria_id_us = produto_categoria_id, fat_us = fat, n_us = n, fat_med_us = fat_med)
-    # rename(fat_us = fat) %>%
-    # rename(fat_med_us = fat_med) %>%
-    # rename(n_us = n)
-  
+
   ##Adicionando coluna com os valores já em texto para plot
-  fat_tot_categorias_us <- fat_tot_categorias_us %>% rowwise() %>%
-    mutate(fat_med_t_us = func_fmt_din(fat_med_us))
+  if(nrow(fat_tot_categorias_us) > 0){
+    fat_tot_categorias_us <- fat_tot_categorias_us %>%
+      ## Adicionando a matriz pra poder exibir no gráfico
+      dplyr::mutate(med_emp_us = media_empresa_us) %>%
+      dplyr::rename(produto_categoria_id_us = produto_categoria_id, fat_us = fat, n_us = n, fat_med_us = fat_med) %>% rowwise() %>%
+      ## Adicionando valores convertidos em texto e real (mil, milhão e R$) para apresentação
+      dplyr::mutate(fat_med_us_t = func_fmt_din(fat_med_us)) %>%
+      ## Adicionando valores convertidos em texto e real (mil, milhão e R$) para apresentação
+      dplyr::mutate(med_emp_us_t = func_fmt_din(media_empresa_us))
+
+    ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+    Encoding(fat_tot_categorias_us$fat_med_us_t) <- "UTF-8"
+    ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+    Encoding(fat_tot_categorias_us$med_emp_us_t) <- "UTF-8"
+  }
   
   fat_tot_categorias_n_us <- full_join(fat_tot_categorias, fat_tot_categorias_us, by=("categoria_nome")) %>%
     select(-produto_categoria_id_us)
@@ -608,7 +613,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
       add_trace(type = "scatter", mode = "markers+line", y = ~med_emp,
                 name = 'Novos (média)',
                 line = list(color = '#21618c'),
-                text = ~paste0('Ticket médio novos<br>' , func_fmt_din(med_emp)),
+                text = ~paste0('Ticket médio novos<br>' , med_emp_t),
                 hoverinfo = "text",
                 marker = list(color = 'red'))
     
@@ -616,7 +621,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
       add_trace(type = "scatter", mode = "markers+line", y = ~med_emp_us,
                 name = 'Usados (média)',
                 line = list(color = '#6e2c00'),
-                text = ~paste0('Ticket médio usados<br>' , func_fmt_din(med_emp_us)),
+                text = ~paste0('Ticket médio usados<br>' , med_emp_us_t),
                 hoverinfo = "text",
                 marker = list(color = 'red'))
         
@@ -689,6 +694,10 @@ p_ij_n_ij_pp_sum_cat$proposta_status <- with(p_ij_n_ij_pp_sum_cat, cut(proposta_
 
 ###Gráfico p5 - Faturamento de propostas por status (não usado)
 if(nrow(p_ij_n_ij_pp_sum_cat) > 0){
+  p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum_cat %>% rowwise() %>%
+    dplyr::mutate(valor_status_t = func_fmt_din(valor_status))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(p_ij_n_ij_pp_sum_cat$valor_status_t) <- "UTF-8"
   ax <- list(
     autotick = TRUE,
     title = "",
@@ -696,7 +705,7 @@ if(nrow(p_ij_n_ij_pp_sum_cat) > 0){
   p5 <- plot_ly(p_ij_n_ij_pp_sum_cat, x = ~proposta_status, y = ~valor_status, type = 'bar',
                 name = 'Faturamento por status',
                 marker = list(color = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32")),
-                text = ~paste(proposta_status,'<br>' , func_fmt_din(valor_status)),
+                text = ~paste(proposta_status,'<br>' , valor_status_t),
                 hoverinfo = "text")
   
   p5 <- p5 %>%
@@ -826,12 +835,16 @@ p_ij_ppa_sum_forma_ij_pmf <- p_ij_ppa_sum_forma_ij_pmf %>%
 
 ### Gráfico p6 - Modos de pagamento
 if(nrow(p_ij_ppa_sum_modo_ij_pmf) > 0){
+  p_ij_ppa_sum_modo_ij_pmf <- p_ij_ppa_sum_modo_ij_pmf %>% rowwise() %>%
+    dplyr::mutate(sum_modo_t = func_fmt_din(sum_modo))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(p_ij_ppa_sum_modo_ij_pmf$sum_modo_t) <- "UTF-8"
   p6 <- plot_ly()
   p6 <- p6 %>%
     add_pie(data = p_ij_ppa_sum_modo_ij_pmf, values = ~sum_modo, labels = ~Modo,
             hovertemplate = ~paste0("%{label}: ",
                                     "<br>",
-                                    "Valor financeiro: ", func_fmt_din(sum_modo),
+                                    "Valor financeiro: ", sum_modo,
                                     "<br>",
                                     "Nº de propostas: ", count_modo,
                                     "<br>"),
@@ -847,12 +860,16 @@ if(dash == F){
 
 ### Gráfico p7 - Formas de pagamento
 if(nrow(p_ij_ppa_sum_forma_ij_pmf) > 0){
+  p_ij_ppa_sum_forma_ij_pmf <- p_ij_ppa_sum_forma_ij_pmf %>% rowwise() %>%
+    dplyr::mutate(sum_forma_t = func_fmt_din(sum_forma))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(p_ij_ppa_sum_forma_ij_pmf$sum_forma_t) <- "UTF-8"
   p7 <- plot_ly()
   p7 <- p7 %>%
     add_pie(data = p_ij_ppa_sum_forma_ij_pmf, values = ~sum_forma, labels = ~Forma,
             hovertemplate = ~paste0("%{label}: ",
                                     "<br>",
-                                    "Valor financeiro: ", func_fmt_din(sum_forma),
+                                    "Valor financeiro: ", sum_forma_t,
                                     "<br>",
                                     "Nº de propostas: ", count_forma,
                                     "<br>"), 

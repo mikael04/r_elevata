@@ -1,17 +1,17 @@
 FEITOS
 - Verificar códificação (encoding errado)
+- Editar nome dos painéis (no Geral, trocar para visão do gestor, ou no de negócios, alterar para Painel de Negócios) - OK
+- Corrigir cores inst financeira e forma de pagamento (Outra e Outros estão com cores diferentes caso não tenha uma das opções (ex: só dinheiro e Outros, outros não fica azul)) - OK
+- Aplicar funções fmt_din e fmt_tempo c/ lapply/sapply - OK
 
 A FAZER
 
-
-- Atualizar dashs de final de ano e final de ano mobile (scripts base foram modificados)
-- Nas dashs de final de ano, setar a data para o final do ano
+- Criar ícone de "outros" no mapa das marcas
+- Atualizar dashs de final de ano e final de ano mobile (scripts base foram modificados) - SERÁ FEITO UM MÉTODO DE AUTO-ATUALIZAÇÃO
+- Nas dashs de final de ano, setar a data para o final do ano - Resolvido com o de cima
 - Limpar lixos
 - Documentar os arquivos (atualizar alguma parte de documentação)
-- Editar nome dos painéis (no Geral, trocar para visão do gestor, ou no de negócios, alterar para Painel de Negócios)
-- Bug no treemap de marcas (clica uma vez, quando volta não reaparece os nomes)
-- Corrigir cores inst financeira e forma de pagamento (Outra e Outros estão com cores diferentes caso não tenha uma das opções (ex: só dinheiro e Outros, outros não fica azul))
-- Aplicar funções fmt_din e fmt_tempo c/ lapply/sapply
+- Bug no treemap de marcas (clica uma vez, quando volta não reaparece os nomes) - No mobile apenas?
 
 
 DEPOIS:

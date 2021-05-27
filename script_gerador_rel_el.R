@@ -21,6 +21,8 @@ params_list_i <- empresas_ativas$empresa_id
 params_list <- as.list(params_list_i)
 
 x <- length(params_list)
+## Parâmetro usado para gerar arquivos em pasta de teste
+teste <- T
 
 ########################################################
 ###Teste
@@ -28,16 +30,16 @@ x <- length(params_list)
 # template <- "dash_geral.Rmd"
 # out_file <- sprintf("Dashs/Geral_%s", params_test[1])
 # parameters_test <- list(variable1 = params_test[1])
-# 
+#
 # parameters_test
-# 
+#
 # rmarkdown::render(template,
 #                   output_file = out_file,
 #                   params = parameters_test)
 
 ########################################################
 
-# ##Gerando dashs geral ##Funcionando, apenas comentada pra facilitar teste das marcas
+##Gerando dashs geral ##Funcionando, apenas comentada pra facilitar teste das marcas
 for(i in (1:x)){
   rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste')))
   template <- "dash_geral.Rmd"
@@ -49,9 +51,13 @@ for(i in (1:x)){
     print(params_list[[i]])
     print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs/Geral_%s", params_list[i])
+  if(teste){
+    out_file <- sprintf("Dashs_teste/Geral_%s", params_list[i])
+  }else{
+    out_file <- sprintf("Dashs/Geral_%s", params_list[i])
+  }
   parameters <- list(variable1 = params_list[i])
-  
+
   rmarkdown::render(template,
                     output_file = out_file,
                     params = parameters)
@@ -71,18 +77,26 @@ for(i in (1:x)){
       print(params_list[[i]])
       print(as.list(params_list[[i]]))
     }
-    out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
+    if(teste){
+      out_file <- sprintf("Dashs_teste/Marcas_%s", params_list[i])
+    }else{
+      out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
+    }
     parameters <- list(variable1 = params_list[i])
-    
+
     rmarkdown::render(template,
                       output_file = out_file,
                       params = parameters)
     invisible(TRUE)
   }else{ ##########Caso seja a komatsu, marcas diferentes
     template <- "dash_marcas_k.Rmd"
-    out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
+    if(teste){
+      out_file <- sprintf("Dashs_teste/Marcas_%s", params_list[i])
+    }else{
+      out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
+    }
     parameters <- list(variable1 = params_list[i])
-    
+
     rmarkdown::render(template,
                       output_file = out_file,
                       params = parameters)
@@ -101,9 +115,13 @@ for(i in (1:x)){
     print(params_list[[i]])
     print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs/Negocios_%s", params_list[i])
+  if(teste){
+    out_file <- sprintf("Dashs_teste/Negocios_%s", params_list[i])
+  }else{
+    out_file <- sprintf("Dashs/Negocios_%s", params_list[i])
+  }
   parameters <- list(variable1 = params_list[i])
-  
+
   rmarkdown::render(template,
                     output_file = out_file,
                     params = parameters)
@@ -121,9 +139,13 @@ for(i in (1:x)){
     print(params_list[[i]])
     print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs/Propostas_%s", params_list[i])
+  if(teste){
+    out_file <- sprintf("Dashs_teste/Propostas_%s", params_list[i])
+  }else{
+    out_file <- sprintf("Dashs/Propostas_%s", params_list[i])
+  }
   parameters <- list(variable1 = params_list[i])
-  
+
   rmarkdown::render(template,
                     output_file = out_file,
                     params = parameters)
@@ -141,12 +163,24 @@ for(i in (1:x)){
     print(params_list[[i]])
     print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs/Visitas_Clientes_%s", params_list[i])
+  if(teste){
+    out_file <- sprintf("Dashs_teste/Visitas_Clientes_%s", params_list[i])
+  }else{
+    out_file <- sprintf("Dashs/Visitas_Clientes_%s", params_list[i])
+  }
   parameters <- list(variable1 = params_list[i])
-  
+
   rmarkdown::render(template,
                     output_file = out_file,
                     params = parameters)
   invisible(TRUE)
 }
+#############################################################
+#############################################################
+## Gerar arquivo com horário de última atualização
+#############################################################
+
+# data <- paste0("Gráficos: ", format(Sys.time(), "%d/%m/%Y %H:%M:%S"))
+# writeLines(data, "update_time.txt")
+
 #############################################################

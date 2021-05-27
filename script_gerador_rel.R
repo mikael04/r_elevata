@@ -3,7 +3,6 @@ library(data.table)
 library(dplyr)
 
 setwd("E:\\Mikael\\OneDrive\\Projetos\\Scripts_R\\r_elevata")
-teste = F
 #Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")
 ##Usado para super e komatsu
 ##renderiza dash_negocios_propostas e dash_visitas_mapas
@@ -24,6 +23,9 @@ params_list <- as.list(params_list_i)
 ## 0 -> indica que estamos rodando para o dia atual
 num_dias_list <- as.list(0)
 x <- length(params_list)
+
+## Parâmetro usado para gerar arquivos em pasta de teste e ver outros parâmetros de teste
+teste_ger_rel <- T
 ####################################
 ####################################
 ########################################################
@@ -37,41 +39,54 @@ x <- length(params_list)
 #                   output_file = out_file,
 #                   params = parameters)
 ########################################################
-## Gerando dashs geral ##Funcionando, apenas comentada pra facilitar teste das marcas
+##Gerando dashs geral ##Funcionando, apenas comentada pra facilitar teste das marcas
 for(i in (1:x)){
-  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'num_dias_list')))
+  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste_ger_rel')))
   template <- "dash_geral.Rmd"
-  #Teste (nome da empresa, mais fácil de analisar)
+  #Teste (nome da empresa, mais fÃ¡cil de analisar)
   # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
-  if(teste){
+  print(teste_ger_rel)
+  if(teste_ger_rel){
     print(i)
     print(params_list[i])
-    #print(params_list[[i]])
-    #print(as.list(params_list[[i]]))
+    print(params_list[[i]])
+    print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs/Geral_%s", params_list[i])
-  ##Final de ano
-  parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
+  if(teste_ger_rel){
+    out_file <- sprintf("Dashs_teste/Geral_%s", params_list[i])
+  }else{
+    out_file <- sprintf("Dashs/Geral_%s", params_list[i])
+  }
+  if(teste_ger_rel){
+    print(out_file)
+  }
+  parameters <- list(variable1 = params_list[i])
 
   rmarkdown::render(template,
                     output_file = out_file,
                     params = parameters)
   invisible(TRUE)
 }
-## Gerando dashs marcas
+##Gerando dashs marcas
 for(i in (1:x)){
   if (params_list[i] != 78 & params_list[i] != 79)
   {
-    rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'num_dias_list')))
+    rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste_ger_rel', 'empresas_ativas')))
     template <- "dash_marcas.Rmd"
-    if(teste){
+    #Teste (nome da empresa, mais fÃ¡cil de analisar)
+    # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
+    if(teste_ger_rel){
       print(i)
       print(params_list[i])
       print(params_list[[i]])
       print(as.list(params_list[[i]]))
     }
-    out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
-    parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
+    if(teste_ger_rel){
+      out_file <- sprintf("Dashs_teste/Marcas_%s", params_list[i])
+    }else{
+      out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
+    }
+    parameters <- list(variable1 = params_list[i])
 
     rmarkdown::render(template,
                       output_file = out_file,
@@ -79,8 +94,12 @@ for(i in (1:x)){
     invisible(TRUE)
   }else{ ##########Caso seja a komatsu, marcas diferentes
     template <- "dash_marcas_k.Rmd"
-    out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
-    parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
+    if(teste_ger_rel){
+      out_file <- sprintf("Dashs_teste/Marcas_%s", params_list[i])
+    }else{
+      out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
+    }
+    parameters <- list(variable1 = params_list[i])
 
     rmarkdown::render(template,
                       output_file = out_file,
@@ -88,18 +107,24 @@ for(i in (1:x)){
     invisible(TRUE)
   }
 }
-## Gerando dash negocios
+# ## Gerando dash negocios
 for(i in (1:x)){
-  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'num_dias_list')))
+  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste_ger_rel')))
   template <- "dash_negocios.Rmd"
-  if(teste){
+  #Teste (nome da empresa, mais fÃ¡cil de analisar)
+  # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
+  if(teste_ger_rel){
     print(i)
     print(params_list[i])
     print(params_list[[i]])
     print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs/Negocios_%s", params_list[i])
-  parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
+  if(teste_ger_rel){
+    out_file <- sprintf("Dashs_teste/Negocios_%s", params_list[i])
+  }else{
+    out_file <- sprintf("Dashs/Negocios_%s", params_list[i])
+  }
+  parameters <- list(variable1 = params_list[i])
 
   rmarkdown::render(template,
                     output_file = out_file,
@@ -108,16 +133,22 @@ for(i in (1:x)){
 }
 ## Gerando dash propostas
 for(i in (1:x)){
-  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'num_dias_list')))
+  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste_ger_rel')))
   template <- "dash_propostas.Rmd"
-  if(teste){
+  #Teste (nome da empresa, mais fÃ¡cil de analisar)
+  # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
+  if(teste_ger_rel){
     print(i)
     print(params_list[i])
     print(params_list[[i]])
     print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs/Propostas_%s", params_list[i])
-  parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
+  if(teste_ger_rel){
+    out_file <- sprintf("Dashs_teste/Propostas_%s", params_list[i])
+  }else{
+    out_file <- sprintf("Dashs/Propostas_%s", params_list[i])
+  }
+  parameters <- list(variable1 = params_list[i])
 
   rmarkdown::render(template,
                     output_file = out_file,
@@ -126,22 +157,29 @@ for(i in (1:x)){
 }
 ## Gerando dash visitas_clientes
 for(i in (1:x)){
-  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste', 'num_dias_list')))
+  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste_ger_rel')))
   template <- "dash_visitas_clientes.Rmd"
-  if(teste){
+  #Teste (nome da empresa, mais fÃ¡cil de analisar)
+  # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
+  if(teste_ger_rel){
     print(i)
     print(params_list[i])
     print(params_list[[i]])
     print(as.list(params_list[[i]]))
   }
-  out_file <- sprintf("Dashs/Visitas_Clientes_%s", params_list[i])
-  parameters <- list(variable1 = params_list[i], num_dias = num_dias_list[[1]])
+  if(teste_ger_rel){
+    out_file <- sprintf("Dashs_teste/Visitas_Clientes_%s", params_list[i])
+  }else{
+    out_file <- sprintf("Dashs/Visitas_Clientes_%s", params_list[i])
+  }
+  parameters <- list(variable1 = params_list[i])
 
   rmarkdown::render(template,
                     output_file = out_file,
                     params = parameters)
   invisible(TRUE)
 }
+#############################################################
 #############################################################
 ## Gerar arquivo com horário de última atualização
 #############################################################
