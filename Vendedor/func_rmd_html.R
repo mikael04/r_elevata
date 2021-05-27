@@ -13,9 +13,9 @@ library(purrr)
 #                 'dont_delete', 'debug', 'teste', 'template', 'empresa', 'vendedor', 'out_f',
 #                 'nome_dash', 'num_dias_list')
 # template = "Vendedor/dash_geral_vendedor.Rmd"
-# empresa = 78
-# vendedor = 1058
-# out_f = "/mnt/dados/Mikael/Projetos/Scripts_R/r_elevata/Dashs_vendedores/"
+empresa = 78
+vendedor = 1058
+out_f = "/mnt/dados/Mikael/Projetos/Scripts_R/r_elevata/Dashs_vendedores/"
 # nome_dash = "Geral"
 # debug = TRUE
 # num_dias_list = 0
@@ -30,7 +30,10 @@ func_rmd_html <- function(dont_delete, template, empresa, vendedor, out_f, nome_
     #print(params_list[[i]])
     #print(as.list(params_list[[i]]))
   }
-  out_file <- paste0(out_f, nome_dash, "_", empresa, "_", vendedor)
+  ## Criando o diretório caso não exista
+  dir.create(paste0(out_f, empresa, "/"))
+  ## Arquivo de saída
+  out_file <- paste0(out_f, empresa, "/", nome_dash, "_", vendedor)
   parameters <- list(empresa = empresa, vendedor = vendedor, num_dias = num_dias_list)
   rmarkdown::render(template_,
                     output_file = out_file,

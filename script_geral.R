@@ -83,7 +83,7 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 78
+empresa = 16
 ###################################
 
 #################################################################################
@@ -170,6 +170,10 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
   ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%	rowwise() %>%
     mutate(tot_fat_t = func_fmt_din(total_faturado))
 
+
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(ng_ij_hist_ij_ven_funil_fat$tot_fat_t) <- "UTF-8"
+
   ##Começando a gambiarra (criar nova columa com nome da categoria + valor da categoria)
   ng_ij_hist_ij_ven_funil_fat <- ng_ij_hist_ij_ven_funil_fat %>%
     mutate(nome_cat_valor_fat = paste(negocio_status, "\n", tot_fat_t))
@@ -182,24 +186,21 @@ if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0){
 ################################################
 ### Gráfico n9 - Funil agrupado por faturamento
 ################################################
-#adicionando as cores ao
-cores_funil <- c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")
-st_a_c <- as.character(st_a)
-df_stat_cor <- tibble(st_a_c, cores_funil)
-ng_ij_hist_ij_ven_funil_fat <- inner_join(ng_ij_hist_ij_ven_funil_fat, df_stat_cor,
-                                          by=c("negocio_negocio_situacao_id" = "st_a_c"))
+
 ### Gráfico n9 - Funil agrupado por status do negócio
 if (nrow(ng_ij_hist_ij_ven_funil_fat) > 0 && sum(ng_ij_hist_ij_ven_funil_fat$total_faturado) > 0){
-  n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat,
+  n9 <- plot_ly (ng_ij_hist_ij_ven_funil_fat) %>%
+    add_trace(
       type ="funnelarea",
       values = ng_ij_hist_ij_ven_funil_fat$total_faturado,
-      #name = ~negocio_status,
+      labels = ~negocio_status,
       text = ng_ij_hist_ij_ven_funil_fat$nome_cat_valor_fat,
       textinfo = "text",
       hovertemplate = paste0 ("%{text} <br>",
                               "Equivalente a %{percent}",
                               "<extra></extra>"),
-      marker = list(colors = ~cores_funil)
+      marker = list(colors = c("#ADD8E6", "#87CEEB" , "#87CEFA", "#00BFFF", "#3182FF")),
+      showlegend = FALSE
     )
 }else {
   n9 <- include_graphics(s_dados_path)
@@ -292,8 +293,9 @@ ng_ij_hist_ij_ven_funil_fat_fec_anat  <- ng_ij_hist_ij_ven_funil_fat_fec_anat  %
 if (nrow(ng_ij_hist_ij_ven_funil_fat_fec_anat) > 0){
   ng_ij_hist_ij_ven_funil_fat_fec_anat <- ng_ij_hist_ij_ven_funil_fat_fec_anat %>%	rowwise() %>%
     mutate(total_fat_t = func_fmt_din(total_faturado))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(ng_ij_hist_ij_ven_funil_fat_fec_anat$total_fat_t) <- "UTF-8"
 }
-
 ### Gráfico n10 - Pizza fechados do ano
 ##############################################
 
@@ -355,6 +357,8 @@ ng_ij_hist_ij_ven_fec_mes_ant  <- ng_ij_hist_ij_ven_fec_mes_ant  %>%
 if (nrow(ng_ij_hist_ij_ven_fec_mes_ant) > 0) {
   ng_ij_hist_ij_ven_fec_mes_ant <- ng_ij_hist_ij_ven_fec_mes_ant %>%	rowwise() %>%
     mutate(total_fat_t = func_fmt_din(total_faturado))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(ng_ij_hist_ij_ven_fec_mes_ant$total_fat_t) <- "UTF-8"
 }
 
 ### Gráfico n11 - Pizza fechados no último mês
@@ -530,11 +534,15 @@ if(anos_ant > 0) {
   fat_anat_1ant_2ant_mes$ym_sum_1ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_1ant)] <- 0
   fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%
     dplyr::mutate(ym_sum_fat_1ant = func_fmt_din(ym_sum_1ant))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(fat_anat_1ant_2ant_mes$ym_sum_fat_1ant) <- "UTF-8"
 }
 if(anos_ant > 1) {
   fat_anat_1ant_2ant_mes$ym_sum_2ant[is.na(fat_anat_1ant_2ant_mes$ym_sum_2ant)] <- 0
   fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%
     dplyr::mutate(ym_sum_fat_2ant = func_fmt_din(ym_sum_2ant))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(fat_anat_1ant_2ant_mes$ym_sum_fat_2ant) <- "UTF-8"
 }
 
 #######################################################################
@@ -556,8 +564,9 @@ if(flag_fat == T && anos_ant == 0) {
 } else{
   fat_anat_1ant_2ant_mes <- fat_anat_1ant_2ant_mes %>%	rowwise() %>%
     dplyr::mutate(ym_sum_fat_anat = func_fmt_din(ym_sum))
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(fat_anat_1ant_2ant_mes$ym_sum_fat_anat) <- "UTF-8"
 }
-
 
 ###Assim estarei mostrando anat, 1ant e 2ant
 ### Gráfico n12 - Faturamento anual (ano atual + dois anteriores)
@@ -877,9 +886,15 @@ n_clientes_anat <- nrow(cliente_anat)
 
 ##Contar quantos clientes aparecem em negócio
 cli_ij_ng <- inner_join(cliente, negocio, by=c("cliente_id" = "negocio_cliente_id")) %>%
-  select(cliente_id, negocio_id)
-cli_anat_ij_ng <- inner_join(cliente_anat, negocio, by=c("cliente_id" = "negocio_cliente_id"))%>%
-  select(cliente_id, negocio_id)
+  dplyr::group_by(cliente_id) %>%
+  dplyr::distinct(cliente_id, .keep_all = T) %>%
+  dplyr::select(cliente_id, negocio_id) %>%
+  dplyr::ungroup()
+cli_anat_ij_ng <- inner_join(cliente_anat, negocio, by=c("cliente_id" = "negocio_cliente_id")) %>%
+  dplyr::group_by(cliente_id) %>%
+  dplyr::distinct(cliente_id, .keep_all = T) %>%
+  dplyr::select(cliente_id, negocio_id) %>%
+  dplyr::ungroup()
 ##Variáveis usadas
 n_cli_cneg <- nrow(cli_ij_ng)
 n_cli_cneg_anat <- nrow(cli_anat_ij_ng)
