@@ -12,7 +12,17 @@ A FAZER
 - Limpar lixos
 - Documentar os arquivos (atualizar alguma parte de documentação)
 - Bug no treemap de marcas (clica uma vez, quando volta não reaparece os nomes) - No mobile apenas?
-
+- Arrumar Hover:
+  - Geral
+    - Arrumar hover Distribuição do cadastro de clientes
+  - Negócios
+    - Os de valor financeiro deveriam mostrar o status - OK
+    - Arrumar hover Idade dos negócios por vendedor
+  - Propostas
+    - Arrumar hover Volume de propostas por vendedor em ano atual
+  - Visitas Clientes
+    - Arrumar hover Volume de visitas -> Dist dos motivos e dist resultado das visitas em ano atual
+    - Arrumar hover Mapa dos clientes -> Dist dos clientes
 
 DEPOIS:
 
