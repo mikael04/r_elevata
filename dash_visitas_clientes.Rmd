@@ -615,8 +615,8 @@ Clientes
 Column {.sidebar data-width=350 data-padding=10}
 -----------------------------------------------------------------------
 
-Estes dois gráficos visam apresentar a distribuição de clientes agrupados pelo número de visitas para clientes que receberam visitas este ano.
-O gráfico na posição superior mostra a distribuição de clientes por número de visita de clientes que não possuem negócios, enquanto o gráfico na posição inferior mostra dos clientes que possuem negócio. Cada barra indica um intervalo (que varia de unidade em unidade) e mostra quantos clientes possuem aquele determinado número de visitas.
+Estes dois gráficos visam apresentar a distribuição de clientes agrupados pelo número de visitas.
+O gráfico na posição superior mostra a distribuição de clientes por número de visita de clientes que não possuem negócios, enquanto o gráfico na posição inferior mostra dos clientes que possuem negócio. Cada barra indica um intervalo (que varia de unidade em unidade) e mostra quantos clientes possuem aquele determinado número de visitas. Por exemplo (usando números fictícios): Temos 38 clientes que possuem apenas uma visita, 27 clientes com duas visitas, 15 clients com três visitas e assim por diante.
 
 Column {data-width=350}
 -----------------------------------------------------------------------
