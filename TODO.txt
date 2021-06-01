@@ -7,22 +7,22 @@ FEITOS
 A FAZER
 
 - Criar ícone de "outros" no mapa das marcas
-- Atualizar dashs de final de ano e final de ano mobile (scripts base foram modificados) - SERÁ FEITO UM MÉTODO DE AUTO-ATUALIZAÇÃO
+- Atualizar dashs de final de ano e final de ano mobile (scripts base foram modificados) - SERÁ FEITO UM MÉTODO DE AUTO-ATUALIZAÇÃO -> Trabalhando na unificação
 - Nas dashs de final de ano, setar a data para o final do ano - Resolvido com o de cima
 - Limpar lixos
 - Documentar os arquivos (atualizar alguma parte de documentação)
 - Bug no treemap de marcas (clica uma vez, quando volta não reaparece os nomes) - No mobile apenas?
 - Arrumar Hover:
   - Geral
-    - Arrumar hover Distribuição do cadastro de clientes
+    - Arrumar hover Distribuição do cadastro de clientes -
   - Negócios
     - Os de valor financeiro deveriam mostrar o status - OK
-    - Arrumar hover Idade dos negócios por vendedor
+    - Arrumar hover Idade dos negócios por vendedor -
   - Propostas
-    - Arrumar hover Volume de propostas por vendedor em ano atual
+    - Arrumar hover Volume de propostas por vendedor em ano atual -
   - Visitas Clientes
-    - Arrumar hover Volume de visitas -> Dist dos motivos e dist resultado das visitas em ano atual
-    - Arrumar hover Mapa dos clientes -> Dist dos clientes
+    - Arrumar hover Volume de visitas -> Dist dos motivos e dist resultado das visitas em ano atual -
+    - Arrumar hover Mapa dos clientes -> Dist dos clientes -
 
 DEPOIS:
 

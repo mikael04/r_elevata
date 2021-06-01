@@ -5,7 +5,10 @@ output:
     orientation: columns
     vertical_layout: fill
 params:
-  variable1: "emp_par"
+  empresa: "emp_par"
+  dash_vend: false
+  dash_mob: false
+  vendedor: "vend_par"
   num_dias: 0
 ---
 
@@ -95,11 +98,22 @@ if(!teste){
 s_dados_path <- "s_dados.png"
 s_dados_m_path <- "s_dados_m.png"
 
-##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
-if(params$variable1 == 'emp_par'){
-  empresa = 78
-}else{
-  empresa = as.integer(params$variable1)
+## Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
+## Usados para testes, caso não seja teste, apenas atribuirá os parâmetros recebidos como parâmetros globais
+if(params$dash_vend == F){ ## dash geral e mobile
+  if(params$empresa == 'emp_par'){ ## Escolher variavel empresa a ser testada
+    empresa = 78
+  }else{
+    empresa = as.integer(params$empresa)
+  }
+}else{ ## No caso do vendedor, preciso definir o id do vendedor também
+  if(params$empresa == 'emp_par' && params$vendedor == 'vend_par'){ ## Escolher empresa e vendedor testado
+    empresa = 78
+    vend_id = 1058
+  }else{
+    empresa = as.integer(params$empresa)
+    vend_id = as.integer(params$vendedor)
+  }
 }
 
 ###Começando script marcas
@@ -117,6 +131,11 @@ vendedor <- fread("Tabelas/vendedor.csv") %>%
 
 vendedor_a <- vendedor %>%
   filter(vendedor_ativo == T)
+
+if(params$dash_vend){
+  vendedor <- vendedor %>%
+  dplyr::filter(vendedor_id == vend_id)
+}
 
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
@@ -382,6 +401,14 @@ cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")
   select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_vendedor_id, cliente_empresa_id)
 #Arrumando encoding
 Encoding(cliente$cliente_nome) <- 'latin1'
+
+if(params$dash_vend){ ## Filtrando apenas do vendedor, clientes e visitas
+  cliente <- cliente %>%
+  dplyr::filter(cliente_vendedor_id == vend_id)
+  
+  visita_cliente <- visita_cliente %>% 
+  dplyr::filter(vc_vendedor_id == vend_id)
+}
 
 ##Parque de máquinas
 ##Mostrar distribuição de máquinas por categoria

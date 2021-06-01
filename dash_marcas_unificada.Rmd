@@ -2,10 +2,13 @@
 title: "Painel das Marcas"
 output:
   flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
+  orientation: columns
+  vertical_layout: fill
 params:
-  variable1: "emp_par"
+  empresa: "emp_par"
+  dash_vend: false
+  dash_mob: false
+  vendedor: "vend_par"
   num_dias: 0
 ---
 
@@ -65,11 +68,11 @@ if(!teste){
     mes_atual = fct_mes_atual()
     ## Apenas ano, para gerar títulos
     ano <- year(ano_atual)
-  ##Execução normal, recebendo data do gerador de dashs
+    ##Execução normal, recebendo data do gerador de dashs
   }else{
     data <- (lubridate::today()-lubridate::days(params$num_dias))
     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
     ####Variavel global c/ mês atual (para comparação)
     mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
     ## Apenas ano, para gerar títulos
@@ -77,7 +80,7 @@ if(!teste){
   }
 }else{
   ##Teste setando dia
-  # data <- lubridate::ymd("2020-12-31")
+  #data <- lubridate::ymd("2020-12-31")
   data <- lubridate::today()
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
@@ -95,11 +98,22 @@ if(!teste){
 s_dados_path <- "s_dados.png"
 s_dados_m_path <- "s_dados_m.png"
 
-##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
-if(params$variable1 == 'emp_par'){
-  empresa = 78
-}else{
-  empresa = as.integer(params$variable1)
+## Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
+## Usados para testes, caso não seja teste, apenas atribuirá os parâmetros recebidos como parâmetros globais
+if(params$dash_vend == F){ ## dash geral e mobile
+  if(params$empresa == 'emp_par'){ ## Escolher variavel empresa a ser testada
+    empresa = 16
+  }else{
+    empresa = as.integer(params$empresa)
+  }
+}else{ ## No caso do vendedor, preciso definir o id do vendedor também
+  if(params$empresa == 'emp_par' && params$vendedor == 'vend_par'){ ## Escolher empresa e vendedor testado
+    empresa = 78
+    vend_id = 1058
+  }else{
+    empresa = as.integer(params$empresa)
+    vend_id = as.integer(params$vendedor)
+  }
 }
 
 ###Começando script marcas
@@ -115,8 +129,14 @@ vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_empresa_id, vendedor_ativo) %>%
   filter (vendedor_empresa_id == empresa)
 
+
 vendedor_a <- vendedor %>%
   filter(vendedor_ativo == T)
+
+if(params$dash_vend){
+  vendedor <- vendedor %>%
+    dplyr::filter(vendedor_id == vend_id)
+}
 
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
@@ -133,7 +153,6 @@ produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character",
 ##join de negocios e vendedores
 negocio_ij_vendedor <- inner_join(negocio, vendedor, by=c("negocio_vendedor_id" = "vendedor_id"))
 
-########## Para o funil e para agrupar por faturamento
 #### Vou alterar o agrupamento de número de negócios para faturamento, portanto precisarei da tabela negocio_produto
 neg_ij_ven_ij_np <- inner_join(negocio_ij_vendedor, negocio_produto, by=c("negocio_id" = "np_negocio_id"))
 
@@ -176,7 +195,7 @@ ng_ij_hist_ij_ven_ij_np_ij_pd <- inner_join(ng_ij_hist_ij_ven_ij_np_anat, produt
 ##Vou fazer um join pra pegar os nomes de cada categoria
 categoria <- fread("Tabelas/categoria.csv", colClasses = c(categoria_id = 'character')) %>%
   select (categoria_id, categoria_nome, categoria_ativo) %>%
-  filter(categoria_ativo == 1) %>% 
+  filter(categoria_ativo == 1) %>%
   select (-categoria_ativo)
 
 Encoding(categoria$categoria_nome) <- 'latin1'
@@ -232,9 +251,9 @@ ng_top_ag <- inner_join(ng_top10_ag, top10_ij, by=c("produto_categoria_id" = "pr
 #conversão de faturamento para texto
 if (nrow(ng_top_ag) > 0){
   ng_top_ag <- ng_top_ag %>% rowwise() %>%
-  mutate(fat_t = func_fmt_din(faturamento))
+    mutate(fat_t = func_fmt_din(faturamento))
 }else{
-  
+
 }
 
 
@@ -245,6 +264,7 @@ faturamento_tot <- sum(ng_top_ag$faturamento)
 chart_ng_top_ag <- ng_top_ag %>%
   mutate(perc = round(faturamento/faturamento_tot, 4)) %>%
   mutate(cat_cor = round(perc,1)*10)
+
 
 ## Criando paleta de cores com 10 cores intermediárias
 pal <- colorRampPalette(c("lightblue", "blue"))
@@ -267,15 +287,14 @@ if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
                                "", perc*100, "%",
                                "<br>"),
                 textinfo = "text",
-                hovertemplate = ~paste0("", categoria_nome ,
-                                        "<br>",
+                hovertemplate = ~paste0("", categoria_nome ,"<br>",
                                         "", fat_t,
                                         "<br>",
                                         "Equivalente à ", perc*100, "%",
                                         "<br>",
                                         "<extra></extra>"),
                 values = ~faturamento,
-                marker = list(colors = pal_cores[chart_ng_top_ag$cat_cor+1])) 
+                marker = list(colors = pal_cores[chart_ng_top_ag$cat_cor+1]))
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   n4 <- include_graphics(s_dados_path)
@@ -318,7 +337,7 @@ if (nrow(ng_top_ag_fat) > 0){
   ng_top_ag_fat <- ng_top_ag_fat %>% rowwise() %>%
     mutate(fat_t = func_fmt_din(faturamento))
 }else{
-  
+
 }
 
 ##Chart gerado para o treemap de categorias por faturamento em anat
@@ -330,16 +349,17 @@ chart_ng_top_ag_fat <- ng_top_ag_fat %>%
   mutate(perc = round(faturamento/faturamento_tot, 4)) %>%
   mutate(cat_cor = round(perc,1)*10)
 
+
 ## Criando paleta de cores com 10 cores intermediárias
 pal <- colorRampPalette(c("lightgreen", "green"))
 pal_cores <- pal(11)
-pal_cores
 
 
 ### Gráfico n5 - Máquinas faturadas em anat (por categoria)
 if (nrow(chart_ng_top_ag_fat) > 0 & sum(chart_ng_top_ag_fat$faturamento) > 0){
   ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
   Encoding(chart_ng_top_ag_fat$fat_t) <- "UTF-8"
+
   n5 <- plot_ly(chart_ng_top_ag_fat,
                 type = 'treemap',
                 labels = ~categoria_nome,
@@ -351,15 +371,14 @@ if (nrow(chart_ng_top_ag_fat) > 0 & sum(chart_ng_top_ag_fat$faturamento) > 0){
                                "", perc*100, "%",
                                "<br>"),
                 textinfo = "text",
-                hovertemplate = ~paste0("", categoria_nome ,
-                                        "<br>",
+                hovertemplate = ~paste0("", categoria_nome ,"<br>",
                                         "", fat_t,
                                         "<br>",
                                         "Equivalente à ", perc*100, "%",
                                         "<br>",
                                         "<extra></extra>"),
                 values = ~faturamento,
-                marker = list(colors = pal_cores[chart_ng_top_ag$cat_cor+1]))
+                marker = list(colors = pal_cores[chart_ng_top_ag_fat$cat_cor+1]))
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   n5 <- include_graphics(s_dados_path)
@@ -383,6 +402,10 @@ cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")
 #Arrumando encoding
 Encoding(cliente$cliente_nome) <- 'latin1'
 
+if(params$dash_vend){ ## Filtrando apenas do vendedor, clientes e visitas
+  cliente <- cliente %>%
+    dplyr::filter(cliente_vendedor_id == vend_id)
+}
 ##Parque de máquinas
 ##Mostrar distribuição de máquinas por categoria
 #######################################################################
@@ -416,13 +439,14 @@ cli_in_pm_in_p <- inner_join(cli_in_pm, produto, by = c("pm_produto_id" = "produ
   select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
 cli_in_pm_in_p_in_m <- inner_join(cli_in_pm_in_p, marca, by = c("produto_marca_id" = "marca_id")) %>%
-select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id, produto_nome, produto_marca_id, marca_nome, produto_categoria_id, produto_empresa_id)
+  select (cliente_id, cliente_nome, lat, long, pm_id, pm_produto_id, produto_nome, produto_marca_id, marca_nome, produto_categoria_id, produto_empresa_id)
 #########################
 ##Começando o top para tratores
 #########################
 ##Aqui obtenho todos os clientes e marcas, próximo passo é fazer o top5
 cli_in_pm_cont_t <- cli_in_pm_in_p_in_m %>%
   select(cliente_id, cliente_nome, lat, long, produto_marca_id, marca_nome, produto_categoria_id) %>%
+  filter(produto_categoria_id == 1) %>%
   group_by(cliente_id, produto_marca_id) %>%
   mutate(cont = n()) %>%
   distinct (cliente_id, .keep_all = T) %>%
@@ -454,10 +478,55 @@ n_color <- nrow(cli_in_pm_cont_top_t_aux %>%
 
 #Usando nome da marca como factor
 cli_in_pm_cont_top_t_aux$marca_nome <- factor(cli_in_pm_cont_top_t_aux$marca_nome)
-
+## Teste de mapa csv
+# data.table::fwrite(cli_in_pm_cont_top_t_aux, "bd_leaflet.csv");
+# cli_in_pm_cont_top_t_aux <- data.table::fread("bd_leaflet.csv")
 ##Adicionando pequenas variações
 cli_in_pm_cont_top_t_aux$lat <- jitter(cli_in_pm_cont_top_t_aux$lat, factor = .1, amount = 0)
 cli_in_pm_cont_top_t_aux$long <- jitter(cli_in_pm_cont_top_t_aux$long, factor = .1, amount = 0)
+
+#########################
+##Começando o top para colheitadeiras
+#########################
+##Aqui obtenho todos os clientes e marcas, próximo passo é fazer o top5
+cli_in_pm_cont_c <- cli_in_pm_in_p_in_m %>%
+  select(cliente_id, cliente_nome, lat, long, produto_marca_id, marca_nome, produto_categoria_id) %>%
+  filter(produto_categoria_id == 2) %>%
+  group_by(cliente_id, produto_marca_id) %>%
+  mutate(cont = n()) %>%
+  distinct (cliente_id, .keep_all = T) %>%
+  ungroup()
+
+
+##Criando o top5 de categorias
+cli_in_pm_cont_top_c <- cli_in_pm_cont_c %>%
+  group_by(marca_nome) %>%
+  mutate(cont = sum(cont)) %>%
+  distinct(marca_nome, .keep_all = T) %>%
+  select (marca_nome, produto_marca_id, cont) %>%
+  arrange(desc(cont), marca_nome) %>%
+  ungroup()
+
+
+top5_c <- head.matrix(cli_in_pm_cont_top_c, 5)
+top10_c <- head.matrix(cli_in_pm_cont_top_c, 10)
+aux_c <- top5_c[,1]
+
+
+cli_in_pm_cont_top_c_aux <- cli_in_pm_cont_c %>%
+  filter (marca_nome %in% aux_c$marca_nome)
+
+n_color <- nrow(cli_in_pm_cont_top_c_aux %>%
+                  group_by(produto_marca_id) %>%
+                  distinct(produto_marca_id) %>%
+                  ungroup())
+
+#Usando nome da marca como factor
+cli_in_pm_cont_top_c_aux$marca_nome <- factor(cli_in_pm_cont_top_c_aux$marca_nome)
+
+##Adicionando pequenas variações
+cli_in_pm_cont_top_c_aux$lat <- jitter(cli_in_pm_cont_top_c_aux$lat, factor = .1, amount = 0)
+cli_in_pm_cont_top_c_aux$long <- jitter(cli_in_pm_cont_top_c_aux$long, factor = .1, amount = 0)
 
 ## Deprecado
 # marcas_icon <- iconList(         ##Caso precise consultar, olhar o csv acima
@@ -533,14 +602,39 @@ if (nrow(cli_in_pm_cont_top_t_aux) > 0){
 if(dash == F){
   m1_t
 }
+
+## Teste de mapa csv
+# library(htmlwidgets)
+# saveWidget(m1_t, file="m1_t.html")
+
+if (nrow(cli_in_pm_cont_top_c_aux) > 0){
+  m1_c<- leaflet(cli_in_pm_cont_top_c_aux) %>%
+    addTiles() %>%
+    addMarkers(lat = ~lat, lng = ~long, icon = ~marcas_icon_list[produto_marca_id],
+               popup = paste0("Nome do cliente: ", cli_in_pm_cont_top_c_aux$cliente_nome,
+                              "<br>",
+                              "Quantidade de máquinas ", cli_in_pm_cont_top_c_aux$marca_nome,
+                              " : ", cli_in_pm_cont_top_c_aux$cont),
+               label = ~marca_nome,
+               #clusterOptions = markerClusterOptions(),
+               group = "Ícones")
+}else {
+  ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
+  m1_c <- include_graphics(s_dados_m_path)
+}
+if(dash == F){
+  m1_c
+}
+
 if(teste == F){
   #tabelas
   rm(top5_t, top5_c, aux_c, aux_t, n_color, cli_in_pm_cont_c, cli_in_pm_cont_t, cliente_c_loc,
-     cli_in_pm_cont_top_t_aux,parque_maquina, produto, marca, marca_categoria,
-     marcas_icon, categoria);
+     cli_in_pm_cont_top_c_aux, cli_in_pm_cont_top_t_aux,parque_maquina, produto, marca, marca_categoria,
+     marcas_icon_list, categoria);
   #variáveis
   rm();
 }
+
 ###################
 ##Será usado apenas caso queira plotar todas as marcas como "Outros"
 ##Top5 + Outra, transformando as demais em OUTRA
@@ -568,9 +662,6 @@ cli_in_pm_cont_top_t <- cli_in_pm_cont_top_t %>%
 ##Cria factor e ordena o meu gráfico
 cli_in_pm_cont_top_t$marca_nome <- reorder(cli_in_pm_cont_top_t$marca_nome, desc(cli_in_pm_cont_top_t$sum))
 
-# marcas_ic_co <-read.csv("Icons/marcas_icon_csv.csv") %>%
-#   select (marca_id_i, cor)
-# marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
 ##Alterei para txt por causa do tamanho da coluna (número muito grande, era convertido para científico)
 marcas_ic_co <-marcas_icon_txt %>%
   select (marca_id_i, cor)
@@ -578,8 +669,32 @@ marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
 #cores_t
 cli_in_pm_cont_top_t <- inner_join(cli_in_pm_cont_top_t, marcas_ic_co, by = c("produto_marca_id" = "marca_id_i"))
 cores_t <- as.vector(cli_in_pm_cont_top_t$cor)
+#Colheitadeiras
+if(nrow(cli_in_pm_cont_top_c) > 5)
+{
+  for(i in 6:nrow(cli_in_pm_cont_top_c)){
+    cli_in_pm_cont_top_c[i,1] <- 'OUTRAS*'
+    cli_in_pm_cont_top_c[i,2] <- '-1'
+  }
+}
 
+##Criando o top5 (+ Outra) de categorias ##PARA COLHEITADEIRAS
+cli_in_pm_cont_top_c <- cli_in_pm_cont_top_c %>%
+  group_by(marca_nome) %>%
+  mutate(sum = sum(cont)) %>%
+  distinct(marca_nome, .keep_all = T) %>%
+  select (marca_nome, produto_marca_id, sum) %>%
+  arrange(desc(sum), marca_nome) %>%
+  ungroup()
+
+
+##Cria factor e ordena o meu gráfico
+cli_in_pm_cont_top_c$marca_nome <- reorder(cli_in_pm_cont_top_c$marca_nome, desc(cli_in_pm_cont_top_c$sum))
+#cores_c
+cli_in_pm_cont_top_c <- inner_join(cli_in_pm_cont_top_c, marcas_ic_co, by = c("produto_marca_id" = "marca_id_i"))
+cores_c <- as.vector(cli_in_pm_cont_top_c$cor)
 #############################################################################################
+##Caso não haja informações para plotar o gráfico(texto informando que não há informações p/ o período)
 ### Gráfico m2 de distribuição das marcas (top5)
 ###################
 if (nrow(cli_in_pm_cont_top_t) > 0){
@@ -601,25 +716,47 @@ if (nrow(cli_in_pm_cont_top_t) > 0){
 if(dash == F){
   m2_t
 }
+
+## Gráfico m2 de distribuição das marcas (top5)
+###################
+if (nrow(cli_in_pm_cont_top_c) > 0){
+  m2_c <- plot_ly(cli_in_pm_cont_top_c, type = 'bar', orientation = 'v',
+                  x = ~marca_nome,
+                  y = ~sum,
+                  # color = ~pal(marca_nome),
+                  color = ~marca_nome,     #Se quiser setar pela tabela, com join, senáo usar o factor como é feito acima
+                  colors = cores_c,
+                  showlegend = FALSE)
+
+  m2_c <- m2_c %>%
+    layout(xaxis = list(title = ''),
+           yaxis = list(title = ''))
+}else{
+  ##Caso não haja informações para plotar o gráfico(texto informando que não há informações p/ o período)
+  m2_c <- include_graphics(s_dados_path)
+
+}
+if(dash == F){
+  m2_c
+}
 if(teste == F){
   #tabelas
-  rm(cli_in_pm_cont_top_t, cli_in_pm_in_p_in_m, cli_in_pm_in_p, cli_in_pm, top10_c, top10_t,
+  rm(cli_in_pm_cont_top_t, cli_in_pm_cont_top_c, cli_in_pm_in_p_in_m, cli_in_pm_in_p, cli_in_pm, top10_c, top10_t,
      marcas_ic_co);
   #variáveis
   rm(cores_c, cores_t);
 }
-
-#######################################################################
-
+###########################################################################################################
 ```
 
 
 Top 10 Categorias
 =======================================================================
 
-Column {data-width=350}
+  Column {data-width=350}
 -----------------------------------------------------------------------
 `r paste("###  Valor Financeiro de Negócios Cadastrados, por categoria em", ano)`
+
 
 ```{r}
 ### Gráfico hc_n4 - Valor financeiro de negócios em 2020  (por categoria)
@@ -637,15 +774,15 @@ n5
 
 ```
 
-Mapa das marcas
+Marcas (Tratores)
 =======================================================================
 
-Column {data-width=750}
+  Column {data-width=750}
 -----------------------------------------------------------------------
 
-### Mapa das marcas
+  ### Mapa das marcas
 ```{r}
-### Gráfico m1 de distribuição das marcas (top5) da komatsu
+### Gráfico m1 de distribuição das marcas (top5)
 m1_t
 
 ```
@@ -653,9 +790,32 @@ m1_t
 Column {data-width=350}
 -----------------------------------------------------------------------
 
-### Distribuição das marcas
+  ### Distribuição das marcas
 ```{r}
-### Gráfico m2 de distribuição das marcas da komatsu
+### Gráfico m2 de distribuição das marcas
 m2_t
+
+```
+
+Marcas (Colheitadeiras)
+=======================================================================
+
+  Column {data-width=750}
+-----------------------------------------------------------------------
+
+  ### Mapa das marcas
+```{r}
+### Gráfico m1 de distribuição das marcas (top5)
+m1_c
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+  ### Distribuição das marcas
+```{r}
+### Gráfico m2 de distribuição das marcas
+m2_c
 
 ```
