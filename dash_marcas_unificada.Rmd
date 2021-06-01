@@ -6,7 +6,7 @@ output:
   vertical_layout: fill
 params:
   empresa: "emp_par"
-  dash_vend: false
+  dash_vend: true
   dash_mob: false
   vendedor: "vend_par"
   num_dias: 0
@@ -108,8 +108,9 @@ if(params$dash_vend == F){ ## dash geral e mobile
   }
 }else{ ## No caso do vendedor, preciso definir o id do vendedor também
   if(params$empresa == 'emp_par' && params$vendedor == 'vend_par'){ ## Escolher empresa e vendedor testado
-    empresa = 78
-    vend_id = 1058
+    empresa = 16
+    vend_id = 1068
+    ## vend_id super -> 28, 29, 1118, 1165 (ativos)
   }else{
     empresa = as.integer(params$empresa)
     vend_id = as.integer(params$vendedor)
@@ -777,10 +778,10 @@ n5
 Marcas (Tratores)
 =======================================================================
 
-  Column {data-width=750}
+Column {data-width=750}
 -----------------------------------------------------------------------
 
-  ### Mapa das marcas
+### Mapa das marcas
 ```{r}
 ### Gráfico m1 de distribuição das marcas (top5)
 m1_t
@@ -790,7 +791,7 @@ m1_t
 Column {data-width=350}
 -----------------------------------------------------------------------
 
-  ### Distribuição das marcas
+### Distribuição das marcas
 ```{r}
 ### Gráfico m2 de distribuição das marcas
 m2_t
@@ -800,10 +801,10 @@ m2_t
 Marcas (Colheitadeiras)
 =======================================================================
 
-  Column {data-width=750}
+Column {data-width=750}
 -----------------------------------------------------------------------
 
-  ### Mapa das marcas
+### Mapa das marcas
 ```{r}
 ### Gráfico m1 de distribuição das marcas (top5)
 m1_c
@@ -813,7 +814,7 @@ m1_c
 Column {data-width=350}
 -----------------------------------------------------------------------
 
-  ### Distribuição das marcas
+### Distribuição das marcas
 ```{r}
 ### Gráfico m2 de distribuição das marcas
 m2_c
