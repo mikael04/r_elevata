@@ -49,7 +49,7 @@ if(!teste){
   }else{
     data <- (lubridate::today()-lubridate::days(num_dias))
     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
-    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1)) 
+    ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
     ####Variavel global c/ mês atual (para comparação)
     mes_atual = lubridate::ymd(data -days(lubridate::day(data)-1))
     ## Apenas ano, para gerar títulos
@@ -76,7 +76,11 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 65
+empresa = 16
+vend_id = 1165
+params <- NULL
+params$dash_vend = T
+params$dash_mob = F
 ###################################
 
 ################################################################################
@@ -186,7 +190,7 @@ if(nrow(vc_ij_vse_ij_v) > 0){
       brbg_mot <- brewer.pal(n_m_color,'Paired')
     }
   }
-  
+
   axis_h <- list(
     title = "")
   v0 <- plot_ly(vc_ij_vse_ij_v_ag, type = "bar", orientation = 'h', x = ~motivo_n, y = ~reorder(vendedor_nome, desc(vendedor_nome)), color = ~motivo,
@@ -239,7 +243,7 @@ if(nrow(vc_ij_vre_ij_v) > 0){
       brbg_res <- brewer.pal(n_r_color,'Paired')
     }
   }
-  
+
   v1 <- plot_ly(vc_ij_vre_ij_v_ag, type = "bar", orientation = 'h', x = ~resultado_n, y = ~reorder(vendedor_nome, desc(vendedor_nome)), color = ~resultado,
                 colors = brbg_res,
                 name = ~resultado)
@@ -356,7 +360,7 @@ cli_c_neg_ij_vis_cont <- cli_c_neg_ij_vis %>%
 
 ### Histogramas
 if(nrow(cli_c_neg_ij_vis_cont > 0)){
-  
+
   ### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios (clientes com visitas em 2020)
   c5 <- plot_ly() %>%
     add_histogram(data =  cli_s_neg_ij_vis_cont,
@@ -369,7 +373,7 @@ if(nrow(cli_c_neg_ij_vis_cont > 0)){
                   opacity = 0.6) %>%
     layout (xaxis = list(title = 'Intervalos'),
             yaxis = list(title = 'Número de clientes'))
-  
+
   if(dash == F){
     c5
   }
@@ -385,18 +389,18 @@ if(nrow(cli_c_neg_ij_vis_cont > 0)){
                   opacity = 0.6) %>%
     layout (xaxis = list(title = 'Intervalos'),
             yaxis = list(title = 'Número de clientes'))
-  
+
   if(dash == F){
     c4
   }
-  
+
   ### Gráfico c4_c5 - Ambos histogramas anteriores (c4 e c5)
   c4_c5 <- subplot(c4, c5) %>%
     layout(legend = list(x=0.7, y=0.9),
            title = "Clientes por intervalo",
            xaxis = list(title = ''),
            yaxis = list(title = 'Distribuição de clientes'))
-  
+
   if(teste == F){
     #tabelas
     rm(visita_cliente, cliente, negocio, cli_ij_ng, cli_c_neg_ij_vis_cont, cli_s_neg_ij_vis_cont,
@@ -404,7 +408,7 @@ if(nrow(cli_c_neg_ij_vis_cont > 0)){
     #variáveis
     rm();
   }
-  
+
   if(dash == F){
     c4_c5
   }

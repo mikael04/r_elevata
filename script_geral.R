@@ -84,6 +84,10 @@ s_dados_path <- "s_dados.png"
 #empresa = params$variable1
 #teste
 empresa = 16
+vend_id = 1165
+params <- NULL
+params$dash_vend = T
+params$dash_mob = F
 ###################################
 
 #################################################################################

@@ -180,11 +180,11 @@ if(nrow(prop_ij_neg_cont_vend_a_ij_propag_anat) > 0){
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(traceorder = 'normal', orientation = 'h'))
-  
+
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   #p0 <- s_dados
-  p0 <- include_graphics(s_dados_path)
+  p0 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   p0
@@ -205,7 +205,7 @@ if(nrow(prop_ij_neg_ij_propag_cont_anat) > 0){
   prop_ij_neg_ij_propag_cont_anat <- prop_ij_neg_ij_propag_cont_anat %>% dplyr::rowwise() %>%
     dplyr::mutate(sum_valor_v_t = func_fmt_din(sum_valor_v))
   Encoding(prop_ij_neg_ij_propag_cont_anat$sum_valor_v_t) <- "UTF-8"
-  
+
   p1 <- plot_ly(prop_ij_neg_ij_propag_cont_anat, type = 'bar', x = ~proposta_status , y = ~sum_valor_v,
                 color = ~proposta_status,
                 colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
@@ -228,11 +228,11 @@ if(nrow(prop_ij_neg_ij_propag_cont_anat) > 0){
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(traceorder = 'normal'))
-  
+
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   #p1 <- s_dados
-  p1 <- include_graphics(s_dados_path)
+  p1 <- knitr::include_graphics(s_dados_path)
 }
 
 if(dash == F){
@@ -244,7 +244,7 @@ if(teste == F){
   if(dash == F){
     rm()
   }
-  rm(prop_ij_neg_anat, prop_ij_neg_ij_vend_ij_propag_anat, prop_ij_neg_ij_vend_anat, prop_ij_neg_ij_propag_cont_anat);
+  rm(prop_ij_neg_ij_vend_ij_propag_anat, prop_ij_neg_ij_vend_anat, prop_ij_neg_ij_propag_cont_anat);
   #variáveis
   rm(status);
 }
@@ -280,7 +280,7 @@ if(nrow(prop_ij_neg_ij_vend_cont_us) > 0){
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   #p2 <- s_dados
-  p2 <- include_graphics(s_dados_path)
+  p2 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   p2
@@ -411,7 +411,7 @@ if(nrow(fat_tot_categorias) > 0){
   ##Adicionando a matriz pra poder exibir no gráfico ###########################################################################################################
   fat_tot_categorias <- fat_tot_categorias %>%
     dplyr::mutate(med_emp = media_empresa) %>% dplyr::rowwise() %>%
-    dplyr::mutate(fat_med_t = func_fmt_din(fat_med)) %>% 
+    dplyr::mutate(fat_med_t = func_fmt_din(fat_med)) %>%
     dplyr::mutate(med_emp_t = func_fmt_din(med_emp))
   ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
   Encoding(fat_tot_categorias$fat_med_t) <- "UTF-8"
@@ -420,12 +420,12 @@ if(nrow(fat_tot_categorias) > 0){
 }
 
 ### Gráfico p3 - Ticket médio novos
-if(nrow(fat_tot_categorias) > 0){
+if(nrow(fat_tot_categorias) > 0 && sum(fat_tot_categorias$fat_med) > 0){
   ax <- list(
     autotick = TRUE,
     title = "",
     showticklabels = TRUE)
-  
+
   p3 <- plot_ly(fat_tot_categorias, x = ~categoria_nome)
   p3 <- p3 %>%
     add_trace(type = "bar", y = ~fat_med,
@@ -437,7 +437,7 @@ if(nrow(fat_tot_categorias) > 0){
                              '<br>' ,
                              fat_med_t),
               hoverinfo = "text")
-  
+
   p3 <- p3 %>%
     add_trace(type = "scatter", mode = "markers+line", y = ~med_emp,
               name = 'Novos (média)',
@@ -456,7 +456,7 @@ if(nrow(fat_tot_categorias) > 0){
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   #p3 <- s_dados
-  p3 <- include_graphics(s_dados_path)
+  p3 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   p3
@@ -477,22 +477,22 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
     dplyr::group_by(proposta_id) %>%
     dplyr::mutate (valor_proposta = sum(pp_valor_tot)) %>%
     dplyr::ungroup ()
-  
+
   ##media geral da empresa
   total_empresa_us <- sum(p_ij_n_ij_pp_empresa_us$pp_valor_tot)
   n_empresa_us <- nrow(p_ij_n_ij_pp_empresa_us)
   media_empresa_us <- round((total_empresa_us/n_empresa_us), 2)
-  
-  
+
+
   ##Calculando ticket médio por categoria
-  
+
   p_ij_n_ij_pp_ij_prod_us <- inner_join (p_ij_n_ij_pp_empresa_us, produto, by= c('pp_produto_id' = 'produto_id')) %>%
     dplyr::select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_produto_id, pp_quantidade, pp_valor_tot, produto_categoria_id, vendedor_empresa_id, negocio_tipo_negocio) %>%
     dplyr::filter(proposta_status == 4, vendedor_empresa_id == empresa) #Proposta finalizada
-  
+
   ##Adicionar categoria pra ver se é isso mesmo
   p_ij_n_ij_pp_ij_prod_us <- inner_join(p_ij_n_ij_pp_ij_prod_us, categoria, by = c("produto_categoria_id" = "categoria_id"))
-  
+
   ## Primeira vez pra verificar quais são os top5
   pr_top5_fat_us <- p_ij_n_ij_pp_ij_prod_us %>%
     dplyr::select(produto_categoria_id, pp_valor_tot) %>%
@@ -501,32 +501,32 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
     dplyr::mutate(n = n()) %>%
     dplyr::distinct (produto_categoria_id, .keep_all = TRUE) %>%
     dplyr::ungroup ()
-  
-  
+
+
   #Arrumando encoding
   Encoding(categoria$categoria_nome) <- 'latin1'
-  
+
   ##Aqui estou juntando para agrupar primeiro através do na
   pr_top5_fat_aux <- left_join(pr_top5_fat_us, top5_fat_ij_cat, by=c("produto_categoria_id" = "produto_categoria_id"))
   pr_top5_fat_aux$produto_categoria_id[is.na(pr_top5_fat_aux$categoria_nome)] <- "-1"
   pr_top5_fat_aux$categoria_nome[is.na(pr_top5_fat_aux$categoria_nome)] <- "OUTRAS *"
-  
-  
+
+
   ##Depois de setar as linhas q tem nome de coluna = na (não estão no top5) e ter setado todas pra id = -1, faço a soma dos n e faturamentos
   n_out <- sum(pr_top5_fat_aux$n[which(pr_top5_fat_aux$produto_categoria_id=="-1")])
   fat_out <- sum(pr_top5_fat_aux$fat[which(pr_top5_fat_aux$produto_categoria_id=="-1")])
-  
+
   ##E então, repasso o valor de volta para a coluna "outros", de faturamento total (de todas as categorias menos as q estão no top5) e número de vezes que aparecem
   pr_top5_fat_aux$n[pr_top5_fat_aux$produto_categoria_id=='-1'] <- n_out
   pr_top5_fat_aux$fat[pr_top5_fat_aux$produto_categoria_id=='-1'] <- fat_out
-  
+
   ##E aqui removo as demais linhas, que já foram adicionadas a "Outros"
   pr_top5_fat_aux <- pr_top5_fat_aux[!is.na(pr_top5_fat_aux$categoria_nome),]
-  
+
   ##Aqui só renomeio pra ver que a categoria outros tem um * representando a soma de todas as outras categorias também
   #pr_top5_fat_aux$categoria_nome[(pr_top5_fat_aux$categoria_nome == "OUTRA")] <- "OUTRA *" #Não mais necessário pq já tneho que adicionar a categoria outra então já faço com nome que quero
-  
-  
+
+
   ## Aqui já estõu fazendo a média das categorias
   pr_top5_fat_med_us <- pr_top5_fat_aux %>%
     dplyr::select(categoria_nome, produto_categoria_id, fat, n) %>%
@@ -534,10 +534,10 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
     dplyr::mutate(fat_med = fat/n) %>%
     dplyr::distinct (produto_categoria_id, .keep_all = TRUE) %>%
     dplyr::ungroup ()
-  
-  
+
+
   fat_tot_categorias_us <- pr_top5_fat_med_us
-  
+
   ##Adicionando coluna com os valores já em texto para plot
   if(nrow(fat_tot_categorias_us) > 0){
     fat_tot_categorias_us <- fat_tot_categorias_us %>%
@@ -548,17 +548,17 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
       dplyr::mutate(fat_med_us_t = func_fmt_din(fat_med_us)) %>%
       ## Adicionando valores convertidos em texto e real (mil, milhão e R$) para apresentação
       dplyr::mutate(med_emp_us_t = func_fmt_din(media_empresa_us))
-    
+
     ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
     Encoding(fat_tot_categorias_us$fat_med_us_t) <- "UTF-8"
     ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
     Encoding(fat_tot_categorias_us$med_emp_us_t) <- "UTF-8"
   }
-  
+
   fat_tot_categorias_n_us <- full_join(fat_tot_categorias, fat_tot_categorias_us, by=("categoria_nome")) %>%
     dplyr::select(-produto_categoria_id_us)
   ### Gráfico p4 - Ticket médio de novos e usados (se for apenas novos, vai usar p3)
-  if(nrow(fat_tot_categorias_us) > 0){
+  if(nrow(fat_tot_categorias_us) > 0 && nrow(fat_tot_categorias) > 0){
     ax <- list(
       autotick = TRUE,
       title = "",
@@ -574,7 +574,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
                                '<br>' ,
                                fat_med_t),
                 hoverinfo = "text")
-    
+
     p4 <- p4 %>%
       add_trace(type = "bar", y = ~fat_med_us,
                 name = 'Categorias usados',
@@ -585,8 +585,8 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
                                '<br>' ,
                                fat_med_us_t),
                 hoverinfo = "text")
-    
-    
+
+
     p4 <- p4 %>%
       add_trace(type = "scatter", mode = "markers+line", y = ~med_emp,
                 name = 'Novos (média)',
@@ -594,7 +594,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
                 text = ~paste0('Ticket médio novos<br>' , med_emp_t),
                 hoverinfo = "text",
                 marker = list(color = 'red'))
-    
+
     p4 <- p4 %>%
       add_trace(type = "scatter", mode = "markers+line", y = ~med_emp_us,
                 name = 'Usados (média)',
@@ -602,7 +602,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
                 text = ~paste0('Ticket médio usados<br>' , med_emp_us_t),
                 hoverinfo = "text",
                 marker = list(color = 'red'))
-    
+
     p4 <- p4 %>%
       layout(
         autosize = T,
@@ -614,9 +614,46 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
                       xanchor = "center",
                       traceorder = 'normal'))
   }else {
-    ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
-    #p4 <- s_dados
-    p4 <- include_graphics(s_dados_path)
+    ## Nesse caso ele tem apenas propostas com usados
+    if(nrow(fat_tot_categorias_us) > 0){
+      ax <- list(
+        autotick = TRUE,
+        title = "",
+        showticklabels = TRUE)
+      p4 <- plot_ly(fat_tot_categorias_n_us, x = ~categoria_nome)
+      p4 <- p4 %>%
+        add_trace(type = "bar", y = ~fat_med_us,
+                  name = 'Categorias usados',
+                  marker = list(color = '#DAA520'),
+                  text = ~paste0("Categoria usados",
+                                 '<br>' ,
+                                 categoria_nome,
+                                 '<br>' ,
+                                 fat_med_us_t),
+                  hoverinfo = "text")
+
+      p4 <- p4 %>%
+        add_trace(type = "scatter", mode = "markers+line", y = ~med_emp_us,
+                  name = 'Usados (média)',
+                  line = list(color = '#6e2c00'),
+                  text = ~paste0('Ticket médio usados<br>' , med_emp_us_t),
+                  hoverinfo = "text",
+                  marker = list(color = 'red'))
+      p4 <- p4 %>%
+        layout(
+          autosize = T,
+          xaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = ''),
+          #range nos dois eixos iguais pra ficar na mesma proporção
+          yaxis = list(title = '', showgrid = TRUE, zeroline = T),
+          ##aqui eu ajusto onde quero que apareça a legenda
+          legend = list(orientation = "h", x = 0.5,
+                        xanchor = "center",
+                        traceorder = 'normal'))
+    }else{
+      ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
+      #p4 <- s_dados
+      p4 <- knitr::include_graphics(s_dados_path)
+    }
   }
 } else{
   p4 <- NULL
@@ -631,7 +668,7 @@ if (dash == F){
 
 if(teste == F){
   #tabelas
-  rm(ax, categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_n_ij_pp_empresa_us, pr_top5_fat, pr_top5_fat_aux,
+  rm(categoria, fat_tot_categorias, p_ij_n_ij_pp_empresa, p_ij_n_ij_pp_empresa_us, pr_top5_fat, pr_top5_fat_aux,
      pr_top5_fat_med, proposta_produto, top5_fat, top5_fat_ij_cat, p_ij_n_ij_pp_ij_prod,
      p_ij_n_ij_v_ij_pp, p_ij_n_ij_v_ij_pp_n, negocio_produto, negocio_aux, fat_tot_categorias_us, p_ij_n_ij_pp_ij_prod_us,
      pr_top5_fat_med_us, pr_top5_fat_us)
@@ -685,12 +722,12 @@ if(nrow(p_ij_n_ij_pp_sum_cat) > 0){
                 marker = list(color = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32")),
                 text = ~paste(proposta_status,'<br>' , valor_status_t),
                 hoverinfo = "text")
-  
+
   p5 <- p5 %>%
     layout(barmode = 'identity', xaxis = ax, yaxis = ax)
 }else {
   #p5 <- s_dados
-  p5 <- include_graphics(s_dados_path)
+  p5 <- knitr::include_graphics(s_dados_path)
 }
 
 
@@ -838,7 +875,7 @@ if(nrow(p_ij_ppa_sum_modo_ij_pmf) > 0){
     layout(legend = list(orientation = 'h'))
 }else {
   #p6 <- s_dados
-  p6 <- include_graphics(s_dados_path)
+  p6 <- knitr::include_graphics(s_dados_path)
 }
 if(dash == F){
   p6
@@ -863,7 +900,7 @@ if(nrow(p_ij_ppa_sum_forma_ij_pmf) > 0){
     layout(legend = list(orientation = 'h'))
 }else {
   #p7 <- s_dados
-  p7 <- include_graphics(s_dados_path)
+  p7 <- knitr::include_graphics(s_dados_path)
 }
 
 if(dash == F){
@@ -877,8 +914,5 @@ if(teste == F){
   #    n_empresa, n_empresa_us, total_empresa_us);
   #variáveis
   # if(empresa == 16){rm(aux_3perc, n_outros_forma, n_total_modo)}
-}
-if (teste == 0) {
-  #rm(list=ls())
 }
 ######################################################################################
