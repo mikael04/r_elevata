@@ -77,6 +77,10 @@ s_dados_path <- "s_dados.png"
 #empresa = params$variable1
 #teste
 empresa = 16
+vend_id = 1165
+params <- NULL
+params$dash_vend = T
+params$dash_mob = F
 
 ######################################################################################
 ###Começando scripts proposta_scripts
@@ -85,20 +89,25 @@ empresa = 16
 ##-> Collect cria o dataframe resultado da query, proposta será a tabela na qual estou lendo (FROM cliente)
 ##coleta todas as propostas
 proposta <- fread("Tabelas/proposta.csv", colClasses = c(proposta_id = "character", proposta_negocio_id = "character")) %>%
-  select(proposta_id, proposta_versao, proposta_negocio_id, proposta_data_cadastro, proposta_status)
+  dplyr::select(proposta_id, proposta_versao, proposta_negocio_id, proposta_data_cadastro, proposta_status)
 
 ##-> Collect cria o dataframe resultado da query, negocio será a tabela na qual estou lendo (FROM cliente)
 negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character")) %>%
-  select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id)
+  dplyr::select(negocio_id, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_usado, negocio_produto_id)
 
 
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
-  select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa)
-
+  dplyr::select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
+  dplyr::filter (vendedor_empresa_id == empresa)
+## Caso seja dash de vendedor, selecionar vendedor
+if(params$dash_vend){
+  vendedor <- vendedor %>%
+    dplyr::filter(vendedor_id == vend_id)
+}
+## Vendedores ativos
 vendedor_a <- vendedor %>%
-  filter (vendedor_ativo == T)
+  dplyr::filter (vendedor_ativo == T)
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
@@ -112,15 +121,15 @@ if(empresa == 16){
 
 ##coleta proposta_pagamento
 proposta_pagamento <- fread("Tabelas/proposta_pagamento.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character")) %>%
-  select(pp_id, pp_proposta_id, pp_modo_id, pp_forma_id, pp_valor, pp_ativo, pp_usado_id) %>%
-  filter(pp_ativo == 1) %>%
-  select(-pp_ativo)
+  dplyr::select(pp_id, pp_proposta_id, pp_modo_id, pp_forma_id, pp_valor, pp_ativo, pp_usado_id) %>%
+  dplyr::filter(pp_ativo == 1) %>%
+  dplyr::select(-pp_ativo)
 
 ###################################
 
 ##junção de proposta com negócio
 prop_ij_neg <- inner_join(proposta, negocio, by=c("proposta_negocio_id" = "negocio_id")) %>%
-  select (proposta_id, proposta_data_cadastro, proposta_status, proposta_negocio_id, negocio_data_cadastro, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_usado, negocio_produto_id)
+  dplyr::select (proposta_id, proposta_data_cadastro, proposta_status, proposta_negocio_id, negocio_data_cadastro, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_usado, negocio_produto_id)
 
 ##removendo os campos onde um ID de proposta não corresponde a um ID de negócio (erro no banco?)/Acho que era erro na junção (inner parece ter resolvido)
 #prop_ij_neg <- prop_ij_neg[!is.na(prop_ij_neg$negocio_vendedor_id),]
@@ -134,29 +143,29 @@ prop_ij_neg_ij_vend <- inner_join(prop_ij_neg, vendedor, by=c("negocio_vendedor_
 
 ##Filtrando a empresa
 prop_ij_neg_ij_vend_anat <- prop_ij_neg_ij_vend %>%
-  filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= ano_atual, proposta_data_cadastro < (ano_atual+years(1)))
+  dplyr::filter(vendedor_empresa_id == empresa, proposta_data_cadastro >= ano_atual, proposta_data_cadastro < (ano_atual+years(1)))
 
 prop_ij_neg_ij_vend_ij_propag_anat <- inner_join(prop_ij_neg_ij_vend_anat, proposta_pagamento, by=c("proposta_id" = "pp_proposta_id")) %>%
-  select (-pp_modo_id, -pp_forma_id, -pp_usado_id)
+  dplyr::select (-pp_modo_id, -pp_forma_id, -pp_usado_id)
 
 
 status = c("Pendente", "Aceito", "Recusado", "Cancelado", "Finalizado")
 
 ##Aqui tenho a contagem de status por vendedor
 prop_ij_neg_ij_vend_ij_propag_anat <- prop_ij_neg_ij_vend_ij_propag_anat %>%
-  select (negocio_vendedor_id, negocio_vendedor_id, vendedor_nome, proposta_status, vendedor_ativo, pp_valor) %>%
-  group_by(proposta_status, negocio_vendedor_id) %>%
-  mutate(cont_status = n()) %>%
-  mutate(sum_valor = sum(pp_valor)) %>%
-  distinct(negocio_vendedor_id, proposta_status, .keep_all = TRUE) %>%
-  ungroup ()
+  dplyr::select (negocio_vendedor_id, negocio_vendedor_id, vendedor_nome, proposta_status, vendedor_ativo, pp_valor) %>%
+  dplyr::group_by(proposta_status, negocio_vendedor_id) %>%
+  dplyr::mutate(cont_status = n()) %>%
+  dplyr::mutate(sum_valor = sum(pp_valor)) %>%
+  dplyr::distinct(negocio_vendedor_id, proposta_status, .keep_all = TRUE) %>%
+  dplyr::ungroup ()
 
 
 ##Jeito mais eficiente de fazer (testar eficiência, mas logicamente mais eficiente já que quebra em intervalos e depois substitui, ao invés de rodar toda a matrix)
 prop_ij_neg_ij_vend_ij_propag_anat$proposta_status <- with(prop_ij_neg_ij_vend_ij_propag_anat, cut(proposta_status, breaks = c(-1,0,1,2,3,4),
                                                                                                    labels = status))
 prop_ij_neg_cont_vend_a_ij_propag_anat <- prop_ij_neg_ij_vend_ij_propag_anat %>%
-  filter(vendedor_ativo == T)
+  dplyr::filter(vendedor_ativo == T)
 
 ### Gráfico p0 - Número propostas, por tipo, por vendedor em anat(total)
 if(nrow(prop_ij_neg_cont_vend_a_ij_propag_anat) > 0){
@@ -171,7 +180,7 @@ if(nrow(prop_ij_neg_cont_vend_a_ij_propag_anat) > 0){
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(traceorder = 'normal', orientation = 'h'))
-
+  
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   #p0 <- s_dados
@@ -182,12 +191,12 @@ if(dash == F){
 }
 
 prop_ij_neg_ij_propag_cont_anat <- prop_ij_neg_ij_vend_ij_propag_anat %>%
-  group_by(proposta_status) %>%
-  mutate(cont_status_v = sum(cont_status)) %>%
-  mutate(sum_valor_v = sum(sum_valor)) %>%
-  distinct(proposta_status, .keep_all = T) %>%
-  select (-negocio_vendedor_id, -vendedor_nome, -vendedor_ativo, -cont_status, -sum_valor) %>%
-  ungroup ()
+  dplyr::group_by(proposta_status) %>%
+  dplyr::mutate(cont_status_v = sum(cont_status)) %>%
+  dplyr::mutate(sum_valor_v = sum(sum_valor)) %>%
+  dplyr::distinct(proposta_status, .keep_all = T) %>%
+  dplyr::select (-negocio_vendedor_id, -vendedor_nome, -vendedor_ativo, -cont_status, -sum_valor) %>%
+  dplyr::ungroup ()
 
 
 
@@ -196,7 +205,7 @@ if(nrow(prop_ij_neg_ij_propag_cont_anat) > 0){
   prop_ij_neg_ij_propag_cont_anat <- prop_ij_neg_ij_propag_cont_anat %>% dplyr::rowwise() %>%
     dplyr::mutate(sum_valor_v_t = func_fmt_din(sum_valor_v))
   Encoding(prop_ij_neg_ij_propag_cont_anat$sum_valor_v_t) <- "UTF-8"
-
+  
   p1 <- plot_ly(prop_ij_neg_ij_propag_cont_anat, type = 'bar', x = ~proposta_status , y = ~sum_valor_v,
                 color = ~proposta_status,
                 colors = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32"),
@@ -219,7 +228,7 @@ if(nrow(prop_ij_neg_ij_propag_cont_anat) > 0){
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(traceorder = 'normal'))
-
+  
 }else {
   ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
   #p1 <- s_dados
@@ -246,16 +255,16 @@ if(teste == F){
 ##############################################
 ##Aqui tenho a contagem de usados em propostasda empresa
 prop_ij_neg_ij_vend_cont_us <- prop_ij_neg_ij_vend %>%
-  select (negocio_usado) %>%
-  group_by(negocio_usado) %>%
-  mutate(usado = n()) %>%
-  distinct(negocio_usado, .keep_all = TRUE) %>%
-  ungroup ()
+  dplyr::select (negocio_usado) %>%
+  dplyr::group_by(negocio_usado) %>%
+  dplyr::mutate(usado = n()) %>%
+  dplyr::distinct(negocio_usado, .keep_all = TRUE) %>%
+  dplyr::ungroup ()
 
 total = sum(prop_ij_neg_ij_vend_cont_us$usado)
 
 prop_ij_neg_ij_vend_cont_us <- prop_ij_neg_ij_vend_cont_us %>% ###########################################################################################################
-mutate(total = total)
+dplyr::mutate(total = total)
 
 prop_ij_neg_ij_vend_cont_us$negocio_usado[prop_ij_neg_ij_vend_cont_us$negocio_usado == TRUE] <- "Proposta com usado"
 prop_ij_neg_ij_vend_cont_us$negocio_usado[prop_ij_neg_ij_vend_cont_us$negocio_usado == FALSE] <- "Proposta sem usado"
@@ -289,18 +298,18 @@ if(teste == F){
 #################################################
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
-  select(np_id, np_negocio_id, np_produto_id, np_quantidade, np_ativo, np_valor)
+  dplyr::select(np_id, np_negocio_id, np_produto_id, np_quantidade, np_ativo, np_valor)
 
 
 ##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
 produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
-  select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
+  dplyr::select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
 proposta_produto <- fread("Tabelas/proposta_produto.csv", colClasses = c(pp_id = "character", pp_proposta_id = "character", pp_produto_id = "character")) %>%
-  select(pp_id, pp_proposta_id, pp_produto_id, pp_quantidade, pp_valor, pp_ativo) %>%
-  filter (pp_ativo == 1) %>% #Filtrando pp_ativo = true
-  select(-pp_ativo) %>%
-  mutate (pp_valor_tot = pp_valor*pp_quantidade)
+  dplyr::select(pp_id, pp_proposta_id, pp_produto_id, pp_quantidade, pp_valor, pp_ativo) %>%
+  dplyr::filter (pp_ativo == 1) %>% #Filtrando pp_ativo = true
+  dplyr::select(-pp_ativo) %>%
+  dplyr::mutate (pp_valor_tot = pp_valor*pp_quantidade)
 
 
 
@@ -308,19 +317,19 @@ p_ij_n_ij_v_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_produto, by = c("p
 
 ##Vou puxar negócio novamente pra pegar a coluna de se é usado ou não (acho que é mais eficiente do que usar a tabela completa desde o início)
 negocio_aux <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character")) %>%
-  select(negocio_id, negocio_tipo_negocio)
+  dplyr::select(negocio_id, negocio_tipo_negocio)
 
 
 p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio_aux, by = c("proposta_negocio_id" = "negocio_id"))
 
 ##filtro da empresa e também propostas finalizadas, também filtrando só negócios novos e com valores acima de 10
 p_ij_n_ij_pp_empresa <- p_ij_n_ij_v_ij_pp_n %>%
-  filter(vendedor_empresa_id == empresa, proposta_status == 4, negocio_tipo_negocio == 'N', pp_valor_tot > 10)
+  dplyr::filter(vendedor_empresa_id == empresa, proposta_status == 4, negocio_tipo_negocio == 'N', pp_valor_tot > 10)
 
 p_ij_n_ij_pp_empresa <- p_ij_n_ij_pp_empresa %>%
-  group_by(proposta_id) %>%
-  mutate (valor_proposta = sum(pp_valor_tot)) %>%
-  ungroup ()
+  dplyr::group_by(proposta_id) %>%
+  dplyr::mutate (valor_proposta = sum(pp_valor_tot)) %>%
+  dplyr::ungroup ()
 
 ##media geral da empresa
 total_empresa <- sum(p_ij_n_ij_pp_empresa$pp_valor_tot)
@@ -332,25 +341,25 @@ flag_ticket_usados = F
 ##Calculando ticket médio por categoria
 
 p_ij_n_ij_pp_ij_prod <- inner_join (p_ij_n_ij_pp_empresa, produto, by= c('pp_produto_id' = 'produto_id')) %>%
-  select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_produto_id, pp_valor_tot, produto_categoria_id, vendedor_empresa_id) %>%
-  filter(proposta_status == 4, vendedor_empresa_id == empresa) #Proposta finalizada
+  dplyr::select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_produto_id, pp_valor_tot, produto_categoria_id, vendedor_empresa_id) %>%
+  dplyr::filter(proposta_status == 4, vendedor_empresa_id == empresa) #Proposta finalizada
 
 
 ## Primeira vez pra verificar quais são os top5
 pr_top5_fat <- p_ij_n_ij_pp_ij_prod %>%
-  select(produto_categoria_id, pp_valor_tot) %>%
-  group_by(produto_categoria_id) %>%
-  mutate(fat = sum(pp_valor_tot)) %>%
-  mutate(n = n()) %>%
-  distinct (produto_categoria_id, .keep_all = TRUE) %>%
-  ungroup ()
+  dplyr::select(produto_categoria_id, pp_valor_tot) %>%
+  dplyr::group_by(produto_categoria_id) %>%
+  dplyr::mutate(fat = sum(pp_valor_tot)) %>%
+  dplyr::mutate(n = n()) %>%
+  dplyr::distinct (produto_categoria_id, .keep_all = TRUE) %>%
+  dplyr::ungroup ()
 
 ##Isso aqui tudo é pra pegar o top 5 (antes top10, mas aparecia uma categoria que não queríamos), substituir os que não estão por -Outros e depois refazer a média
 top5_fat <- head.matrix(pr_top5_fat, n=5)
 
 ##Vou fazer um join pra pegar os nomes de cada categoria
 categoria <- fread("Tabelas/categoria.csv", colClasses = c(categoria_id = "character")) %>%
-  select(categoria_id, categoria_nome)
+  dplyr::select(categoria_id, categoria_nome)
 
 
 ##Super apenas (para diminuir o tamanho do nome)
@@ -388,11 +397,11 @@ pr_top5_fat_aux <- pr_top5_fat_aux[!is.na(pr_top5_fat_aux$categoria_nome),]
 
 ## Aqui já estõu fazendo a média das categorias
 pr_top5_fat_med <- pr_top5_fat_aux %>%
-  select(categoria_nome, produto_categoria_id, fat, n) %>%
-  group_by(produto_categoria_id) %>%
-  mutate(fat_med = fat/n) %>%
-  distinct (produto_categoria_id, .keep_all = TRUE) %>%
-  ungroup ()
+  dplyr::select(categoria_nome, produto_categoria_id, fat, n) %>%
+  dplyr::group_by(produto_categoria_id) %>%
+  dplyr::mutate(fat_med = fat/n) %>%
+  dplyr::distinct (produto_categoria_id, .keep_all = TRUE) %>%
+  dplyr::ungroup ()
 
 
 fat_tot_categorias <- pr_top5_fat_med
@@ -402,8 +411,8 @@ if(nrow(fat_tot_categorias) > 0){
   ##Adicionando a matriz pra poder exibir no gráfico ###########################################################################################################
   fat_tot_categorias <- fat_tot_categorias %>%
     dplyr::mutate(med_emp = media_empresa) %>% dplyr::rowwise() %>%
-    mutate(fat_med_t = func_fmt_din(fat_med)) %>%
-    mutate(med_emp_t = func_fmt_din(med_emp))
+    dplyr::mutate(fat_med_t = func_fmt_din(fat_med)) %>% 
+    dplyr::mutate(med_emp_t = func_fmt_din(med_emp))
   ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
   Encoding(fat_tot_categorias$fat_med_t) <- "UTF-8"
   ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
@@ -416,7 +425,7 @@ if(nrow(fat_tot_categorias) > 0){
     autotick = TRUE,
     title = "",
     showticklabels = TRUE)
-
+  
   p3 <- plot_ly(fat_tot_categorias, x = ~categoria_nome)
   p3 <- p3 %>%
     add_trace(type = "bar", y = ~fat_med,
@@ -428,7 +437,7 @@ if(nrow(fat_tot_categorias) > 0){
                              '<br>' ,
                              fat_med_t),
               hoverinfo = "text")
-
+  
   p3 <- p3 %>%
     add_trace(type = "scatter", mode = "markers+line", y = ~med_emp,
               name = 'Novos (média)',
@@ -459,76 +468,76 @@ p_ij_n_ij_v_ij_pp_n <- inner_join(p_ij_n_ij_v_ij_pp, negocio_aux, by = c("propos
 
 ##filtro da empresa e também propostas finalizadas, também filtrando só negócios novos e com valores acima de 10
 p_ij_n_ij_pp_empresa_us <- p_ij_n_ij_v_ij_pp_n %>%
-  filter(vendedor_empresa_id == empresa, proposta_status == 4, negocio_tipo_negocio == 'U', pp_valor_tot > 10)
+  dplyr::filter(vendedor_empresa_id == empresa, proposta_status == 4, negocio_tipo_negocio == 'U', pp_valor_tot > 10)
 
 if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
 {
   flag_ticket_usados = T
   p_ij_n_ij_pp_empresa_us <- p_ij_n_ij_pp_empresa_us %>%
-    group_by(proposta_id) %>%
-    mutate (valor_proposta = sum(pp_valor_tot)) %>%
-    ungroup ()
-
+    dplyr::group_by(proposta_id) %>%
+    dplyr::mutate (valor_proposta = sum(pp_valor_tot)) %>%
+    dplyr::ungroup ()
+  
   ##media geral da empresa
   total_empresa_us <- sum(p_ij_n_ij_pp_empresa_us$pp_valor_tot)
   n_empresa_us <- nrow(p_ij_n_ij_pp_empresa_us)
   media_empresa_us <- round((total_empresa_us/n_empresa_us), 2)
-
-
+  
+  
   ##Calculando ticket médio por categoria
-
+  
   p_ij_n_ij_pp_ij_prod_us <- inner_join (p_ij_n_ij_pp_empresa_us, produto, by= c('pp_produto_id' = 'produto_id')) %>%
-    select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_produto_id, pp_quantidade, pp_valor_tot, produto_categoria_id, vendedor_empresa_id, negocio_tipo_negocio) %>%
-    filter(proposta_status == 4, vendedor_empresa_id == empresa) #Proposta finalizada
-
+    dplyr::select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_produto_id, pp_quantidade, pp_valor_tot, produto_categoria_id, vendedor_empresa_id, negocio_tipo_negocio) %>%
+    dplyr::filter(proposta_status == 4, vendedor_empresa_id == empresa) #Proposta finalizada
+  
   ##Adicionar categoria pra ver se é isso mesmo
   p_ij_n_ij_pp_ij_prod_us <- inner_join(p_ij_n_ij_pp_ij_prod_us, categoria, by = c("produto_categoria_id" = "categoria_id"))
-
+  
   ## Primeira vez pra verificar quais são os top5
   pr_top5_fat_us <- p_ij_n_ij_pp_ij_prod_us %>%
-    select(produto_categoria_id, pp_valor_tot) %>%
-    group_by(produto_categoria_id) %>%
-    mutate(fat = sum(pp_valor_tot)) %>%
-    mutate(n = n()) %>%
-    distinct (produto_categoria_id, .keep_all = TRUE) %>%
-    ungroup ()
-
-
+    dplyr::select(produto_categoria_id, pp_valor_tot) %>%
+    dplyr::group_by(produto_categoria_id) %>%
+    dplyr::mutate(fat = sum(pp_valor_tot)) %>%
+    dplyr::mutate(n = n()) %>%
+    dplyr::distinct (produto_categoria_id, .keep_all = TRUE) %>%
+    dplyr::ungroup ()
+  
+  
   #Arrumando encoding
   Encoding(categoria$categoria_nome) <- 'latin1'
-
+  
   ##Aqui estou juntando para agrupar primeiro através do na
   pr_top5_fat_aux <- left_join(pr_top5_fat_us, top5_fat_ij_cat, by=c("produto_categoria_id" = "produto_categoria_id"))
   pr_top5_fat_aux$produto_categoria_id[is.na(pr_top5_fat_aux$categoria_nome)] <- "-1"
   pr_top5_fat_aux$categoria_nome[is.na(pr_top5_fat_aux$categoria_nome)] <- "OUTRAS *"
-
-
+  
+  
   ##Depois de setar as linhas q tem nome de coluna = na (não estão no top5) e ter setado todas pra id = -1, faço a soma dos n e faturamentos
   n_out <- sum(pr_top5_fat_aux$n[which(pr_top5_fat_aux$produto_categoria_id=="-1")])
   fat_out <- sum(pr_top5_fat_aux$fat[which(pr_top5_fat_aux$produto_categoria_id=="-1")])
-
+  
   ##E então, repasso o valor de volta para a coluna "outros", de faturamento total (de todas as categorias menos as q estão no top5) e número de vezes que aparecem
   pr_top5_fat_aux$n[pr_top5_fat_aux$produto_categoria_id=='-1'] <- n_out
   pr_top5_fat_aux$fat[pr_top5_fat_aux$produto_categoria_id=='-1'] <- fat_out
-
+  
   ##E aqui removo as demais linhas, que já foram adicionadas a "Outros"
   pr_top5_fat_aux <- pr_top5_fat_aux[!is.na(pr_top5_fat_aux$categoria_nome),]
-
+  
   ##Aqui só renomeio pra ver que a categoria outros tem um * representando a soma de todas as outras categorias também
   #pr_top5_fat_aux$categoria_nome[(pr_top5_fat_aux$categoria_nome == "OUTRA")] <- "OUTRA *" #Não mais necessário pq já tneho que adicionar a categoria outra então já faço com nome que quero
-
-
+  
+  
   ## Aqui já estõu fazendo a média das categorias
   pr_top5_fat_med_us <- pr_top5_fat_aux %>%
-    select(categoria_nome, produto_categoria_id, fat, n) %>%
-    group_by(produto_categoria_id) %>%
-    mutate(fat_med = fat/n) %>%
-    distinct (produto_categoria_id, .keep_all = TRUE) %>%
-    ungroup ()
-
-
+    dplyr::select(categoria_nome, produto_categoria_id, fat, n) %>%
+    dplyr::group_by(produto_categoria_id) %>%
+    dplyr::mutate(fat_med = fat/n) %>%
+    dplyr::distinct (produto_categoria_id, .keep_all = TRUE) %>%
+    dplyr::ungroup ()
+  
+  
   fat_tot_categorias_us <- pr_top5_fat_med_us
-
+  
   ##Adicionando coluna com os valores já em texto para plot
   if(nrow(fat_tot_categorias_us) > 0){
     fat_tot_categorias_us <- fat_tot_categorias_us %>%
@@ -539,15 +548,15 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
       dplyr::mutate(fat_med_us_t = func_fmt_din(fat_med_us)) %>%
       ## Adicionando valores convertidos em texto e real (mil, milhão e R$) para apresentação
       dplyr::mutate(med_emp_us_t = func_fmt_din(media_empresa_us))
-
+    
     ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
     Encoding(fat_tot_categorias_us$fat_med_us_t) <- "UTF-8"
     ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
     Encoding(fat_tot_categorias_us$med_emp_us_t) <- "UTF-8"
   }
-
+  
   fat_tot_categorias_n_us <- full_join(fat_tot_categorias, fat_tot_categorias_us, by=("categoria_nome")) %>%
-    select(-produto_categoria_id_us)
+    dplyr::select(-produto_categoria_id_us)
   ### Gráfico p4 - Ticket médio de novos e usados (se for apenas novos, vai usar p3)
   if(nrow(fat_tot_categorias_us) > 0){
     ax <- list(
@@ -565,7 +574,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
                                '<br>' ,
                                fat_med_t),
                 hoverinfo = "text")
-
+    
     p4 <- p4 %>%
       add_trace(type = "bar", y = ~fat_med_us,
                 name = 'Categorias usados',
@@ -576,8 +585,8 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
                                '<br>' ,
                                fat_med_us_t),
                 hoverinfo = "text")
-
-
+    
+    
     p4 <- p4 %>%
       add_trace(type = "scatter", mode = "markers+line", y = ~med_emp,
                 name = 'Novos (média)',
@@ -585,7 +594,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
                 text = ~paste0('Ticket médio novos<br>' , med_emp_t),
                 hoverinfo = "text",
                 marker = list(color = 'red'))
-
+    
     p4 <- p4 %>%
       add_trace(type = "scatter", mode = "markers+line", y = ~med_emp_us,
                 name = 'Usados (média)',
@@ -593,7 +602,7 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
                 text = ~paste0('Ticket médio usados<br>' , med_emp_us_t),
                 hoverinfo = "text",
                 marker = list(color = 'red'))
-
+    
     p4 <- p4 %>%
       layout(
         autosize = T,
@@ -639,21 +648,21 @@ p_ij_n_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_pagamento, by = c("prop
   dplyr::arrange(pp_valor)
 ##Aqui tenho a soma de faturamento da empresa dividido em categorias
 p_ij_n_ij_pp_sum <- p_ij_n_ij_pp %>%
-  select (proposta_status, pp_valor) %>%
-  group_by(proposta_status) %>%
-  mutate (valor_proposta = sum(pp_valor)) %>%
-  distinct(proposta_status, .keep_all = TRUE) %>%
-  select (-pp_valor) %>%
-  ungroup ()
+  dplyr::select (proposta_status, pp_valor) %>%
+  dplyr::group_by(proposta_status) %>%
+  dplyr::mutate (valor_proposta = sum(pp_valor)) %>%
+  dplyr::distinct(proposta_status, .keep_all = TRUE) %>%
+  dplyr::select (-pp_valor) %>%
+  dplyr::ungroup ()
 
 ## Aqui agrupo as categorias
 p_ij_n_ij_pp_sum_cat <- p_ij_n_ij_pp_sum %>%
-  select (proposta_status, valor_proposta) %>%
-  group_by(proposta_status) %>%
-  mutate (valor_status = sum(valor_proposta)) %>%
-  distinct(proposta_status, .keep_all = TRUE) %>%
+  dplyr::select (proposta_status, valor_proposta) %>%
+  dplyr::group_by(proposta_status) %>%
+  dplyr::mutate (valor_status = sum(valor_proposta)) %>%
+  dplyr::distinct(proposta_status, .keep_all = TRUE) %>%
   dplyr::arrange(proposta_status) %>%
-  ungroup ()
+  dplyr::ungroup ()
 
 ##Usar pra renomear os status das propostas
 status = c("0 - Pendente", "1 - Aceito", "2 - Recusado", "3 - Cancelado", "4 - Finalizado")
@@ -676,7 +685,7 @@ if(nrow(p_ij_n_ij_pp_sum_cat) > 0){
                 marker = list(color = c("#ADD8E6", "#00BFFF", "orange", "#DE0D26", "#32CD32")),
                 text = ~paste(proposta_status,'<br>' , valor_status_t),
                 hoverinfo = "text")
-
+  
   p5 <- p5 %>%
     layout(barmode = 'identity', xaxis = ax, yaxis = ax)
 }else {
@@ -700,9 +709,9 @@ if(teste == F){
 
 ##Já faço o filtro da empresa aqui na hora de puxar do banco
 proposta_modo_forma <- fread("Tabelas/proposta_modo_forma.csv") %>%
-  select (pmf_id, pmf_nome, pmf_ativo, PMF_EMPRESA_ID) %>%
-  filter (pmf_ativo == 1 & PMF_EMPRESA_ID == empresa) %>%
-  select (-pmf_ativo, -PMF_EMPRESA_ID)
+  dplyr::select (pmf_id, pmf_nome, pmf_ativo, PMF_EMPRESA_ID) %>%
+  dplyr::filter (pmf_ativo == 1 & PMF_EMPRESA_ID == empresa) %>%
+  dplyr::select (-pmf_ativo, -PMF_EMPRESA_ID)
 
 
 #Arrumando encoding
@@ -712,15 +721,23 @@ Encoding(proposta_modo_forma$pmf_nome) <- 'latin1'
 #proposta_modo_forma_aux <-proposta_modo_forma[,1:2]
 
 p_ij_ppa <- inner_join(proposta, proposta_pagamento, by=c('proposta_id' = 'pp_proposta_id')) %>%
-  select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id, pp_valor) %>%
-  filter (pp_modo_id != 0, pp_forma_id != 0) #, proposta_data_cadastro > 'ano_atual) ##teste de ano atual
+  dplyr::select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id, pp_valor) %>%
+  dplyr::filter (pp_modo_id != 0, pp_forma_id != 0) #, proposta_data_cadastro > 'ano_atual) ##teste de ano atual
+## Adicionando negócios para ter parâmetro de vendedor
+p_ij_ppa <- inner_join(p_ij_ppa, negocio, by=c('proposta_negocio_id' = 'negocio_id')) %>%
+  dplyr::select (proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_id, pp_modo_id, pp_forma_id, pp_usado_id, pp_valor, negocio_vendedor_id)
+
+if(params$dash_vend){
+  p_ij_ppa <- p_ij_ppa %>%
+    dplyr::filter(negocio_vendedor_id == vend_id)
+}
 
 if(teste == T){
   #####################
   ###Apenas para print
   # p_ij_ppa_ij_pmf <- inner_join (p_ij_ppa, proposta_modo_forma, by = c("pp_modo_id" = "pmf_id")) %>%
-  #   select(proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_modo_id, pmf_nome) %>%
-  #   rename(Modo_pagamento = pmf_nome) %>%
+  #   dplyr::select(proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_modo_id, pmf_nome) %>%
+  #   dplyr::rename(Modo_pagamento = pmf_nome) %>%
   #   dplyr::arrange(pp_modo_id)
   # write_excel_csv(p_ij_ppa_ij_pmf, "propostas_c_modo_pagamento.csv", delim = ";")
   #####################
@@ -729,24 +746,24 @@ if(teste == T){
   #####################
   ###Apenas para print
   # p_ij_ppa_ij_pmf <- inner_join (p_ij_ppa, proposta_modo_forma, by = c("pp_forma_id" = "pmf_id")) %>%
-  #   select(proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_forma_id, pmf_nome) %>%
-  #   rename(Forma_pagamento = pmf_nome) %>%
+  #   dplyr::select(proposta_id, proposta_negocio_id, proposta_data_cadastro, proposta_status, pp_forma_id, pmf_nome) %>%
+  #   dplyr::rename(Forma_pagamento = pmf_nome) %>%
   #   dplyr::arrange(pp_forma_id)
   # write_excel_csv(p_ij_ppa_ij_pmf, "propostas_c_forma_pagamento.csv", delim = ";")
   #####################
 }
 ##conta antes de substituir (provavelmente mais rápido lidar com int do que string) (1 contando modo) (conta todos, depois filtro através de proposta_modo_forma)
 p_ij_ppa_sum_modo <- p_ij_ppa %>%
-  select (pp_id, pp_modo_id, pp_valor) %>%
-  group_by(pp_modo_id) %>%
-  mutate(sum_modo_aux = sum(pp_valor)) %>%
-  mutate(count_modo_aux = n()) %>%
-  ungroup() %>%
-  distinct(pp_modo_id, .keep_all = T)
+  dplyr::select (pp_id, pp_modo_id, pp_valor) %>%
+  dplyr::group_by(pp_modo_id) %>%
+  dplyr::mutate(sum_modo_aux = sum(pp_valor)) %>%
+  dplyr::mutate(count_modo_aux = n()) %>%
+  dplyr::ungroup() %>%
+  dplyr::distinct(pp_modo_id, .keep_all = T)
 
 p_ij_ppa_sum_modo_ij_pmf <- inner_join (p_ij_ppa_sum_modo, proposta_modo_forma, by = c("pp_modo_id" = "pmf_id")) %>%
-  select(pp_modo_id, pmf_nome, sum_modo_aux, count_modo_aux) %>%
-  rename(Modo = pmf_nome)
+  dplyr::select(pp_modo_id, pmf_nome, sum_modo_aux, count_modo_aux) %>%
+  dplyr::rename(Modo = pmf_nome)
 
 ##Vou calcular 5% e agrupar esses que forem menores que 5% em outra categoria (outros)
 n_total_modo <- sum(p_ij_ppa_sum_modo_ij_pmf$sum_modo_aux)
@@ -761,26 +778,26 @@ if (empresa == 16){
 
 ##Aqui eu estou refazendo a contagem pq já havia uma categoria "Outras", só estou adicionando os demais (com taxa <3%) nela
 p_ij_ppa_sum_modo_ij_pmf <- p_ij_ppa_sum_modo_ij_pmf %>%
-  select (pp_modo_id, Modo, sum_modo_aux, count_modo_aux) %>%
-  group_by(pp_modo_id) %>%
-  mutate(sum_modo = sum(sum_modo_aux)) %>%
-  mutate(count_modo = sum(count_modo_aux)) %>%
-  ungroup() %>%
-  distinct(pp_modo_id, .keep_all = T)
+  dplyr::select (pp_modo_id, Modo, sum_modo_aux, count_modo_aux) %>%
+  dplyr::group_by(pp_modo_id) %>%
+  dplyr::mutate(sum_modo = sum(sum_modo_aux)) %>%
+  dplyr::mutate(count_modo = sum(count_modo_aux)) %>%
+  dplyr::ungroup() %>%
+  dplyr::distinct(pp_modo_id, .keep_all = T)
 
 
 #conta antes de substituir (provavelmente mais rápido lidar com int do que string) (2 contando forma) (conta todos, depois filtro através de proposta_modo_forma)
 p_ij_ppa_sum_forma <- p_ij_ppa %>%
-  select (pp_id, pp_forma_id, pp_valor) %>%
-  group_by(pp_forma_id) %>%
-  mutate(sum_forma_aux = sum(pp_valor)) %>%
-  mutate(count_forma_aux = n()) %>%
-  ungroup() %>%
-  distinct(pp_forma_id, .keep_all = T)
+  dplyr::select (pp_id, pp_forma_id, pp_valor) %>%
+  dplyr::group_by(pp_forma_id) %>%
+  dplyr::mutate(sum_forma_aux = sum(pp_valor)) %>%
+  dplyr::mutate(count_forma_aux = n()) %>%
+  dplyr::ungroup() %>%
+  dplyr::distinct(pp_forma_id, .keep_all = T)
 
 p_ij_ppa_sum_forma_ij_pmf <- inner_join (p_ij_ppa_sum_forma, proposta_modo_forma, by = c("pp_forma_id" = "pmf_id")) %>%
-  select(pp_forma_id, pmf_nome, sum_forma_aux, count_forma_aux) %>%
-  rename(Forma = pmf_nome)
+  dplyr::select(pp_forma_id, pmf_nome, sum_forma_aux, count_forma_aux) %>%
+  dplyr::rename(Forma = pmf_nome)
 
 ##Vou calcular 5% e agrupar esses que forem menores que 5% em outra categoria (outros)
 n_total_forma <- sum(p_ij_ppa_sum_forma_ij_pmf$sum_forma_aux)
@@ -795,12 +812,12 @@ if (empresa == 16){##Super não tem forma Outras (usando -1 como valor)
 
 ##Aqui eu estou refazendo a contagem pq já havia uma categoria "Outras", só estou adicionando os demais (com taxa <3%) nela
 p_ij_ppa_sum_forma_ij_pmf <- p_ij_ppa_sum_forma_ij_pmf %>%
-  select (pp_forma_id, Forma, sum_forma_aux, count_forma_aux) %>%
-  group_by(pp_forma_id) %>%
-  mutate(sum_forma = sum(sum_forma_aux)) %>%
-  mutate(count_forma = sum(count_forma_aux)) %>%
-  ungroup() %>%
-  distinct(pp_forma_id, .keep_all = T)
+  dplyr::select (pp_forma_id, Forma, sum_forma_aux, count_forma_aux) %>%
+  dplyr::group_by(pp_forma_id) %>%
+  dplyr::mutate(sum_forma = sum(sum_forma_aux)) %>%
+  dplyr::mutate(count_forma = sum(count_forma_aux)) %>%
+  dplyr::ungroup() %>%
+  dplyr::distinct(pp_forma_id, .keep_all = T)
 
 ### Gráfico p6 - Modos de pagamento
 if(nrow(p_ij_ppa_sum_modo_ij_pmf) > 0){

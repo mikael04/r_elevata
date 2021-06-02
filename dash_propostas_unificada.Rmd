@@ -111,8 +111,8 @@ if(params$dash_vend == F){ ## dash geral e mobile
   }
 }else{ ## No caso do vendedor, preciso definir o id do vendedor também
   if(params$empresa == 'emp_par' && params$vendedor == 'vend_par'){ ## Escolher empresa e vendedor testado
-    empresa = 78
-    vend_id = 1058
+    empresa = 16
+    vend_id = 1165
   }else{
     empresa = as.integer(params$empresa)
     vend_id = as.integer(params$vendedor)
