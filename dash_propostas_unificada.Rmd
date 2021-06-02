@@ -6,7 +6,7 @@ output:
     vertical_layout: scroll
 params:
   empresa: "emp_par"
-  dash_vend: true
+  dash_vend: false
   dash_mob: false
   vendedor: "vend_par"
   num_dias: 0
@@ -105,7 +105,7 @@ s_dados_path <- "s_dados.png"
 ## Usados para testes, caso não seja teste, apenas atribuirá os parâmetros recebidos como parâmetros globais
 if(params$dash_vend == F){ ## dash geral e mobile
   if(params$empresa == 'emp_par'){ ## Escolher variavel empresa a ser testada
-    empresa = 86
+    empresa = 59
   }else{
     empresa = as.integer(params$empresa)
   }

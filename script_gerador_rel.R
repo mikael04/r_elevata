@@ -26,6 +26,10 @@ x <- length(params_list)
 
 ## Parâmetro usado para gerar arquivos em pasta de teste e ver outros parâmetros de teste
 teste_ger_rel <- T
+param_dash_vend <- F
+param_dash_mob <- F
+param_vendedor <- "vend_par" ## Caso queira testar apenas um parâmetro
+param_empresa <- "emp_ar" ## Caso queira testar apenas um parâmetro
 ####################################
 ####################################
 ########################################################
@@ -41,8 +45,9 @@ teste_ger_rel <- T
 ########################################################
 ##Gerando dashs geral ##Funcionando, apenas comentada pra facilitar teste das marcas
 for(i in (1:x)){
-  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste_ger_rel')))
-  template <- "dash_geral.Rmd"
+  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste_ger_rel',
+                          'param_dash_vend', 'param_dash_mob', 'param_vendedor', 'param_empresa')))
+  template <- "dash_geral_unificada.Rmd"
   #Teste (nome da empresa, mais fÃ¡cil de analisar)
   # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
   print(teste_ger_rel)
@@ -60,7 +65,8 @@ for(i in (1:x)){
   if(teste_ger_rel){
     print(out_file)
   }
-  parameters <- list(variable1 = params_list[i])
+  parameters <- list(empresa = params_list[i], dash_vend = param_dash_vend, dash_mob = param_dash_mob,
+                     vendedor = param_vendedor)
 
   rmarkdown::render(template,
                     output_file = out_file,
@@ -71,8 +77,9 @@ for(i in (1:x)){
 for(i in (1:x)){
   if (params_list[i] != 78 & params_list[i] != 79)
   {
-    rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste_ger_rel', 'empresas_ativas')))
-    template <- "dash_marcas.Rmd"
+    rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste_ger_rel',
+                            'param_dash_vend', 'param_dash_mob', 'param_vendedor', 'param_empresa')))
+    template <- "dash_marcas_unificada.Rmd"
     #Teste (nome da empresa, mais fÃ¡cil de analisar)
     # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
     if(teste_ger_rel){
@@ -86,20 +93,22 @@ for(i in (1:x)){
     }else{
       out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
     }
-    parameters <- list(variable1 = params_list[i])
+    parameters <- list(empresa = params_list[i], dash_vend = param_dash_vend, dash_mob = param_dash_mob,
+                       vendedor = param_vendedor)
 
     rmarkdown::render(template,
                       output_file = out_file,
                       params = parameters)
     invisible(TRUE)
   }else{ ##########Caso seja a komatsu, marcas diferentes
-    template <- "dash_marcas_k.Rmd"
+    template <- "dash_marcas_k_unificada.Rmd"
     if(teste_ger_rel){
       out_file <- sprintf("Dashs_teste/Marcas_%s", params_list[i])
     }else{
       out_file <- sprintf("Dashs/Marcas_%s", params_list[i])
     }
-    parameters <- list(variable1 = params_list[i])
+    parameters <- list(empresa = params_list[i], dash_vend = param_dash_vend, dash_mob = param_dash_mob,
+                       vendedor = param_vendedor)
 
     rmarkdown::render(template,
                       output_file = out_file,
@@ -109,8 +118,9 @@ for(i in (1:x)){
 }
 # ## Gerando dash negocios
 for(i in (1:x)){
-  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste_ger_rel')))
-  template <- "dash_negocios.Rmd"
+  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste_ger_rel',
+                          'param_dash_vend', 'param_dash_mob', 'param_vendedor', 'param_empresa')))
+  template <- "dash_negocios_unificada.Rmd"
   #Teste (nome da empresa, mais fÃ¡cil de analisar)
   # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
   if(teste_ger_rel){
@@ -124,7 +134,8 @@ for(i in (1:x)){
   }else{
     out_file <- sprintf("Dashs/Negocios_%s", params_list[i])
   }
-  parameters <- list(variable1 = params_list[i])
+  parameters <- list(empresa = params_list[i], dash_vend = param_dash_vend, dash_mob = param_dash_mob,
+                     vendedor = param_vendedor)
 
   rmarkdown::render(template,
                     output_file = out_file,
@@ -133,8 +144,9 @@ for(i in (1:x)){
 }
 ## Gerando dash propostas
 for(i in (1:x)){
-  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste_ger_rel')))
-  template <- "dash_propostas.Rmd"
+  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste_ger_rel',
+                          'param_dash_vend', 'param_dash_mob', 'param_vendedor', 'param_empresa')))
+  template <- "dash_propostas_unificada.Rmd"
   #Teste (nome da empresa, mais fÃ¡cil de analisar)
   # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
   if(teste_ger_rel){
@@ -148,7 +160,8 @@ for(i in (1:x)){
   }else{
     out_file <- sprintf("Dashs/Propostas_%s", params_list[i])
   }
-  parameters <- list(variable1 = params_list[i])
+  parameters <- list(empresa = params_list[i], dash_vend = param_dash_vend, dash_mob = param_dash_mob,
+                     vendedor = param_vendedor)
 
   rmarkdown::render(template,
                     output_file = out_file,
@@ -157,8 +170,9 @@ for(i in (1:x)){
 }
 ## Gerando dash visitas_clientes
 for(i in (1:x)){
-  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste_ger_rel')))
-  template <- "dash_visitas_clientes.Rmd"
+  rm(list=setdiff(ls(), c("params_list_i", "params_list", "i", 'x', 'teste_ger_rel',
+                          'param_dash_vend', 'param_dash_mob', 'param_vendedor', 'param_empresa')))
+  template <- "dash_visitas_clientes_unificada.Rmd"
   #Teste (nome da empresa, mais fÃ¡cil de analisar)
   # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
   if(teste_ger_rel){
@@ -172,7 +186,8 @@ for(i in (1:x)){
   }else{
     out_file <- sprintf("Dashs/Visitas_Clientes_%s", params_list[i])
   }
-  parameters <- list(variable1 = params_list[i])
+  parameters <- list(empresa = params_list[i], dash_vend = param_dash_vend, dash_mob = param_dash_mob,
+                     vendedor = param_vendedor)
 
   rmarkdown::render(template,
                     output_file = out_file,
