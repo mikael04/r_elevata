@@ -1,5 +1,5 @@
 fct_gera_tabelas_propostas <- function(debug){
-  #debug = T
+  # debug = T
   #Lib q será futuramente usada pros painéis interativos
   #library(shiny)
   #Lib pra conexão com o banco
@@ -116,9 +116,11 @@ fct_gera_tabelas_propostas <- function(debug){
 
   ##junção de proposta com negócio
   prop_ij_neg <- inner_join(proposta, negocio, by=c("proposta_negocio_id" = "negocio_id")) %>%
-    dplyr::select (proposta_id, proposta_data_cadastro, proposta_status, proposta_negocio_id, negocio_data_cadastro, negocio_vendedor_id, negocio_negocio_situacao_id, negocio_usado, negocio_produto_id, negocio_cliente_id)
+    dplyr::select (proposta_id, proposta_data_cadastro, proposta_status, proposta_negocio_id, negocio_data_cadastro,
+                   negocio_vendedor_id, negocio_negocio_situacao_id, negocio_usado, negocio_produto_id, negocio_cliente_id,
+                   negocio_tipo_negocio)
 
-    empresas_ativas <- fct_empresas_ativas ()
+  empresas_ativas <- fct_empresas_ativas ()
   ## Inicializando a lista de vendedores
   vendedores <- NULL
   for(i in (1:length(empresas_ativas))){
@@ -156,7 +158,7 @@ fct_gera_tabelas_propostas <- function(debug){
         print(paste0("Número de linhas = ", nrow(prop_ij_neg_ij_vend)))
       }
 
-      p_ij_n_ij_v_ij_pp <- inner_join(prop_ij_neg_ij_vend, proposta_produto, by = c("proposta_id" = "pp_proposta_id"))
+      p_ij_n_ij_v_ij_pp_n <- inner_join(prop_ij_neg_ij_vend, proposta_produto, by = c("proposta_id" = "pp_proposta_id"))
 
       ###################################################################################
       ## Criação das tabelas
