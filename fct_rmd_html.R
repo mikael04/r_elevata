@@ -23,9 +23,9 @@ library(purrr)
 # num_dias_list = 0
 ############################
 
-func_rmd_html_emp <- function(dont_delete, template, empresa, param_dash_vend, param_dash_mob,
-                              out_f, nome_dash, teste_ger_rel, num_dias_list,
-                              debug){
+func_rmd_html_emp <- function(dont_delete, template, empresa,
+                              param_dash_vend, param_dash_mob, out_f, nome_dash,
+                              teste_ger_rel, num_dias_list, debug){
   rm(list=setdiff(ls(), dont_delete))
   template_ <- template
   if(debug == T){
@@ -35,14 +35,20 @@ func_rmd_html_emp <- function(dont_delete, template, empresa, param_dash_vend, p
     #print(as.list(params_list[[i]]))
   }
   if(teste_ger_rel){
-    out_file <- paste0(getwd(), "/Dashs_teste/")
+    ## Arquivo de saída (teste)
+    out_file <- paste0(getwd(), "/Dashs_teste/", nome_dash, "_", empresa)
+    # dir.create(paste0(getwd(), "/Dashs_teste/"))
+  }else{
+    ## Arquivo de saída
+    out_file <- paste0(out_f, nome_dash, "_", empresa)
+    # dir.create(paste0(out_f))
   }
   ## Criando o diretório caso não exista
   # dir.create(paste0(out_f, empresa, "/"))
   ## Arquivo de saída
   #out_file <- paste0(out_f, empresa, "/", nome_dash, "_", vendedor)
-  out_file <- out_f
-  parameters <- list(empresa = empresa, dash_vend = param_dash_vend, dash_mob = param_dash_mob,
+  parameters <- list(empresa = empresa,
+                     dash_vend = param_dash_vend, dash_mob = param_dash_mob,
                      num_dias = num_dias_list)
   rmarkdown::render(template_,
                     output_file = out_file,
@@ -50,9 +56,10 @@ func_rmd_html_emp <- function(dont_delete, template, empresa, param_dash_vend, p
   invisible(TRUE)
 
 }
-func_rmd_html_vend <- function(dont_delete, template, empresa, vendedor, param_dash_vend,
-                               param_dash_mob, out_f, nome_dash, teste_ger_rel, num_dias_list,
-                               debug){
+empresa = 78
+func_rmd_html_vend <- function(dont_delete, template, empresa, vendedor,
+                               param_dash_vend, param_dash_mob, out_f, nome_dash,
+                               teste_ger_rel, num_dias_list, debug){
   rm(list=setdiff(ls(), dont_delete))
   template_ <- template
   if(debug == T){
@@ -62,15 +69,19 @@ func_rmd_html_vend <- function(dont_delete, template, empresa, vendedor, param_d
     #print(as.list(params_list[[i]]))
   }
   if(teste_ger_rel){
-    out_file <- sprintf("Dashs_teste/Geral_%s", params_list[i])
+    ## Arquivo de saída (teste)
+    out_file <- paste0(getwd(), "/Dashs_vend_test/", empresa, "/", nome_dash, "_", vendedor)
+    dir.create(paste0(getwd(), "/Dashs_vend_test/", empresa, "/"))
   }else{
-    out_file <- sprintf("Dashs/Geral_%s", params_list[i])
+    ## Arquivo de saída
+    out_file <- paste0(out_f, empresa, "/", nome_dash, "_", vendedor)
+    dir.create(paste0(out_f, empresa, "/"))
   }
   ## Criando o diretório caso não exista
-  dir.create(paste0(out_f, empresa, "/"))
-  ## Arquivo de saída
-  out_file <- paste0(out_f, empresa, "/", nome_dash, "_", vendedor)
-  parameters <- list(empresa = empresa, vendedor = vendedor, num_dias = num_dias_list)
+  #dir.create(paste0(out_f, empresa, "/"))
+  parameters <- list(empresa = empresa, vendedor = vendedor,
+                     dash_vend = param_dash_vend, dash_mob = param_dash_mob,
+                     num_dias = num_dias_list)
   rmarkdown::render(template_,
                     output_file = out_file,
                     params = parameters)

@@ -76,33 +76,33 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 16
+empresa = 86
 vend_id = 1165
 params <- NULL
-params$dash_vend = T
+params$dash_vend = F
 params$dash_mob = F
 ###################################
 
-################################################################################
+#################################################################################
 ##Começando script visitas_clientes
 
 ##Collect cria o df resultado da query, nesse caso, visitas_cliente, já filtrando apenas ano atual
 visita_cliente <- fread("Tabelas/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
-  select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
-  filter (vc_data_cadastro >= ano_atual)
+  dplyr::select (vc_id, vc_vendedor_id, vc_cliente_id, vc_status_id, vc_resultado_id, vc_data_cadastro) %>%
+  dplyr::filter (vc_data_cadastro >= ano_atual, vc_data_cadastro < (ano_atual+years(1)))
 
 ##Pra pegar o nome do resultado
 visita_resultado <- fread("Tabelas/visita_resultado.csv") %>%
-  select(vr_id, vr_nome, vr_ativo) %>%
-  filter(vr_ativo == 1) %>% ##Ja sao todos ativos
-  select(-vr_ativo) %>%
-  rename (resultado = vr_nome)
+  dplyr::select(vr_id, vr_nome, vr_ativo) %>%
+  dplyr::filter(vr_ativo == 1) %>% ##Ja sao todos ativos
+  dplyr::select(-vr_ativo) %>%
+  dplyr::rename (resultado = vr_nome)
 
 ##Pra filtrar os resultados da empresa
 visita_resultado_empresa <- fread("Tabelas/visita_resultado_empresa.csv") %>%
-  select(vre_resultado_id, vre_empresa_id, vre_ativo) %>%
-  filter(vre_ativo == 1, vre_empresa_id == empresa) %>% ##Ja sao todos ativos mas mantive pra manter o filtro, ja filtro a empresa
-  select(-vre_ativo)
+  dplyr::select(vre_resultado_id, vre_empresa_id, vre_ativo) %>%
+  dplyr::filter(vre_ativo == 1, vre_empresa_id == empresa) %>% ##Ja sao todos ativos mas mantive pra manter o filtro, ja filtro a empresa
+  dplyr::select(-vre_ativo)
 #Arrumando encoding
 Encoding(visita_resultado$resultado) <- 'latin1'
 
@@ -111,27 +111,34 @@ vis_res_emp <- inner_join(visita_resultado, visita_resultado_empresa, by = c('vr
 
 ##Pra pegar o nome do status
 visita_status <- fread("Tabelas/visita_status.csv") %>%
-  select(vs_id, vs_nome, vs_ativo) %>%
-  filter(vs_ativo == 1) %>%
-  select(-vs_ativo) %>%
-  rename (motivo = vs_nome)
+  dplyr::select(vs_id, vs_nome, vs_ativo) %>%
+  dplyr::filter(vs_ativo == 1) %>%
+  dplyr::select(-vs_ativo) %>%
+  dplyr::rename (motivo = vs_nome)
 
 ##Pra filtrar os status da empresa
 visita_status_empresa <- fread("Tabelas/visita_status_empresa.csv") %>%
-  select(vse_status_id, vse_empresa_id, vse_ativo) %>%
-  filter(vse_ativo == 1, vse_empresa_id == empresa) %>%
-  select(-vse_ativo)
+  dplyr::select(vse_status_id, vse_empresa_id, vse_ativo) %>%
+  dplyr::filter(vse_ativo == 1, vse_empresa_id == empresa) %>%
+  dplyr::select(-vse_ativo)
 
 #Arrumando encoding
 Encoding(visita_status$motivo) <- 'latin1'
 
 ##coleta todos os vendedores
 vendedor <- fread("Tabelas/vendedor.csv") %>%
-  select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter (vendedor_empresa_id == empresa)
+  dplyr::select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
+  dplyr::filter (vendedor_empresa_id == empresa)
+
+## Filtro para dash do vendedor
+if(params$dash_vend){
+  vendedor <- vendedor %>%
+    dplyr::filter(vendedor_id == vend_id)
+}
+
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+vendedor$vendedor_nome <- sapply(vendedor$vendedor_nome, func_nome)
 
 if(empresa == 16){
   vendedor$vendedor_nome[vendedor$vendedor_id == 723] <- "BRUNO PE.";
@@ -140,7 +147,7 @@ if(empresa == 16){
 }
 
 vendedor_a <- vendedor %>%
-  filter(vendedor_ativo == T)
+  dplyr::filter(vendedor_ativo == T)
 
 
 ##junta as duas tabelas (status e status_empresa) pra pegar o id da empresa (vs_empresa_id) e o nome do status (vs_nome)
@@ -148,35 +155,35 @@ vis_st_emp <- inner_join(visita_status, visita_status_empresa, by = c('vs_id'= '
 
 ##Juntando visita_cliente com os resultados
 vc_ij_vre <- inner_join(visita_cliente, vis_res_emp, by = c('vc_resultado_id' = 'vr_id')) %>%
-  select (vc_id, vc_vendedor_id, vc_resultado_id, resultado)
+  dplyr::select (vc_id, vc_vendedor_id, vc_resultado_id, resultado)
 ##Juntando visita_cliente com os motivos (status)
 vc_ij_vse <- inner_join(visita_cliente, vis_st_emp, by = c('vc_status_id' = 'vs_id'))%>%
-  select (vc_id, vc_vendedor_id, vc_status_id, motivo)
+  dplyr::select (vc_id, vc_vendedor_id, vc_status_id, motivo)
 
 ##juntando com vendedor pra separar por vendedor
 vc_ij_vse_ij_v <- inner_join(vc_ij_vse, vendedor, by = c('vc_vendedor_id' = 'vendedor_id')) %>%
-  select (vc_id, vc_vendedor_id, vendedor_nome, vc_status_id, motivo)
+  dplyr::select (vc_id, vc_vendedor_id, vendedor_nome, vc_status_id, motivo)
 
 ##juntando com vendedor pra separar por vendedor
 vc_ij_vre_ij_v <- inner_join(vc_ij_vre, vendedor, by = c('vc_vendedor_id' = 'vendedor_id')) %>%
-  select (vc_id, vc_vendedor_id, vendedor_nome, vc_resultado_id, resultado)
+  dplyr::select (vc_id, vc_vendedor_id, vendedor_nome, vc_resultado_id, resultado)
 
 ##Agrupando por vendedor e por motivo (vc_status_id, depois mostrar so motivo)
 vc_ij_vse_ij_v_ag <- vc_ij_vse_ij_v %>%
-  group_by(vc_vendedor_id, vc_status_id) %>%
-  mutate(motivo_n = n()) %>%
-  distinct(vc_vendedor_id, .keep_all = T) %>%
-  ungroup()
+  dplyr::group_by(vc_vendedor_id, vc_status_id) %>%
+  dplyr::mutate(motivo_n = n()) %>%
+  dplyr::distinct(vc_vendedor_id, .keep_all = T) %>%
+  dplyr::ungroup()
 
 n_vend <- vc_ij_vse_ij_v_ag %>%
   count(vendedor_nome)
 
 n_vend <- nrow(n_vend)
 
-### Gráfico v0 - Motivo das visitas (status) por vendedor em 2020
+### Gráfico v0 - Motivo das visitas (status) por vendedor em anat
 if(nrow(vc_ij_vse_ij_v) > 0){
   ##descobrindo numero de status diferentes para criar paleta de cores
-  n_m_color <- n_distinct(vc_ij_vse_ij_v_ag$vc_status_id)
+  n_m_color <- dplyr::n_distinct(vc_ij_vse_ij_v_ag$vc_status_id)
   if (n_m_color < 3){
     if (n_m_color <2){
       brbg_mot <- '#9ACD32'
@@ -220,16 +227,16 @@ if(dash == F){
 
 ##Agrupando por vendedor e por resultado (vc_status_id, depois mostrar so motivo)
 vc_ij_vre_ij_v_ag <- vc_ij_vre_ij_v %>%
-  group_by(vc_vendedor_id, vc_resultado_id) %>%
-  mutate(resultado_n = n()) %>%
-  distinct(vc_vendedor_id, .keep_all = T) %>%
-  ungroup()
+  dplyr::group_by(vc_vendedor_id, vc_resultado_id) %>%
+  dplyr::mutate(resultado_n = n()) %>%
+  dplyr::distinct(vc_vendedor_id, .keep_all = T) %>%
+  dplyr::ungroup()
 
 
-### Gráfico v1 - Resultado das visitas (resultados) por vendedor em 2020
+### Gráfico v1 - Resultado das visitas (resultados) por vendedor em anat
 if(nrow(vc_ij_vre_ij_v) > 0){
   ##descobrindo numero de status diferentes para criar paleta de cores
-  n_r_color <- n_distinct(vc_ij_vre_ij_v_ag$vc_resultado_id)
+  n_r_color <- dplyr::n_distinct(vc_ij_vre_ij_v_ag$vc_resultado_id)
   if (n_r_color < 3){
     if (n_r_color <2){
       brbg_res <- '#9ACD32'
@@ -281,43 +288,43 @@ if(dash == F){
 ### Tabelas e graficos de Clientes
 
 cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
-  select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_ultima_visita) %>%
-  filter(cliente_empresa_id == empresa)
+  dplyr::select (cliente_id, cliente_vendedor_id, cliente_empresa_id, cliente_data_cadastro, cliente_ultima_visita) %>%
+  dplyr::filter(cliente_empresa_id == empresa)
+## Filtro para dash do vendedor
+if(params$dash_vend){
+  cliente <- cliente %>%
+    dplyr::filter(cliente_vendedor_id == vend_id)
+}
 
 ##Clientes cadastrados por vendedor
 cli_p_v <- cliente %>%
-  group_by(cliente_vendedor_id) %>%
-  mutate(n_clientes = n()) %>%
-  distinct(cliente_vendedor_id, .keep_all = T) %>%
-  select(cliente_vendedor_id, n_clientes) %>%
-  arrange(cliente_vendedor_id) %>%
-  ungroup()
+  dplyr::group_by(cliente_vendedor_id) %>%
+  dplyr::mutate(n_clientes = n()) %>%
+  dplyr::distinct(cliente_vendedor_id, .keep_all = T) %>%
+  dplyr::select(cliente_vendedor_id, n_clientes) %>%
+  dplyr::arrange(cliente_vendedor_id) %>%
+  dplyr::ungroup()
 
 ##Juncao pra pegar nome do vendedor
 cli_p_v_ij_vend <- inner_join(cli_p_v, vendedor, by = c('cliente_vendedor_id' = 'vendedor_id')) %>%
-  select(cliente_vendedor_id, vendedor_nome, n_clientes)
+  dplyr::select(cliente_vendedor_id, vendedor_nome, n_clientes)
 
 
-##Já é filtrado em 2020 (filtra na tabela de visitas_cliente)
+##Já é filtrado em anat (filtra na tabela de visitas_cliente)
 vc_ij_vse_ij_v_count <- vc_ij_vse_ij_v_ag %>%
-  select (vc_vendedor_id, motivo_n) %>% ##Não vou salvar o nome pq vou fazer uma junção com a outra tabela, então só preciso do id
-  group_by(vc_vendedor_id) %>%
-  mutate(n_visitas = sum(motivo_n)) %>%
-  distinct(vc_vendedor_id, .keep_all = T) %>%
-  ungroup ()
+  dplyr::select (vc_vendedor_id, motivo_n) %>% ##Não vou salvar o nome pq vou fazer uma junção com a outra tabela, então só preciso do id
+  dplyr::group_by(vc_vendedor_id) %>%
+  dplyr::mutate(n_visitas = sum(motivo_n)) %>%
+  dplyr::distinct(vc_vendedor_id, .keep_all = T) %>%
+  dplyr::ungroup ()
 
-##Distribuição de clientes total, visita e negócios em 2020 por vendedor
+##Distribuição de clientes total, visita e negócios em anat por vendedor
 vend_cli_vis <- left_join(cli_p_v_ij_vend, vc_ij_vse_ij_v_count, by = c("cliente_vendedor_id" = "vc_vendedor_id")) %>%
-  select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas)
+  dplyr::select (cliente_vendedor_id, vendedor_nome, n_clientes, n_visitas)
 
-##Contar quantos negócios são feitos por vendedor em 2020
+##Contar quantos negócios são feitos por vendedor em anat
 negocio <- fread("Tabelas/negocio.csv", colClasses = c(negocio_id = "character", negocio_produto_id = "character", negocio_cliente_id = "character")) %>%
-  select(negocio_id, negocio_vendedor_id, negocio_cliente_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_produto_id)
-
-##Juncao pra pegar a empresa do negócio (e vendedor)
-neg_ij_vend <- inner_join(negocio, vendedor, by = c('negocio_vendedor_id' = 'vendedor_id')) %>%
-  select(negocio_id, negocio_vendedor_id)
-
+  dplyr::select(negocio_id, negocio_vendedor_id, negocio_cliente_id, negocio_negocio_situacao_id, negocio_data_cadastro, negocio_produto_id)
 
 ####################################
 ###Clientes que tiveram negócios, quantas visitas recebem (histograma) e clientes que não tiveram negócios, quantas visitas recebem
@@ -325,43 +332,43 @@ neg_ij_vend <- inner_join(negocio, vendedor, by = c('negocio_vendedor_id' = 'ven
 
 ##Contar quantos clientes aparecem em negócio
 cli_ij_ng <- inner_join(cliente, negocio, by=c("cliente_id" = "negocio_cliente_id")) %>%
-  select(cliente_id, negocio_id)
+  dplyr::select(cliente_id, negocio_id)
 
 #cli_ij_ng <- já tenho, clientes que já possuem negócios
 ##Clientes sem negócio
 cli_s_neg <- anti_join(cliente, negocio, by=c("cliente_id" = "negocio_cliente_id")) %>%
-  select(cliente_id) %>%
-  group_by(cliente_id) %>%
-  ungroup() %>%
-  distinct(cliente_id) %>%
-  mutate (neg = F)
+  dplyr::select(cliente_id) %>%
+  dplyr::group_by(cliente_id) %>%
+  dplyr::ungroup() %>%
+  dplyr::distinct(cliente_id) %>%
+  dplyr::mutate (neg = F)
 ##Clientes com negócio
 cli_c_neg <- cli_ij_ng %>%
-  select (cliente_id) %>%
-  group_by(cliente_id) %>%
-  ungroup() %>%
-  distinct(cliente_id) %>%
-  mutate (neg = T)
+  dplyr::select (cliente_id) %>%
+  dplyr::group_by(cliente_id) %>%
+  dplyr::ungroup() %>%
+  dplyr::distinct(cliente_id) %>%
+  dplyr::mutate (neg = T)
 
 cli_s_neg_ij_vis <- inner_join(cli_s_neg, visita_cliente, by = c("cliente_id" = "vc_cliente_id"))
 cli_c_neg_ij_vis <- inner_join(cli_c_neg, visita_cliente, by = c("cliente_id" = "vc_cliente_id"))
 
 ##Contanto visitas por cliente, dos que não tem negócios
 cli_s_neg_ij_vis_cont <- cli_s_neg_ij_vis %>%
-  group_by(cliente_id) %>%
+  dplyr::group_by(cliente_id) %>%
   count(name = "num_visitas") %>%
-  ungroup()
+  dplyr::ungroup()
 
 ##Contanto visitas por cliente, dos que tem negócios
 cli_c_neg_ij_vis_cont <- cli_c_neg_ij_vis %>%
-  group_by(cliente_id) %>%
+  dplyr::group_by(cliente_id) %>%
   count(name = "num_visitas") %>%
-  ungroup()
+  dplyr::ungroup()
 
 ### Histogramas
-if(nrow(cli_c_neg_ij_vis_cont > 0)){
+if(nrow(cli_c_neg_ij_vis_cont) > 0){
 
-  ### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios (clientes com visitas em 2020)
+  ### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios (clientes com visitas em anat)
   c5 <- plot_ly() %>%
     add_histogram(data =  cli_s_neg_ij_vis_cont,
                   x = ~num_visitas,
@@ -377,7 +384,7 @@ if(nrow(cli_c_neg_ij_vis_cont > 0)){
   if(dash == F){
     c5
   }
-  ### Gráfico c4 - Histograma de distirbuição clientes por visitas, clientes com negócios (clientes com visitas em 2020)
+  ### Gráfico c4 - Histograma de distirbuição clientes por visitas, clientes com negócios (clientes com visitas em anat)
   c4 <- plot_ly() %>%
     add_histogram(data =  cli_c_neg_ij_vis_cont,
                   x = ~num_visitas,
@@ -431,21 +438,27 @@ if(nrow(cli_c_neg_ij_vis_cont > 0)){
 
 ##Distribuição de clientes, mostrando no label nome do cliente, nome do vendedor e última visita
 cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")) %>%
-  select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_vendedor_id, cliente_empresa_id)
+  dplyr::select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_vendedor_id, cliente_empresa_id)
 #Arrumando encoding
 Encoding(cliente$cliente_nome) <- 'latin1'
 
 visita_cliente <- fread("Tabelas/visita_cliente.csv", colClasses = c(vc_id = "character", vc_cliente_id = "character")) %>%
-  select (vc_id, vc_vendedor_id, vc_cliente_id, vc_data_cadastro)
+  dplyr::select (vc_id, vc_vendedor_id, vc_cliente_id, vc_data_cadastro)
 
 vendedor <- fread("Tabelas/vendedor.csv") %>%
-  select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
-  filter(vendedor_ativo == 1, vendedor_empresa_id == empresa) %>%
-  select(-vendedor_ativo)
+  dplyr::select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
+  dplyr::filter(vendedor_ativo == 1, vendedor_empresa_id == empresa) %>%
+  dplyr::select(-vendedor_ativo)
+
+## Filtro para dash do vendedor
+if(params$dash_vend){
+  vendedor <- vendedor %>%
+    dplyr::filter(vendedor_id == vend_id)
+}
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
-vendedor$vendedor_nome <- func_nome(vendedor$vendedor_nome)
+vendedor$vendedor_nome <- sapply(vendedor$vendedor_nome, func_nome)
 
 ##Alterando os que não possuem latitude/longitude para 0 (que será filtrado depois)
 cliente$cliente_latitude[cliente$cliente_latitude == ''] <- '0'
@@ -455,10 +468,10 @@ cliente$cliente_longitude[cliente$cliente_longitude == '-'] <- '0'
 
 ##Clientes da empresa correta ##Clientes com valor NA, valores 0 e valores positivos de latlong (hemisf norte, leste do globo) removidos
 cliente_c_loc <- cliente %>%
-  filter (cliente_empresa_id == empresa, cliente_latitude < 0, cliente_longitude < 0) %>%
-  rename(lat = cliente_latitude, long = cliente_longitude) %>%
-  mutate(lat = as.numeric(lat), long = as.numeric(long)) %>%
-  filter (!is.null(lat), !is.na(lat))
+  dplyr::filter (cliente_empresa_id == empresa, cliente_latitude < 0, cliente_longitude < 0) %>%
+  dplyr::rename(lat = cliente_latitude, long = cliente_longitude) %>%
+  dplyr::mutate(lat = as.numeric(lat), long = as.numeric(long)) %>%
+  dplyr::filter (!is.null(lat), !is.na(lat))
 
 ##Serão feitas as junções apenas com clientes que possuem
 ##Aqui já vou filtrar só por vendedores ativos, fazer pra inativos depois
@@ -466,10 +479,10 @@ cli_in_ven <- inner_join(cliente_c_loc, vendedor, by = c('cliente_vendedor_id'='
 
 ##pegar apenas última visita por cliente
 vcUltVis <- visita_cliente %>%
-  arrange(desc(vc_data_cadastro)) %>%
-  group_by(vc_cliente_id) %>%
-  distinct(vc_cliente_id, .keep_all = T) %>%
-  ungroup ()
+  dplyr::arrange(desc(vc_data_cadastro)) %>%
+  dplyr::group_by(vc_cliente_id) %>%
+  dplyr::distinct(vc_cliente_id, .keep_all = T) %>%
+  dplyr::ungroup ()
 
 
 ##Categorias de idades
@@ -479,10 +492,10 @@ cor_idade_vis = c("#000000", "#32CD32", "#87CEFA" , "#FFD700" , "orange" , "#DE0
 
 ##left join pra manter todos, mesmo os q não tem visita
 cli_in_ven_in_vcUltVis <- left_join(cli_in_ven, vcUltVis, by = c("cliente_id" = "vc_cliente_id")) %>%
-  select(cliente_id, cliente_nome, lat, long, cliente_vendedor_id, vendedor_nome, vc_vendedor_id, vc_data_cadastro) %>%
-  mutate (idade = (as.integer(today() - as_date(vc_data_cadastro)))) %>%
-  mutate (idade_vis = "Sem Visita") %>%
-  arrange (idade)
+  dplyr::select(cliente_id, cliente_nome, lat, long, cliente_vendedor_id, vendedor_nome, vc_vendedor_id, vc_data_cadastro) %>%
+  dplyr::mutate (idade = (as.integer(today() - as_date(vc_data_cadastro)))) %>%
+  dplyr::mutate (idade_vis = "Sem Visita") %>%
+  dplyr::arrange (idade)
 
 cli_in_ven_in_vcUltVis$idade[is.na(cli_in_ven_in_vcUltVis$idade)] <- -1
 
@@ -516,7 +529,7 @@ if(nrow(cli_in_ven_in_vcUltVis) > 0){
     #var
   }
 }else{
-  m0 <- include_graphics(s_dados_path)
+  m0 <- include_graphics(s_dados_m_path)
 }
 #######################################################################
 
@@ -531,17 +544,17 @@ if(nrow(cli_in_ven_in_vcUltVis) > 0){
 df_cores <- data.frame(idades_vis, cor_idade_vis)
 
 cli_in_ven_in_vcUltVis_cont <- cli_in_ven_in_vcUltVis %>%
-  group_by(idade_vis) %>%
-  mutate(cont = n()) %>%
-  distinct(idade_vis, .keep_all = T) %>%
-  select (idade, idade_vis, cont) %>%
-  ungroup()
+  dplyr::group_by(idade_vis) %>%
+  dplyr::mutate(cont = n()) %>%
+  dplyr::distinct(idade_vis, .keep_all = T) %>%
+  dplyr::select (idade, idade_vis, cont) %>%
+  dplyr::ungroup()
 
 ## Agrupando para receber as cores do df_cores
 cli_in_ven_in_vcUltVis_cont <- left_join(cli_in_ven_in_vcUltVis_cont, df_cores, by = c('idade_vis' = 'idades_vis'))
 ## Ordenando em ordem alfabética (o color do plotly faz isso automaticamente mas se perde nas cores)
 cli_in_ven_in_vcUltVis_cont <- cli_in_ven_in_vcUltVis_cont %>%
-  arrange(idade_vis)
+  dplyr::arrange(idade_vis)
 
 if(nrow(cli_in_ven_in_vcUltVis_cont) > 0){
   c6 <- plot_ly(cli_in_ven_in_vcUltVis_cont, type = 'bar', orientation = 'v',
