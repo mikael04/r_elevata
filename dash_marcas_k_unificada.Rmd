@@ -405,9 +405,6 @@ Encoding(cliente$cliente_nome) <- 'latin1'
 if(params$dash_vend){ ## Filtrando apenas do vendedor, clientes e visitas
   cliente <- cliente %>%
   dplyr::filter(cliente_vendedor_id == vend_id)
-  
-  visita_cliente <- visita_cliente %>% 
-  dplyr::filter(vc_vendedor_id == vend_id)
 }
 
 ##Parque de máquinas

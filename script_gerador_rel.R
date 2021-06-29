@@ -1,7 +1,7 @@
+rm(list = ls())
 library(purrr)
 library(data.table)
 library(dplyr)
-rm(list = ls())
 source("fct_rmd_html.R")
 #setwd("E:\\Mikael\\OneDrive\\Projetos\\Scripts_R\\r_elevata")
 #Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")
@@ -152,7 +152,7 @@ teste_negocios_v <- T
 teste_propostas_v <- T
 teste_visitas_clientes_v <- T
 # teste_geral_v <- F
-# teste_marcas_v <- F
+# # teste_marcas_v <- F
 # teste_negocios_v <- F
 # teste_propostas_v <- F
 # teste_visitas_clientes_v <- F
@@ -172,6 +172,10 @@ dont_delete = c('empresas_ativ', 'empresas_ativas', 'vend_empresa', 'vendedores_
                 'teste_geral', 'teste_marcas', 'teste_negocios', 'teste_propostas',
                 'teste_visitas_clientes')
 out_f_vend = paste0(getwd(),"/Dashs_vendedores/")
+template_list <- list("dash_geral_unificada.Rmd", "dash_marcas_k_unificada.Rmd",
+                      "dash_negocios_unificada.Rmd", "dash_propostas_unificada.Rmd",
+                      "dash_visitas_clientes_unificada.Rmd")
+nome_dash_list <- list("Geral", "Marcas", "Negocios", "Propostas", "Visitas_clientes")
 ########################################################
 ########################################################
 ## Para vendedores, inicialmente teremos apenas komatsu
@@ -213,7 +217,7 @@ i = 0 ## Empresa 33 - Komatsu
 j = 0
 # for(i in (1:length(empresas_ativ))){ ## Se for rodar para todas as empresas
 i = 33 ## Empresa 33 - Komatsu
-empresas_ativ[[1]][[1]]
+
   for(x in (1:length(template_list))){
     for(j in (1:length(empresas_ativ[[i]][[2]]))){
       if(length(empresas_ativ[[i]][[2]]) > 0){ ## Se tiver algum vendedor
@@ -221,38 +225,38 @@ empresas_ativ[[1]][[1]]
           if(teste_ger_rel_ind){ ## Teste, se vou gerar individualmente
             if(teste_geral_v){ ## Teste Geral
               func_rmd_html_vend(dont_delete, template = template_list[[1]], empresa = empresas_ativ[[i]][[1]],
-                                vendedor = empresas_ativ[[i]][[1]][j],
+                                vendedor = empresas_ativ[[i]][[2]][j],
                                 param_dash_vend, param_dash_mob, out_f = out_f_emp,
                                 nome_dash = nome_dash_list[[1]], teste_ger_rel, num_dias_list = 0,
                                 debug = debug)
             }
             if(teste_marcas_v){ ## Teste Marcas
               func_rmd_html_vend(dont_delete, template = template_list[[2]], empresa = empresas_ativ[[i]][[1]],
-                                vendedor = empresas_ativ[[i]][[1]][j],
+                                vendedor = empresas_ativ[[i]][[2]][j],
                                 param_dash_vend, param_dash_mob, out_f = out_f_emp,                                nome_dash = nome_dash_list[[2]], teste_ger_rel, num_dias_list = 0,
                                 debug = debug)
             }
             if(teste_negocios_v){ ## Teste Negocios
               func_rmd_html_vend(dont_delete, template = template_list[[3]], empresa = empresas_ativ[[i]][[1]],
-                                vendedor = empresas_ativ[[i]][[1]][j],
+                                vendedor = empresas_ativ[[i]][[2]][j],
                                 param_dash_vend, param_dash_mob, out_f = out_f_emp,                                nome_dash = nome_dash_list[[3]], teste_ger_rel, num_dias_list = 0,
                                 debug = debug)
             }
             if(teste_propostas_v){ ## Teste Propostas
               func_rmd_html_vend(dont_delete, template = template_list[[4]], empresa = empresas_ativ[[i]][[1]],
-                                vendedor = empresas_ativ[[i]][[1]][j],
+                                vendedor = empresas_ativ[[i]][[2]][j],
                                 param_dash_vend, param_dash_mob, out_f = out_f_emp,                                nome_dash = nome_dash_list[[4]], teste_ger_rel, num_dias_list = 0,
                                 debug = debug)
             }
-            if(teste_visitas_clientes){ ## Teste Visitas_clientes
+            if(teste_visitas_clientes_v){ ## Teste Visitas_clientes
               func_rmd_html_vend(dont_delete, template = template_list[[5]], empresa = empresas_ativ[[i]][[1]],
-                                vendedor = empresas_ativ[[i]][[1]][j],
+                                vendedor = empresas_ativ[[i]][[2]][j],
                                 param_dash_vend, param_dash_mob, out_f = out_f_emp,                                nome_dash = nome_dash_list[[5]], teste_ger_rel, num_dias_list = 0,
                                 debug = debug)
             }
           }else{
             func_rmd_html_vend(dont_delete, template = template_list[[x]], empresa = empresas_ativ[[i]][[1]],
-                              vendedor = empresas_ativ[[i]][[1]][j],
+                              vendedor = empresas_ativ[[i]][[2]][j],
                               param_dash_vend, param_dash_mob, out_f = out_f_emp,                              nome_dash = nome_dash_list[[x]], teste_ger_rel, num_dias_list = 0,
                               debug =  debug)
           }
@@ -260,7 +264,7 @@ empresas_ativ[[1]][[1]]
         }else{ ## Não é teste, rodar todas as dash, jogar pra pasta Dashs
           ## Todas são rodadas atráves do j (dash) e x(empresa)
           func_rmd_html_vend(dont_delete, template = template_list[[x]], empresa = empresas_ativ[[i]][[1]],
-                            vendedor = empresas_ativ[[i]][[1]][j],
+                            vendedor = empresas_ativ[[i]][[2]][j],
                             param_dash_vend, param_dash_mob, out_f = out_f_emp,                            nome_dash = nome_dash_list[[x]], teste_ger_rel, num_dias_list = 0,
                             debug =  debug)
         }

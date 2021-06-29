@@ -96,6 +96,10 @@ vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_nome, vendedor_empresa_id, vendedor_ativo) %>%
   filter (vendedor_empresa_id == empresa)
 
+if(params$dash_vend){
+  vendedor <- vendedor %>%
+    dplyr::filter(vendedor_id == vend_id)
+}
 
 #Arrumando encoding
 Encoding(vendedor$vendedor_nome) <- 'latin1'
@@ -115,8 +119,7 @@ negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "
   select(np_id, np_negocio_id, np_produto_id, np_quantidade,np_ativo, np_valor) %>%
   mutate (np_valor_tot = np_valor*np_quantidade)
 
-
-##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só por prod_id
+##Vou selecionar produto_nome pra não ter q mudar depois, mas posso cortar essa coluna se preciso e ir só prod_id
 produto <- fread("Tabelas/produto.csv", colClasses = c(produto_id = "character", produto_marca_id = "character", produto_categoria_id = "character")) %>%
   select(produto_id, produto_nome, produto_marca_id, produto_categoria_id, produto_empresa_id)
 
@@ -179,11 +182,13 @@ if (nrow(ng_ij_vn_ij_np_fat) > 0 && sum(ng_ij_vn_ij_np_fat$total_fat) > 0){
                                '<br>' ,
                                vendedor_nome,
                                '<br>' ,
+                               negocio_status,
+                               '<br>' ,
                                total_fat_t),
                 hoverinfo = "text"
   )
   n0 <- n0 %>%
-    layout(barmode = 'stack',
+    layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(orientation = "h", x = 0.5,
@@ -277,12 +282,14 @@ if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
                                '<br>' ,
                                vendedor_nome,
                                '<br>' ,
+                               negocio_status,
+                               '<br>' ,
                                total_fat_t),
                 hoverinfo = "text"
   )
 
   n3 <- n3 %>%
-    layout(barmode = 'stack',
+    layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(orientation = "h", x = 0.5,
@@ -356,7 +363,7 @@ if (nrow(ng_ij_hist_ij_ven_num) > 0){
                 colors = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"))
 
   n6 <- n6 %>%
-    layout(barmode = 'stack',
+    layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(orientation = "v",
@@ -410,7 +417,7 @@ colors_pie <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
 if (nrow(ng_ij_hist_ij_emp_num) > 0){
   n7 <- plot_ly(ng_ij_hist_ij_emp_num, labels = ~idade_cat, values = ~num_negocios_idades, type = 'pie', sort = F,
                 texttemplate = "%{value} (%{percent})",
-                hovertemplate = paste ("%{label} <br>",
+                hovertemplate = paste (" %{label} <br>",
                                        "Equivalente a %{percent}",
                                        "<extra></extra>"),
                 marker = list(color = ~idade_cat,

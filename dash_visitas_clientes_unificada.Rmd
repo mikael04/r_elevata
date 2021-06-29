@@ -165,7 +165,7 @@ vendedor <- fread("Tabelas/vendedor.csv") %>%
 ## Filtro para dash do vendedor
 if(params$dash_vend){
   vendedor <- vendedor %>%
-  dplyr::filter(vendedor_id == vend_id)
+    dplyr::filter(vendedor_id == vend_id)
 }
 
 #Arrumando encoding
@@ -229,7 +229,7 @@ if(nrow(vc_ij_vse_ij_v) > 0){
       brbg_mot <- brewer.pal(n_m_color,'Paired')
     }
   }
-  
+
   axis_h <- list(
     title = "")
   v0 <- plot_ly(vc_ij_vse_ij_v_ag, type = "bar", orientation = 'h', x = ~motivo_n, y = ~reorder(vendedor_nome, desc(vendedor_nome)), color = ~motivo,
@@ -237,13 +237,13 @@ if(nrow(vc_ij_vse_ij_v) > 0){
                 name = ~motivo)
   if(n_vend > 15){
     v0 <- v0 %>%
-      layout(barmode = 'stack',
+      layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
              xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
              yaxis = list(title = ''),
              legend = list(x = 100, y = 0.5))
   }else{
     v0 <- v0 %>%
-      layout(barmode = 'stack',
+      layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
              xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
              yaxis = list(title = ''),
              legend = list(orientation = 'h'))
@@ -282,19 +282,19 @@ if(nrow(vc_ij_vre_ij_v) > 0){
       brbg_res <- brewer.pal(n_r_color,'Paired')
     }
   }
-  
+
   v1 <- plot_ly(vc_ij_vre_ij_v_ag, type = "bar", orientation = 'h', x = ~resultado_n, y = ~reorder(vendedor_nome, desc(vendedor_nome)), color = ~resultado,
                 colors = brbg_res,
                 name = ~resultado)
   if(n_vend > 15){
     v1 <- v1 %>%
-      layout(barmode = 'stack',
+      layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
              xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
              yaxis = list(title = ''),
              legend = list(x = 150, y = 0.5))
   }else{
     v1 <- v1 %>%
-      layout(barmode = 'stack',
+      layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
              xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
              yaxis = list(title = ''),
              legend = list(orientation = 'h'))
@@ -399,7 +399,7 @@ cli_c_neg_ij_vis_cont <- cli_c_neg_ij_vis %>%
 
 ### Histogramas
 if(nrow(cli_c_neg_ij_vis_cont) > 0){
-  
+
   ### Gráfico c5 - Histograma de distirbuição clientes por visitas, clientes sem negócios (clientes com visitas em anat)
   c5 <- plot_ly() %>%
     add_histogram(data =  cli_s_neg_ij_vis_cont,
@@ -412,7 +412,7 @@ if(nrow(cli_c_neg_ij_vis_cont) > 0){
                   opacity = 0.6) %>%
     layout (xaxis = list(title = 'Intervalos'),
             yaxis = list(title = 'Número de clientes'))
-  
+
   if(dash == F){
     c5
   }
@@ -423,23 +423,23 @@ if(nrow(cli_c_neg_ij_vis_cont) > 0){
                   name = "",
                   nbinsx = max(cli_c_neg_ij_vis_cont$num_visitas),
                   hovertemplate = paste ("Existem %{y} clientes com %{x} visitas <br>",
-                                          "<br>"),
+                                         "<br>"),
                   marker = list(color = "blue"),
                   opacity = 0.6) %>%
     layout (xaxis = list(title = 'Intervalos'),
             yaxis = list(title = 'Número de clientes'))
-  
+
   if(dash == F){
     c4
   }
-  
+
   ### Gráfico c4_c5 - Ambos histogramas anteriores (c4 e c5)
   c4_c5 <- subplot(c4, c5) %>%
     layout(legend = list(x=0.7, y=0.9),
            title = "Clientes por intervalo",
            xaxis = list(title = ''),
            yaxis = list(title = 'Distribuição de clientes'))
-  
+
   if(teste == F){
     #tabelas
     rm(visita_cliente, cliente, negocio, cli_ij_ng, cli_c_neg_ij_vis_cont, cli_s_neg_ij_vis_cont,
@@ -447,7 +447,7 @@ if(nrow(cli_c_neg_ij_vis_cont) > 0){
     #variáveis
     rm();
   }
-  
+
   if(dash == F){
     c4_c5
   }
@@ -485,7 +485,7 @@ vendedor <- fread("Tabelas/vendedor.csv") %>%
 ## Filtro para dash do vendedor
 if(params$dash_vend){
   vendedor <- vendedor %>%
-  dplyr::filter(vendedor_id == vend_id)
+    dplyr::filter(vendedor_id == vend_id)
 }
 
 #Arrumando encoding
@@ -595,7 +595,7 @@ if(nrow(cli_in_ven_in_vcUltVis_cont) > 0){
                 color = ~idade_vis,
                 colors = ~cor_idade_vis,
                 showlegend = F
-                ) %>%
+  ) %>%
     layout(xaxis = list(title = ''),
            yaxis = list(title = ''))
 }else{

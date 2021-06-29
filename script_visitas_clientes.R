@@ -205,13 +205,13 @@ if(nrow(vc_ij_vse_ij_v) > 0){
                 name = ~motivo)
   if(n_vend > 15){
     v0 <- v0 %>%
-      layout(barmode = 'stack',
+      layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
              xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
              yaxis = list(title = ''),
              legend = list(x = 100, y = 0.5))
   }else{
     v0 <- v0 %>%
-      layout(barmode = 'stack',
+      layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
              xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
              yaxis = list(title = ''),
              legend = list(orientation = 'h'))
@@ -256,13 +256,13 @@ if(nrow(vc_ij_vre_ij_v) > 0){
                 name = ~resultado)
   if(n_vend > 15){
     v1 <- v1 %>%
-      layout(barmode = 'stack',
+      layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
              xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
              yaxis = list(title = ''),
              legend = list(x = 150, y = 0.5))
   }else{
     v1 <- v1 %>%
-      layout(barmode = 'stack',
+      layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
              xaxis = list(title = '', tickangle = 30, tickfont = list(size = 11)),
              yaxis = list(title = ''),
              legend = list(orientation = 'h'))

@@ -176,7 +176,7 @@ if(nrow(prop_ij_neg_cont_vend_a_ij_propag_anat) > 0){
                 showlegend = TRUE
   )
   p0 <- p0 %>%
-    layout(barmode = 'stack',
+    layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(traceorder = 'normal', orientation = 'h'))

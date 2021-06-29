@@ -136,7 +136,7 @@ vendedor <- fread("Tabelas/vendedor.csv") %>%
 
 if(params$dash_vend){
   vendedor <- vendedor %>%
-  dplyr::filter(vendedor_id == vend_id)
+    dplyr::filter(vendedor_id == vend_id)
 }
 
 #Arrumando encoding
@@ -226,7 +226,7 @@ if (nrow(ng_ij_vn_ij_np_fat) > 0 && sum(ng_ij_vn_ij_np_fat$total_fat) > 0){
                 hoverinfo = "text"
   )
   n0 <- n0 %>%
-    layout(barmode = 'stack',
+    layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(orientation = "h", x = 0.5,
@@ -327,7 +327,7 @@ if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
   )
 
   n3 <- n3 %>%
-    layout(barmode = 'stack',
+    layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(orientation = "h", x = 0.5,
@@ -399,9 +399,9 @@ if (nrow(ng_ij_hist_ij_ven_num) > 0){
   n6 <- plot_ly(ng_ij_hist_ij_ven_num, type = 'bar', orientation = 'h', x=~num_negocios_idades , y=~reorder(vendedor_nome, desc(vendedor_nome)),
                 color = ~idade_cat,
                 colors = c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26"))
-  
+
   n6 <- n6 %>%
-    layout(barmode = 'stack',
+    layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(orientation = "v",
@@ -529,6 +529,7 @@ if (teste == F){
   #variáveis
   rm()
 }
+###########################################################################################################
 ```
 
 Valor financeiro de negócios

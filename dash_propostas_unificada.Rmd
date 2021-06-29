@@ -213,7 +213,7 @@ if(nrow(prop_ij_neg_cont_vend_a_ij_propag_anat) > 0){
                 showlegend = TRUE
   )
   p0 <- p0 %>%
-    layout(barmode = 'stack',
+    layout(barmode = ifelse(params$dash_vend, 'group', 'stack'),
            xaxis = list(title = ''),
            yaxis = list(title = ''),
            legend = list(traceorder = 'normal', orientation = 'h'))
@@ -654,9 +654,9 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
     ## Nesse caso ele tem apenas propostas com usados
     if(nrow(fat_tot_categorias_us) > 0){
       ax <- list(
-      autotick = TRUE,
-      title = "",
-      showticklabels = TRUE)
+        autotick = TRUE,
+        title = "",
+        showticklabels = TRUE)
       p4 <- plot_ly(fat_tot_categorias_n_us, x = ~categoria_nome)
       p4 <- p4 %>%
         add_trace(type = "bar", y = ~fat_med_us,
@@ -669,23 +669,23 @@ if(nrow(p_ij_n_ij_pp_empresa_us) > 0)
                                  fat_med_us_t),
                   hoverinfo = "text")
 
-    p4 <- p4 %>%
-      add_trace(type = "scatter", mode = "markers+line", y = ~med_emp_us,
-                name = 'Usados (média)',
-                line = list(color = '#6e2c00'),
-                text = ~paste0('Ticket médio usados<br>' , med_emp_us_t),
-                hoverinfo = "text",
-                marker = list(color = 'red'))
-    p4 <- p4 %>%
-      layout(
-        autosize = T,
-        xaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = ''),
-        #range nos dois eixos iguais pra ficar na mesma proporção
-        yaxis = list(title = '', showgrid = TRUE, zeroline = T),
-        ##aqui eu ajusto onde quero que apareça a legenda
-        legend = list(orientation = "h", x = 0.5,
-                      xanchor = "center",
-                      traceorder = 'normal'))
+      p4 <- p4 %>%
+        add_trace(type = "scatter", mode = "markers+line", y = ~med_emp_us,
+                  name = 'Usados (média)',
+                  line = list(color = '#6e2c00'),
+                  text = ~paste0('Ticket médio usados<br>' , med_emp_us_t),
+                  hoverinfo = "text",
+                  marker = list(color = 'red'))
+      p4 <- p4 %>%
+        layout(
+          autosize = T,
+          xaxis = list(side = 'left', title = '', showgrid = TRUE, zeroline = FALSE, title = ''),
+          #range nos dois eixos iguais pra ficar na mesma proporção
+          yaxis = list(title = '', showgrid = TRUE, zeroline = T),
+          ##aqui eu ajusto onde quero que apareça a legenda
+          legend = list(orientation = "h", x = 0.5,
+                        xanchor = "center",
+                        traceorder = 'normal'))
     }else{
       ##Caso não haja informações do período, plotar gráfico s_dados (texto informando que não há informações p/ o período)
       #p4 <- s_dados
@@ -953,6 +953,7 @@ if(teste == F){
   # if(empresa == 16){rm(aux_3perc, n_outros_forma, n_total_modo)}
 }
 ######################################################################################
+
 ```
 
 
