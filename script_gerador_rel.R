@@ -48,16 +48,16 @@ param_empresa <- "emp_ar" ## Caso queira testar apenas um parâmetro
 teste_ger_rel <- F
 teste_ger_rel_ind <- F
 ## Parâmetros para testes individuais em cada dash
-teste_geral <- T
-teste_marcas <- T
-teste_negocios <- T
-teste_propostas <- T
-teste_visitas_clientes <- T
-# teste_geral <- F
-# teste_marcas <- F
-# teste_negocios <- F
-# teste_propostas <- F
-# teste_visitas_clientes <- F
+# teste_geral <- T
+# teste_marcas <- T
+# teste_negocios <- T
+# teste_propostas <- T
+# teste_visitas_clientes <- T
+teste_geral <- F
+teste_marcas <- F
+teste_negocios <- F
+teste_propostas <- F
+teste_visitas_clientes <- F
 ## Parâmetros de empresa (F para empresa, T para vendedor)
 param_dash_vend <- F
 ## Parâmetros de mobile (ainda não usado)
@@ -143,19 +143,19 @@ for(x in (1:length(template_list))){
 ########################################################
 ### Parâmetros de teste
 ## Parâmetro usado para gerar arquivos em pasta de teste e ver outros parâmetros de teste
-teste_ger_rel <- T
+teste_ger_rel <- F
 teste_ger_rel_ind <- F
 ## Parâmetros para testes individuais em cada dash
-teste_geral_v <- T
-teste_marcas_v <- T
-teste_negocios_v <- T
-teste_propostas_v <- T
-teste_visitas_clientes_v <- T
-# teste_geral_v <- F
-# # teste_marcas_v <- F
-# teste_negocios_v <- F
-# teste_propostas_v <- F
-# teste_visitas_clientes_v <- F
+# teste_geral_v <- T
+# teste_marcas_v <- T
+# teste_negocios_v <- T
+# teste_propostas_v <- T
+# teste_visitas_clientes_v <- T
+teste_geral_v <- F
+# teste_marcas_v <- F
+teste_negocios_v <- F
+teste_propostas_v <- F
+teste_visitas_clientes_v <- F
 ## Parâmetros de empresa (F para empresa, T para vendedor)
 param_dash_vend <- T ## Alterando para gerar dashs de vendedores
 ## Parâmetros de mobile (ainda não usado)
@@ -233,31 +233,36 @@ i = 33 ## Empresa 33 - Komatsu
             if(teste_marcas_v){ ## Teste Marcas
               func_rmd_html_vend(dont_delete, template = template_list[[2]], empresa = empresas_ativ[[i]][[1]],
                                 vendedor = empresas_ativ[[i]][[2]][j],
-                                param_dash_vend, param_dash_mob, out_f = out_f_emp,                                nome_dash = nome_dash_list[[2]], teste_ger_rel, num_dias_list = 0,
+                                param_dash_vend, param_dash_mob, out_f = out_f_emp,
+                                nome_dash = nome_dash_list[[2]], teste_ger_rel, num_dias_list = 0,
                                 debug = debug)
             }
             if(teste_negocios_v){ ## Teste Negocios
               func_rmd_html_vend(dont_delete, template = template_list[[3]], empresa = empresas_ativ[[i]][[1]],
                                 vendedor = empresas_ativ[[i]][[2]][j],
-                                param_dash_vend, param_dash_mob, out_f = out_f_emp,                                nome_dash = nome_dash_list[[3]], teste_ger_rel, num_dias_list = 0,
+                                param_dash_vend, param_dash_mob, out_f = out_f_emp,
+                                nome_dash = nome_dash_list[[3]], teste_ger_rel, num_dias_list = 0,
                                 debug = debug)
             }
             if(teste_propostas_v){ ## Teste Propostas
               func_rmd_html_vend(dont_delete, template = template_list[[4]], empresa = empresas_ativ[[i]][[1]],
                                 vendedor = empresas_ativ[[i]][[2]][j],
-                                param_dash_vend, param_dash_mob, out_f = out_f_emp,                                nome_dash = nome_dash_list[[4]], teste_ger_rel, num_dias_list = 0,
+                                param_dash_vend, param_dash_mob, out_f = out_f_emp,
+                                nome_dash = nome_dash_list[[4]], teste_ger_rel, num_dias_list = 0,
                                 debug = debug)
             }
             if(teste_visitas_clientes_v){ ## Teste Visitas_clientes
               func_rmd_html_vend(dont_delete, template = template_list[[5]], empresa = empresas_ativ[[i]][[1]],
                                 vendedor = empresas_ativ[[i]][[2]][j],
-                                param_dash_vend, param_dash_mob, out_f = out_f_emp,                                nome_dash = nome_dash_list[[5]], teste_ger_rel, num_dias_list = 0,
+                                param_dash_vend, param_dash_mob, out_f = out_f_emp,
+                                nome_dash = nome_dash_list[[5]], teste_ger_rel, num_dias_list = 0,
                                 debug = debug)
             }
           }else{
             func_rmd_html_vend(dont_delete, template = template_list[[x]], empresa = empresas_ativ[[i]][[1]],
                               vendedor = empresas_ativ[[i]][[2]][j],
-                              param_dash_vend, param_dash_mob, out_f = out_f_emp,                              nome_dash = nome_dash_list[[x]], teste_ger_rel, num_dias_list = 0,
+                              param_dash_vend, param_dash_mob, out_f = out_f_emp,
+                              nome_dash = nome_dash_list[[x]], teste_ger_rel, num_dias_list = 0,
                               debug =  debug)
           }
 
@@ -265,231 +270,14 @@ i = 33 ## Empresa 33 - Komatsu
           ## Todas são rodadas atráves do j (dash) e x(empresa)
           func_rmd_html_vend(dont_delete, template = template_list[[x]], empresa = empresas_ativ[[i]][[1]],
                             vendedor = empresas_ativ[[i]][[2]][j],
-                            param_dash_vend, param_dash_mob, out_f = out_f_emp,                            nome_dash = nome_dash_list[[x]], teste_ger_rel, num_dias_list = 0,
+                            param_dash_vend, param_dash_mob, out_f = out_f_emp,
+                            nome_dash = nome_dash_list[[x]], teste_ger_rel, num_dias_list = 0,
                             debug =  debug)
         }
       }
     }
   }
-  # for(j in (1:length(empresas_ativ[[i]][[2]]))){
-  #   if(length(empresas_ativ[[i]][[2]]) > 0){
-  #     if(teste_ger_rel_v){
-  #       if(teste_geral_v){ ## Teste Geral
-  #         func_rmd_html_vend(dont_delete, template = template_geral, empresa = empresas_ativ[[i]][[1]],
-  #                            vendedor = empresas_ativ[[i]][[1]][j], param_dash_vend, param_dash_mob, out_f = out_f_emp,
-  #                            nome_dash = "Geral", teste_ger_rel, num_dias_list = 0,
-  #                            debug = debug)
-  #       }
-  #       if(teste_marcas_v){ ## Teste Marcas
-  #         func_rmd_html_vend(dont_delete, template = template_geral, empresa = empresas_ativ[[i]][[1]],
-  #                            vendedor = empresas_ativ[[i]][[1]][j], param_dash_vend, param_dash_mob, out_f = out_f_emp,
-  #                            nome_dash = "Marcas", teste_ger_rel, num_dias_list = 0,
-  #                            debug =  debug)
-  #       }
-  #       if(teste_negocios_v){ ## Teste Negocios
-  #         func_rmd_html_vend(dont_delete, template = template_geral, empresa = empresas_ativ[[i]][[1]],
-  #                            vendedor = empresas_ativ[[i]][[1]][j], param_dash_vend, param_dash_mob, out_f = out_f_emp,
-  #                            nome_dash = "Negocios", teste_ger_rel, num_dias_list = 0,
-  #                            debug =  debug)
-  #       }
-  #       if(teste_propostas_v){ ## Teste Propostas
-  #         func_rmd_html_vend(dont_delete, template = template_geral, empresa = empresas_ativ[[i]][[1]],
-  #                            vendedor = empresas_ativ[[i]][[1]][j], param_dash_vend, param_dash_mob, out_f = out_f_emp,
-  #                            nome_dash = "Propostas", teste_ger_rel, num_dias_list = 0,
-  #                            debug =  debug)
-  #       }
-  #       if(teste_visitas_clientes_v){ ## Teste Visitas_clientes
-  #         func_rmd_html_vend(dont_delete, template = template_geral, empresa = empresas_ativ[[i]][[1]],
-  #                            vendedor = empresas_ativ[[i]][[1]][j], param_dash_vend, param_dash_mob, out_f = out_f_emp,
-  #                            nome_dash = "Visitas_clientes", teste_ger_rel, num_dias_list = 0,
-  #                            debug =  debug)
-  #       }
-  #     }else{ ## Não é teste, rodar todas as dashs
-  #       ## Gerando Geral para todos vendedores da empresa
-  #       func_rmd_html_vend(dont_delete, template = template_geral, empresa = empresas_ativ[[i]][[1]],
-  #                          vendedor = empresas_ativ[[i]][[1]][j], param_dash_vend, param_dash_mob, out_f = out_f_emp,
-  #                          nome_dash = "Geral", teste_ger_rel, num_dias_list = 0,
-  #                          debug = debug)
-  #
-  #       ## Gerando Marcas para todos vendedores da empresa
-  #       func_rmd_html_vend(dont_delete, template = template_geral, empresa = empresas_ativ[[i]][[1]],
-  #                          vendedor = empresas_ativ[[i]][[1]][j], param_dash_vend, param_dash_mob, out_f = out_f_emp,
-  #                          nome_dash = "Marcas", teste_ger_rel, num_dias_list = 0,
-  #                          debug =  debug)
-  #
-  #       ## Gerando Negocios para todos vendedores da empresa
-  #       func_rmd_html_vend(dont_delete, template = template_geral, empresa = empresas_ativ[[i]][[1]],
-  #                          vendedor = empresas_ativ[[i]][[1]][j], param_dash_vend, param_dash_mob, out_f = out_f_emp,
-  #                          nome_dash = "Negocios", teste_ger_rel, num_dias_list = 0,
-  #                          debug =  debug)
-  #
-  #       ## Gerando Propostas para todos vendedores da empresa
-  #       func_rmd_html_vend(dont_delete, template = template_geral, empresa = empresas_ativ[[i]][[1]],
-  #                          vendedor = empresas_ativ[[i]][[1]][j], param_dash_vend, param_dash_mob, out_f = out_f_emp,
-  #                          nome_dash = "Propostas", teste_ger_rel, num_dias_list = 0,
-  #                          debug =  debug)
-  #
-  #       ## Gerando Visitas_clientes para todos vendedores da empresa
-  #       func_rmd_html_vend(dont_delete, template = template_geral, empresa = empresas_ativ[[i]][[1]],
-  #                          vendedor = empresas_ativ[[i]][[1]][j], param_dash_vend, param_dash_mob, out_f = out_f_emp,
-  #                          nome_dash = "Visitas_clientes", teste_ger_rel, num_dias_list = 0,
-  #                          debug =  debug)
-  #     }
-  #   }
-  # }
-#}
-##Gerando dashs geral ##Funcionando, apenas comentada pra facilitar teste das marcas
-# for(i in (1:x)){
-#   rm(list=setdiff(ls(), c("params_list_i", "empresas_ativ", "i", 'x', 'teste_ger_rel',
-#                           'param_dash_vend', 'param_dash_mob', 'param_vendedor', 'param_empresa')))
-#   template <- "dash_geral_unificada.Rmd"
-#   #Teste (nome da empresa, mais fácil de analisar)
-#   # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
-#   print(teste_ger_rel)
-#   if(teste_ger_rel){
-#     print(i)
-#     print(empresas_ativ[i])
-#     print(empresas_ativ[[i]])
-#     print(as.list(empresas_ativ[[i]]))
-#   }
-#   if(teste_ger_rel){
-#     out_file <- sprintf("Dashs_teste/Geral_%s", empresas_ativ[i])
-#   }else{
-#     out_file <- sprintf("Dashs/Geral_%s", empresas_ativ[i])
-#   }
-#   if(teste_ger_rel){
-#     print(out_file)
-#   }
-#   parameters <- list(empresa = empresas_ativ[i], dash_vend = param_dash_vend, dash_mob = param_dash_mob,
-#                      vendedor = param_vendedor)
-#
-#   rmarkdown::render(template,
-#                     output_file = out_file,
-#                     params = parameters)
-#   invisible(TRUE)
-# }
-# ##Gerando dashs marcas
-# for(i in (1:x)){
-#   if (empresas_ativ[i] != 78 & empresas_ativ[i] != 79)
-#   {
-#     rm(list=setdiff(ls(), c("params_list_i", "empresas_ativ", "i", 'x', 'teste_ger_rel',
-#                             'param_dash_vend', 'param_dash_mob', 'param_vendedor', 'param_empresa')))
-#     template <- "dash_marcas_unificada.Rmd"
-#     #Teste (nome da empresa, mais fácil de analisar)
-#     # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
-#     if(teste_ger_rel){
-#       print(i)
-#       print(empresas_ativ[i])
-#       print(empresas_ativ[[i]])
-#       print(as.list(empresas_ativ[[i]]))
-#     }
-#     if(teste_ger_rel){
-#       out_file <- sprintf("Dashs_teste/Marcas_%s", empresas_ativ[i])
-#     }else{
-#       out_file <- sprintf("Dashs/Marcas_%s", empresas_ativ[i])
-#     }
-#     parameters <- list(empresa = empresas_ativ[i], dash_vend = param_dash_vend, dash_mob = param_dash_mob,
-#                        vendedor = param_vendedor)
-#
-#     rmarkdown::render(template,
-#                       output_file = out_file,
-#                       params = parameters)
-#     invisible(TRUE)
-#   }else{ ##########Caso seja a komatsu, marcas diferentes
-#     template <- "dash_marcas_k_unificada.Rmd"
-#     if(teste_ger_rel){
-#       out_file <- sprintf("Dashs_teste/Marcas_%s", empresas_ativ[i])
-#     }else{
-#       out_file <- sprintf("Dashs/Marcas_%s", empresas_ativ[i])
-#     }
-#     parameters <- list(empresa = empresas_ativ[i], dash_vend = param_dash_vend, dash_mob = param_dash_mob,
-#                        vendedor = param_vendedor)
-#
-#     rmarkdown::render(template,
-#                       output_file = out_file,
-#                       params = parameters)
-#     invisible(TRUE)
-#   }
-# }
-# # ## Gerando dash negocios
-# for(i in (1:x)){
-#   rm(list=setdiff(ls(), c("params_list_i", "empresas_ativ", "i", 'x', 'teste_ger_rel',
-#                           'param_dash_vend', 'param_dash_mob', 'param_vendedor', 'param_empresa')))
-#   template <- "dash_negocios_unificada.Rmd"
-#   #Teste (nome da empresa, mais fácil de analisar)
-#   # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
-#   if(teste_ger_rel){
-#     print(i)
-#     print(empresas_ativ[i])
-#     print(empresas_ativ[[i]])
-#     print(as.list(empresas_ativ[[i]]))
-#   }
-#   if(teste_ger_rel){
-#     out_file <- sprintf("Dashs_teste/Negocios_%s", empresas_ativ[i])
-#   }else{
-#     out_file <- sprintf("Dashs/Negocios_%s", empresas_ativ[i])
-#   }
-#   parameters <- list(empresa = empresas_ativ[i], dash_vend = param_dash_vend, dash_mob = param_dash_mob,
-#                      vendedor = param_vendedor)
-#
-#   rmarkdown::render(template,
-#                     output_file = out_file,
-#                     params = parameters)
-#   invisible(TRUE)
-# }
-# ## Gerando dash propostas
-# for(i in (1:x)){
-#   rm(list=setdiff(ls(), c("params_list_i", "empresas_ativ", "i", 'x', 'teste_ger_rel',
-#                           'param_dash_vend', 'param_dash_mob', 'param_vendedor', 'param_empresa')))
-#   template <- "dash_propostas_unificada.Rmd"
-#   #Teste (nome da empresa, mais fácil de analisar)
-#   # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
-#   if(teste_ger_rel){
-#     print(i)
-#     print(empresas_ativ[i])
-#     print(empresas_ativ[[i]])
-#     print(as.list(empresas_ativ[[i]]))
-#   }
-#   if(teste_ger_rel){
-#     out_file <- sprintf("Dashs_teste/Propostas_%s", empresas_ativ[i])
-#   }else{
-#     out_file <- sprintf("Dashs/Propostas_%s", empresas_ativ[i])
-#   }
-#   parameters <- list(empresa = empresas_ativ[i], dash_vend = param_dash_vend, dash_mob = param_dash_mob,
-#                      vendedor = param_vendedor)
-#
-#   rmarkdown::render(template,
-#                     output_file = out_file,
-#                     params = parameters)
-#   invisible(TRUE)
-# }
-# ## Gerando dash visitas_clientes
-# for(i in (1:x)){
-#   rm(list=setdiff(ls(), c("params_list_i", "empresas_ativ", "i", 'x', 'teste_ger_rel',
-#                           'param_dash_vend', 'param_dash_mob', 'param_vendedor', 'param_empresa')))
-#   template <- "dash_visitas_clientes_unificada.Rmd"
-#   #Teste (nome da empresa, mais fácil de analisar)
-#   # out_file <- sprintf("Dashs/Negocios_Propostas_%s, var1)
-#   if(teste_ger_rel){
-#     print(i)
-#     print(empresas_ativ[i])
-#     print(empresas_ativ[[i]])
-#     print(as.list(empresas_ativ[[i]]))
-#   }
-#   if(teste_ger_rel){
-#     out_file <- sprintf("Dashs_teste/Visitas_Clientes_%s", empresas_ativ[i])
-#   }else{
-#     out_file <- sprintf("Dashs/Visitas_Clientes_%s", empresas_ativ[i])
-#   }
-#   parameters <- list(empresa = empresas_ativ[i], dash_vend = param_dash_vend, dash_mob = param_dash_mob,
-#                      vendedor = param_vendedor)
-#
-#   rmarkdown::render(template,
-#                     output_file = out_file,
-#                     params = parameters)
-#   invisible(TRUE)
-# }
-#############################################################
+
 #############################################################
 ## Gerar arquivo com horário de última atualização
 #############################################################
