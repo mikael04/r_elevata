@@ -1,13 +1,11 @@
 rm(list = ls())
-
 library(dplyr)
-## Arquivo de saída, sw.js
-sw_emp <- file("Gerador_SW/sw_emp.js")
-## Arquivo de saída, sw.js
-sw <- file("Gerador_SW/sw.js")
+library(lubridate)
 
 ## Pega o tempo do sistema e formata
-time <- format(Sys.time(), "%d%m%Y_%H%M%S")
+date_now <- lubridate::now()
+time <- date_now %>%
+  format('%d%m%y_%I%M')
 
 ## Se quiser alterar a tabela manualmente por aqui
 # Tipo <- c('css', 'js', 'htmls', 'dashs', 'listas', 'aux', "cache", 'updateTime')
@@ -40,6 +38,12 @@ listasVersion <- paste0("const listasVersion = '", listas, "'")
 updateTimeVersion <- paste0("const updateTimeVersion = '", updateTime, "'")
 
 debugVersion <- paste0("\nconst debug = ", debug)
+#####################################################################
+## Gerando arquivos
+#################################
+#### sw.js
+## Arquivo de saída, sw.js
+sw <- file("Gerador_SW/sw.js")
 
 ## Lê corpo padrão do sw (completo, dashs e listas)
 read_sw_aux <- file("Gerador_SW/arquivos_auxiliares/sw_aux.txt")
@@ -51,6 +55,10 @@ close(read_sw_aux)
 writeLines(c(cssVersion, jsVersion, htmlsVersion, dashsVersion, listasVersion,
              auxVersion, cacheVersion, updateTimeVersion, debugVersion, content), sw)
 close(sw)
+#################################
+#### sw_emp.js
+## Arquivo de saída, sw_emp.js
+sw_emp <- file("Gerador_SW/sw_emp.js")
 
 ## Lê corpo padrão do sw_emp (apenas página inicial)
 read_sw_emp_aux <- file("Gerador_SW/arquivos_auxiliares/sw_emp_aux.txt")
@@ -60,4 +68,16 @@ content_emp <- paste(readLines(read_sw_emp_aux), collapse = "\n")
 writeLines(c(cssVersion, jsVersion, htmlsVersion,
              auxVersion, cacheVersion, debugVersion, content_emp), sw_emp)
 close(sw_emp)
+
+
+#################################
+#### update_time_bd.txt
+## Arquivo de saída, sw.js
+update_time_bd <- file("Gerador_SW/sync_time/update_time_bd.txt")
+
+update_time <- date_now %>%
+  format('%d/%m/%y %Ih')
+
+bd <- paste0("Banco de dados: ", update_time)
+writeLines(bd, update_time_bd)
 rm(list = ls())
