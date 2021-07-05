@@ -528,7 +528,7 @@ if (nrow(cli_in_pm_cont_top_t_aux) > 0){
                group = "Ícones")
 }else {
   ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
-  m1_t <- include_graphics(s_dados_path_m)
+  m1_t <- include_graphics(s_dados_m_path)
 }
 if(dash == F){
   m1_t

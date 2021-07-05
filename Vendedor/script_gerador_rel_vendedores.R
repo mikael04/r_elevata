@@ -60,7 +60,7 @@ template_marcas = "Vendedor/dash_marcas_k_vendedor.Rmd"
 template_negocios = "Vendedor/dash_negocios_vendedor.Rmd"
 template_propostas = "Vendedor/dash_propostas_vendedor.Rmd"
 template_visitas_clientes = "Vendedor/dash_visitas_clientes_vendedor.Rmd"
-out_f = "/mnt/dados/Mikael/Projetos/Scripts_R/r_elevata/Dashs_vendedores/"
+out_f = paste0(getwd(),"/Dashs_vendedores/")
 ###########################################
 ## i vai rodar por número de empresas
 ## j vai rodar por vendedores dentro da empresa

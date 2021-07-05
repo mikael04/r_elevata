@@ -79,7 +79,11 @@ s_dados_path <- "s_dados.png"
 
 #empresa = params$variable1
 #teste
-empresa = 65
+empresa = 78
+vend_id = 1057
+params <- NULL
+params$dash_vend = T
+params$dash_mob = F
 ###################################
 
 ###Começando script marcas
@@ -97,6 +101,11 @@ vendedor <- fread("Tabelas/vendedor.csv") %>%
 
 vendedor_a <- vendedor %>%
   filter(vendedor_ativo == T)
+
+if(params$dash_vend){
+  vendedor <- vendedor %>%
+    dplyr::filter(vendedor_id == vend_id)
+}
 
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
@@ -233,6 +242,8 @@ pal_cores <- pal(11)
 ### Gráfico n4 - Valor financeiro de negócios em anat  (por categoria)
 #################################################
 if (nrow(chart_ng_top_ag) > 0 & sum(chart_ng_top_ag$faturamento) > 0){
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(chart_ng_top_ag$fat_t) <- "UTF-8"
   ### Gráfico n4 - Valor financeiro de negócios em anat  (por categoria)
   n4 <- plot_ly(chart_ng_top_ag,
                 type = 'treemap',
@@ -316,6 +327,8 @@ pal_cores
 
 ### Gráfico n5 - Máquinas faturadas em anat (por categoria)
 if (nrow(chart_ng_top_ag_fat) > 0 & sum(chart_ng_top_ag_fat$faturamento) > 0){
+  ## Se windows, elevata, precisa recodificar para UTF-8 na conversão
+  Encoding(chart_ng_top_ag_fat$fat_t) <- "UTF-8"
   n5 <- plot_ly(chart_ng_top_ag_fat,
                 type = 'treemap',
                 labels = ~categoria_nome,
@@ -358,6 +371,11 @@ cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")
   select (cliente_id, cliente_nome, cliente_latitude, cliente_longitude, cliente_vendedor_id, cliente_empresa_id)
 #Arrumando encoding
 Encoding(cliente$cliente_nome) <- 'latin1'
+
+if(params$dash_vend){ ## Filtrando apenas do vendedor, clientes e visitas
+  cliente <- cliente %>%
+    dplyr::filter(cliente_vendedor_id == vend_id)
+}
 
 ##Parque de máquinas
 ##Mostrar distribuição de máquinas por categoria
@@ -435,8 +453,6 @@ cli_in_pm_cont_top_t_aux$marca_nome <- factor(cli_in_pm_cont_top_t_aux$marca_nom
 cli_in_pm_cont_top_t_aux$lat <- jitter(cli_in_pm_cont_top_t_aux$lat, factor = .1, amount = 0)
 cli_in_pm_cont_top_t_aux$long <- jitter(cli_in_pm_cont_top_t_aux$long, factor = .1, amount = 0)
 
-##Se precisar consultar ícones, tamanho do ícone, marcas e marcas_ids
-# marcas_ic_co <-read.csv("Icons/marcas_icon_csv.csv") %>%
 ## Deprecado
 # marcas_icon <- iconList(         ##Caso precise consultar, olhar o csv acima
 #   '1' = makeIcon(iconUrl = "Icons/NH_r.png",
@@ -484,7 +500,9 @@ cli_in_pm_cont_top_t_aux$long <- jitter(cli_in_pm_cont_top_t_aux$long, factor = 
 #   '120191031172146' = makeIcon(iconUrl = "Icons/tigercat_r.png",
 #                                iconWidth = 28, iconHeight = 36)
 # )
+## Lê a tabela de marcas
 marcas_icon_txt <- fread("Icons/marcas_icon_txt.txt")
+## Converte para uma lista (transforma em yaml e de yaml pra lista)
 marcas_icon_list <- func_conv_txt_to_yaml_icon(marcas_icon_txt)
 ## Adicionando classe para o leaflet entender que é a classe dele de ícones
 class(marcas_icon_list) <- "leaflet_icon_set"
@@ -504,7 +522,7 @@ if (nrow(cli_in_pm_cont_top_t_aux) > 0){
                group = "Ícones")
 }else {
   ##Caso não haja informações para plotar o mapa (texto informando que não há informações)
-  m1_t <- include_graphics(s_dados_path_m)
+  m1_t <- include_graphics(s_dados_m_path)
 }
 if(dash == F){
   m1_t
@@ -513,7 +531,7 @@ if(teste == F){
   #tabelas
   rm(top5_t, top5_c, aux_c, aux_t, n_color, cli_in_pm_cont_c, cli_in_pm_cont_t, cliente_c_loc,
      cli_in_pm_cont_top_t_aux,parque_maquina, produto, marca, marca_categoria,
-     marcas_icon_list, categoria);
+     marcas_icon, categoria);
   #variáveis
   rm();
 }
@@ -548,12 +566,11 @@ cli_in_pm_cont_top_t$marca_nome <- reorder(cli_in_pm_cont_top_t$marca_nome, desc
 #   select (marca_id_i, cor)
 # marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
 ##Alterei para txt por causa do tamanho da coluna (número muito grande, era convertido para científico)
-marcas_icon_txt <-read.csv("Icons/marcas_icon_txt.txt", colClasses = c(marca_id_i = "character")) %>%
+marcas_ic_co <-marcas_icon_txt %>%
   select (marca_id_i, cor)
-as.data.frame(marcas_ic_yaml)
-marcas_icon_txt$marca_id_i <- as.character(marcas_icon_txt$marca_id_i)
+marcas_ic_co$marca_id_i <- as.character(marcas_ic_co$marca_id_i)
 #cores_t
-cli_in_pm_cont_top_t <- inner_join(cli_in_pm_cont_top_t, marcas_icon_txt, by = c("produto_marca_id" = "marca_id_i"))
+cli_in_pm_cont_top_t <- inner_join(cli_in_pm_cont_top_t, marcas_ic_co, by = c("produto_marca_id" = "marca_id_i"))
 cores_t <- as.vector(cli_in_pm_cont_top_t$cor)
 
 #############################################################################################
@@ -581,7 +598,7 @@ if(dash == F){
 if(teste == F){
   #tabelas
   rm(cli_in_pm_cont_top_t, cli_in_pm_in_p_in_m, cli_in_pm_in_p, cli_in_pm, top10_c, top10_t,
-     marcas_icon_txt);
+     marcas_ic_co);
   #variáveis
   rm(cores_c, cores_t);
 }

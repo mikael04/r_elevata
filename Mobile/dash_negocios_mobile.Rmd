@@ -426,7 +426,7 @@ colors_pie <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
 if (nrow(ng_ij_hist_ij_emp_num) > 0){
   n7 <- plot_ly(ng_ij_hist_ij_emp_num, labels = ~idade_cat, values = ~num_negocios_idades, type = 'pie', sort = F,
                 texttemplate = "%{value} (%{percent})",
-                hovertemplate = paste ("%{label} <br>",
+                hovertemplate = paste (" %{label} <br>",
                                        "Equivalente a %{percent}",
                                        "<extra></extra>"),
                 marker = list(color = ~idade_cat,

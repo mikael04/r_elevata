@@ -13,9 +13,9 @@ library(purrr)
 #                 'dont_delete', 'debug', 'teste', 'template', 'empresa', 'vendedor', 'out_f',
 #                 'nome_dash', 'num_dias_list')
 # template = "Vendedor/dash_geral_vendedor.Rmd"
-empresa = 78
-vendedor = 1058
-out_f = "/mnt/dados/Mikael/Projetos/Scripts_R/r_elevata/Dashs_vendedores/"
+# empresa = 78
+# vendedor = 1058
+# out_f = "/mnt/dados/Mikael/Projetos/Scripts_R/r_elevata/Dashs_vendedores/"
 # nome_dash = "Geral"
 # debug = TRUE
 # num_dias_list = 0

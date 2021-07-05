@@ -1,4 +1,19 @@
-rm(list = ls())
+---
+title: "Painel das Marcas"
+output:
+  flexdashboard::flex_dashboard:
+  orientation: columns
+  vertical_layout: fill
+params:
+  empresa: "emp_par"
+  dash_vend: true
+  dash_mob: false
+  vendedor: "vend_par"
+  num_dias: 0
+---
+
+```{r setup, include=FALSE, error= TRUE}
+#rm(list=setdiff(ls(), c("params")))
 #Lib q será futuramente usada pros painéis interativos
 #library(shiny)
 #Lib pra conexão com o banco
@@ -28,19 +43,25 @@ library(knitr)
 source("fct_tempo.R")
 source("fct_fmt_din.R")
 source("fct_fmt_nome.R")
+source("fct_df_to_yaml.R")
 
 
 ###################################
 ##Variáveis "Globais"
 ####Variavel de teste para não remover e imprimir valores de teste, 1 para teste, 0 para não estou testando, rodando
-teste = T
+teste = F
 ####Variável usada para não plotar os gráficos na dash
-dash = F
-####Variável para testar dias anteriores
-num_dias <- 0
+dash = T
+# ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
+# ano_atual = fct_ano_atual()
+# ####Variavel global c/ mês atual (para comparação)
+# mes_atual = fct_mes_atual()
+# ## Apenas ano, para gerar títulos
+# ano <- year(ano_atual)
+## Para o final de ano, só vou diminuir o número de dias até chegar no dia 31 (ex: hoje é dia 04, então vou remover 4d pra voltar pra 2020-12-31)
 if(!teste){
   ##Teste se estou gerando via rstudio (knit)
-  if(as.integer(num_dias) == 0) {
+  if(as.integer(params$num_dias) == 0) {
     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
     ano_atual = fct_ano_atual()
     ####Variavel global c/ mês atual (para comparação)
@@ -49,7 +70,7 @@ if(!teste){
     ano <- year(ano_atual)
     ##Execução normal, recebendo data do gerador de dashs
   }else{
-    data <- (lubridate::today()-lubridate::days(num_dias))
+    data <- (lubridate::today()-lubridate::days(params$num_dias))
     ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
     ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
     ####Variavel global c/ mês atual (para comparação)
@@ -59,7 +80,8 @@ if(!teste){
   }
 }else{
   ##Teste setando dia
-  data <- lubridate::ymd("2020-12-31")
+  #data <- lubridate::ymd("2020-12-31")
+  data <- lubridate::today()
   ####Variavel global c/ ano atual (para comparação) ##primeiro dia do ano no formato ano-mes-dia
   ano_atual= lubridate::ymd(data-months(lubridate::month(data)-1)- days(lubridate::day(data)-1))
   ####Variavel global c/ mês atual (para comparação)
@@ -68,22 +90,32 @@ if(!teste){
   ano <- lubridate::year(ano_atual)
 }
 
-##Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
-####Vari?vel global para ver se tem usados Ainda n?o usada
+####Variável global para ver se tem usados Ainda não usada
 #usados = T
 
 ##plotando texto sem informações #usado para gráficos que não tiverem nenhuma informação no período
 #caminho para imagem de sem dados
 s_dados_path <- "s_dados.png"
+s_dados_m_path <- "s_dados_m.png"
 
-#empresa = params$variable1
-#teste
-empresa = 16
-vend_id = 1165
-params <- NULL
-params$dash_vend = T
-params$dash_mob = F
-###################################
+## Teste, senão tiver parâmetro, estou fazendo o teste e entra no if, senão vai pro else
+## Usados para testes, caso não seja teste, apenas atribuirá os parâmetros recebidos como parâmetros globais
+if(params$dash_vend == F){ ## dash geral e mobile
+  if(params$empresa == 'emp_par'){ ## Escolher variavel empresa a ser testada
+    empresa = 16
+  }else{
+    empresa = as.integer(params$empresa)
+  }
+}else{ ## No caso do vendedor, preciso definir o id do vendedor também
+  if(params$empresa == 'emp_par' && params$vendedor == 'vend_par'){ ## Escolher empresa e vendedor testado
+    empresa = 16
+    vend_id = 1068
+    ## vend_id super -> 28, 29, 1118, 1165 (ativos)
+  }else{
+    empresa = as.integer(params$empresa)
+    vend_id = as.integer(params$vendedor)
+  }
+}
 
 ###Começando script marcas
 ###########################################################################################################
@@ -98,8 +130,14 @@ vendedor <- fread("Tabelas/vendedor.csv") %>%
   select(vendedor_id, vendedor_empresa_id, vendedor_ativo) %>%
   filter (vendedor_empresa_id == empresa)
 
+
 vendedor_a <- vendedor %>%
   filter(vendedor_ativo == T)
+
+if(params$dash_vend){
+  vendedor <- vendedor %>%
+    dplyr::filter(vendedor_id == vend_id)
+}
 
 ##negocio_produto para pegar os valores de cada negócio
 negocio_produto <- fread("Tabelas/negocio_produto.csv", colClasses = c(np_id = "character", np_negocio_id = "character", np_produto_id = "character")) %>%
@@ -215,7 +253,6 @@ ng_top_ag <- inner_join(ng_top10_ag, top10_ij, by=c("produto_categoria_id" = "pr
 if (nrow(ng_top_ag) > 0){
   ng_top_ag <- ng_top_ag %>% rowwise() %>%
     mutate(fat_t = func_fmt_din(faturamento))
-  Encoding()
 }else{
 
 }
@@ -366,6 +403,10 @@ cliente <- fread("Tabelas/cliente.csv", colClasses = c(cliente_id = "character")
 #Arrumando encoding
 Encoding(cliente$cliente_nome) <- 'latin1'
 
+if(params$dash_vend){ ## Filtrando apenas do vendedor, clientes e visitas
+  cliente <- cliente %>%
+    dplyr::filter(cliente_vendedor_id == vend_id)
+}
 ##Parque de máquinas
 ##Mostrar distribuição de máquinas por categoria
 #######################################################################
@@ -707,3 +748,75 @@ if(teste == F){
   rm(cores_c, cores_t);
 }
 ###########################################################################################################
+```
+
+
+Top 10 Categorias
+=======================================================================
+
+  Column {data-width=350}
+-----------------------------------------------------------------------
+`r paste("###  Valor Financeiro de Negócios Cadastrados, por categoria em", ano)`
+
+
+```{r}
+### Gráfico hc_n4 - Valor financeiro de negócios em 2020  (por categoria)
+n4
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+`r paste("### Valor Financeiro de Negócios Faturados, por categoria em", ano)`
+
+```{r}
+### Gráfico hc_n5 - Máquinas faturadas em 2020 (por categoria)
+n5
+
+```
+
+Marcas (Tratores)
+=======================================================================
+
+Column {data-width=750}
+-----------------------------------------------------------------------
+
+### Mapa das marcas
+```{r}
+### Gráfico m1 de distribuição das marcas (top5)
+m1_t
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Distribuição das marcas
+```{r}
+### Gráfico m2 de distribuição das marcas
+m2_t
+
+```
+
+Marcas (Colheitadeiras)
+=======================================================================
+
+Column {data-width=750}
+-----------------------------------------------------------------------
+
+### Mapa das marcas
+```{r}
+### Gráfico m1 de distribuição das marcas (top5)
+m1_c
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Distribuição das marcas
+```{r}
+### Gráfico m2 de distribuição das marcas
+m2_c
+
+```

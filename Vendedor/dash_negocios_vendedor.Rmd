@@ -203,6 +203,8 @@ if (nrow(ng_ij_vn_ij_np_fat) > 0 && sum(ng_ij_vn_ij_np_fat$total_fat) > 0){
                                '<br>' ,
                                vendedor_nome,
                                '<br>' ,
+                               negocio_status,
+                               '<br>' ,
                                total_fat_t),
                 hoverinfo = "text"
   )
@@ -297,6 +299,8 @@ if (nrow(ng_ij_vn_ij_np_fech_fat) > 0){
                 text = ~paste0("",
                                '<br>' ,
                                vendedor_nome,
+                               '<br>' ,
+                               negocio_status,
                                '<br>' ,
                                total_fat_t),
                 hoverinfo = "text"
@@ -430,7 +434,7 @@ colors_pie <- c("#32CD32", "#87CEFA" , "yellow" , "orange" , "#DE0D26")
 if (nrow(ng_ij_hist_ij_emp_num) > 0){
   n7 <- plot_ly(ng_ij_hist_ij_emp_num, labels = ~idade_cat, values = ~num_negocios_idades, type = 'pie', sort = F,
                 texttemplate = "%{value} (%{percent})",
-                hovertemplate = paste ("%{label} <br>",
+                hovertemplate = paste (" %{label} <br>",
                                        "Equivalente a %{percent}",
                                        "<extra></extra>"),
                 marker = list(color = ~idade_cat,
