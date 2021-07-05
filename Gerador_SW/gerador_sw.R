@@ -80,5 +80,5 @@ update_time <- date_now %>%
 
 bd <- paste0("Banco de dados: ", update_time)
 writeLines(bd, update_time_bd)
-close(sw_emp)
+close(update_time_bd)
 rm(list = ls())
